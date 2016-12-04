@@ -10,7 +10,7 @@ For a first feel there is a demo project called `CarShack` which shows a great p
 ## Using it in a project
 To use the Extensions just call `AddHypermediaExtensions()` when adding MCV in `Startup.cs`:
 
-``` json
+``` csharp
 public void ConfigureServices(IServiceCollection services)
 {
     var builder = services.AddMvc(options =>
@@ -35,7 +35,7 @@ HypermediaObjects returned from Controllers will be formatted as Siren. All cont
 ### HypermediaObject
 This is the base class for all entities (in Siren format) which shall be returned from the server. They will be formatted as Siren Hypermedia by the included formatter. An Example from the demo project CarShack:
 
-```json
+```csharp
 [HypermediaObject(Title = "A Customer", Classes = new[] { "Customer" })]
 public class HypermediaCustomer : HypermediaObject
 {
@@ -97,7 +97,7 @@ will be placed in an internal register.
 
 So for every `HypermediaObject` there must be a route with matching type.
 Example form the demo project CustomerRootController:
-``` json 
+``` csharp 
 [HttpGetHypermediaObject("", typeof(HypermediaCustomersRoot))]
 public ActionResult GetRootDocument()
 {
@@ -107,7 +107,7 @@ public ActionResult GetRootDocument()
 
 The same is valid for Actions:
 
-```json
+```csharp
 [HttpPostHypermediaAction("CreateCustomer", typeof(HypermediaAction<CreateCustomerParameters, Task<Customer>>))]
 public async Task<ActionResult> NewCustomerAction([SingleParameterBinder(typeof(CreateCustomerParameters))] CreateCustomerParameters createCustomerParameters)
 {
@@ -126,9 +126,18 @@ public async Task<ActionResult> NewCustomerAction([SingleParameterBinder(typeof(
 Note:
 Siren specifies that to trigger an action a array of parameters is posted to the action route. To avoid wrapping parameters in a array class there is the SingleParameterBinder for convenience.
 
+A valid JSON for this route would looklike this:
+``` json
+[{"CreateCustomerParameters": 
+	{
+	  "Name":"Hans Schmid"
+	}
+}]
+```
+
 Parameters for actions may define a route which provide additional type information to the client. These routes will be added to the Siren fields object as "class".
 
-```json
+```csharp
 [HttpGetHypermediaActionParameterInfo("CreateCustomerParametersType", typeof(CreateCustomerParameters))]
 public ActionResult NewCustomerRequestType()
 {
@@ -140,7 +149,7 @@ public ActionResult NewCustomerRequestType()
 ####Routes with a key in the route template
 By design the Extension encurage that no route has multiple keys in the route template. Also only routes to HypermediaObject may have a key. If so the RouteAttribute needs a `RouteKeyProducer` type:
 
-``` json
+``` csharp
 [HttpGetHypermediaObject("", typeof(HypermediaCustomer), typeof(CustomerRouteKeyProducer))]
 public async Task<ActionResult> GetEntity(int key)
 {
@@ -151,8 +160,8 @@ public async Task<ActionResult> GetEntity(int key)
 When resolving routes to such an `HypermediaObject` the Formatter calls the `RouteKeyProducer` providing the `HypermediaObject` to generate a key from it. See `CustomerRouteKeyProducer` for an example.
 
 #### Queries
-Client shall not build query strings. Instead they post a json object to an `HypermediaAction` and receive the URI to the desired queryresult in the `Location` header.
-``` json
+Client shall not build query strings. Instead they post a JSON object to an `HypermediaAction` and receive the URI to the desired queryresult in the `Location` header.
+``` csharp
 [HttpPostHypermediaAction("CreateQuery", typeof(HypermediaAction<CustomerQuery>))]
 public ActionResult NewQueryAction([SingleParameterBinder(typeof(CustomerQuery))] CustomerQuery query)
 {
@@ -163,7 +172,7 @@ public ActionResult NewQueryAction([SingleParameterBinder(typeof(CustomerQuery))
 ```
 
 Ther must be a companion route which receives the query object and returns the query result:
-``` json
+``` csharp
 [HttpGetHypermediaObject("Query", typeof(HypermediaCustomerQueryResult))]
 public async Task<ActionResult> Query([FromQuery] CustomerQuery query)
 {
