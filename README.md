@@ -1,11 +1,11 @@
-# Web Api Hypermedia Extensions (beta)
-This project consists of some Extensions for a Web Api 2 Core. The target is to
-assist in building a restful Web services using [Siren Hypermedia Format](https://github.com/kevinswiber/siren) with much less coding.
-Using the Extensions it is possible to return HypermediaObjects as C# classes. Routes for HypermediaObjects and Actions are build using extended attribute routing.
+# Web Api Hypermedia Extensions
+This project consists of a set of Extensions for Web Api 2 Core projects. The purpose is to
+assist in building restful Web services using the [Siren Hypermedia Format](https://github.com/kevinswiber/siren) with much less coding.
+Using the Extensions it is possible to return HypermediaObjects as C# classes. Routes for HypermediaObjects and Actions are built using extended attribute routing.
 
-Of course there migth be some edge cases or flaws. Comments, suggestions, remarks and critic is very welcome.
+Of course there might be some edge cases or flaws. Comments, suggestions, remarks and criticism are very welcome.
 
-For a first feel there is a demo project called `CarShack` which shows a great portion of the Extensions in use. Is also shows how the routes were intended to be designed, although  it is not enforced.
+For a first feel there is a demo project called `CarShack` which shows a great portion of the Extensions in use. It also shows how the routes were intended to be designed, although this is not enforced.
 
 ## Using it in a project
 To use the Extensions just call `AddHypermediaExtensions()` when adding MCV in `Startup.cs`:
@@ -28,9 +28,9 @@ public void ConfigureServices(IServiceCollection services)
 Also the Extension needs a `IActionContextAccessor` service to work.
 
 ## Key concepts
-The Extensions allow to build a restful web server without building a Siren C# class by hand and assigning URI's to Links and embedded Entities. For this the Extensions provide two main components: the `HypermediaObject` class and new RouteAttributes extending the Web Api RouteAttributes.
+The Extensions allow you to build a restful web server without building a Siren C# class by hand and assigning URIs to Links and embedded Entities. For this the Extensions provide two main components: the `HypermediaObject` class and new RouteAttributes extending the Web Api RouteAttributes.
 
-HypermediaObjects returned from Controllers will be formatted as Siren. All contained referenced HypermediaObjects (e.g. Links and embedded Entities), Actions, and Parameter types (of Actions) are automatically resoved and propperly inserted into the Siren document, by looking up attributed routes.
+HypermediaObjects returned from Controllers will be formatted as Siren. All contained referenced HypermediaObjects (e.g. Links and embedded Entities), Actions, and Parameter types (of Actions) are automatically resolved and properly inserted into the Siren document, by looking up attributed routes.
 
 ### HypermediaObject
 This is the base class for all entities (in Siren format) which shall be returned from the server. They will be formatted as Siren Hypermedia by the included formatter. An Example from the demo project CarShack:
@@ -81,11 +81,10 @@ public class HypermediaCustomer : HypermediaObject
 
 **In short:**
 - Public Properties will be formatted to Siren Properties.
-- Properties with a HypermediaAction type will be added as Actions, but only if CanExecute returns true. If they require parameters it will be added ind the "fields" section of teh Siren document.
-- Other `HypermediaObject`s can be embedded by adding them as a `HypermediaObjectReferenceBase` type to the entities collection Property. (Not in this example, see HypermediaCustomerQueryResult in the demo projeect)
-- Links to other `HypermediaObject` can be added to the Links collection Property, also as `HypermediaObjectReferenceBase`.
-  (Not in this example, see HypermediaCustomersRoot in the demo projeect)
-- Properties, Actions and `HypermediaObject`s them selve can be attributed e.g. to give a fixed name.
+- Properties with a HypermediaAction type will be added as Actions, but only if CanExecute returns true. Any required parameters will be added in the "fields" section of the Siren document.
+- Other `HypermediaObject`s can be embedded by adding them as a `HypermediaObjectReferenceBase` type to the entities collection Property (not shown in this example, see HypermediaCustomerQueryResult in the demo project).
+- Links to other `HypermediaObject`s can be added to the Links collection Property, also as `HypermediaObjectReferenceBase` (not shown in this example, see HypermediaCustomersRoot in the demo project).
+- Properties, Actions and `HypermediaObject`s themselves can be attributed e.g. to give them a fixed name.
 
 ### Attributed routes
 The included SirenFormatter will build required links to other routes. At startup all routes attributed with:
@@ -95,8 +94,8 @@ The included SirenFormatter will build required links to other routes. At startu
 
 will be placed in an internal register.
 
-So for every `HypermediaObject` there must be a route with matching type.
-Example form the demo project CustomerRootController:
+This means that for every `HypermediaObject` there must be a route with matching type.
+Example from the demo project CustomerRootController:
 ``` csharp 
 [HttpGetHypermediaObject("", typeof(HypermediaCustomersRoot))]
 public ActionResult GetRootDocument()
@@ -105,7 +104,7 @@ public ActionResult GetRootDocument()
 }
 ```
 
-The same is valid for Actions:
+The same goes for Actions:
 
 ```csharp
 [HttpPostHypermediaAction("CreateCustomer", typeof(HypermediaAction<CreateCustomerParameters, Task<Customer>>))]
@@ -124,9 +123,9 @@ public async Task<ActionResult> NewCustomerAction([SingleParameterBinder(typeof(
 ```
 
 Note:
-Siren specifies that to trigger an action a array of parameters is posted to the action route. To avoid wrapping parameters in a array class there is the SingleParameterBinder for convenience.
+Siren specifies that to trigger an action an array of parameters should be posted to the action route. To avoid wrapping parameters in an array class there is the SingleParameterBinder for convenience.
 
-A valid JSON for this route would looklike this:
+A valid JSON for this route would look like this:
 ``` json
 [{"CreateCustomerParameters": 
 	{
@@ -135,7 +134,7 @@ A valid JSON for this route would looklike this:
 }]
 ```
 
-Parameters for actions may define a route which provide additional type information to the client. These routes will be added to the Siren fields object as "class".
+Parameters for actions may define a route which provides additional type information to the client. These routes will be added to the Siren fields object as "class".
 
 ```csharp
 [HttpGetHypermediaActionParameterInfo("CreateCustomerParametersType", typeof(CreateCustomerParameters))]
@@ -146,8 +145,8 @@ public ActionResult NewCustomerRequestType()
 }
 ```
 
-####Routes with a key in the route template
-By design the Extension encurage that no route has multiple keys in the route template. Also only routes to HypermediaObject may have a key. If so the RouteAttribute needs a `RouteKeyProducer` type:
+#### Routes with a key in the route template
+By design the Extension encourages routes to not have multiple keys in the route template. Also only routes to HypermediaObject may have a key. In that case the RouteAttribute needs a `RouteKeyProducer` type:
 
 ``` csharp
 [HttpGetHypermediaObject("", typeof(HypermediaCustomer), typeof(CustomerRouteKeyProducer))]
@@ -157,10 +156,10 @@ public async Task<ActionResult> GetEntity(int key)
 }
 ```
 
-When resolving routes to such an `HypermediaObject` the Formatter calls the `RouteKeyProducer` providing the `HypermediaObject` to generate a key from it. See `CustomerRouteKeyProducer` for an example.
+When resolving routes to such a `HypermediaObject` the Formatter calls the `RouteKeyProducer` providing the `HypermediaObject` to generate a key from it. See `CustomerRouteKeyProducer` for an example.
 
 #### Queries
-Client shall not build query strings. Instead they post a JSON object to an `HypermediaAction` and receive the URI to the desired queryresult in the `Location` header.
+Clients shall not build query strings. Instead they post a JSON object to a `HypermediaAction` and receive the URI to the desired query result in the `Location` header.
 ``` csharp
 [HttpPostHypermediaAction("CreateQuery", typeof(HypermediaAction<CustomerQuery>))]
 public ActionResult NewQueryAction([SingleParameterBinder(typeof(CustomerQuery))] CustomerQuery query)
@@ -171,7 +170,7 @@ public ActionResult NewQueryAction([SingleParameterBinder(typeof(CustomerQuery))
 }
 ```
 
-Ther must be a companion route which receives the query object and returns the query result:
+There must be a companion route which receives the query object and returns the query result:
 ``` csharp
 [HttpGetHypermediaObject("Query", typeof(HypermediaCustomerQueryResult))]
 public async Task<ActionResult> Query([FromQuery] CustomerQuery query)
@@ -194,7 +193,7 @@ public async Task<ActionResult> Query([FromQuery] CustomerQuery query)
 
 ## Known Issues
 ### QueryStringBuilder
-Building URI's containing a query string uses the QueryStringBuilder to serialize C# Objects. This builder migth not work for complex types. If so you can provide your own implementation in on init.
+Building URIs containing a query string uses the QueryStringBuilder to serialize C# Objects. This builder might not work for complex types. In that case you can provide your own implementation on init.
 
-### Embedded entities do not conatain a "rel"
+### Embedded entities do not contain a "rel"
 This will be done in the future.
