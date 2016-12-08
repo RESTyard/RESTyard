@@ -238,7 +238,7 @@ When using a `HypermediaObjectKeyReference` for a `HypermediaObject` which has p
 It contains only one property named `key`. So if a route template has more than one placeholder variable or it is named differently the route can not be resolved. In such a scenario the `RouteKeyProvider` is not called.
 
 ##Release Notes
-###WebApiHypermediaExtensiosn v1.1.0
+###WebApiHypermediaExtensions v1.1.0
 - Added relations support for embedded Entities. The entities list is now filled with EmbeddedEntity objects
 - Added extension methods for easy adding of embedded Entities `AddRange(..)` and `Add(..)`
 - Updated CarShack demo project
@@ -246,8 +246,8 @@ It contains only one property named `key`. So if a route template has more than 
 - Some renaming `DefaultHypermediaLinks` -> `DefaultHypermediaRelations`
 - Work on README.md
 
-###WebApiHypermediaExtensiosn v1.0.1
+###WebApiHypermediaExtensions v1.0.1
 - Added XML Comments file
 
-###WebApiHypermediaExtensiosn v1.0.0 release notes
+###WebApiHypermediaExtensions v1.0.0 release notes
 - Initial release
