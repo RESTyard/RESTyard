@@ -229,7 +229,6 @@ http://localhost:5000/Customers/1
 http://localhost:5000/Customers/1/Move
 ```
 
-
 ## Known Issues
 ### QueryStringBuilder
 Building URIs containing a query string uses the QueryStringBuilder to serialize C# Objects. This builder might not work for complex types. In that case you can provide your own implementation on init.
@@ -237,3 +236,18 @@ Building URIs containing a query string uses the QueryStringBuilder to serialize
 ### HypermediaObjectKeyReference filling of placeholder variables
 When using a `HypermediaObjectKeyReference` for a `HypermediaObject` which has placeholder variables in it's route template the formatter generated anonymous object.
 It contains only one property named `key`. So if a route template has more than one placeholder variable or it is named differently the route can not be resolved. In such a scenario the `RouteKeyProvider` is not called.
+
+##Release Notes
+###WebApiHypermediaExtensiosn v1.1.0
+- Added relations support for embedded Entities. The entities list is now filled with EmbeddedEntity objects
+- Added extension methods for easy adding of embedded Entities `AddRange(..)` and `Add(..)`
+- Updated CarShack demo project
+- Added net452 as target framework
+- Some renaming `DefaultHypermediaLinks` -> `DefaultHypermediaRelations`
+- Work on README.md
+
+###WebApiHypermediaExtensiosn v1.0.1
+- Added XML Comments file
+
+###WebApiHypermediaExtensiosn v1.0.0 release notes
+- Initial release
