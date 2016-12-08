@@ -5,7 +5,14 @@ Using the Extensions it is possible to return HypermediaObjects as C# classes. R
 
 Of course there might be some edge cases or flaws. Comments, suggestions, remarks and criticism are very welcome.
 
-For a first feel there is a demo project called `CarShack` which shows a great portion of the Extensions in use. It also shows how the routes were intended to be designed, although this is not enforced.
+For a first feel there is a demo project called [CarShack](https://github.com/bluehands/WebApiHypermediaExtensions/tree/master/Source/DemoServer/CarShack/src/CarShack) which shows a great portion of the Extensions in use. It also shows how the routes were intended to be designed, although this is not enforced.
+
+The Extensions on nuget.org: [https://www.nuget.org/packages/WebApiHypermediaExtensionsCore](https://www.nuget.org/packages/WebApiHypermediaExtensionsCore)
+
+## Key concepts
+The Extensions allow you to build a restful web server without building a Siren C# class by hand and assigning URIs to Links and embedded Entities. For this the Extensions provide two main components: the `HypermediaObject` class and new RouteAttributes extending the Web Api RouteAttributes.
+
+HypermediaObjects returned from Controllers will be formatted as Siren. All contained referenced HypermediaObjects (e.g. Links and embedded Entities), Actions, and Parameter types (of Actions) are automatically resolved and properly inserted into the Siren document, by looking up attributed routes.
 
 ## Using it in a project
 To use the Extensions just call `AddHypermediaExtensions()` when adding MCV in `Startup.cs`:
@@ -27,12 +34,7 @@ public void ConfigureServices(IServiceCollection services)
 ```
 Also the Extension needs a `IActionContextAccessor` service to work.
 
-## Key concepts
-The Extensions allow you to build a restful web server without building a Siren C# class by hand and assigning URIs to Links and embedded Entities. For this the Extensions provide two main components: the `HypermediaObject` class and new RouteAttributes extending the Web Api RouteAttributes.
-
-HypermediaObjects returned from Controllers will be formatted as Siren. All contained referenced HypermediaObjects (e.g. Links and embedded Entities), Actions, and Parameter types (of Actions) are automatically resolved and properly inserted into the Siren document, by looking up attributed routes.
-
-### HypermediaObject
+## HypermediaObject
 This is the base class for all entities (in Siren format) which shall be returned from the server. They will be formatted as Siren Hypermedia by the included formatter. An Example from the demo project CarShack:
 
 ```csharp
@@ -86,7 +88,10 @@ public class HypermediaCustomer : HypermediaObject
 - Links to other `HypermediaObject`s can be added to the Links collection Property, also as `HypermediaObjectReferenceBase` (not shown in this example, see HypermediaCustomersRoot in the demo project).
 - Properties, Actions and `HypermediaObject`s themselves can be attributed e.g. to give them a fixed name.
 
-### Attributed routes
+**Important**
+All `HypermediaObject`'s used in a Link or as embedded Entity and all `HypermediaAction`'s in a `HypermediaObject` require that there is an attributed route for their Type. Otherwise the formatter is not able to resolve the URI and will throw an Exception.
+
+## Attributed routes
 The included SirenFormatter will build required links to other routes. At startup all routes attributed with:
 - `HttpGetHypermediaObject`
 - `HttpPostHypermediaAction`
@@ -145,20 +150,29 @@ public ActionResult NewCustomerRequestType()
 }
 ```
 
-#### Routes with a key in the route template
-By design the Extension encourages routes to not have multiple keys in the route template. Also only routes to HypermediaObject may have a key. In that case the RouteAttribute needs a `RouteKeyProducer` type:
+### Routes with a placeholder in the route template
+For access to entities a route template may contain placeholder variables like _key_ in the example below. If a `HypermediaObject` is referenced, e.g. the self link or a link to another Customer, the formatter must be able to create the URI to the linked `HypermediaObject`. To propperly fill the placeholder variables for such routes a `RouteKeyProducer` is required. The formatter will call the producer if he has a instance of the referenced Object (e.g. from `HypermediaObjectReference.Resolve()`) and passes it to the `IRouteKeyProducer:GetKey()` function. This function must return an anonymous object filled with a property for each placeholder variable to be filled in the `HypermediaObject`'s route, here _key_.
+
+A `RouteKeyProducer` is added directly to the Attributed route as a Type and will be instantiated once by the framework.
 
 ``` csharp
-[HttpGetHypermediaObject("", typeof(HypermediaCustomer), typeof(CustomerRouteKeyProducer))]
+[HttpGetHypermediaObject("Customers/{key:int}", typeof(HypermediaCustomer), typeof(CustomerRouteKeyProducer))]
 public async Task<ActionResult> GetEntity(int key)
 {
     ...
 }
 ```
 
-When resolving routes to such a `HypermediaObject` the Formatter calls the `RouteKeyProducer` providing the `HypermediaObject` to generate a key from it. See `CustomerRouteKeyProducer` for an example.
+For a `HypermediaObjectKeyReference` the formatter creates an anonymous object by filling it with the key retrieved from the reference. So the placeholder variable must be called _key_ for such routes.
+``` csharp
+new { key = reference.GetKey() };
 
-#### Queries
+```
+
+By design the Extension encourages routes to not have multiple keys in the route template. Also only routes to `HypermediaObject` may have a key. It is recomended that a route template has at most one placeholder variable and it is named `key`.
+See `CustomerRouteKeyProducer` in the demo project for an example.
+
+### Queries
 Clients shall not build query strings. Instead they post a JSON object to a `HypermediaAction` and receive the URI to the desired query result in the `Location` header.
 ``` csharp
 [HttpPostHypermediaAction("CreateQuery", typeof(HypermediaAction<CustomerQuery>))]
@@ -191,9 +205,35 @@ public async Task<ActionResult> Query([FromQuery] CustomerQuery query)
 }
 ```
 
+## Recommendations for route design
+The extensions were build with some idears about how routes should be build in mind. The Extensions do not enforce this design but it is useful to know the basic idears.
+
+- The api is entered by a root document which leads to all or some of the other `HypermediaObject`'s (see `HypermediaEntryPoint` in CarShack)
+Examples
+```
+http://localhost:5000/entrypoint
+```
+
+- Collections like `Customers` are accessed through a root object (see `HypermediaCustomersRoot` in CarShack) which handles all actions which are not related to a specific customer. Tis also avoids that a colection directly answers with potentially unwanted Customers.
+Examples
+```
+http://localhost:5000/Customers
+http://localhost:5000/Customers/CreateQuery
+http://localhost:5000/Customers/CreateCustomer
+```
+
+- Entities are accessed through a collection but do not host child Entities. These should be handled in their own collections. The routes to the actual objects should not matter, so no need to nest them. This helps to flatten the Controller hierarchy and avoids deep routes. If a placeholder variable is required in the route templae name it _key_ (see Known Issues below).
+Examples
+```
+http://localhost:5000/Customers/1
+http://localhost:5000/Customers/1/Move
+```
+
+
 ## Known Issues
 ### QueryStringBuilder
 Building URIs containing a query string uses the QueryStringBuilder to serialize C# Objects. This builder might not work for complex types. In that case you can provide your own implementation on init.
 
-### Embedded entities do not contain a "rel"
-This will be done in the future.
+### HypermediaObjectKeyReference filling of placeholder variables
+When using a `HypermediaObjectKeyReference` for a `HypermediaObject` which has placeholder variables in it's route template the formatter generated anonymous object.
+It contains only one property named `key`. So if a route template has more than one placeholder variable or it is named differently the route can not be resolved. In such a scenario the `RouteKeyProvider` is not called.

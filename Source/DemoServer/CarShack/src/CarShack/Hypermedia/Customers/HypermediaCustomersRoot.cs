@@ -30,7 +30,7 @@ namespace CarShack.Hypermedia.Customers
 
             // Add Links:
             var allQuery = new CustomerQuery();
-            Links.Add(DefaultHypermediaLinks.Queries.All, new HypermediaObjectQueryReference(typeof(HypermediaCustomerQueryResult), allQuery));
+            Links.Add(DefaultHypermediaRelations.Queries.All, new HypermediaObjectQueryReference(typeof(HypermediaCustomerQueryResult), allQuery));
 
             // This Link uses a reference to a HypermediaObject without actually building it. It Gives the type and the value which is used do identify the Entity.
             // The key will be used while resolving routes in the Formatter.

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -81,7 +82,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.Formatter
             }
         }
 
-        public JObject CreateSiren(IHypermediaRouteResolver routeResolver, HypermediaObject hypermediaObject, bool isEmbedded = false)
+        public JObject CreateSiren(IHypermediaRouteResolver routeResolver, HypermediaObject hypermediaObject, bool isEmbedded = false, List<string> embeddedEntityRelations = null)
         {
             var sirenJson = new JObject();
 
@@ -89,6 +90,15 @@ namespace WebApiHypermediaExtensionsCore.WebApi.Formatter
             AddClasses(hypermediaObject, sirenJson, hypermediaObjectAttribute);
             AddTitle(sirenJson, hypermediaObjectAttribute);
 
+            if (isEmbedded)
+            {
+                if (embeddedEntityRelations == null)
+                {
+                    throw new HypermediaException("Embedded Entity has no relations.");
+                }
+
+                AddEmbeddedEntityRelations(sirenJson, embeddedEntityRelations);
+            }
 
             AddProperties(hypermediaObject, sirenJson);
 
@@ -97,6 +107,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.Formatter
                 SirenAddEntities(routeResolver, hypermediaObject, sirenJson);
                 AddActions(routeResolver, hypermediaObject, sirenJson);
             }
+            
 
             AddLinks(routeResolver, hypermediaObject, sirenJson);
 
@@ -223,35 +234,42 @@ namespace WebApiHypermediaExtensionsCore.WebApi.Formatter
 
         private void SirenAddEntities(IHypermediaRouteResolver routeResolver, HypermediaObject hypermediaObject, JObject sirenJson)
         {
-            var hypermediaEntities = hypermediaObject.Entities;
+            var embeddedEntities = hypermediaObject.Entities;
             var jEntities = new JArray();
 
-            foreach (var hypermediaEntityReference in hypermediaEntities)
+            foreach (var embeddedEntity in embeddedEntities)
             {
-                var referenceType = hypermediaEntityReference.GetType();
+                var referenceType = embeddedEntity.Reference.GetType();
 
                 if (typeof(HypermediaObjectKeyReference).IsAssignableFrom(referenceType)
                     || typeof(HypermediaObjectQueryReference).IsAssignableFrom(referenceType))
                 {
                     var jLink = new JObject();
 
-                    var entityType = hypermediaEntityReference.GetHypermediaType();
+                    var entityType = embeddedEntity.Reference.GetHypermediaType();
                     var hypermediaObjectAttribute = GetHypermediaObjectAttribute(entityType);
                     AddClasses(entityType, jLink, hypermediaObjectAttribute);
+                    AddEmbeddedEntityRelations(jLink, embeddedEntity.Relations);
 
-                    var resolvedAdress = ResolvedKeyOrQueryReference(routeResolver, hypermediaEntityReference);
+                    var resolvedAdress = ResolvedKeyOrQueryReference(routeResolver, embeddedEntity.Reference);
                     jLink.Add("href", resolvedAdress);
                     jEntities.Add(jLink);
                 }
+                else if (typeof(HypermediaObjectReference).IsAssignableFrom(referenceType))
+                {
+                    var entitySiren = CreateSiren(routeResolver, embeddedEntity.Reference.Resolve(), true, embeddedEntity.Relations);
+                    jEntities.Add(entitySiren);
+                }
                 else
                 {
-                    var entitySiren = CreateSiren(routeResolver, hypermediaEntityReference.Resolve(), true);
-                    jEntities.Add(entitySiren);
+                    throw new HypermediaFormatterException("Unknown reference type for embedded entity.");
                 }
             }
 
             sirenJson.Add("entities", jEntities);
         }
+
+
 
         private void AddLinks(IHypermediaRouteResolver routeResolver, HypermediaObject hypermediaObject, JObject sirenJson)
         {
@@ -358,6 +376,16 @@ namespace WebApiHypermediaExtensionsCore.WebApi.Formatter
             }
 
             sirenJson.Add("class", sirenClasses);
+        }
+
+        private void AddEmbeddedEntityRelations(JObject jembeddedEntity, List<string> embeddedEntityRelations)
+        {
+            var rels = new JArray();
+            foreach (var embeddedEntityRelation in embeddedEntityRelations)
+            {
+                rels.Add(embeddedEntityRelation);
+            }
+            jembeddedEntity.Add("rel", rels);
         }
 
         private static void AddTitle(JObject sirenJson, HypermediaObjectAttribute hypermediaObjectAttribute)

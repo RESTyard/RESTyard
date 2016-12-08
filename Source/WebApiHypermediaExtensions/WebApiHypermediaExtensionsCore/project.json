@@ -1,23 +1,28 @@
 {
-    "title": "Web Api Hypermedia Extensions",
-    "description": "Web Api extensions to create restful Web services using Siren as Hypermedia format",
-    "authors": [ "Mathias Reichardt" ],
-
-    "packOptions": {
-        "tags": [ "WebApi", "REST", "Siren", "Hypermedia" ],
-        "projectUrl": "https://github.com/bluehands/WebApiHypermediaExtensions",
-        "licenseUrl": "https://github.com/bluehands/WebApiHypermediaExtensions/blob/master/LICENSE.md"
+  "title": "Web Api Hypermedia Extensions",
+  "description": "Web Api extensions to create restful Web services using Siren as Hypermedia format",
+  "authors": [ "Mathias Reichardt" ],
+  "packOptions": {
+    "tags": [ "WebApi", "REST", "Siren", "Hypermedia" ],
+    "projectUrl": "https://github.com/bluehands/WebApiHypermediaExtensions",
+    "licenseUrl": "https://github.com/bluehands/WebApiHypermediaExtensions/blob/master/LICENSE.md"
+  },
+  "version": "1.1.0-*",
+  "dependencies": {
+    "Microsoft.AspNetCore.Mvc": "1.1.0",
+    "NETStandard.Library": "1.6.1"
+  },
+  "frameworks": {
+    "netstandard1.6": {
     },
-
-    "version": "1.0.0-*",
-
-    "dependencies": {
-        "Microsoft.AspNetCore.Mvc": "1.1.0",
-        "NETStandard.Library": "1.6.1"
-    },
-
-    "frameworks": {
-        "netstandard1.6": {
-        }
+    "net452": {
+      "frameworkAssemblies": {
+        "System.Runtime.Serialization": "4.0.0.0"
+      }
     }
+  },
+  "buildOptions": {
+      "xmlDoc": true,
+      "nowarn": [ "1591" ]
+  }
 }

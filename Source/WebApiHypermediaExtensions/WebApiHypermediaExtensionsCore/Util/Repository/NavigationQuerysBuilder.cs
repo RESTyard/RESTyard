@@ -1,4 +1,4 @@
-﻿using WebApiHypermediaExtensionsCore.Hypermedia.Links;
+﻿using WebApiHypermediaExtensionsCore.Hypermedia;
 using WebApiHypermediaExtensionsCore.Query;
 
 namespace WebApiHypermediaExtensionsCore.Util.Repository
@@ -15,27 +15,27 @@ namespace WebApiHypermediaExtensionsCore.Util.Repository
                 return result;
             }
 
-            result.Queries[DefaultHypermediaLinks.Queries.All] = CreateQueryAll(query);
+            result.Queries[DefaultHypermediaRelations.Queries.All] = CreateQueryAll(query);
 
             QueryBase<TSortPropertyEnum, TQueryFilter> createdQuery;
             if (TryCreateQueryFirst(query, queryResult.TotalCountOfEnties, out createdQuery))
             {
-                result.Queries[DefaultHypermediaLinks.Queries.First] = createdQuery;
+                result.Queries[DefaultHypermediaRelations.Queries.First] = createdQuery;
             }
 
             if (TryCreateQueryNext(query, queryResult.TotalCountOfEnties, out createdQuery))
             {
-                result.Queries[DefaultHypermediaLinks.Queries.Next] = createdQuery;
+                result.Queries[DefaultHypermediaRelations.Queries.Next] = createdQuery;
             }
 
             if (TryCreateQueryPrevious(query, queryResult.TotalCountOfEnties, out createdQuery))
             {
-                result.Queries[DefaultHypermediaLinks.Queries.Previous] = createdQuery;
+                result.Queries[DefaultHypermediaRelations.Queries.Previous] = createdQuery;
             }
 
             if (TryCreateQueryLast(query, queryResult.TotalCountOfEnties, out createdQuery))
             {
-                result.Queries[DefaultHypermediaLinks.Queries.Last] = createdQuery;
+                result.Queries[DefaultHypermediaRelations.Queries.Last] = createdQuery;
             }
 
 

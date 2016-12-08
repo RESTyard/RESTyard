@@ -23,35 +23,42 @@ namespace WebApiHypermediaExtensionsCore.Hypermedia
     /// </summary>
     public abstract class HypermediaObject
     {
+        /// <summary>
+        /// Constructor for HypermediaObject
+        /// </summary>
         protected HypermediaObject()
         {
-            Entities = new List<HypermediaObjectReferenceBase>();
-            Links = new Dictionary<string, HypermediaObjectReferenceBase>();
-
-            Links[DefaultHypermediaLinks.Self] = new HypermediaObjectReference(this);
-
+            Init();
+            Links[DefaultHypermediaRelations.Self] = new HypermediaObjectReference(this);
         }
 
+        /// <summary>
+        /// Constructor for HypermediaObject which are acces using a query. Required to propperly build the self Link.
+        /// </summary>
         protected HypermediaObject(IHypermediaQuery query)
         {
-            Entities = new List<HypermediaObjectReferenceBase>();
-            Links = new Dictionary<string, HypermediaObjectReferenceBase>();
-
+            Init();
             // hypemedia object is a queryresult so it needs a selflink with query
-            Links[DefaultHypermediaLinks.Self] = new HypermediaObjectQueryReference(GetType(), query);
+            Links[DefaultHypermediaRelations.Self] = new HypermediaObjectQueryReference(GetType(), query);
+        }
 
+        private void Init()
+        {
+            Entities = new List<EmbeddedEntity>();
+            Links = new Dictionary<string, HypermediaObjectReferenceBase>();
         }
 
         /// <summary>
         /// List of embedded or linked entities which will be included in the formatted output.
         /// </summary>
         [FormatterIgnoreHypermediaProperty]
-        public List<HypermediaObjectReferenceBase> Entities { get; set; }
+        public List<EmbeddedEntity> Entities { get; set; }
 
         /// <summary>
         /// List of links to other HypermediaObjects which will be included in the formatted output.
+        /// The key describes the relation to the linked HypermediaObject.
         /// </summary>
         [FormatterIgnoreHypermediaProperty]
-        public Dictionary<string, HypermediaObjectReferenceBase> Links { get; }
+        public Dictionary<string, HypermediaObjectReferenceBase> Links { get; private set; }
     }
 }
