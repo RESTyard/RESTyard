@@ -214,7 +214,7 @@ Examples
 http://localhost:5000/entrypoint
 ```
 
-- Collections like `Customers` are accessed through a root object (see `HypermediaCustomersRoot` in CarShack) which handles all actions which are not related to a specific customer. Tis also avoids that a colection directly answers with potentially unwanted Customers.
+- Collections like `Customers` are accessed through a root object (see `HypermediaCustomersRoot` in CarShack) which handles all actions which are not related to a specific customer. This also avoids that a colection directly answers with potentially unwanted Customers.
 Examples
 ```
 http://localhost:5000/Customers
