@@ -11,7 +11,7 @@ using WebApiHypermediaExtensionsCore.WebApi.ExtensionMethods;
 
 namespace CarShack.Controllers.Customers
 {
-    [Route("Customers/{key:int}")]
+    [Route("Customers")]
     public class CustomerController : Controller
     {
         private readonly ICustomerRepository customerRepository;
@@ -24,7 +24,7 @@ namespace CarShack.Controllers.Customers
 #region HypermediaObjects
         // Route to the HypermediaCustomer. References to HypermediaCustomer type will be resolved to this route.
         // This RouteTemplate also contains a key, so a RouteKeyProducer is required.
-        [HttpGetHypermediaObject("", typeof(HypermediaCustomer), typeof(CustomerRouteKeyProducer))]
+        [HttpGetHypermediaObject("{key:int}", typeof(HypermediaCustomer), typeof(CustomerRouteKeyProducer))]
         public async Task<ActionResult> GetEntity(int key)
         {
             try
@@ -41,7 +41,7 @@ namespace CarShack.Controllers.Customers
 #endregion
 
 #region Actions
-        [HttpPostHypermediaAction("MarkAsFavorite", typeof(HypermediaActionCustomerMarkAsFavorite))]
+        [HttpPostHypermediaAction("{key:int}/MarkAsFavorite", typeof(HypermediaActionCustomerMarkAsFavorite))]
         public async Task<ActionResult> MarkAsFovoriteAction(int key)
         {
             try
@@ -62,7 +62,7 @@ namespace CarShack.Controllers.Customers
 
         }
 
-        [HttpPostHypermediaAction("Move", typeof(HypermediaActionCustomerMoveAction))]
+        [HttpPostHypermediaAction("{key:int}/Move", typeof(HypermediaActionCustomerMoveAction))]
         public async Task<ActionResult> CustomerMove(int key, [SingleParameterBinder(typeof(NewAddress))] NewAddress newAddress)
         {
             if (newAddress == null)
@@ -100,7 +100,7 @@ namespace CarShack.Controllers.Customers
 #endregion
 
 #region TypeRoutes
-        // Provide tyoe information for Action parameters
+        // Provide type information for Action parameters. Does not depend on a specific customer.
         [HttpGetHypermediaActionParameterInfo("NewAddressType", typeof(NewAddress))]
         public ActionResult NewAddressType()
         {

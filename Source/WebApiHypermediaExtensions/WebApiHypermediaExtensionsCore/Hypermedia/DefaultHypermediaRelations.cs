@@ -2,6 +2,7 @@
 {
     /// <summary>
     /// Collection of basic relations commonly used.
+    /// For a comprehensive list <see href="https://www.iana.org/assignments/link-relations/link-relations.xhtml"/>
     /// </summary>
     public static class DefaultHypermediaRelations
     {

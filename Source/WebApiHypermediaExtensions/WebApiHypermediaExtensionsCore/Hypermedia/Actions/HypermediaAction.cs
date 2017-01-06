@@ -15,7 +15,6 @@ namespace WebApiHypermediaExtensionsCore.Hypermedia.Actions
         // todo in future make both calls async, CanExecute and DoExecute can take long. Should be awaitable
         public HypermediaAction(Func<bool> canExecute, Func<TParameter, TReturn> command = null) : base (canExecute)
         {
-            
             this.command = command;
         }
 

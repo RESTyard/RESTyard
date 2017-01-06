@@ -29,14 +29,13 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
             var type = reference.GetType();
             if (typeof(HypermediaObjectKeyReference).IsAssignableFrom(type))
             {
-                return this.GetHypermediaRouteKeys(reference as HypermediaObjectKeyReference);
+                return this.GetHypermediaRouteKeys((HypermediaObjectKeyReference)reference);
             }
             if (type == typeof(HypermediaObjectReference))
             {
                 return this.GetHypermediaRouteKeys(reference as HypermediaObjectReference);
             }
-            // queries must not have a key
-
+            
             return new { };
         }
 

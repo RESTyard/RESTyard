@@ -3,23 +3,23 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Primitives;
 using WebApiHypermediaExtensionsCore.Exceptions;
+using WebApiHypermediaExtensionsCore.Query;
 using WebApiHypermediaExtensionsCore.WebApi.RouteResolver;
 
 namespace WebApiHypermediaExtensionsCore.WebApi.Formatter
 {
-    public abstract class HypermediaLocationFormatter<T> : IOutputFormatter
+    public abstract class HypermediaLocationFormatter<T> : HypermediaOutputFormatter
     {
-        private readonly IRouteResolverFactory routeResolverFactory;
-
-        private readonly IRouteKeyFactory routeKeyFactory;
-
-        protected HypermediaLocationFormatter(IRouteResolverFactory routeResolverFactory, IRouteKeyFactory routeKeyFactory)
+        protected HypermediaLocationFormatter(
+            IRouteResolverFactory routeResolverFactory,
+            IRouteKeyFactory routeKeyFactory,
+            IQueryStringBuilder queryStringBuilder,
+            HypermediaUrlConfig defaultHypermediaUrlConfig)
+            : base(routeResolverFactory, routeKeyFactory, queryStringBuilder, defaultHypermediaUrlConfig)
         {
-            this.routeResolverFactory = routeResolverFactory;
-            this.routeKeyFactory = routeKeyFactory;
         }
 
-        public virtual bool CanWriteResult(OutputFormatterCanWriteContext context) // REMOVE MEE?
+        public override bool CanWriteResult(OutputFormatterCanWriteContext context) 
         {
             if (context.Object is T)
             {
@@ -29,16 +29,15 @@ namespace WebApiHypermediaExtensionsCore.WebApi.Formatter
             return false;
         }
 
-        public async Task WriteAsync(OutputFormatterWriteContext context)
+        public override async Task WriteAsync(OutputFormatterWriteContext context)
         {
             var item = GetObject(context.Object);
             if (item == null)
             {
                 throw new HypermediaFormatterException($"Formatter expected a {typeof(T).Name}  but is not.");
             }
-            var urlHelper = FormatterHelper.GetUrlHelperForCurrentContext(context);
 
-            var routeResolver = this.routeResolverFactory.CreateRouteResolver(urlHelper, this.routeKeyFactory);
+            var routeResolver = CreateRouteResolver(context);
 
             var location = GetLocation(routeResolver, item);
             var response = context.HttpContext.Response;

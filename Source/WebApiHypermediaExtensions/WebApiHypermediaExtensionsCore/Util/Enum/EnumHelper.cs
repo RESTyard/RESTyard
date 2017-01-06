@@ -10,30 +10,51 @@ namespace WebApiHypermediaExtensionsCore.Util.Enum
 
         // Returns the string representation of an enum taken from the EnumMember attribute.
         // "enumValue": The enum value for which the string representation should be looked up.
+        /// <summary>
+        /// Converts an enum value to the string representation the EnumMember attribute.
+        /// </summary>
+        /// <typeparam name="T">Type of the enum</typeparam>
+        /// <param name="enumValue">Value of the enum</param>
+        /// <returns>Attributed value if found otherwise enumValue as string</returns>
         public static string GetEnumMemberValue<T>(T enumValue) where T : struct
         {
             var enumType = typeof(T);
+            return GetEnumMemberValue(enumType, enumValue);
+        }
 
-
-            var fieldInfo = enumType.GetField(enumValue.ToString());
+        // Returns the string representation of an enum taken from the EnumMember attribute.
+        // "enumValue": The enum value for which the string representation should be looked up.
+        /// <summary>
+        /// Converts an enum value to the string representation the EnumMember attribute.
+        /// </summary>
+        /// <param name="enumType">Type of the enum</param>
+        /// <param name="enumValue">Value of the enum</param>
+        /// <returns>Attributed value if found otherwise enumValue as string</returns>
+        public static string GetEnumMemberValue(Type enumType, object enumValue)
+        {
+            
+            var enumvalueAsString = enumValue.ToString();
+            var fieldInfo = enumType.GetField(enumvalueAsString);
             if (fieldInfo == null)
             {
                 throw new ArgumentException($"Enum '{enumType.Name}' has no value '{enumValue}'.");
             }
 
             var attributes = fieldInfo.GetCustomAttributes(typeof(EnumMemberAttribute), false).ToList();
-            if (!attributes.Any())
+            if (attributes.Any())
             {
-                throw new ArgumentException($"Enum '{enumType.Name}' is missing a EnumMemberAttribute for value '{enumValue}'.");
+                return ((EnumMemberAttribute)attributes.First()).Value;
             }
 
-            return ((EnumMemberAttribute)attributes.First()).Value;
+            return enumvalueAsString;
         }
 
-
-        // Maps a string to an enum value based on the EnumMemberAttribute. This attribute is required for all enum values.
-        // "value":The string value which is compared to EnumMemberAttribute value.</param>
-        // "T":The enum which is searched
+        /// <summary>
+        /// Maps a string to an enum value based on the EnumMemberAttribute. This attribute is required for all enum values.
+        /// </summary>
+        /// <typeparam name="T">The enum which is searched</typeparam>
+        /// <param name="value">The string value which is compared to EnumMemberAttribute value.</param>
+        /// <returns></returns>
         public static object GetEnumByAttributeValue<T>(string value) where T : struct
         {
             var enumType = typeof(T);

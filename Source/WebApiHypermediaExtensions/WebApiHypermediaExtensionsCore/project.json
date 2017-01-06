@@ -7,7 +7,7 @@
     "projectUrl": "https://github.com/bluehands/WebApiHypermediaExtensions",
     "licenseUrl": "https://github.com/bluehands/WebApiHypermediaExtensions/blob/master/LICENSE.md"
   },
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "dependencies": {
     "Microsoft.AspNetCore.Mvc": "1.1.0",
     "NETStandard.Library": "1.6.1"

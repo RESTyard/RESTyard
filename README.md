@@ -34,6 +34,8 @@ public void ConfigureServices(IServiceCollection services)
 ```
 Also the Extension needs a `IActionContextAccessor` service to work.
 
+To configure the generated URLs in the Hypermedia documents pass a `HypermediaUrlConfig` to `AddHypermediaExtensions()`. In this way absolute URLs can be generated which have a different scheme or another host e.g. a load balancer.
+
 ## HypermediaObject
 This is the base class for all entities (in Siren format) which shall be returned from the server. They will be formatted as Siren Hypermedia by the included formatter. An Example from the demo project CarShack:
 
@@ -143,7 +145,7 @@ Parameters for actions may define a route which provides additional type informa
 
 ```csharp
 [HttpGetHypermediaActionParameterInfo("CreateCustomerParametersType", typeof(CreateCustomerParameters))]
-public ActionResult NewCustomerRequestType()
+public ActionResult CreateCustomerParametersType()
 {
     var schema = JsonSchemaFactory.Generate(typeof(CreateCustomerParameters));
     return Ok(schema);
@@ -214,7 +216,7 @@ Examples
 http://localhost:5000/entrypoint
 ```
 
-- Collections like `Customers` are accessed through a root object (see `HypermediaCustomersRoot` in CarShack) which handles all actions which are not related to a specific customer. This also avoids that a colection directly answers with potentially unwanted Customers.
+- Collections like `Customers` are accessed through a root object (see `HypermediaCustomersRoot` in CarShack) which handles all actions which are not related to a specific customer. This also avoids that a collection directly answers with potentially unwanted Customers.
 Examples
 ```
 http://localhost:5000/Customers
@@ -229,15 +231,49 @@ http://localhost:5000/Customers/1
 http://localhost:5000/Customers/1/Move
 ```
 
+## Notes on serialization
+- Enums in `HypermediaObjects` and Action parameters can be attributed using `EnumMember` to specify fixed string names for enum values. If no attribute is present the value wil be serialized using `ToString()`
+- `DateTime` and `DateTimeOffset` will be serialized using ISO 8601 notation: e.g. `2000-11-22T18:05:32.9990000+02:00`
+
 ## Known Issues
 ### QueryStringBuilder
-Building URIs containing a query string uses the QueryStringBuilder to serialize C# Objects. This builder might not work for complex types. In that case you can provide your own implementation on init.
+Building URIs which contain a query string uses the QueryStringBuilder to serialize C# Objects (tricky). If the provided implementation does not work for you it is possible to pass an alternative to the init function.
+
+Tested for:
+- Classes, with nesting
+- Primitives
+- IEnumerable (List, Array, Dictionary)
+- DateTime, TimeSpan, DateTimeOffset
+- String
+- Nullable
 
 ### HypermediaObjectKeyReference filling of placeholder variables
 When using a `HypermediaObjectKeyReference` for a `HypermediaObject` which has placeholder variables in it's route template the formatter generated anonymous object.
 It contains only one property named `key`. So if a route template has more than one placeholder variable or it is named differently the route can not be resolved. In such a scenario the `RouteKeyProvider` is not called.
 
+### Siren format support
+- At the moment Links can only have one relation, not a list of relations as possible by Siren.
+
 ##Release Notes
+###WebApiHypermediaExtensions v1.2.0
+- ADD: It is now possible to configure generated URIs by providing a HypermediaUrlConfig (host, scheme) for links
+- ADD: QueryStringBuilder can serialize IEnumerable, so it is possible to have queries containing List<>
+- ADD: QueryStringBuilder can handle DateTimeOffset
+- ADD: HypermediaObjectQueryReference now accept a key
+- ADD: Siren JSON creation now uses ISO 8601 format for DateTime and DateTimeOffset
+- ADD: Unit test project
+- UPDATE: readme.md
+- CHANGE: Enum handling: If enum has no EnumMember attribute no exception is thrown anymore
+- CHANGE: Serialize actions and entities of embedded entities according to Siren specification
+- FIX: QueryStringBuilder did not serialize nullables
+- FIX: NavigationQueryBuilder next page was build but not valid
+- FIX: DisablePagination() did not set PageOffset to 0
+- FIX: Siren JSON creation:
+  - Primitives like integers and bools were not serialited properly (serialized as string)
+  - Null properties were not serialized to null but a string "null"
+  - Nested classes in properties were serialized
+  - Enum values were serialized as string
+
 ###WebApiHypermediaExtensions v1.1.0
 - Added relations support for embedded Entities. The entities list is now filled with EmbeddedEntity objects
 - Added extension methods for easy adding of embedded Entities `AddRange(..)` and `Add(..)`

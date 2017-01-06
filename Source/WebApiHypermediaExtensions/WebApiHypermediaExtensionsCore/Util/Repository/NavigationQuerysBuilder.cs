@@ -147,7 +147,7 @@ namespace WebApiHypermediaExtensionsCore.Util.Repository
             where TSortPropertyEnum : struct
             where TQueryFilter : IQueryFilter, new()
         {
-            return query.Pagination.PageOffset + query.Pagination.PageSize <= queryResultCount;
+            return query.Pagination.PageOffset + query.Pagination.PageSize < queryResultCount;
         }
 
         public static bool HasPreviousPage<TSortPropertyEnum, TQueryFilter>(QueryBase<TSortPropertyEnum, TQueryFilter> query, int queryResultCount)

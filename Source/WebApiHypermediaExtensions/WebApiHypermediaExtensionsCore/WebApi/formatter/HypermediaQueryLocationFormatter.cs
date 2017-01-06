@@ -8,19 +8,21 @@ using WebApiHypermediaExtensionsCore.WebApi.RouteResolver;
 
 namespace WebApiHypermediaExtensionsCore.WebApi.Formatter
 {
-    public class HypermediaQueryLocationFormatter : IOutputFormatter {
-        private readonly IRouteResolverFactory routeResolverFactory;
-        private readonly IRouteKeyFactory routeKeyFactory;
+    public class HypermediaQueryLocationFormatter : HypermediaOutputFormatter
+    {
         private readonly IQueryStringBuilder queryStringBuilder;
 
-        public HypermediaQueryLocationFormatter(IRouteResolverFactory routeResolverFactory, IRouteKeyFactory routeKeyFactory, IQueryStringBuilder queryStringBuilder)
+        public HypermediaQueryLocationFormatter(
+            IRouteResolverFactory routeResolverFactory,
+            IRouteKeyFactory routeKeyFactory,
+            IQueryStringBuilder queryStringBuilder,
+            HypermediaUrlConfig defaultHypermediaUrlConfig)
+            : base(routeResolverFactory, routeKeyFactory, queryStringBuilder, defaultHypermediaUrlConfig)
         {
-            this.routeResolverFactory = routeResolverFactory;
-            this.routeKeyFactory = routeKeyFactory;
             this.queryStringBuilder = queryStringBuilder;
         }
 
-        public bool CanWriteResult(OutputFormatterCanWriteContext context)
+        public override bool CanWriteResult(OutputFormatterCanWriteContext context)
         {
             if (context.Object is HypermediaQueryLocation)
             {
@@ -30,7 +32,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.Formatter
             return false;
         }
 
-        public async Task WriteAsync(OutputFormatterWriteContext context)
+        public override async Task WriteAsync(OutputFormatterWriteContext context)
         {
             var hypermediaQueryLocation = context.Object as HypermediaQueryLocation;
             if (hypermediaQueryLocation == null)
@@ -38,11 +40,8 @@ namespace WebApiHypermediaExtensionsCore.WebApi.Formatter
                 throw new HypermediaFormatterException($"Formatter expected a {typeof(HypermediaQueryLocation).Name}  but is not.");
             }
 
-            var urlHelper = FormatterHelper.GetUrlHelperForCurrentContext(context);
-
-            var routeResolver = this.routeResolverFactory.CreateRouteResolver(urlHelper, this.routeKeyFactory);
-
-            var location = routeResolver.ParameterTypeToRoute(hypermediaQueryLocation.QueryType);
+            var routeResolver = CreateRouteResolver(context);
+            var location = routeResolver.TypeToRoute(hypermediaQueryLocation.QueryType);
 
             var queryString = queryStringBuilder.CreateQueryString(hypermediaQueryLocation.QueryParameter);
             if (!string.IsNullOrEmpty(queryString))

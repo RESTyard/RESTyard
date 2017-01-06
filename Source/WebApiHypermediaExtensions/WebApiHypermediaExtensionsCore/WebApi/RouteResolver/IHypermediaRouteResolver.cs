@@ -5,7 +5,9 @@ using WebApiHypermediaExtensionsCore.Hypermedia.Links;
 
 namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 {
-    // maps hypermedia object to a accessible webapi route, used by the formatter
+    /// <summary>
+    /// Maps hypermedia objects to a route.
+    /// </summary>
     public interface IHypermediaRouteResolver
     {
         string ObjectToRoute(HypermediaObject hypermediaObject);
@@ -14,7 +16,6 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 
         string ActionToRoute(HypermediaObject hypermediaObject, HypermediaActionBase reference);
         
-        // Actions with parameters require a route to a type, this route can hold a json schema
-        string ParameterTypeToRoute(Type actionParameterType);
+        string TypeToRoute(Type actionParameterType);
     }
 }

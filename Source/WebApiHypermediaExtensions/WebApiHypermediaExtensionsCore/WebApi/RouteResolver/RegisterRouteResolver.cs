@@ -10,15 +10,17 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
     public class RegisterRouteResolver : IHypermediaRouteResolver
     {
         protected IRouteRegister RouteRegister;
+        private readonly HypermediaUrlConfig hypermediaUrlConfig;
 
         private readonly IUrlHelper urlHelper;
 
         private readonly IRouteKeyFactory routeKeyFactory;
 
-        public RegisterRouteResolver(IUrlHelper urlHelper, IRouteKeyFactory routeKeyFactory, IRouteRegister routeRegister)
+        public RegisterRouteResolver(IUrlHelper urlHelper, IRouteKeyFactory routeKeyFactory, IRouteRegister routeRegister, HypermediaUrlConfig hypermediaUrlConfig = null)
         {
-            this.urlHelper = urlHelper;
             this.RouteRegister = routeRegister;
+            this.urlHelper = urlHelper;
+            this.hypermediaUrlConfig = hypermediaUrlConfig ?? new HypermediaUrlConfig();
             this.routeKeyFactory = routeKeyFactory;
         }
 
@@ -43,15 +45,15 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
             return this.GetRouteByType(lookupType, routeKeys);
         }
 
-        public string ParameterTypeToRoute(Type actionParameterType)
+        public string TypeToRoute(Type type)
         {
-            return this.GetRouteByType(actionParameterType);
+            return this.GetRouteByType(type);
         }
 
         private string GetRouteByType(Type lookupType, object routeKeys = null)
         {
             var routeName = this.RouteRegister.GetRoute(lookupType);
-            var route = this.urlHelper.Link(routeName, routeKeys);
+            var route = this.urlHelper.RouteUrl(routeName, routeKeys, hypermediaUrlConfig.Scheme, hypermediaUrlConfig.Host.ToUriComponent());
 
             if (route == null)
             {

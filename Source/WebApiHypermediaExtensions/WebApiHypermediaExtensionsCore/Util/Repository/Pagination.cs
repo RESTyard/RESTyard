@@ -24,6 +24,7 @@
         public void DisablePagination()
         {
             PageSize = 0;
+            PageOffset = 0;
         }
     }
 }

@@ -16,17 +16,23 @@ namespace WebApiHypermediaExtensionsCore.WebApi.ExtensionMethods
         /// <param name="options">The options object of the MVC component.</param>
         /// <param name="alternateRouteRegister">If you wish to use another RoutRegister pass it here, also if you wish another assembly to be crawled.</param>
         /// <param name="alternateQueryStringBuilder">Provide an alternate QueryStringBuilder used for building URL's.</param>
-        public static void AddHypermediaExtensions(this MvcOptions options, IRouteRegister alternateRouteRegister = null, IQueryStringBuilder alternateQueryStringBuilder = null)
+        /// <param name="hypermediaUrlConfig">Configures the URL used in Hypermedia responses.</param>
+        public static void AddHypermediaExtensions(
+            this MvcOptions options,
+            IRouteRegister alternateRouteRegister = null,
+            IQueryStringBuilder alternateQueryStringBuilder = null,
+            HypermediaUrlConfig hypermediaUrlConfig = null)
         {
             var routeRegister = alternateRouteRegister ?? new AttributedRoutesRegister();
             var queryStringBuilder = alternateQueryStringBuilder ?? new QueryStringBuilder();
+            var sirenBuilder = new SirenBuilder();
 
             var routeResolverFactory = new RegisterRouteResolverFactory(routeRegister);
             var routeKeyFactory = new RouteKeyFactory(routeRegister);
 
-            var hypermediaQueryLocationFormatter = new HypermediaQueryLocationFormatter(routeResolverFactory, routeKeyFactory, queryStringBuilder);
-            var hypermediaEntityLocationFormatter = new HypermediaEntityLocationFormatter(routeResolverFactory, routeKeyFactory);
-            var sirenHypermediaFormatter = new SirenHypermediaFormatter(routeResolverFactory, routeKeyFactory, queryStringBuilder);
+            var hypermediaQueryLocationFormatter = new HypermediaQueryLocationFormatter(routeResolverFactory, routeKeyFactory, queryStringBuilder, hypermediaUrlConfig);
+            var hypermediaEntityLocationFormatter = new HypermediaEntityLocationFormatter(routeResolverFactory, routeKeyFactory, queryStringBuilder, hypermediaUrlConfig);
+            var sirenHypermediaFormatter = new SirenHypermediaFormatter(routeResolverFactory, routeKeyFactory, queryStringBuilder, sirenBuilder, hypermediaUrlConfig);
 
             options.OutputFormatters.Insert(0, hypermediaQueryLocationFormatter);
             options.OutputFormatters.Insert(0, hypermediaEntityLocationFormatter);

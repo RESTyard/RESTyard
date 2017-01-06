@@ -94,14 +94,14 @@ namespace CarShack.Controllers.Customers
 #region TypeRoutes
         // Provide tyoe information for Action parameters
         [HttpGetHypermediaActionParameterInfo("CreateCustomerParametersType", typeof(CreateCustomerParameters))]
-        public ActionResult NewCustomerRequestType()
+        public ActionResult CreateCustomerParametersType()
         {
             var schema = JsonSchemaFactory.Generate(typeof(CreateCustomerParameters));
             return Ok(schema);
         }
 
         [HttpGetHypermediaActionParameterInfo("CustomerQueryType", typeof(CustomerQuery))]
-        public ActionResult QueryType()
+        public ActionResult CustomerQueryType()
         {
             var schema = JsonSchemaFactory.Generate(typeof(CustomerQuery));
 
