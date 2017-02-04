@@ -1,16 +1,16 @@
 ﻿using System;
-using Newtonsoft.Json.Schema;
+using Newtonsoft.Json;
+using NJsonSchema;
 
 namespace CarShack.Util
 {
     public static class JsonSchemaFactory
     {
-        public static JsonSchema Generate(Type type)
+        public static object Generate(Type type)
         {
-            var jsonSchemaGenerator = new JsonSchemaGenerator();
-            var schema = jsonSchemaGenerator.Generate(type);
-            schema.Title = type.Name;
-            return schema;
+            var schema = JsonSchema4.FromTypeAsync(type).Result;
+            var schemaData = schema.ToJson();
+            return JsonConvert.DeserializeObject(schemaData);
         }
     }
 }

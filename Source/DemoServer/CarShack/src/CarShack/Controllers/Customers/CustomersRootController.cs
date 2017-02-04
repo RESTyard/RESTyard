@@ -27,7 +27,6 @@ namespace CarShack.Controllers.Customers
 
 #region HypermediaObjects
         // Route to the HypermediaCustomersRoot. References to HypermediaCustomersRoot type will be resolved to this route.
-        // Also an optional name is given to the route for debugging.
         [HttpGetHypermediaObject("", typeof(HypermediaCustomersRoot))]
         public ActionResult GetRootDocument()
         {

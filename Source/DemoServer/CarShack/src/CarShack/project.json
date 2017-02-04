@@ -14,7 +14,8 @@
         "Microsoft.Extensions.Options.ConfigurationExtensions": "1.1.0",
         "Microsoft.NETCore.App": "1.1.0",
         "System.Linq": "4.3.0",
-        "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0"
+        "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0",
+        "NJsonSchema": "8.0.6242.20238"
     },
 
     "tools": {
