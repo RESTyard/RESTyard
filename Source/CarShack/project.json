@@ -15,7 +15,11 @@
         "Microsoft.NETCore.App": "1.1.0",
         "System.Linq": "4.3.0",
         "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0",
-        "NJsonSchema": "8.0.6242.20238"
+        "NJsonSchema": "8.0.6242.20238",
+        "Hypermedia.Util": {
+            "target": "project",
+            "type": "build"
+        }
     },
 
     "tools": {

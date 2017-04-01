@@ -9,7 +9,11 @@
     },
     "version": "1.3.0-*",
     "dependencies": {
-        "Hypermedia.Util": "1.0.0-*",
+        "Hypermedia.Util": {
+            "target": "project",
+            "type": "build"
+
+        },
         "Microsoft.AspNetCore.Mvc": "1.0.0",
         "NETStandard.Library": "1.6.0"
     },
