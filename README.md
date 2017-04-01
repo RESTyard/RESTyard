@@ -320,7 +320,9 @@ Tested for:
 - Nullable
 
 ##Release Notes
+
 ###WebApiHypermediaExtensions v1.3.0
+
 ####Features:
 - Routes with multiple variable templates are now suported, also the dependency on route variable names is removed. The KeyProducers now handle that. See documentation for details.
 - Multiple Relations are now allowed for Links
