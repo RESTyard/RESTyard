@@ -104,7 +104,7 @@ All `HypermediaObject`'s used in a Link or as embedded Entity and all `Hypermedi
 ### Embedded Entities and Links
 References to other `HypermediaObjects` are represented by references which derive from `HypermediaObjectReferenceBase`. These references are the added to the Links dictionary or the Entities list of a `HypermediaObject`.
 
-####Option 1: If a instance of the referenced HypermediaObject is available
+#### Option 1: If a instance of the referenced HypermediaObject is available
 Use a `HypermediaObjectReference` to create a reference. This reference can then be added to the Links dictionary with an associated relation:
 
 ```
@@ -119,7 +119,7 @@ Entities.Add("NiceCar", new HypermediaObjectReference(new HypermediaCar("VW", 2)
 *Note*
 The used function is an convenience extension contained in `WebApiHypermediaExtensionsCore.Hypermedia.Extensions`
 
-####Option 2: If no instance is available or not neccessary
+#### Option 2: If no instance is available or not neccessary
 To allow referencing of HypermediaObjects without the need to instantiate them, for reference purpose only, there are two additional references available.
 
 use a `HypermediaObjectKeyReference` if the object requires a key to be identified e.g. the Customers id.
@@ -319,11 +319,11 @@ Tested for:
 - String
 - Nullable
 
-##Release Notes
+## Release Notes
 
-###WebApiHypermediaExtensions v1.3.0
+### WebApiHypermediaExtensions v1.3.0
 
-####Features:
+#### Features:
 - Routes with multiple variable templates are now suported, also the dependency on route variable names is removed. The KeyProducers now handle that. See documentation for details.
 - Multiple Relations are now allowed for Links
 - Add configuration option to SirenBuilder so writing null properties in the JSON output can be disabled
@@ -336,7 +336,7 @@ Tested for:
 - Updated CarShack project to show new features: see 'Cars' routes with multiple variable templates
 - Updated README.md
 
-####Refactoring:
+#### Refactoring:
 - Generalize Formatter concept so there can be other Formatters
 - Renamed HypermediaAction with return value to HypermediaFunction
 - Simplified Siren builder
@@ -350,16 +350,16 @@ Tested for:
 - Cleanup solution and folder structure, so now there is only one solution
 - Extracted some shared functionality to Hypermedia.Util project.
 
-####Fixes:
+#### Fixes:
 - Most Attributes are now sealed for performance reasons
 - QueryString builder now accepts null and returns string.Empty
 - Fix create customer action did not set customer name
 - Fix HypermediaQueryResult exposed Query property
 
-####Hypermedia Client Prototype:
+#### Hypermedia Client Prototype:
 There is a new project: HypemediaClient. This is a *prototype* which explores a the possibilities of a generic client wich still has strong types for Hypermedia documents. To execute it see the test project: HypermediaClient.Test. The client expects a local CarShack service to communicate with.
 
-###WebApiHypermediaExtensions v1.2.0
+### WebApiHypermediaExtensions v1.2.0
 - ADD: It is now possible to configure generated URIs by providing a HypermediaUrlConfig (host, scheme) for links
 - ADD: QueryStringBuilder can serialize IEnumerable, so it is possible to have queries containing List<>
 - ADD: QueryStringBuilder can handle DateTimeOffset
@@ -378,7 +378,7 @@ There is a new project: HypemediaClient. This is a *prototype* which explores a 
   - Nested classes in properties were serialized
   - Enum values were serialized as string
 
-###WebApiHypermediaExtensions v1.1.0
+### WebApiHypermediaExtensions v1.1.0
 - Added relations support for embedded Entities. The entities list is now filled with EmbeddedEntity objects
 - Added extension methods for easy adding of embedded Entities `AddRange(..)` and `Add(..)`
 - Updated CarShack demo project
@@ -386,8 +386,8 @@ There is a new project: HypemediaClient. This is a *prototype* which explores a 
 - Some renaming `DefaultHypermediaLinks` -> `DefaultHypermediaRelations`
 - Work on README.md
 
-###WebApiHypermediaExtensions v1.0.1
+### WebApiHypermediaExtensions v1.0.1
 - Added XML Comments file
 
-###WebApiHypermediaExtensions v1.0.0 release notes
+### WebApiHypermediaExtensions v1.0.0 release notes
 - Initial release
