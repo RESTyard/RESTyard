@@ -1,0 +1,47 @@
+/* no self links */
+
+Digraph {
+    labelloc="t";
+    label="ApiMap: CarShack \lNo \"self\" links are shown";
+    labeljust=left;
+    fontname="arial"
+
+    rankdir=TB
+    node [shape=box,style=filled, fontname = "arial"];
+    edge [fontname = "arial"];
+
+    EntyrPoint -> CustomersRoot[label="CustomersRoot"];
+    EntyrPoint -> CarsRoot[label="CarsRoot"];
+
+
+    CarsRoot -> Car[label="NiceCar"];
+    CarsRoot -> Car[label="SuperCar"];
+    
+    CustomersRoot -> CustomersQueryResult[label="All"];
+    CustomersRoot -> Customer[label="BestCustomer"];
+    CustomersRoot -> External[label="GreatSite"];
+
+
+    CustomersRoot -> CreateCustomer[label="CreateCustomer"];
+    CustomersRoot -> CreateQuery[label="CreateQuery"];
+
+    CreateCustomer->Customer;
+    CreateQuery->CustomersQueryResult
+
+    Customer -> CustomerMove[label="CustomerMove"];
+    Customer -> MarkAsFavoriteAction[label="MarkAsFavoriteAction"];
+
+    CustomersQueryResult -> CustomersQueryResult[label="All,First,Previous,Next,Last  "];
+  
+    CustomersQueryResult -> Customer[label="Entity: Item"];
+
+    /* Actions */
+    CustomerMove[shape=ellipse]
+    MarkAsFavoriteAction[shape=ellipse]
+    CreateCustomer[shape=ellipse]
+    CreateQuery[shape=ellipse]
+
+    /* External node */
+    External[style=filled,color="lightgrey"]
+}
+

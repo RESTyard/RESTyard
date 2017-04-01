@@ -1,0 +1,22 @@
+{
+  "version": "0.1.0-*",
+
+    "dependencies": {
+        "Hypermedia.Util": "1.0.0-*",
+        "NETStandard.Library": "1.6.1",
+        "Newtonsoft.Json": "9.0.1"
+    },
+
+   "frameworks": {
+    "netstandard1.6": {
+        "dependencies": {
+            "System.Reflection.TypeExtensions": "4.3.0"
+        }
+    },
+    "net452": {
+      "frameworkAssemblies": {
+        "System.Runtime.Serialization": "4.0.0.0"
+      }
+    }
+  }
+}
