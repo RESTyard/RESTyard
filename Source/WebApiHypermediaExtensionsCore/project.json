@@ -5,7 +5,23 @@
     "packOptions": {
         "tags": [ "WebApi", "REST", "Siren", "Hypermedia" ],
         "projectUrl": "https://github.com/bluehands/WebApiHypermediaExtensions",
-        "licenseUrl": "https://github.com/bluehands/WebApiHypermediaExtensions/blob/master/LICENSE.md"
+        "licenseUrl": "https://github.com/bluehands/WebApiHypermediaExtensions/blob/master/LICENSE.md",
+        "files": {
+            "mappings": {
+                "lib/netstandard1.6/": {
+                    "includeFiles": [
+                        "bin/Release/netstandard1.6/Hypermedia.Util.dll",
+                        "bin/Release/netstandard1.6/Hypermedia.Util.xml"
+                    ]
+                },
+                "lib/net452/": {
+                    "includeFiles": [
+                        "bin/Release/net452/Hypermedia.Util.dll",
+                        "bin/Release/net452/Hypermedia.Util.xml"
+                    ]
+                }
+            }
+        }
     },
     "version": "1.3.0-*",
     "dependencies": {
