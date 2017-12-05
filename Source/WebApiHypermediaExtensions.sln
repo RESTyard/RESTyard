@@ -1,12 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+VisualStudioVersion = 15.0.26403.7
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0AA2CDA8-ACC0-434D-B560-94B7081A77FE}"
 	ProjectSection(SolutionItems) = preProject
 		..\LICENSE.md = ..\LICENSE.md
 		..\README.md = ..\README.md
+		..\TODO.md = ..\TODO.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApiHypermediaExtensionsCore", "WebApiHypermediaExtensionsCore\WebApiHypermediaExtensionsCore.csproj", "{36257B82-6BB5-434E-856E-A02FCBE83570}"
