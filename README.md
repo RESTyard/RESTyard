@@ -9,6 +9,8 @@ For a first feel there is a demo project called [CarShack](https://github.com/bl
 
 The Extensions on nuget.org: [https://www.nuget.org/packages/WebApiHypermediaExtensionsCore](https://www.nuget.org/packages/WebApiHypermediaExtensionsCore)
 
+There is a partner project which aims for a generic UI client: [HypermediaUi](https://github.com/MathiasReichardt/HypermediaUi)
+
 ## Key concepts
 The Extensions allow you to build a restful web server which responds with Siren documents without building a Siren class and assigning URIs to Links and embedded Entities. For this the Extensions provide two main components: the `HypermediaObject` class and new RouteAttributes extending the Web Api RouteAttributes.
 
