@@ -63,7 +63,8 @@ namespace HypermediaClient.Test
                 Assert.Inconclusive("Action can not be run on server, not offered.");
             }
 
-            var actionResult = await customer.MarkAsFavorite.ExecuteAsync();
+            //TODO this follows from service thinking, the customer now needs an id. Better send link to Customer which should be added to favorites
+            var actionResult = await customer.MarkAsFavorite.ExecuteAsync(new FavoriteCustomer{ CustomerLink = customer.Self.Uri.ToString() }); 
 
             customer = await customer.Self.ResolveAsync();
             Assert.IsTrue(actionResult.Success);

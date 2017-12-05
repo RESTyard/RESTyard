@@ -56,10 +56,10 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
             return this.GetRouteByType(lookupType, routeKeys);
         }
 
-        public string ActionToRoute(HypermediaObject hypermediaObject, HypermediaActionBase action)
+        public string ActionToRoute(HypermediaObject actionHostObject, HypermediaActionBase action)
         {
             var lookupType = action.GetType();
-            var routeKeys = routeKeyFactory.GetHypermediaRouteKeys(hypermediaObject);
+            var routeKeys = routeKeyFactory.GetActionRouteKeys(action, actionHostObject);
             return this.GetRouteByType(lookupType, routeKeys);
         }
 

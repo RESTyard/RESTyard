@@ -4,9 +4,9 @@ using WebApiHypermediaExtensionsCore.Hypermedia.Actions;
 namespace CarShack.Hypermedia.Customers
 {
     // Action on a HypermediaCustoemr which must be posted to the corresponding route. See CustomerController
-    public class HypermediaActionCustomerMarkAsFavorite : HypermediaAction
+    public class HypermediaActionCustomerMarkAsFavorite : HypermediaAction<FavoriteCustomer>
     {
-        public HypermediaActionCustomerMarkAsFavorite(Func<bool> canExecute, Action command) : base(canExecute, command)
+        public HypermediaActionCustomerMarkAsFavorite(Func<bool> canExecute, Action<FavoriteCustomer> command) : base(canExecute, command)
         {
         }
     }

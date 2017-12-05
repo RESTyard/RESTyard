@@ -3,9 +3,10 @@ using WebApiHypermediaExtensionsCore.Hypermedia.Actions;
 
 namespace CarShack.Hypermedia.Customers
 {
-    public class NewAddress : IHypermediaActionParameter
+    public class FavoriteCustomer : IHypermediaActionParameter
     {
         [Required]
-        public string Address { get; set; }
+        [Url]
+        public string CustomerLink { get; set; }
     }
 }

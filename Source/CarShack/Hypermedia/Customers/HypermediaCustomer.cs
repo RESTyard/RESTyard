@@ -52,7 +52,7 @@ namespace CarShack.Hypermedia.Customers
             return !IsFavorite;
         }
 
-        private void DoMarkAsFavorite()
+        private void DoMarkAsFavorite(FavoriteCustomer favoriteCustomer)
         {
             customer.IsFavorite = true;
             IsFavorite = customer.IsFavorite;

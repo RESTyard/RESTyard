@@ -1,19 +1,19 @@
 ﻿using System.Buffers;
-using CarShack.Domain.Customer;
-using CarShack.Hypermedia.Cars;
-using CarShack.Hypermedia.Customers;
-using CarShack.Hypermedia.EntryPoint;
-using CarShack.Util.GloblaExceptionHandler;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using WebApiHypermediaExtensionsCore.WebApi;
+
+using CarShack.Domain.Customer;
+using CarShack.Hypermedia.Cars;
+using CarShack.Hypermedia.Customers;
+using CarShack.Hypermedia.EntryPoint;
+using CarShack.Util.GloblaExceptionHandler;
 using WebApiHypermediaExtensionsCore.WebApi.ExtensionMethods;
 
 namespace CarShack
@@ -29,6 +29,7 @@ namespace CarShack
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
+            
             Configuration = builder.Build();
         }
 
@@ -37,6 +38,15 @@ namespace CarShack
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
+            app.UseCors(builder =>
+                {
+                    builder
+                        .AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .WithExposedHeaders("Location");
+                }
+            ); 
             app.UseMvc();
         }
 

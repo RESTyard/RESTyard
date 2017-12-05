@@ -59,7 +59,7 @@ namespace CarShack.Controllers.Customers
 
 #region Actions
         // Provides a link to the result Query.
-        [HttpPostHypermediaAction("CreateQuery", typeof(HypermediaAction<CustomerQuery>))]
+        [HttpPostHypermediaAction("Queries", typeof(HypermediaAction<CustomerQuery>))]
         public ActionResult NewQueryAction([SingleParameterBinder(typeof(CustomerQuery))] CustomerQuery query)
         {
             if (query == null)

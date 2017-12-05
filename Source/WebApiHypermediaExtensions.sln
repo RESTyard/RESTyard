@@ -1,26 +1,25 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WebApiHypermediaExtensionsCore", "WebApiHypermediaExtensionsCore\WebApiHypermediaExtensionsCore.xproj", "{36257B82-6BB5-434E-856E-A02FCBE83570}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WebApiHypermediaExtensionsCore.Test", "WebApiHypermediaExtensionsCore.Test\WebApiHypermediaExtensionsCore.Test.xproj", "{2BB87C7F-8EB1-4978-8E5B-DB794555D739}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0AA2CDA8-ACC0-434D-B560-94B7081A77FE}"
 	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
 		..\LICENSE.md = ..\LICENSE.md
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Hypermedia.Util", "Hypermedia.Util\Hypermedia.Util.xproj", "{03004E36-3252-48C0-B2AF-23B9E7324429}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApiHypermediaExtensionsCore", "WebApiHypermediaExtensionsCore\WebApiHypermediaExtensionsCore.csproj", "{36257B82-6BB5-434E-856E-A02FCBE83570}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CarShack", "CarShack\CarShack.xproj", "{89465847-B042-40A5-853B-E8DAC3160C56}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApiHypermediaExtensionsCore.Test", "WebApiHypermediaExtensionsCore.Test\WebApiHypermediaExtensionsCore.Test.csproj", "{2BB87C7F-8EB1-4978-8E5B-DB794555D739}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "HypermediaClient", "HypermediaClient\HypermediaClient.xproj", "{1E4E6AC2-1E5B-443C-9782-2AD056A750D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hypermedia.Util", "Hypermedia.Util\Hypermedia.Util.csproj", "{03004E36-3252-48C0-B2AF-23B9E7324429}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "HypermediaClient.Test", "HypermediaClient.Test\HypermediaClient.Test.xproj", "{3FD04265-F0B7-4AFC-A8E9-F4DDF7381CAF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarShack", "CarShack\CarShack.csproj", "{89465847-B042-40A5-853B-E8DAC3160C56}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HypermediaClient", "HypermediaClient\HypermediaClient.csproj", "{1E4E6AC2-1E5B-443C-9782-2AD056A750D0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HypermediaClient.Test", "HypermediaClient.Test\HypermediaClient.Test.csproj", "{3FD04265-F0B7-4AFC-A8E9-F4DDF7381CAF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

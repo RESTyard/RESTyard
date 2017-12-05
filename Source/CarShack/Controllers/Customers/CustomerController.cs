@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Numerics;
+using System.Threading.Tasks;
 using CarShack.Domain.Customer;
 using CarShack.Hypermedia.Customers;
 using CarShack.Util;
@@ -21,7 +24,7 @@ namespace CarShack.Controllers.Customers
             this.customerRepository = customerRepository;
         }
 
-#region HypermediaObjects
+        #region HypermediaObjects
         // Route to the HypermediaCustomer. References to HypermediaCustomer type will be resolved to this route.
         // This RouteTemplate also contains a key, so a RouteKeyProducer is required.
         [HttpGetHypermediaObject("{key:int}", typeof(HypermediaCustomer), typeof(CustomerRouteKeyProducer))]
@@ -38,24 +41,37 @@ namespace CarShack.Controllers.Customers
                 return this.Problem(ProblemJsonBuilder.CreateEntityNotFound());
             }
         }
-#endregion
+        #endregion
 
-#region Actions
+        #region Actions
         // Action routes need no RouteKeyProducer because they are only resolved for a specific Customer.
         // The the template shares the same keys as the Customer.
-        [HttpPostHypermediaAction("{key:int}/MarkAsFavorite", typeof(HypermediaActionCustomerMarkAsFavorite))]
-        public async Task<ActionResult> MarkAsFovoriteAction(int key)
+        [HttpPostHypermediaAction("MyFavoriteCustomers", typeof(HypermediaActionCustomerMarkAsFavorite))]
+        public async Task<ActionResult> MarkAsFovoriteAction([SingleParameterBinder(typeof(FavoriteCustomer))]  FavoriteCustomer favoriteCustomer)
         {
             try
             {
-                var customer = await customerRepository.GetEnitityByKeyAsync(key);
+                var id = ExtractIdFromCustomerUri(favoriteCustomer.CustomerLink);
+
+                var customer = await customerRepository.GetEnitityByKeyAsync(id);
                 var hypermediaCustomer = new HypermediaCustomer(customer);
-                hypermediaCustomer.MarkAsFavoriteAction.Execute();
+                hypermediaCustomer.MarkAsFavoriteAction.Execute(favoriteCustomer);
                 return Ok();
             }
             catch (EntityNotFoundException)
             {
                 return this.Problem(ProblemJsonBuilder.CreateEntityNotFound());
+            }
+            catch (InvalidLinkException e)
+            {
+                var problem = new ProblemJson()
+                {
+                    Title = $"Can not use provided object of type '{typeof(FavoriteCustomer)}'",
+                    Detail = e.Message,
+                    ProblemType = "WebApiHypermediaExtensionsCore.Hypermedia.BadActionParameter",
+                    StatusCode = 422 // Unprocessable Entity
+                };
+                return this.UnprocessableEntity(problem);
             }
             catch (CanNotExecuteActionException)
             {
@@ -64,7 +80,26 @@ namespace CarShack.Controllers.Customers
 
         }
 
-        [HttpPostHypermediaAction("{key:int}/Move", typeof(HypermediaActionCustomerMoveAction))]
+        private int ExtractIdFromCustomerUri(string favoriteCustomerCustomerLink)
+        {
+            if (string.IsNullOrWhiteSpace(favoriteCustomerCustomerLink))
+            {
+                throw new InvalidLinkException($"Provided Link is empty '{favoriteCustomerCustomerLink}'");
+            }
+            var lastSegment = favoriteCustomerCustomerLink.Split('/').Last();
+
+            try
+            {
+                return Convert.ToInt16(lastSegment);
+
+            }
+            catch (Exception)
+            {
+                throw new InvalidLinkException($"Provided Link is invalid '{favoriteCustomerCustomerLink}', provide propper self link.");
+            }
+        }
+
+        [HttpPostHypermediaAction("{key:int}/Moves", typeof(HypermediaActionCustomerMoveAction), typeof(CustomerRouteKeyProducer))]
         public async Task<ActionResult> CustomerMove(int key, [SingleParameterBinder(typeof(NewAddress))] NewAddress newAddress)
         {
             if (newAddress == null)
@@ -89,7 +124,7 @@ namespace CarShack.Controllers.Customers
             }
             catch (ActionParameterValidationException e)
             {
-                var problem  = new ProblemJson()
+                var problem = new ProblemJson()
                 {
                     Title = $"Can not use provided object of type '{typeof(NewAddress)}'",
                     Detail = e.Message,
@@ -99,9 +134,9 @@ namespace CarShack.Controllers.Customers
                 return this.UnprocessableEntity(problem);
             }
         }
-#endregion
+        #endregion
 
-#region TypeRoutes
+        #region TypeRoutes
         // Provide type information for Action parameters. Does not depend on a specific customer.
         [HttpGetHypermediaActionParameterInfo("NewAddressType", typeof(NewAddress))]
         public ActionResult NewAddressType()
@@ -110,6 +145,6 @@ namespace CarShack.Controllers.Customers
 
             return Ok(schema);
         }
-#endregion
+        #endregion
     }
 }

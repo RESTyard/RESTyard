@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
 using WebApiHypermediaExtensionsCore.Util.Enum;
 using WebApiHypermediaExtensionsCore.Util.Repository;
@@ -37,6 +39,7 @@ namespace CarShack.Domain.Customer
     // Options for filtering
     public class CustomerFilter : IQueryFilter
     {
+        [Range(1, 150)]
         public int? MinAge { get; set; }
 
         public CustomerFilter()

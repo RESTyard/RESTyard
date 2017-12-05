@@ -166,8 +166,8 @@ namespace WebApiHypermediaExtensionsCore.WebApi.Formatter
             string classRoute;
             try
             {
+                //TODO refactor this this is controll flow by exception.
                 classRoute = routeResolver.TypeToRoute(actionParameterType);
-
             }
             catch (Exception)
             {

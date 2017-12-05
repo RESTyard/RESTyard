@@ -3,6 +3,8 @@ using WebApiHypermediaExtensionsCore.Hypermedia.Links;
 
 namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 {
+    using WebApiHypermediaExtensionsCore.Hypermedia.Actions;
+
     public class RouteKeyFactory : IRouteKeyFactory
     {
         private readonly IRouteRegister routeRegister;
@@ -38,6 +40,17 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
             }
 
             return key;
+        }
+
+        public object GetActionRouteKeys(HypermediaActionBase action, HypermediaObject actionHostObject)
+        {
+            var keyProducer = this.routeRegister.GetKeyProducer(action.GetType());
+            if (keyProducer == null)
+            {
+                return new { };
+            }
+
+            return keyProducer.CreateFromHypermediaObject(actionHostObject);
         }
     }
 }

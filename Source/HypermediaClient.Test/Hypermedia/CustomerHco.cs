@@ -22,7 +22,7 @@ namespace HypermediaClient.Test.Hypermedia
 
         //TODO maybe remove interfaces and make class HypermediaClientAction sealed
         [HypermediaCommand("MarkAsFavoriteAction")] // todo make name optional and use method name as default
-        public IHypermediaClientAction MarkAsFavorite { get; set; }
+        public IHypermediaClientAction<FavoriteCustomer> MarkAsFavorite { get; set; }
 
         [HypermediaCommand("CustomerMove")]
         public IHypermediaClientAction<NewAddress> CustomerMove { get; set; }
@@ -35,6 +35,12 @@ namespace HypermediaClient.Test.Hypermedia
     public class NewAddress
     {
         public string Address { get; set; }
+    }
+
+    [HypermediaCommandParameter(new[] { "http://localhost:5000/MyFavoriteCustomers/FavoriteCustomer" })]
+    public class FavoriteCustomer
+    {
+        public string CustomerLink { get; set; }
     }
 }
 
