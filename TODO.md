@@ -1,7 +1,7 @@
 # TODO
 List of things to come...
 
-## Actions shoudl return a defined resource
+## Actions should return a defined resource
 Develop a HTO which should be returned when executing an Action. This HTO represents the Action resource which shoudl be accessible by a client.
 
 Properties which migth be worth considering
@@ -36,8 +36,6 @@ Just allow References to HTOs and lists of HTOs.
 
 - Less coupling to Siren format
 - More natural to C#
-
-
 
 # Future
 Just some idears
