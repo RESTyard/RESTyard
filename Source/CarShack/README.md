@@ -33,13 +33,13 @@ The collection of Customers.
 A specific Customer.
 `GET`: [http://localhost:5000/Customers/1](http://localhost:5000/Customers/1)
 
-###Actions
-####Action which requires no parameters
+### Actions
+#### Action which requires no parameters
 `POST`: [http://localhost:5000/Customers/1/MarkAsFavorite](http://localhost:5000/Customers/1/MarkAsFavorite)
 
 **Note**: This action can only be called once. It changes the Customer state and the action is no longer available. Calling a 2nd time will provide a ProblemJson.
 
-####A action which requires a parameter as JSON
+#### A action which requires a parameter as JSON
 ```json
 [{
 	"NewAddress": {
@@ -50,11 +50,11 @@ A specific Customer.
 
 `POST`: [http://localhost:5000/Customers/1/Move](http://localhost:5000/Customers/1/Move)
 
-####Action parameter type information
+#### Action parameter type information
 Action may specify the allowed parameter in the `class` propertie in the Siren document. This link can be followed to retriefe type informatein, here JSON Schema.
 `GET`: [http://localhost:5000/Customers/CreateCustomerParametersType](http://localhost:5000/Customers/CreateCustomerParametersType)
 
-###Queries
+### Queries
 Queries are build by the server to avoid building URIs and querie strings on the client.
 `POST` the following JSON:
 
