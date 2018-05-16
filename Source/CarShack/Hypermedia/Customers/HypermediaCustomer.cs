@@ -2,6 +2,7 @@
 using WebApiHypermediaExtensionsCore.Exceptions;
 using WebApiHypermediaExtensionsCore.Hypermedia;
 using WebApiHypermediaExtensionsCore.Hypermedia.Attributes;
+using WebApiHypermediaExtensionsCore.WebApi.RouteResolver;
 
 namespace CarShack.Hypermedia.Customers
 {
@@ -21,6 +22,8 @@ namespace CarShack.Hypermedia.Customers
 
         // Hides the Property so it will not be pressent in the Hypermedia.
         [FormatterIgnoreHypermediaProperty]
+        // Marks property so it is can be mapped to route parameters when creating links
+        [RouteTemplateParameter]
         public int Id { get; set; }
 
         // Assigns an alternative name, so this stays constant even if property is renamed

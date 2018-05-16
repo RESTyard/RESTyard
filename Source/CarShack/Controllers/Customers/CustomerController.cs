@@ -27,7 +27,7 @@ namespace CarShack.Controllers.Customers
         #region HypermediaObjects
         // Route to the HypermediaCustomer. References to HypermediaCustomer type will be resolved to this route.
         // This RouteTemplate also contains a key, so a RouteKeyProducer is required.
-        [HttpGetHypermediaObject("{key:int}", typeof(HypermediaCustomer), typeof(CustomerRouteKeyProducer))]
+        [HttpGetHypermediaObject("{key:int}", typeof(HypermediaCustomer))]
         public async Task<ActionResult> GetEntity(int key)
         {
             try

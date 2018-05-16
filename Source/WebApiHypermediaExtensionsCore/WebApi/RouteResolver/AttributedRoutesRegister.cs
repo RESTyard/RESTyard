@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing.Template;
 using WebApiHypermediaExtensionsCore.Exceptions;
 using WebApiHypermediaExtensionsCore.Hypermedia;
 using WebApiHypermediaExtensionsCore.WebApi.AttributedRoutes;
@@ -18,8 +19,8 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 
         private void RegisterAssemblyRoutes(Assembly assembly)
         {
-            var assmeblyMethods = assembly.GetTypes().SelectMany(t => t.GetMethods());
-            foreach (var method in assmeblyMethods)
+            var assemblyMethods = assembly.GetTypes().SelectMany(t => t.GetMethods());
+            foreach (var method in assemblyMethods)
             {
                 AddAttributedRoute<HttpGetHypermediaObject>(method, this.AddHypermediaObjectRoute);
                 AddAttributedRoute<HttpPostHypermediaAction>(method, this.AddActionRoute);
@@ -52,8 +53,15 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
                 var keyProducer = (IKeyProducer)Activator.CreateInstance(attribute.RouteKeyProducerType);
                 this.AddRouteKeyProducer(attribute.RouteType, keyProducer);
             }
+            else if (!typeof(HypermediaQueryResult).IsAssignableFrom(attribute.RouteType) && attribute.Template != null)
+            {
+                var template = TemplateParser.Parse(attribute.Template);
+                if (template.Parameters.Count > 0)
+                {
+                    //TODO: how to handle multiple parameters
+                    this.AddRouteKeyProducer(attribute.RouteType, new RouteKeyProducer(template.Parameters[0].Name));
+                }
+            }
         }
-
-
     }
 }
