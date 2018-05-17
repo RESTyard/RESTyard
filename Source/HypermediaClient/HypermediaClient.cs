@@ -6,13 +6,14 @@ using HypermediaClient.Resolver;
 
 namespace HypermediaClient
 {
-    public class SirenHttpHypermediaClient<TEntryPoint> : IHypermediaClient<TEntryPoint> where TEntryPoint : HypermediaClientObject
+    public class HypermediaClient<TEntryPoint> : IHypermediaClient<TEntryPoint> where TEntryPoint : HypermediaClientObject
     {
         private readonly IHypermediaReader sirenHypermediaReader;
         private readonly IHypermediaResolver resolver;
 
-        // todo make mock able with json example text 
-        public SirenHttpHypermediaClient(
+        public Uri UriApiEntryPoint { get; private set; }
+
+        public HypermediaClient(
             Uri uriApiEntryPoint,
             IHypermediaResolver hypermediaResolver,
             IHypermediaReader hypermediaReader) 
@@ -22,10 +23,6 @@ namespace HypermediaClient
             sirenHypermediaReader = hypermediaReader;
             resolver.InitializeHypermediaReader(sirenHypermediaReader);
         }
-
-        
-
-        public Uri UriApiEntryPoint { get; private set; }
 
         public async Task<TEntryPoint> EnterAsync()
         {
@@ -38,11 +35,6 @@ namespace HypermediaClient
 
             var hypermediaClientObject =  result.ResultObject;
             return hypermediaClientObject;
-        }
-
-        private HypermediaClientObject ProcessContent(string siren) // TODO use stream
-        {
-            return sirenHypermediaReader.Read(siren);
         }
     }
 }

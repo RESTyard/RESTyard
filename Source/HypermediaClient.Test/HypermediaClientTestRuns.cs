@@ -17,8 +17,8 @@ namespace HypermediaClient.Test
     public class HypermediaClientTestRuns
     {
         private HypermediaObjectRegister HypermediaObjectRegister { get; set; }
-        private SirenHttpHypermediaClient<EntryPointHco> SirenClient { get; set; }
-        private static Uri ApiEntryPoint = new Uri("http://localhost:5000/entrypoint");
+        private HypermediaClient<EntryPointHco> SirenClient { get; set; }
+        private static readonly Uri ApiEntryPoint = new Uri("http://localhost:5000/entrypoint");
 
         // TODO Handle Erors (http, authorization, hypermediaparsing and api), problem json, status codes
         // use chache info from header so client may cache resolved documents
@@ -30,7 +30,7 @@ namespace HypermediaClient.Test
             
             var resolver = new HttpHypermediaResolver(new SingleJsonObjectParameterSerializer());
             var hypermediaReader = new SirenHypermediaReader(HypermediaObjectRegister, resolver);
-            this.SirenClient = new SirenHttpHypermediaClient<EntryPointHco>(ApiEntryPoint, resolver, hypermediaReader);
+            this.SirenClient = new HypermediaClient<EntryPointHco>(ApiEntryPoint, resolver, hypermediaReader);
         }
 
         [TestMethod]
