@@ -6,9 +6,9 @@ _Experimental_ project to create a Client which allows typed access to a Rest Ap
 
 There is still a lot to do:
 - Exception handling
-- Error responses by the api
-- Authentification/Authorization
-- Caching
+- Error responses by the api (http, authorization, hypermediaparsing and api), problem json, status codes
+- (more) Authentification/Authorization
+- Use chache info from header so client may cache resolved documents
 ...
 
 Assumptions:

@@ -21,9 +21,6 @@ namespace HypermediaClient.Test
         private HypermediaClient<EntryPointHco> SirenClient { get; set; }
         private static readonly Uri ApiEntryPoint = new Uri("http://localhost:5000/entrypoint");
 
-        // TODO Handle Erors (http, authorization, hypermediaparsing and api), problem json, status codes
-        // use chache info from header so client may cache resolved documents
-
         [TestInitialize]
         public void Initialize()
         {
