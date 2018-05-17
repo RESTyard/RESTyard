@@ -59,7 +59,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
                 if (template.Parameters.Count > 0)
                 {
                     //TODO: how to handle multiple parameters
-                    this.AddRouteKeyProducer(attribute.RouteType, new RouteKeyProducer(template.Parameters[0].Name));
+                    this.AddRouteKeyProducer(attribute.RouteType, new RouteKeyProducer(template.Parameters.Select(p => p.Name)));
                 }
             }
         }
