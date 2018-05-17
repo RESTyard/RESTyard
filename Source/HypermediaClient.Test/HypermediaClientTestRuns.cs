@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace HypermediaClient.Test
 {
+    using HypermediaClient.Authentication;
     using HypermediaClient.ParameterSerializer;
     using HypermediaClient.Resolver;
 
@@ -29,6 +30,9 @@ namespace HypermediaClient.Test
             this.HypermediaObjectRegister = CreateHypermediaObjectRegister();
             
             var resolver = new HttpHypermediaResolver(new SingleJsonObjectParameterSerializer());
+            // be sure to use https
+            resolver.SetCredentials(new UsernamePasswordCredentials("User", "Password"));
+
             var hypermediaReader = new SirenHypermediaReader(HypermediaObjectRegister, resolver);
             this.SirenClient = new HypermediaClient<EntryPointHco>(ApiEntryPoint, resolver, hypermediaReader);
         }

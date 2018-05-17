@@ -12,10 +12,14 @@ using HypermediaClient.ParameterSerializer;
 
 namespace HypermediaClient.Resolver
 {
+    using HypermediaClient.Authentication;
+
     public  class HttpHypermediaResolver : IHypermediaResolver
     {
         private readonly IParameterSerializer parameterSerializer;
         private IHypermediaReader hypermediaReader;
+
+        private UsernamePasswordCredentials UsernamePasswordCredentials { get; set; }
 
         public HttpHypermediaResolver(IParameterSerializer parameterSerializer)
         {
@@ -29,9 +33,7 @@ namespace HypermediaClient.Resolver
 
         public async Task<ResolverResult<T>> ResolveLinkAsync<T>(Uri uriToResolve) where T : HypermediaClientObject
         {
-            var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(DefaultContentTypes.Siren));
+            var httpClient = CreateHttpClient();
 
             var result = await httpClient.GetAsync(uriToResolve);
             var resolverResult =  new ResolverResult<T>();
@@ -47,14 +49,13 @@ namespace HypermediaClient.Resolver
             {
                 throw new Exception($"Please setup the hypermediaReader before using the resolver. see {nameof(InitializeHypermediaReader)}");
             }
-            var desiredResultObject = hypermediaReader.Read(hypermediaObjectSiren) as T;
-            if (desiredResultObject == null)
+
+            if (!(this.hypermediaReader.Read(hypermediaObjectSiren) is T desiredResultObject))
             {
                 throw new Exception($"Could not retrieve result as {typeof(T).Name} ");
             }
-
-            resolverResult.Success = true;
             resolverResult.ResultObject = desiredResultObject;
+            resolverResult.Success = true;
 
             return resolverResult;
         }
@@ -172,12 +173,29 @@ namespace HypermediaClient.Resolver
             return responseMessage;
         }
 
-        private static HttpClient CreateHttpClient()
+        private HttpClient CreateHttpClient()
         {
-            var httpClient = new HttpClient();
+            HttpClient httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(DefaultContentTypes.Siren));
+
+            if (HasCredentials())
+            {
+                httpClient.DefaultRequestHeaders.Authorization = CreateBasicAuthHeaderValue(this.UsernamePasswordCredentials);
+            }
+
             return httpClient;
+        }
+
+        private static AuthenticationHeaderValue CreateBasicAuthHeaderValue(UsernamePasswordCredentials credentials)
+        {
+            var encodedCredentials = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(credentials.User + ":" + credentials.Password));
+            return new AuthenticationHeaderValue("Basic", encodedCredentials);
+        }
+
+        private bool HasCredentials()
+        {
+            return UsernamePasswordCredentials != null;
         }
 
         private HttpMethod GetHttpMethod(string method)
@@ -195,6 +213,13 @@ namespace HypermediaClient.Resolver
                 default:
                     throw new Exception($"Unknown method: '{method}'");
             }
+        }
+
+        public void SetCredentials(UsernamePasswordCredentials usernamePasswordCredentials)
+        {
+            this.UsernamePasswordCredentials = usernamePasswordCredentials;
+
+            // todo if using a cache clear it, new user migth not be able to access
         }
     }
 }

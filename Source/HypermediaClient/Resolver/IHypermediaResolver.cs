@@ -6,9 +6,13 @@ using HypermediaClient.Hypermedia.Commands;
 
 namespace HypermediaClient.Resolver
 {
+    using HypermediaClient.Authentication;
+
     public interface IHypermediaResolver
     {
         void InitializeHypermediaReader(IHypermediaReader reader);
+
+        void SetCredentials(UsernamePasswordCredentials usernamePasswordCredentials);
 
         Task<ResolverResult<T>> ResolveLinkAsync<T>(Uri uriToResolve) where T : HypermediaClientObject;
 
