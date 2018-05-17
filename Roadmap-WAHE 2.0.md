@@ -7,3 +7,4 @@
 - remove SingleParameterBinder and use schema references as discused in [this thread](https://github.com/kevinswiber/siren/issues/84)
 - optional generic route for ActionParameter schemas
 - serialize reference properties to siren properties as json object
+- serialize TimeSpan to Siren

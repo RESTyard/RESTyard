@@ -2,36 +2,28 @@ using System;
 using System.Threading.Tasks;
 using HypermediaClient.Hypermedia;
 using HypermediaClient.Hypermedia.Commands;
-using HypermediaClient.ParameterSerializer;
 using HypermediaClient.Resolver;
 
 namespace HypermediaClient
 {
     public class SirenHttpHypermediaClient<TEntryPoint> : IHypermediaClient<TEntryPoint> where TEntryPoint : HypermediaClientObject
     {
-        private readonly SirenHypermediaReader sirenHypermediaReader;
-        private readonly HypermediaHttpResolver resolver;
+        private readonly IHypermediaReader sirenHypermediaReader;
+        private readonly IHypermediaResolver resolver;
 
         // todo make mock able with json example text 
-        public SirenHttpHypermediaClient(Uri uriApiEntryPoint, IHypermediaObjectRegister hypermediaObjectRegister) 
+        public SirenHttpHypermediaClient(
+            Uri uriApiEntryPoint,
+            IHypermediaResolver hypermediaResolver,
+            IHypermediaReader hypermediaReader) 
         {
-            this.UriApiEntryPoint = uriApiEntryPoint;
-
-            // register http implementations for actions
-            var hypermediaCommandFactory = CreateHypermediaCommandFactory();
-            resolver = new HypermediaHttpResolver(ProcessContent, new SingleJsonObjectParameterSerializer());
-            sirenHypermediaReader = new SirenHypermediaReader(hypermediaObjectRegister, hypermediaCommandFactory, resolver);
+            UriApiEntryPoint = uriApiEntryPoint;
+            resolver = hypermediaResolver;
+            sirenHypermediaReader = hypermediaReader;
+            resolver.InitializeHypermediaReader(sirenHypermediaReader);
         }
 
-        private static RegisterHypermediaCommandFactory CreateHypermediaCommandFactory()
-        {
-            var hypermediaCommandFactory = new RegisterHypermediaCommandFactory();
-            hypermediaCommandFactory.Register(typeof(IHypermediaClientAction), typeof(HypermediaClientAction));
-            hypermediaCommandFactory.Register(typeof(IHypermediaClientAction<>), typeof(HypermediaClientAction<>));
-            hypermediaCommandFactory.Register(typeof(IHypermediaClientFunction<>), typeof(HypermediaClientFunction<>));
-            hypermediaCommandFactory.Register(typeof(IHypermediaClientFunction<,>), typeof(HypermediaClientFunction<,>));
-            return hypermediaCommandFactory;
-        }
+        
 
         public Uri UriApiEntryPoint { get; private set; }
 

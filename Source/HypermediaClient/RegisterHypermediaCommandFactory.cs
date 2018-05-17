@@ -6,8 +6,18 @@ using HypermediaClient.Hypermedia.Commands;
 
 namespace HypermediaClient
 {
-    class RegisterHypermediaCommandFactory : IHypermediaCommandFactory
+    internal class RegisterHypermediaCommandFactory : IHypermediaCommandFactory
     {
+        public static RegisterHypermediaCommandFactory Create()
+        {
+            var hypermediaCommandFactory = new RegisterHypermediaCommandFactory();
+            hypermediaCommandFactory.Register(typeof(IHypermediaClientAction), typeof(HypermediaClientAction));
+            hypermediaCommandFactory.Register(typeof(IHypermediaClientAction<>), typeof(HypermediaClientAction<>));
+            hypermediaCommandFactory.Register(typeof(IHypermediaClientFunction<>), typeof(HypermediaClientFunction<>));
+            hypermediaCommandFactory.Register(typeof(IHypermediaClientFunction<,>), typeof(HypermediaClientFunction<,>));
+            return hypermediaCommandFactory;
+        }
+
         private Dictionary<Type, Type> InterfaceImplementationLookup { get; set; }
 
         public RegisterHypermediaCommandFactory()

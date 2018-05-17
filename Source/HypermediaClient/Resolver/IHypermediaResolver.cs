@@ -8,6 +8,8 @@ namespace HypermediaClient.Resolver
 {
     public interface IHypermediaResolver
     {
+        void InitializeHypermediaReader(IHypermediaReader reader);
+
         Task<ResolverResult<T>> ResolveLinkAsync<T>(Uri uriToResolve) where T : HypermediaClientObject;
 
         Task<HypermediaCommandResult> ResolveActionAsync(Uri uri, string method);

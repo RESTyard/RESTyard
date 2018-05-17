@@ -12,15 +12,19 @@ using HypermediaClient.ParameterSerializer;
 
 namespace HypermediaClient.Resolver
 {
-    public  class HypermediaHttpResolver : IHypermediaResolver
+    public  class HttpHypermediaResolver : IHypermediaResolver
     {
-        private readonly Func<string, HypermediaClientObject>  processContent;
         private readonly IParameterSerializer parameterSerializer;
+        private IHypermediaReader hypermediaReader;
 
-        public HypermediaHttpResolver(Func<string, HypermediaClientObject> processContent, IParameterSerializer parameterSerializer)
+        public HttpHypermediaResolver(IParameterSerializer parameterSerializer)
         {
-            this.processContent = processContent;
             this.parameterSerializer = parameterSerializer;
+        }
+
+        public void InitializeHypermediaReader(IHypermediaReader reader)
+        {
+            this.hypermediaReader = reader;
         }
 
         public async Task<ResolverResult<T>> ResolveLinkAsync<T>(Uri uriToResolve) where T : HypermediaClientObject
@@ -38,7 +42,12 @@ namespace HypermediaClient.Resolver
             }
 
             var hypermediaObjectSiren = await result.Content.ReadAsStringAsync(); //TODO READ AS STREAM for pref
-            var desiredResultObject = processContent(hypermediaObjectSiren) as T;
+
+            if (hypermediaReader == null)
+            {
+                throw new Exception($"Please setup the hypermediaReader before using the resolver. see {nameof(InitializeHypermediaReader)}");
+            }
+            var desiredResultObject = hypermediaReader.Read(hypermediaObjectSiren) as T;
             if (desiredResultObject == null)
             {
                 throw new Exception($"Could not retrieve result as {typeof(T).Name} ");
