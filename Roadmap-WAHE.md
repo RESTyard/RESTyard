@@ -8,3 +8,5 @@
 - optional generic route for ActionParameter schemas
 - serialize reference properties to siren properties as json object
 - serialize TimeSpan to Siren
+- add development options
+	- allow serialization of objects with no corresponding routes to ease development when creating a lot of HTO first
