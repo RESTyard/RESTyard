@@ -7,35 +7,44 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace HypermediaClient.Test
 {
+    using HypermediaClient.Authentication;
+    using HypermediaClient.ParameterSerializer;
+    using HypermediaClient.Resolver;
+
     /// <summary>
     /// Tests used during prototyping.
     /// </summary>
     [TestClass]
     public class HypermediaClientTestRuns
     {
-        private static Uri ApiEntryPoint = new Uri("http://localhost:5000/entrypoint");
+        private HypermediaObjectRegister HypermediaObjectRegister { get; set; }
+        private HypermediaClient<EntryPointHco> SirenClient { get; set; }
+        private static readonly Uri ApiEntryPoint = new Uri("http://localhost:5000/entrypoint");
+
+        [TestInitialize]
+        public void Initialize()
+        {
+            this.HypermediaObjectRegister = CreateHypermediaObjectRegister();
+            
+            var resolver = new HttpHypermediaResolver(new SingleJsonObjectParameterSerializer());
+            // be sure to use https
+            resolver.SetCredentials(new UsernamePasswordCredentials("User", "Password"));
+
+            var hypermediaReader = new SirenHypermediaReader(HypermediaObjectRegister, resolver);
+            this.SirenClient = new HypermediaClient<EntryPointHco>(ApiEntryPoint, resolver, hypermediaReader);
+        }
 
         [TestMethod]
         public async Task EnterEntryPoint()
         {
-            
-            var hypermediaObjectRegister = CreateHypermediaObjectRegister();
-
-            var sirenClient = new SirenHttpHypermediaClient<EntryPointHco>(ApiEntryPoint, hypermediaObjectRegister); 
-            var apiRoot = await sirenClient.EnterAsync();
-
-            // TODO Handle Erors (http, authorization, hypermediaparsing and api), problem json, status codes
-            // use chache info from header so client may cache resolved documents
-            
+            var apiRoot = await SirenClient.EnterAsync();
+            Assert.IsNotNull(apiRoot);
         }
 
         [TestMethod]
         public async Task CallAction_CustomerMove()
         {
-            var hypermediaObjectRegister = CreateHypermediaObjectRegister();
-
-            var sirenClient = new SirenHttpHypermediaClient<EntryPointHco>(ApiEntryPoint, hypermediaObjectRegister);
-            var apiRoot = await sirenClient.EnterAsync();
+            var apiRoot = await SirenClient.EnterAsync();
             var customersAll = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
 
             var customer = customersAll.Customers.First();
@@ -51,10 +60,7 @@ namespace HypermediaClient.Test
         [TestMethod]
         public async Task CallAction_MarkAsFavorite()
         {
-            var hypermediaObjectRegister = CreateHypermediaObjectRegister();
-
-            var sirenClient = new SirenHttpHypermediaClient<EntryPointHco>(ApiEntryPoint, hypermediaObjectRegister);
-            var apiRoot = await sirenClient.EnterAsync();
+            var apiRoot = await SirenClient.EnterAsync();
             var customersAll = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
 
             var customer = customersAll.Customers.First();
@@ -63,7 +69,6 @@ namespace HypermediaClient.Test
                 Assert.Inconclusive("Action can not be run on server, not offered.");
             }
 
-            //TODO this follows from service thinking, the customer now needs an id. Better send link to Customer which should be added to favorites
             var actionResult = await customer.MarkAsFavorite.ExecuteAsync(new FavoriteCustomer{ CustomerLink = customer.Self.Uri.ToString() }); 
 
             customer = await customer.Self.ResolveAsync();
@@ -74,10 +79,7 @@ namespace HypermediaClient.Test
         [TestMethod]
         public async Task CallAction_CreateQuery()
         {
-            var hypermediaObjectRegister = CreateHypermediaObjectRegister();
-
-            var sirenClient = new SirenHttpHypermediaClient<EntryPointHco>(ApiEntryPoint, hypermediaObjectRegister);
-            var apiRoot = await sirenClient.EnterAsync();
+            var apiRoot = await SirenClient.EnterAsync();
             var customersRoot = await apiRoot.NavigateAsync(l => l.Customers);
 
             var query = new CustomersQuery
@@ -89,19 +91,17 @@ namespace HypermediaClient.Test
 
             var resultResource = await customersRoot.CreateQuery.ExecuteAsync(query);
             var queryResultPage = await resultResource.ResultLocation.ResolveAsync();
+            Assert.IsNotNull(queryResultPage);
         }
 
         [TestMethod]
         public async Task EnterEntryPointAndNavigate()
         {
-            var hypermediaObjectRegister = CreateHypermediaObjectRegister();
-
-            var sirenClient = new SirenHttpHypermediaClient<EntryPointHco>(ApiEntryPoint, hypermediaObjectRegister); 
-            var apiRoot = await sirenClient.EnterAsync();
+            var apiRoot = await SirenClient.EnterAsync();
             var customers = await apiRoot.Customers.ResolveAsync();
             var all = await customers.All.ResolveAsync();
 
-            var allFluent = await sirenClient.EnterAsync().NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
+            var allFluent = await SirenClient.EnterAsync().NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
             var allFluent2 = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
             var optionalFluent = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All).NavigateAsync(l => l.Next);
         }

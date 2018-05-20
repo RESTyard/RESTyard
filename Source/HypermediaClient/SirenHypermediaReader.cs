@@ -12,7 +12,7 @@ using Newtonsoft.Json.Linq;
 
 namespace HypermediaClient
 {
-    enum HypermediaPropertyType
+    internal enum HypermediaPropertyType
     {
         Unknown,
         Property,
@@ -22,17 +22,17 @@ namespace HypermediaClient
         Command
     }
 
-    public class SirenHypermediaReader
+    public class SirenHypermediaReader : IHypermediaReader
     {
         private readonly IHypermediaObjectRegister hypermediaObjectRegister;
         private readonly IHypermediaCommandFactory hypermediaCommandFactory;
         private readonly IHypermediaResolver resolver;
         private readonly StringCollectionComparer stringCollectionComparer = new StringCollectionComparer();
 
-        public SirenHypermediaReader(IHypermediaObjectRegister hypermediaObjectRegister, IHypermediaCommandFactory hypermediaCommandFactory, IHypermediaResolver resolver)
+        public SirenHypermediaReader(IHypermediaObjectRegister hypermediaObjectRegister, IHypermediaResolver resolver)
         {
             this.hypermediaObjectRegister = hypermediaObjectRegister;
-            this.hypermediaCommandFactory = hypermediaCommandFactory;
+            this.hypermediaCommandFactory = RegisterHypermediaCommandFactory.Create();
             this.resolver = resolver;
         }
 
