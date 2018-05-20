@@ -9,21 +9,23 @@ using Hypermedia.Util;
 using HypermediaClient.Hypermedia;
 using HypermediaClient.Hypermedia.Commands;
 using HypermediaClient.ParameterSerializer;
+using HypermediaClient.Authentication;
 
 namespace HypermediaClient.Resolver
 {
-    using HypermediaClient.Authentication;
-
-    public  class HttpHypermediaResolver : IHypermediaResolver
+    public  class HttpHypermediaResolver : IHypermediaResolver, IDisposable
     {
         private readonly IParameterSerializer parameterSerializer;
         private IHypermediaReader hypermediaReader;
+        private HttpClient httpClient;
 
         private UsernamePasswordCredentials UsernamePasswordCredentials { get; set; }
 
         public HttpHypermediaResolver(IParameterSerializer parameterSerializer)
         {
+            // todo maybe pass HttpClient as dependency so it can be modified by the user
             this.parameterSerializer = parameterSerializer;
+            InitializeHttpClient();
         }
 
         public void InitializeHypermediaReader(IHypermediaReader reader)
@@ -33,8 +35,6 @@ namespace HypermediaClient.Resolver
 
         public async Task<ResolverResult<T>> ResolveLinkAsync<T>(Uri uriToResolve) where T : HypermediaClientObject
         {
-            var httpClient = CreateHttpClient();
-
             var result = await httpClient.GetAsync(uriToResolve);
             var resolverResult =  new ResolverResult<T>();
 
@@ -159,7 +159,6 @@ namespace HypermediaClient.Resolver
 
         private async Task<HttpResponseMessage> SendCommand(Uri uri, string method, string payload = null)
         {
-            var httpClient = CreateHttpClient();
             var httpMethod = GetHttpMethod(method);
             var request = new HttpRequestMessage(httpMethod, uri);
 
@@ -173,9 +172,9 @@ namespace HypermediaClient.Resolver
             return responseMessage;
         }
 
-        private HttpClient CreateHttpClient()
+        private void InitializeHttpClient()
         {
-            HttpClient httpClient = new HttpClient();
+            httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(DefaultContentTypes.Siren));
 
@@ -183,8 +182,6 @@ namespace HypermediaClient.Resolver
             {
                 httpClient.DefaultRequestHeaders.Authorization = CreateBasicAuthHeaderValue(this.UsernamePasswordCredentials);
             }
-
-            return httpClient;
         }
 
         private static AuthenticationHeaderValue CreateBasicAuthHeaderValue(UsernamePasswordCredentials credentials)
@@ -218,8 +215,13 @@ namespace HypermediaClient.Resolver
         public void SetCredentials(UsernamePasswordCredentials usernamePasswordCredentials)
         {
             this.UsernamePasswordCredentials = usernamePasswordCredentials;
+            InitializeHttpClient();
+            // todo if using a cache clear it, new user migth not be able to access cached content
+        }
 
-            // todo if using a cache clear it, new user migth not be able to access
+        public void Dispose()
+        {
+            httpClient?.Dispose();
         }
     }
 }
