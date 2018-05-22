@@ -18,15 +18,19 @@ namespace WebApiHypermediaExtensionsCore.WebApi.ExtensionMethods
         /// <param name="alternateQueryStringBuilder">Provide an alternate QueryStringBuilder used for building URL's.</param>
         /// <param name="hypermediaUrlConfig">Configures the URL used in Hypermedia responses.</param>
         /// <param name="hypermediaConverterConfiguration">Configures the creation of Hypermedia documents.</param>
+        /// <param name="hypermediaOptions">Configures general options for teh extensions.</param>
         public static void AddHypermediaExtensions(
             this MvcOptions options,
             IRouteRegister alternateRouteRegister = null,
             IQueryStringBuilder alternateQueryStringBuilder = null,
             IHypermediaUrlConfig hypermediaUrlConfig = null,
-            IHypermediaConverterConfiguration hypermediaConverterConfiguration = null)
+            IHypermediaConverterConfiguration hypermediaConverterConfiguration = null,
+            HypermediaExtensionsOptions hypermediaOptions = null)
         {
+            hypermediaOptions = hypermediaOptions ?? new HypermediaExtensionsOptions();
             var routeRegister = alternateRouteRegister ?? new AttributedRoutesRegister();
-            var routeResolverFactory = new RegisterRouteResolverFactory(routeRegister);
+
+            var routeResolverFactory = new RegisterRouteResolverFactory(routeRegister, hypermediaOptions);
             var routeKeyFactory = new RouteKeyFactory(routeRegister);
 
             var queryStringBuilder = alternateQueryStringBuilder ?? new QueryStringBuilder();

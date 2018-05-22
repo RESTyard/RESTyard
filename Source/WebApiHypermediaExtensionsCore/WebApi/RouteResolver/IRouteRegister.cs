@@ -4,7 +4,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 {
     public interface IRouteRegister
     {
-        string GetRoute(Type lookupType);
+        bool TryGetRoute(Type lookupType, out string routeName);
 
         void AddActionRoute(Type hypermediaActionType, string routeName);
 

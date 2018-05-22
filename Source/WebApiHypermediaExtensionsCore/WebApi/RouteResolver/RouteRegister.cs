@@ -19,15 +19,16 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
             routeKeyProducerRegister = new Dictionary<Type, IKeyProducer>();
         }
 
-        public string GetRoute(Type lookupType)
+        public bool TryGetRoute(Type lookupType, out string routeName)
         {
-            string routeName;
             if (!this.routeRegister.TryGetValue(lookupType, out routeName))
             {
-                throw new RouteRegisterException($"Route to type '{lookupType}' not found in RouteRegister.");
+                routeName = string.Empty;
+                return false;
+               
             }
 
-            return routeName;
+            return true;
         }
 
         public void AddActionRoute(Type hypermediaActionType, string routeName)
@@ -85,6 +86,8 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 
             return keyProducer;
         }
+
+
 
         private void AddRoute(Type type, string routeName)
         {
