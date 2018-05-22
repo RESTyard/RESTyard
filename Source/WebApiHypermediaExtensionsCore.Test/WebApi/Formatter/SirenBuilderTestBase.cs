@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using WebApiHypermediaExtensionsCore.Query;
 using WebApiHypermediaExtensionsCore.WebApi;
 using WebApiHypermediaExtensionsCore.WebApi.AttributedRoutes;
+using WebApiHypermediaExtensionsCore.WebApi.ExtensionMethods;
 using WebApiHypermediaExtensionsCore.WebApi.Formatter;
 using WebApiHypermediaExtensionsCore.WebApi.RouteResolver;
 
@@ -41,7 +42,7 @@ namespace WebApiHypermediaExtensionsCore.Test.WebApi.Formatter
         protected void TestInitBase()
         {
             RouteRegister = new RouteRegister();
-            RouteResolverFactory = new RegisterRouteResolverFactory(RouteRegister);
+            RouteResolverFactory = new RegisterRouteResolverFactory(RouteRegister, new HypermediaExtensionsOptions());
             RouteKeyFactory = new RouteKeyFactory(RouteRegister);
 
             RouteResolver = RouteResolverFactory.CreateRouteResolver(UrlHelper, RouteKeyFactory, TestUrlConfig);

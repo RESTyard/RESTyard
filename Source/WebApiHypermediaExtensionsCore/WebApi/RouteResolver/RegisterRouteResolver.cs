@@ -5,6 +5,7 @@ using WebApiHypermediaExtensionsCore.Exceptions;
 using WebApiHypermediaExtensionsCore.Hypermedia;
 using WebApiHypermediaExtensionsCore.Hypermedia.Actions;
 using WebApiHypermediaExtensionsCore.Hypermedia.Links;
+using WebApiHypermediaExtensionsCore.WebApi.ExtensionMethods;
 
 namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 {
@@ -20,13 +21,17 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
         private readonly IUrlHelper urlHelper;
 
         private readonly IRouteKeyFactory routeKeyFactory;
+        private readonly bool returnDefaultRouteForUnknownHto;
+        private readonly string defaultRouteSegmentForUnknownHto;
 
-        public RegisterRouteResolver(IUrlHelper urlHelper, IRouteKeyFactory routeKeyFactory, IRouteRegister routeRegister, HypermediaUrlConfig hypermediaUrlConfig = null)
+        public RegisterRouteResolver(IUrlHelper urlHelper, IRouteKeyFactory routeKeyFactory, IRouteRegister routeRegister, HypermediaExtensionsOptions hypermediaOptions, HypermediaUrlConfig hypermediaUrlConfig = null)
         {
             this.RouteRegister = routeRegister;
             this.urlHelper = urlHelper;
             this.hypermediaUrlConfig = hypermediaUrlConfig ?? new HypermediaUrlConfig();
             this.routeKeyFactory = routeKeyFactory;
+            this.returnDefaultRouteForUnknownHto = hypermediaOptions.ReturnDefaultRouteForUnknownHto;
+            this.defaultRouteSegmentForUnknownHto = hypermediaOptions.DefaultRouteSegmentForUnknownHto;
         }
 
         public string ObjectToRoute(HypermediaObject hypermediaObject)
@@ -70,15 +75,30 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 
         private string GetRouteByType(Type lookupType, object routeKeys = null)
         {
-            var routeName = this.RouteRegister.GetRoute(lookupType);
-            var route = this.urlHelper.RouteUrl(routeName, routeKeys, hypermediaUrlConfig.Scheme, hypermediaUrlConfig.Host.ToUriComponent());
+            var foundRoute = this.RouteRegister.TryGetRoute(lookupType, out var routeName);
+            if (!foundRoute)
+            {
+                return this.HandleUnknownRoute(lookupType);
+            }
 
+
+            var route = this.urlHelper.RouteUrl(routeName, routeKeys, hypermediaUrlConfig.Scheme, hypermediaUrlConfig.Host.ToUriComponent());
             if (route == null)
             {
                 throw new RouteResolverException($"Could not build route: '{routeName}'");
             }
 
             return route;
+        }
+
+        private string HandleUnknownRoute(Type lookupType)
+        {
+            if (returnDefaultRouteForUnknownHto)
+            {
+                return $"{hypermediaUrlConfig.Scheme}://{hypermediaUrlConfig.Host.ToUriComponent()}/{defaultRouteSegmentForUnknownHto}";
+            }
+
+            throw new RouteResolverException($"Route to type '{lookupType.Name}' not found in RouteRegister.");
         }
     }
 }
