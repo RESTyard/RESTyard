@@ -9,6 +9,7 @@ There is still a lot to do:
 - Error responses by the api (http, authorization, hypermediaparsing and api), problem json, status codes
 - (more) Authentification/Authorization
 - Use chache info from header so client may cache resolved documents
+- Allow actions with schemas OR fields
 ...
 
 Assumptions:
