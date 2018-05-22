@@ -5,6 +5,7 @@ _Experimental_ project to create a Client which allows typed access to a Rest Ap
 - Action handling
 
 There is still a lot to do:
+- Pass HttpClient to resolver so lib user has access
 - Exception handling
 - Error responses by the api (http, authorization, hypermediaparsing and api), problem json, status codes
 - (more) Authentification/Authorization
