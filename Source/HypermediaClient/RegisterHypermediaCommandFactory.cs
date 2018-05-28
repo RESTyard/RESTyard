@@ -32,8 +32,8 @@ namespace HypermediaClient
                 throw new Exception($"Interface already registered '{interfaceType.Name}'");
             }
 
-            var isImplementation = interfaceType.IsAssignableFrom(implementation);
-            var isGenericImplementation = implementation.GetInterfaces().Any(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == interfaceType);
+            var isImplementation = interfaceType.GetTypeInfo().IsAssignableFrom(implementation);
+            var isGenericImplementation = implementation.GetTypeInfo().GetInterfaces().Any(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == interfaceType);
 
             if (!isImplementation && !isGenericImplementation)
             {
@@ -52,7 +52,7 @@ namespace HypermediaClient
             if (isGenericType)
             {
                 var genericTypeDefinition = commandInterfaceType.GetGenericTypeDefinition();
-                var genericTypeArguments = commandInterfaceType.GetGenericArguments();
+                var genericTypeArguments = commandInterfaceType.GetTypeInfo().GetGenericArguments();
 
                 lookupType = genericTypeDefinition;
                 Type commandType;

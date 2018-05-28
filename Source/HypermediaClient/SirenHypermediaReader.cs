@@ -114,7 +114,7 @@ namespace HypermediaClient
             var jEntities = entities.Cast<JObject>().Where(e =>
                 EntityRelationsMatch(e, relationsAttribute.Relations) && EntityClassMatch(e, classes, propertyInfo.Name));
 
-            var genericAddFunction = entityCollection.GetType().GetMethod("Add");
+            var genericAddFunction = entityCollection.GetType().GetTypeInfo().GetMethod("Add");
 
             foreach (var jEntity in jEntities)
             {
@@ -371,7 +371,7 @@ namespace HypermediaClient
 
         private static bool IsMandatoryHypermediaLink(PropertyInfo propertyInfo)
         {
-            return propertyInfo.PropertyType.IsAssignableFrom(typeof(MandatoryHypermediaLink<>))
+            return propertyInfo.PropertyType.GetTypeInfo().IsAssignableFrom(typeof(MandatoryHypermediaLink<>))
                 || propertyInfo.GetCustomAttribute<MandatoryAttribute>() != null;
         }
 
@@ -379,17 +379,17 @@ namespace HypermediaClient
         {
             var propertyType = propertyInfo.PropertyType;
 
-            if (typeof(IHypermediaLink).IsAssignableFrom(propertyType))
+            if (typeof(IHypermediaLink).GetTypeInfo().IsAssignableFrom(propertyType))
             {
                 return HypermediaPropertyType.Link;
             }
 
-            if (typeof(HypermediaClientObject).IsAssignableFrom(propertyType))
+            if (typeof(HypermediaClientObject).GetTypeInfo().IsAssignableFrom(propertyType))
             {
                 return HypermediaPropertyType.Entity;
             }
 
-            if (typeof(IHypermediaClientCommand).IsAssignableFrom(propertyType))
+            if (typeof(IHypermediaClientCommand).GetTypeInfo().IsAssignableFrom(propertyType))
             {
                 return HypermediaPropertyType.Command;
             }
@@ -398,7 +398,7 @@ namespace HypermediaClient
             if (isCollection)
             {
                 var collectionType = GetGenericFromICollection(propertyType);
-                if (typeof(HypermediaClientObject).IsAssignableFrom(collectionType))
+                if (typeof(HypermediaClientObject).GetTypeInfo().IsAssignableFrom(collectionType))
                 {
                     return HypermediaPropertyType.EntityCollection;
                 }
