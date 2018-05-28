@@ -85,7 +85,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.Formatter
 
         private void AddActions(HypermediaObject hypermediaObject, JObject sirenJson)
         {
-            var properties = hypermediaObject.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var properties = hypermediaObject.GetType().GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
             var jActions = new JArray();
 
@@ -183,7 +183,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.Formatter
 
         private static bool IsHypermediaAction(PropertyInfo property)
         {
-            return typeof(HypermediaActionBase).IsAssignableFrom(property.PropertyType);
+            return typeof(HypermediaActionBase).GetTypeInfo().IsAssignableFrom(property.PropertyType);
         }
 
         private void SirenAddEntities(HypermediaObject hypermediaObject, JObject sirenJson)
@@ -251,7 +251,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.Formatter
         private void AddProperties(HypermediaObject hypermediaObject, JObject sirenJson)
         {
             var type = hypermediaObject.GetType();
-            var publicProperties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var publicProperties = type.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
             var jProperties = new JObject();
             foreach (var publicProperty in publicProperties)

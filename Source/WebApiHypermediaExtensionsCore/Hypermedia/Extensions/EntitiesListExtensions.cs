@@ -121,7 +121,7 @@ namespace WebApiHypermediaExtensionsCore.Hypermedia.Extensions
         public static IEnumerable<RelatedEntity> FilterByClass<T>(this List<RelatedEntity> entitiesList) where T : HypermediaObject
         {
             var lookupType = typeof(T);
-            return entitiesList.Where(ee => lookupType.IsAssignableFrom(ee.Reference.GetHypermediaType()));
+            return entitiesList.Where(ee => lookupType.GetTypeInfo().IsAssignableFrom(ee.Reference.GetHypermediaType()));
         }
 
         /// <summary>

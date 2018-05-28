@@ -46,7 +46,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
             var lookupType = reference.GetHypermediaType();
 
             // ExternalReference object is not registered in the RouteRegister and provides its own URI
-            if (typeof(ExternalReference).IsAssignableFrom(lookupType))
+            if (typeof(ExternalReference).GetTypeInfo().IsAssignableFrom(lookupType))
             {
                 var externalReferenceObject = reference.GetInstance() as ExternalReference;
                 if (externalReferenceObject == null)

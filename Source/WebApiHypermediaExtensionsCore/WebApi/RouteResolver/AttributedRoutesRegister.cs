@@ -18,7 +18,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 
         private void RegisterAssemblyRoutes(Assembly assembly)
         {
-            var assmeblyMethods = assembly.GetTypes().SelectMany(t => t.GetMethods());
+            var assmeblyMethods = assembly.GetTypes().SelectMany(t => t.GetTypeInfo().GetMethods());
             foreach (var method in assmeblyMethods)
             {
                 AddAttributedRoute<HttpGetHypermediaObject>(method, this.AddHypermediaObjectRoute);
@@ -44,7 +44,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 
             if (attribute.RouteKeyProducerType != null)
             {
-                if (typeof(HypermediaQueryResult).IsAssignableFrom(attribute.RouteType))
+                if (typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(attribute.RouteType))
                 {
                     throw new RouteRegisterException($"Routes to Querys may not require a key '{attribute.RouteType}'. Queries should not be handled on a Entity.");
                 }

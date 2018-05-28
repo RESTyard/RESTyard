@@ -28,7 +28,7 @@ namespace WebApiHypermediaExtensionsCore.Query
                 return string.Empty;
             }
 
-            var properties = sourceObject.GetType().GetProperties()
+            var properties = sourceObject.GetType().GetTypeInfo().GetProperties()
                 .Where(x => x.CanRead)
                 .Where(x => x.GetValue(sourceObject, null) != null);
 

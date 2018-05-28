@@ -44,12 +44,12 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 
         private static bool IsHypermediaAction(Type hypermediaActionType)
         {
-            return typeof(HypermediaActionBase).IsAssignableFrom(hypermediaActionType);
+            return typeof(HypermediaActionBase).GetTypeInfo().IsAssignableFrom(hypermediaActionType);
         }
 
         public void AddHypermediaObjectRoute(Type hypermediaObjectType, string routeName)
         {
-            if (!typeof(HypermediaObject).IsAssignableFrom(hypermediaObjectType))
+            if (!typeof(HypermediaObject).GetTypeInfo().IsAssignableFrom(hypermediaObjectType))
             {
                 throw new RouteRegisterException(
                     $"Type {hypermediaObjectType} must derive from {typeof(HypermediaObject).Name}.");
@@ -60,7 +60,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 
         public void AddParameterTypeRoute(Type iHypermediaActionParameter, string routeName)
         {
-            if (!typeof(IHypermediaActionParameter).IsAssignableFrom(iHypermediaActionParameter))
+            if (!typeof(IHypermediaActionParameter).GetTypeInfo().IsAssignableFrom(iHypermediaActionParameter))
             {
                 throw new RouteRegisterException(
                     $"Type {iHypermediaActionParameter} must derive from {typeof(IHypermediaActionParameter).Name}.");
