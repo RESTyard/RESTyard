@@ -4,13 +4,12 @@ using System.Threading.Tasks;
 using HypermediaClient.Extensions;
 using HypermediaClient.Test.Hypermedia;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using HypermediaClient.Authentication;
+using HypermediaClient.ParameterSerializer;
+using HypermediaClient.Resolver;
 
 namespace HypermediaClient.Test
 {
-    using HypermediaClient.Authentication;
-    using HypermediaClient.ParameterSerializer;
-    using HypermediaClient.Resolver;
-
     /// <summary>
     /// Tests used during prototyping.
     /// </summary>
