@@ -1,6 +1,5 @@
 ﻿using Hypermedia.Relations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Util.Repository;
 
 namespace WebApi.HypermediaExtensions.Test

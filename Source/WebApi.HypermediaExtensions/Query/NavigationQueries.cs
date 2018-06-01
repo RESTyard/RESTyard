@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace WebApi.HypermediaExtensions.Query
 {

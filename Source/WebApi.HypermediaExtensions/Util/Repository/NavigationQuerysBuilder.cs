@@ -1,5 +1,4 @@
 ﻿using Hypermedia.Relations;
-using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Query;
 
 namespace WebApi.HypermediaExtensions.Util.Repository

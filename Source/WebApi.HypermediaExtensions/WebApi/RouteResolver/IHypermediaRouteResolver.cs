@@ -2,7 +2,6 @@
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
 using WebApi.HypermediaExtensions.Hypermedia.Links;
-using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
 
 namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
 {

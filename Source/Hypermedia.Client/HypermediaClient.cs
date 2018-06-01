@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using HypermediaClient.Hypermedia;
-using HypermediaClient.Hypermedia.Commands;
 using HypermediaClient.Resolver;
 
 namespace HypermediaClient

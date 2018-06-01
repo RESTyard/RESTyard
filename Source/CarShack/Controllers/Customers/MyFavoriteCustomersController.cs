@@ -1,13 +1,8 @@
-using System.Threading.Tasks;
 using CarShack.Domain.Customer;
 using CarShack.Hypermedia.Customers;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.HypermediaExtensions.ErrorHandling;
-using WebApi.HypermediaExtensions.Exceptions;
-using WebApi.HypermediaExtensions.WebApi;
 using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
-using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
 
 namespace CarShack.Controllers.Customers
 {

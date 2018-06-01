@@ -1,7 +1,5 @@
 ﻿namespace HypermediaClient.Authentication
 {
-    using System;
-
     public class UsernamePasswordCredentials
     {
         public readonly string User;
