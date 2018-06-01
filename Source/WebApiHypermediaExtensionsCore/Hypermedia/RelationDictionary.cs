@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using WebApiHypermediaExtensionsCore.Hypermedia.Links;
-using Hypermedia.Util;
+using WebApiHypermediaExtensionsCore.Util;
 
 namespace WebApiHypermediaExtensionsCore.Hypermedia
 {

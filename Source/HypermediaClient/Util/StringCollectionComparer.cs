@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hypermedia.Util
+namespace HypermediaClient.Util
 {
     public class StringCollectionComparer : IEqualityComparer<ICollection<string>>
     {

@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Hypermedia.Util;
 using HypermediaClient.Hypermedia;
 using HypermediaClient.Hypermedia.Attributes;
+using HypermediaClient.Util;
 
 namespace HypermediaClient
 {

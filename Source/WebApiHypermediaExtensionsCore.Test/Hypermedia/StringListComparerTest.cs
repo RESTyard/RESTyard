@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Hypermedia.Util;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using WebApiHypermediaExtensionsCore.Util;
 
 namespace WebApiHypermediaExtensionsCore.Test.Hypermedia
 {

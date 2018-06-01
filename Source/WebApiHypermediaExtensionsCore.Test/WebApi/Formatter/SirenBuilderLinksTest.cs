@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using WebApiHypermediaExtensionsCore.Hypermedia;
 using WebApiHypermediaExtensionsCore.Hypermedia.Links;
 using WebApiHypermediaExtensionsCore.Query;
+using WebApiHypermediaExtensionsCore.Util;
 using WebApiHypermediaExtensionsCore.WebApi.RouteResolver;
 
 namespace WebApiHypermediaExtensionsCore.Test.WebApi.Formatter

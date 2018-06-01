@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using WebApiHypermediaExtensionsCore.Query;
+using WebApiHypermediaExtensionsCore.Util;
 using WebApiHypermediaExtensionsCore.WebApi;
 using WebApiHypermediaExtensionsCore.WebApi.AttributedRoutes;
 using WebApiHypermediaExtensionsCore.WebApi.ExtensionMethods;
