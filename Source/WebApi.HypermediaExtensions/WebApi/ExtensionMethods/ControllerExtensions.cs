@@ -65,7 +65,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         {
             if (problemJson == null)
             {
-                problemJson = new ProblemJson()
+                problemJson = new ProblemJson
                 {
                     Title = "Can not use provided object",
                     Detail = "",
@@ -86,7 +86,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         {
             if (problemJson == null)
             {
-                problemJson = new ProblemJson()
+                problemJson = new ProblemJson
                 {
                     Title = "Can not execute Action",
                     Detail = "",

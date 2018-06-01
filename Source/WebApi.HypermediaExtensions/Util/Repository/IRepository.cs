@@ -2,7 +2,7 @@
 
 namespace WebApi.HypermediaExtensions.Util.Repository
 {
-    public interface IRepository<TEntity, TKey, TQuery>
+    public interface IRepository<TEntity, in TKey, in TQuery>
     {
         Task<TEntity> GetEnitityByKeyAsync(TKey key);
 

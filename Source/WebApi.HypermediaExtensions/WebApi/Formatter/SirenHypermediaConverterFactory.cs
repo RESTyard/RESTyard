@@ -3,7 +3,7 @@ using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace WebApi.HypermediaExtensions.WebApi.Formatter
 {
-    class SirenHypermediaConverterFactory : ISirenHypermediaConverterFactory
+    internal class SirenHypermediaConverterFactory : ISirenHypermediaConverterFactory
     {
         private readonly IQueryStringBuilder queryStringBuilder;
         private readonly ISirenConverterConfiguration sirenConverterConfiguration;

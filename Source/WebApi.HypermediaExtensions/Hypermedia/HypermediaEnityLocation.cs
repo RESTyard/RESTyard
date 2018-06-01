@@ -6,7 +6,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia
 {
     public class HypermediaEntityLocation : ActionResult
     {
-        public HttpStatusCode HttpStatusCode { get; private set; }
+        public HttpStatusCode HttpStatusCode { get; }
 
         public HypermediaEntityLocation(HypermediaObjectReferenceBase entityRef, HttpStatusCode httpStatusCode)
         {

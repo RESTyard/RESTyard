@@ -101,8 +101,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
 
         private bool RouteExists(Type lookupType)
         {
-            string routeName;
-            if (this.routeRegister.TryGetValue(lookupType, out routeName))
+            if (this.routeRegister.TryGetValue(lookupType, out _))
             {
                 return true;
             }
@@ -112,8 +111,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
 
         private bool RouteKeyProducerExists(Type lookupType)
         {
-            IKeyProducer producer;
-            if (this.routeKeyProducerRegister.TryGetValue(lookupType, out producer))
+            if (this.routeKeyProducerRegister.TryGetValue(lookupType, out _))
             {
                 return true;
             }
