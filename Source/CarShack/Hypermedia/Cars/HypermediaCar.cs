@@ -1,5 +1,5 @@
-﻿using WebApiHypermediaExtensionsCore.Hypermedia;
-using WebApiHypermediaExtensionsCore.Hypermedia.Attributes;
+﻿using WebApi.HypermediaExtensions.Hypermedia;
+using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 
 namespace CarShack.Hypermedia.Cars
 {

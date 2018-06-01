@@ -1,7 +1,7 @@
 ﻿using CarShack.Domain.Customer;
-using WebApiHypermediaExtensionsCore.Exceptions;
-using WebApiHypermediaExtensionsCore.Hypermedia;
-using WebApiHypermediaExtensionsCore.Hypermedia.Attributes;
+using WebApi.HypermediaExtensions.Exceptions;
+using WebApi.HypermediaExtensions.Hypermedia;
+using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 
 namespace CarShack.Hypermedia.Customers
 {

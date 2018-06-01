@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Version>0.1.0</Version>
+    <TargetFramework>netstandard1.6</TargetFramework>
+    <AssemblyName>Hypermedia.Client</AssemblyName>
+    <PackageId>Hypermedia.Client</PackageId>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <Authors>Mathias Reichardt</Authors>
+    <PackageLicenseUrl>https://github.com/bluehands/WebApiHypermediaExtensions/blob/master/LICENSE.md</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
+    <Description>Typesave generic Client which uses the Siren hypermedia format.</Description>
+    <PackageTags>Client;REST;Siren;Hypermedia;</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard1.6|AnyCPU'">
+    <DocumentationFile>bin\Debug\netstandard1.6\HypermediaClient.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />
+    <PackageReference Include="System.Net.Http" Version="4.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hypermedia.MediaTypes\Hypermedia.MediaTypes.csproj" />
+    <ProjectReference Include="..\Hypermedia.Relations\Hypermedia.Relations.csproj" />
+  </ItemGroup>
+</Project>

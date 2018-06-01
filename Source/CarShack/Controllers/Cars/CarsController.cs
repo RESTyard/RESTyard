@@ -1,9 +1,9 @@
 ﻿using CarShack.Hypermedia.Cars;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
-using WebApiHypermediaExtensionsCore.Exceptions;
-using WebApiHypermediaExtensionsCore.WebApi.AttributedRoutes;
-using WebApiHypermediaExtensionsCore.WebApi.ExtensionMethods;
+using WebApi.HypermediaExtensions.Exceptions;
+using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
+using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
 
 namespace CarShack.Controllers.Cars
 {

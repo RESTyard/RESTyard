@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using WebApiHypermediaExtensionsCore.Util.Repository;
+using WebApi.HypermediaExtensions.Util.Repository;
 
 namespace CarShack.Util.Repository
 {

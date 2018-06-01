@@ -1,4 +1,4 @@
-﻿using WebApiHypermediaExtensionsCore.ErrorHandling;
+﻿using WebApi.HypermediaExtensions.ErrorHandling;
 
 namespace CarShack.Util
 {

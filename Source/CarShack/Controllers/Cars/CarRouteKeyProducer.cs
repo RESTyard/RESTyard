@@ -1,7 +1,7 @@
 ﻿using CarShack.Hypermedia.Cars;
-using WebApiHypermediaExtensionsCore.Exceptions;
-using WebApiHypermediaExtensionsCore.Hypermedia;
-using WebApiHypermediaExtensionsCore.WebApi.RouteResolver;
+using WebApi.HypermediaExtensions.Exceptions;
+using WebApi.HypermediaExtensions.Hypermedia;
+using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace CarShack.Controllers.Cars
 {

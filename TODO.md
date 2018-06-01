@@ -37,6 +37,9 @@ Just allow References to HTOs and lists of HTOs.
 - Less coupling to Siren format
 - More natural to C#
 
+## Add logging
+- Configurable
+
 # Future
 Just some idears
 

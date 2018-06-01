@@ -1,6 +1,6 @@
-﻿using WebApiHypermediaExtensionsCore.Hypermedia;
-using WebApiHypermediaExtensionsCore.Hypermedia.Attributes;
-using WebApiHypermediaExtensionsCore.Hypermedia.Links;
+﻿using WebApi.HypermediaExtensions.Hypermedia;
+using WebApi.HypermediaExtensions.Hypermedia.Attributes;
+using WebApi.HypermediaExtensions.Hypermedia.Links;
 
 namespace CarShack.Hypermedia.Cars
 {

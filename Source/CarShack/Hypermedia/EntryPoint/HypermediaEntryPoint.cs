@@ -1,8 +1,8 @@
 ﻿using CarShack.Hypermedia.Cars;
 using CarShack.Hypermedia.Customers;
-using WebApiHypermediaExtensionsCore.Hypermedia.Links;
-using WebApiHypermediaExtensionsCore.Hypermedia;
-using WebApiHypermediaExtensionsCore.Hypermedia.Attributes;
+using WebApi.HypermediaExtensions.Hypermedia.Links;
+using WebApi.HypermediaExtensions.Hypermedia;
+using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 
 namespace CarShack.Hypermedia.EntryPoint
 {

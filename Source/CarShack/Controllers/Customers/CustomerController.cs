@@ -6,11 +6,11 @@ using CarShack.Domain.Customer;
 using CarShack.Hypermedia.Customers;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
-using WebApiHypermediaExtensionsCore.ErrorHandling;
-using WebApiHypermediaExtensionsCore.Exceptions;
-using WebApiHypermediaExtensionsCore.WebApi;
-using WebApiHypermediaExtensionsCore.WebApi.AttributedRoutes;
-using WebApiHypermediaExtensionsCore.WebApi.ExtensionMethods;
+using WebApi.HypermediaExtensions.ErrorHandling;
+using WebApi.HypermediaExtensions.Exceptions;
+using WebApi.HypermediaExtensions.WebApi;
+using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
+using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
 
 namespace CarShack.Controllers.Customers
 {
@@ -68,7 +68,7 @@ namespace CarShack.Controllers.Customers
                 {
                     Title = $"Can not use provided object of type '{typeof(FavoriteCustomer)}'",
                     Detail = e.Message,
-                    ProblemType = "WebApiHypermediaExtensionsCore.Hypermedia.BadActionParameter",
+                    ProblemType = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
                     StatusCode = 422 // Unprocessable Entity
                 };
                 return this.UnprocessableEntity(problem);
@@ -128,7 +128,7 @@ namespace CarShack.Controllers.Customers
                 {
                     Title = $"Can not use provided object of type '{typeof(NewAddress)}'",
                     Detail = e.Message,
-                    ProblemType = "WebApiHypermediaExtensionsCore.Hypermedia.BadActionParameter",
+                    ProblemType = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
                     StatusCode = 422 // Unprocessable Entity
                 };
                 return this.UnprocessableEntity(problem);

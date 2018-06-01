@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 using CarShack.Domain.Customer;
-using Hypermedia.Util;
-using WebApiHypermediaExtensionsCore.Hypermedia;
-using WebApiHypermediaExtensionsCore.Hypermedia.Actions;
-using WebApiHypermediaExtensionsCore.Hypermedia.Attributes;
-using WebApiHypermediaExtensionsCore.Hypermedia.Links;
+using Hypermedia.Relations;
+using WebApi.HypermediaExtensions.Hypermedia;
+using WebApi.HypermediaExtensions.Hypermedia.Actions;
+using WebApi.HypermediaExtensions.Hypermedia.Attributes;
+using WebApi.HypermediaExtensions.Hypermedia.Links;
 
 namespace CarShack.Hypermedia.Customers
 {

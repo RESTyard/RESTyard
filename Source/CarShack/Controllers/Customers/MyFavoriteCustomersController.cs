@@ -3,11 +3,11 @@ using CarShack.Domain.Customer;
 using CarShack.Hypermedia.Customers;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
-using WebApiHypermediaExtensionsCore.ErrorHandling;
-using WebApiHypermediaExtensionsCore.Exceptions;
-using WebApiHypermediaExtensionsCore.WebApi;
-using WebApiHypermediaExtensionsCore.WebApi.AttributedRoutes;
-using WebApiHypermediaExtensionsCore.WebApi.ExtensionMethods;
+using WebApi.HypermediaExtensions.ErrorHandling;
+using WebApi.HypermediaExtensions.Exceptions;
+using WebApi.HypermediaExtensions.WebApi;
+using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
+using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
 
 namespace CarShack.Controllers.Customers
 {

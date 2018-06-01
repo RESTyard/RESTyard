@@ -11,17 +11,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\TODO.md = ..\TODO.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApiHypermediaExtensionsCore", "WebApiHypermediaExtensionsCore\WebApiHypermediaExtensionsCore.csproj", "{36257B82-6BB5-434E-856E-A02FCBE83570}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi.HypermediaExtensions", "WebApi.HypermediaExtensions\WebApi.HypermediaExtensions.csproj", "{36257B82-6BB5-434E-856E-A02FCBE83570}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApiHypermediaExtensionsCore.Test", "WebApiHypermediaExtensionsCore.Test\WebApiHypermediaExtensionsCore.Test.csproj", "{2BB87C7F-8EB1-4978-8E5B-DB794555D739}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi.HypermediaExtensions.Test", "WebApi.HypermediaExtensions.Test\WebApi.HypermediaExtensions.Test.csproj", "{2BB87C7F-8EB1-4978-8E5B-DB794555D739}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hypermedia.Util", "Hypermedia.Util\Hypermedia.Util.csproj", "{03004E36-3252-48C0-B2AF-23B9E7324429}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hypermedia.Relations", "Hypermedia.Relations\Hypermedia.Relations.csproj", "{03004E36-3252-48C0-B2AF-23B9E7324429}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarShack", "CarShack\CarShack.csproj", "{89465847-B042-40A5-853B-E8DAC3160C56}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HypermediaClient", "HypermediaClient\HypermediaClient.csproj", "{1E4E6AC2-1E5B-443C-9782-2AD056A750D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hypermedia.Client", "Hypermedia.Client\Hypermedia.Client.csproj", "{1E4E6AC2-1E5B-443C-9782-2AD056A750D0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HypermediaClient.Test", "HypermediaClient.Test\HypermediaClient.Test.csproj", "{3FD04265-F0B7-4AFC-A8E9-F4DDF7381CAF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hypermedia.Client.Test", "Hypermedia.Client.Test\Hypermedia.Client.Test.csproj", "{3FD04265-F0B7-4AFC-A8E9-F4DDF7381CAF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hypermedia.MediaTypes", "Hypermedia.MediaTypes\Hypermedia.MediaTypes.csproj", "{4DE2A632-382B-4C37-8725-87EAF81E9869}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +55,10 @@ Global
 		{3FD04265-F0B7-4AFC-A8E9-F4DDF7381CAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FD04265-F0B7-4AFC-A8E9-F4DDF7381CAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FD04265-F0B7-4AFC-A8E9-F4DDF7381CAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DE2A632-382B-4C37-8725-87EAF81E9869}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DE2A632-382B-4C37-8725-87EAF81E9869}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DE2A632-382B-4C37-8725-87EAF81E9869}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DE2A632-382B-4C37-8725-87EAF81E9869}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
