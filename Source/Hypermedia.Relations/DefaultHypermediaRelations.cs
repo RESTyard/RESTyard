@@ -9,18 +9,18 @@
         /// <summary>
         /// Relation indicating that this relates to the HypermediaObject itselve.
         /// </summary>
-        public const string Self = "Self";
+        public const string Self = "self";
 
         /// <summary>
         /// Relations commonly used for query results.
         /// </summary>
         public class Queries
         {
-            public const string First = "First";
-            public const string Previous = "Previous";
-            public const string Next = "Next";
-            public const string Last = "Last";
-            public const string All = "All";
+            public const string First = "first";
+            public const string Previous = "previous";
+            public const string Next = "next";
+            public const string Last = "last";
+            public const string All = "all";
         }
 
 
@@ -32,9 +32,9 @@
             /// <summary>
             /// Indicates that the embedded Entity is a collection or list item.
             /// </summary>
-            public const string Item = "Item";
-            public const string Parent = "Parent";
-            public const string Child = "Child";
+            public const string Item = "item";
+            public const string Parent = "parent";
+            public const string Child = "child";
         }
     }
     
