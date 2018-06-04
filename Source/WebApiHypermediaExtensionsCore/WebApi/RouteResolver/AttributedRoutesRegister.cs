@@ -19,7 +19,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 
         private void RegisterAssemblyRoutes(Assembly assembly)
         {
-            var assemblyMethods = assembly.GetTypes().SelectMany(t => t.GetMethods());
+            var assemblyMethods = assembly.GetTypes().SelectMany(t => t.GetTypeInfo().GetMethods());
             foreach (var method in assemblyMethods)
             {
                 AddAttributedRoute<HttpGetHypermediaObject>(method, this.AddHypermediaObjectRoute, true);
