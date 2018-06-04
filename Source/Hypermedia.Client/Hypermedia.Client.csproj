@@ -11,7 +11,7 @@
     <Authors>Mathias Reichardt</Authors>
     <PackageLicenseUrl>https://github.com/bluehands/WebApiHypermediaExtensions/blob/master/LICENSE.md</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
-    <Description>Typesave generic Client which uses the Siren hypermedia format.</Description>
+    <Description>Type safe generic Client which uses the Siren hypermedia format.</Description>
     <PackageTags>Client;REST;Siren;Hypermedia;</PackageTags>
   </PropertyGroup>
 
