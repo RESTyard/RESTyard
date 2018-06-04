@@ -10,7 +10,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
     [AttributeUsage(AttributeTargets.Property)]
     public class KeyAttribute : Attribute
     {
-        public string TemplateParameterName { get; set; }
+        public string TemplateParameterName { get; }
 
         /// <summary>
         /// Use for simple keys represented by a single property.
