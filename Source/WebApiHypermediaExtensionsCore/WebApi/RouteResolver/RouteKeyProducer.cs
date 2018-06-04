@@ -36,7 +36,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 
         public static IEnumerable<Accessor> MakeAccessors(Type hypermediaObjectType, ICollection<string> templateParameterNames)
         {
-            var keyProperties = hypermediaObjectType.GetProperties()
+            var keyProperties = hypermediaObjectType.GetTypeInfo().GetProperties()
                 .Select(p => new {p, att = p.GetCustomAttribute<KeyAttribute>()})
                 .Where(_ => _.att != null)
                 .ToImmutableList();
