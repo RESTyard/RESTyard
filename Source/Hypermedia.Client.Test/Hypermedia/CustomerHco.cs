@@ -1,8 +1,11 @@
-﻿namespace Hypermedia.Client.Test.Hypermedia
+﻿using Hypermedia.Relations;
+using HypermediaClient.Hypermedia;
+using HypermediaClient.Hypermedia.Attributes;
+using HypermediaClient.Hypermedia.Commands;
+
+namespace Hypermedia.Client.Test.Hypermedia
 {
-    using HypermediaClient.Hypermedia;
-    using HypermediaClient.Hypermedia.Attributes;
-    using HypermediaClient.Hypermedia.Commands;
+    
 
     [HypermediaClientObject(Classes = new[] { "Customer" })]
     public class CustomerHco : HypermediaClientObject
@@ -17,7 +20,7 @@
         public bool IsFavorite { get; set; }
 
         [Mandatory]
-        [HypermediaRelations(new[] { "self" })]
+        [HypermediaRelations(new[] { DefaultHypermediaRelations.Self })]
         public MandatoryHypermediaLink<CustomerHco> Self { get; set; }
 
         //TODO maybe remove interfaces and make class HypermediaClientAction sealed

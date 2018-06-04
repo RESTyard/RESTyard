@@ -1,13 +1,17 @@
-﻿namespace Hypermedia.Client.Test.Hypermedia
+﻿using Hypermedia.Relations;
+
+using HypermediaClient.Hypermedia;
+using HypermediaClient.Hypermedia.Attributes;
+
+namespace Hypermedia.Client.Test.Hypermedia
 {
-    using HypermediaClient.Hypermedia;
-    using HypermediaClient.Hypermedia.Attributes;
+
 
     [HypermediaClientObject(Classes = new[] { "EntryPoint" })]
     public class EntryPointHco : HypermediaClientObject
     {
         [Mandatory]
-        [HypermediaRelations(new [] {"self"})]
+        [HypermediaRelations(new [] { DefaultHypermediaRelations.Self })]
         public MandatoryHypermediaLink<EntryPointHco> Self { get; set; }
 
         [Mandatory]

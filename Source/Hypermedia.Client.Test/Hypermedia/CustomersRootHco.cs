@@ -1,5 +1,7 @@
 ﻿namespace Hypermedia.Client.Test.Hypermedia
 {
+    using global::Hypermedia.Relations;
+
     using HypermediaClient.Hypermedia;
     using HypermediaClient.Hypermedia.Attributes;
     using HypermediaClient.Hypermedia.Commands;
@@ -8,11 +10,11 @@
     public class CustomersRootHco : HypermediaClientObject
     {
         [Mandatory]
-        [HypermediaRelations(new[] { "self" })]
+        [HypermediaRelations(new[] { DefaultHypermediaRelations.Self })]
         public MandatoryHypermediaLink<CustomersRootHco> Self { get; set; }
 
         [Mandatory]
-        [HypermediaRelations(new[] { "all" })]
+        [HypermediaRelations(new[] { DefaultHypermediaRelations.Queries.All })]
         public MandatoryHypermediaLink<CustomerQueryResultHco> All { get; set; }
 
         [Mandatory]
