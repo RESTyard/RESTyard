@@ -169,7 +169,6 @@ namespace WebApi.HypermediaExtensions.Test.Hypermedia
             var entity1 = new SubEntity1HypermediaObject();
             var entity2 = new SubEntity2HypermediaObject();
 
-
             ho.Entities.Add(relationA, entity1);
             // get instance will return null
             ho.Entities.Add(relationA, new HypermediaObjectKeyReference(typeof(TestHypermediaObject), "AKey"));

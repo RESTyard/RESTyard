@@ -1,15 +1,19 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using HypermediaClient.Extensions;
-using HypermediaClient.Test.Hypermedia;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using HypermediaClient.Authentication;
-using HypermediaClient.ParameterSerializer;
-using HypermediaClient.Resolver;
-
-namespace HypermediaClient.Test
+﻿namespace Hypermedia.Client.Test
 {
+    using System;
+    using System.Linq;
+    using System.Threading.Tasks;
+
+    using global::Hypermedia.Client.Test.Hypermedia;
+
+    using HypermediaClient;
+    using HypermediaClient.Authentication;
+    using HypermediaClient.Extensions;
+    using HypermediaClient.ParameterSerializer;
+    using HypermediaClient.Resolver;
+
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
     /// <summary>
     /// Tests used during prototyping.
     /// </summary>
@@ -29,21 +33,21 @@ namespace HypermediaClient.Test
             // be sure to use https
             resolver.SetCredentials(new UsernamePasswordCredentials("User", "Password"));
 
-            var hypermediaReader = new SirenHypermediaReader(HypermediaObjectRegister, resolver);
+            var hypermediaReader = new SirenHypermediaReader(this.HypermediaObjectRegister, resolver);
             this.SirenClient = new HypermediaClient<EntryPointHco>(ApiEntryPoint, resolver, hypermediaReader);
         }
 
         [TestMethod]
         public async Task EnterEntryPoint()
         {
-            var apiRoot = await SirenClient.EnterAsync();
+            var apiRoot = await this.SirenClient.EnterAsync();
             Assert.IsNotNull(apiRoot);
         }
 
         [TestMethod]
         public async Task CallAction_CustomerMove()
         {
-            var apiRoot = await SirenClient.EnterAsync();
+            var apiRoot = await this.SirenClient.EnterAsync();
             var customersAll = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
 
             var customer = customersAll.Customers.First();
@@ -59,7 +63,7 @@ namespace HypermediaClient.Test
         [TestMethod]
         public async Task CallAction_MarkAsFavorite()
         {
-            var apiRoot = await SirenClient.EnterAsync();
+            var apiRoot = await this.SirenClient.EnterAsync();
             var customersAll = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
 
             var customer = customersAll.Customers.First();
@@ -78,14 +82,14 @@ namespace HypermediaClient.Test
         [TestMethod]
         public async Task CallAction_CreateQuery()
         {
-            var apiRoot = await SirenClient.EnterAsync();
+            var apiRoot = await this.SirenClient.EnterAsync();
             var customersRoot = await apiRoot.NavigateAsync(l => l.Customers);
 
             var query = new CustomersQuery
             {
-                Filter = new CustomerFilter {MinAge = 22},
+                Filter = new CustomerFilter { MinAge = 22 },
                 SortBy = new SortOptions { PropertyName = "Age", SortType  = "Ascending" },
-                Pagination = new Pagination { PageOffset = 2, PageSize = 3}
+                Pagination = new Pagination { PageOffset = 2, PageSize = 3 }
             };
 
             var resultResource = await customersRoot.CreateQuery.ExecuteAsync(query);
@@ -96,11 +100,11 @@ namespace HypermediaClient.Test
         [TestMethod]
         public async Task EnterEntryPointAndNavigate()
         {
-            var apiRoot = await SirenClient.EnterAsync();
+            var apiRoot = await this.SirenClient.EnterAsync();
             var customers = await apiRoot.Customers.ResolveAsync();
             var all = await customers.All.ResolveAsync();
 
-            var allFluent = await SirenClient.EnterAsync().NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
+            var allFluent = await this.SirenClient.EnterAsync().NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
             var allFluent2 = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
             var optionalFluent = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All).NavigateAsync(l => l.Next);
         }

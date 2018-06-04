@@ -1,18 +1,18 @@
-﻿using HypermediaClient.Hypermedia;
-using HypermediaClient.Hypermedia.Attributes;
-using HypermediaClient.Hypermedia.Commands;
-
-namespace HypermediaClient.Test.Hypermedia
+﻿namespace Hypermedia.Client.Test.Hypermedia
 {
+    using HypermediaClient.Hypermedia;
+    using HypermediaClient.Hypermedia.Attributes;
+    using HypermediaClient.Hypermedia.Commands;
+
     [HypermediaClientObject(Classes = new[] { "CustomersRoot" })]
     public class CustomersRootHco : HypermediaClientObject
     {
         [Mandatory]
-        [HypermediaRelations(new[] { "Self" })]
+        [HypermediaRelations(new[] { "self" })]
         public MandatoryHypermediaLink<CustomersRootHco> Self { get; set; }
 
         [Mandatory]
-        [HypermediaRelations(new[] { "All" })]
+        [HypermediaRelations(new[] { "all" })]
         public MandatoryHypermediaLink<CustomerQueryResultHco> All { get; set; }
 
         [Mandatory]

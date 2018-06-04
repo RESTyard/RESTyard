@@ -1,9 +1,10 @@
-using System.Collections.Generic;
-using HypermediaClient.Hypermedia;
-using HypermediaClient.Hypermedia.Attributes;
-
-namespace HypermediaClient.Test.Hypermedia
+namespace Hypermedia.Client.Test.Hypermedia
 {
+    using System.Collections.Generic;
+
+    using HypermediaClient.Hypermedia;
+    using HypermediaClient.Hypermedia.Attributes;
+
     [HypermediaClientObject(Classes = new[] { "CustomersQueryResult" })]
     public class CustomerQueryResultHco : HypermediaClientObject
     {
@@ -13,29 +14,29 @@ namespace HypermediaClient.Test.Hypermedia
         [Mandatory]
         public int CurrentEntitiesCount { get; set; }
 
-        [HypermediaRelations(new[] { "Item" })] //TODO check: lists can not be mandatory, just empty
+        [HypermediaRelations(new[] { "item" })] //TODO check: lists can not be mandatory, just empty
         public List<CustomerHco> Customers { get; set; }
 
         [Mandatory]
         //TODO: idear [EnsureUnique]? first hit will be used
-        [HypermediaRelations( new[] { "Item" })]
+        [HypermediaRelations( new[] { "item" })]
         public CustomerHco Sister { get; set; }
 
 
         [Mandatory]
-        [HypermediaRelations(new [] {"Self"})]
+        [HypermediaRelations(new [] {"self"})]
         public MandatoryHypermediaLink<CustomerQueryResultHco> Self { get; set; }
 
-        [HypermediaRelations( new[] { "Next" })]
+        [HypermediaRelations( new[] { "next" })]
         public HypermediaLink<CustomerQueryResultHco> Next { get; set; }
 
-        [HypermediaRelations( new[] { "Previous" })]
+        [HypermediaRelations( new[] { "previous" })]
         public HypermediaLink<CustomerQueryResultHco> Previous { get; set; }
 
-        [HypermediaRelations( new[] { "Last" })]
+        [HypermediaRelations( new[] { "last" })]
         public HypermediaLink<CustomerQueryResultHco> Last { get; set; }
 
-        [HypermediaRelations( new[] { "All" })]
+        [HypermediaRelations( new[] { "all" })]
         public HypermediaLink<CustomerQueryResultHco> All { get; set; }
 
     }

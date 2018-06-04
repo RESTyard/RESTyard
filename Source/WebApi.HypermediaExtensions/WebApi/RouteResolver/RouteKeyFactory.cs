@@ -7,7 +7,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
 
     public class RouteKeyFactory : IRouteKeyFactory
     {
-        private readonly IRouteRegister routeRegister;
+        readonly IRouteRegister routeRegister;
 
         public RouteKeyFactory(IRouteRegister routeRegister)
         {
@@ -16,8 +16,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
 
         public object GetHypermediaRouteKeys(HypermediaObject hypermediaObject)
         {
-            var keyProducer = this.routeRegister.GetKeyProducer(hypermediaObject.GetType());
-            if (keyProducer == null)
+            if (!this.routeRegister.TryGetKeyProducer(hypermediaObject.GetType(), out var keyProducer))
             {
                 return new { };
             }
@@ -27,8 +26,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
 
         public object GetHypermediaRouteKeys(HypermediaObjectReferenceBase reference)
         {
-            var keyProducer = this.routeRegister.GetKeyProducer(reference.GetHypermediaType());
-            if (keyProducer == null)
+            if (!this.routeRegister.TryGetKeyProducer(reference.GetHypermediaType(), out var keyProducer))
             {
                 return new { };
             }
@@ -44,8 +42,8 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
 
         public object GetActionRouteKeys(HypermediaActionBase action, HypermediaObject actionHostObject)
         {
-            var keyProducer = this.routeRegister.GetKeyProducer(action.GetType());
-            if (keyProducer == null)
+            if (!this.routeRegister.TryGetKeyProducer(action.GetType(), out IKeyProducer keyProducer) 
+                && !this.routeRegister.TryGetKeyProducer(actionHostObject.GetType(), out keyProducer))
             {
                 return new { };
             }

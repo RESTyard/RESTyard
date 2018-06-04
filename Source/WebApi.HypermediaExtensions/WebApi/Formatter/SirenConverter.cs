@@ -11,6 +11,7 @@ using WebApi.HypermediaExtensions.Hypermedia.Actions;
 using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 using WebApi.HypermediaExtensions.Hypermedia.Links;
 using WebApi.HypermediaExtensions.Query;
+using WebApi.HypermediaExtensions.Util;
 using WebApi.HypermediaExtensions.Util.Enum;
 using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
@@ -159,22 +160,19 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
 
         private void AddActionFields(JObject jAction, Type actionParameterType)
         {
-            var jfield = new JObject();
-            jfield.Add("name", actionParameterType.Name);
-            jfield.Add("type", DefaultMediaTypes.ApplicationJson);
+            var jfield = new JObject
+            {
+                {"name", actionParameterType.BeautifulName() },
+                {"type", DefaultMediaTypes.ApplicationJson}
+            };
 
             string classRoute;
-            try
+            if (!routeResolver.TryGetRouteByType(actionParameterType, out classRoute))
             {
-                //TODO refactor this this is controll flow by exception.
-                classRoute = routeResolver.TypeToRoute(actionParameterType);
-            }
-            catch (Exception)
-            {
-                classRoute = actionParameterType.Name;
+                classRoute = actionParameterType.BeautifulName();
             }
 
-            jfield.Add("class", new JArray { classRoute});
+            jfield.Add("class", new JArray { classRoute });
 
             var jFields = new JArray();
             jFields.Add(jfield);
@@ -244,7 +242,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             var resolvedAdress = routeResolver.ReferenceToRoute(reference);
             var query = reference.GetQuery();
             resolvedAdress += queryStringBuilder.CreateQueryString(query);
-            
+
             return resolvedAdress;
         }
 

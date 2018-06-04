@@ -14,6 +14,6 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
 
         void AddRouteKeyProducer(Type attributeRouteType, IKeyProducer keyProducer);
 
-        IKeyProducer GetKeyProducer(Type getType);
+        bool TryGetKeyProducer(Type getType, out IKeyProducer keyProducer);
     }
 }

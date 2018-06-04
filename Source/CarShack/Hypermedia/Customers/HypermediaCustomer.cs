@@ -2,6 +2,7 @@
 using WebApi.HypermediaExtensions.Exceptions;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Hypermedia.Attributes;
+using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace CarShack.Hypermedia.Customers
 {

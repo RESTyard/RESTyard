@@ -40,6 +40,8 @@ Just allow References to HTOs and lists of HTOs.
 ## Add logging
 - Configurable
 
+## Siren class can be set at runtime not only statically via attribute. Perhaps have classes collection on HypermediaObject and HypermediaObjectKeyReference?.
+
 # Future
 Just some idears
 

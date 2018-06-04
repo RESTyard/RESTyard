@@ -1,8 +1,11 @@
 using System;
+using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing.Template;
 using WebApi.HypermediaExtensions.Exceptions;
 using WebApi.HypermediaExtensions.Hypermedia;
+using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace WebApi.HypermediaExtensions.WebApi.AttributedRoutes
 {
@@ -42,9 +45,10 @@ namespace WebApi.HypermediaExtensions.WebApi.AttributedRoutes
             Init(routeType, routeKeyProducerType);
 
             var routeTemplate = TemplateParser.Parse(template);
-            if (routeTemplate.Parameters.Count > 0 && routeKeyProducerType == null)
+            if (routeTemplate.Parameters.Count > 0 && routeKeyProducerType == null 
+                                                   && routeType.GetTypeInfo().GetProperties().All(p => p.GetCustomAttribute<KeyAttribute>() == null))
             {
-                throw new HypermediaRouteException($"Route '{this.Name}' with parameters require a RouteKeyProducer Type.");
+                throw new HypermediaRouteException($"Route '{this.Name}' with parameters requires either a RouteKeyProducer type or properties with attribute KeyAttribute on type {routeType.Name}.");
             }
         }
 

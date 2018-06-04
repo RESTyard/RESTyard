@@ -440,7 +440,8 @@ namespace HypermediaClient
 
         private static List<string> ReadClasses(JObject jobject)
         {
-            //todo catch exception
+            // todo catch exception
+            // rel migth be missing so provide better error message
             return jobject["class"].Values<string>().ToList();
         }
     }
