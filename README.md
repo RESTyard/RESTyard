@@ -128,7 +128,7 @@ use a `HypermediaObjectKeyReference` if the object requires a key to be identifi
 ```
 Links.Add("BestCustomer", new HypermediaObjectKeyReference(typeof(HypermediaCustomer), 1));
 ```
-The reference requires the type of the referenced HypermediaObject, here `HypermediaCustomer` and a key which is used by the related route to identify the desired entity. The framework will pass the key object to the `KeyProducer` instance which is assigned to the HypermediaObject's route, here `CustomerRouteKeyProducer`. For more details on attributed routes see [Attributed routes](## Attributed routes).
+The reference requires the type of the referenced HypermediaObject, here `HypermediaCustomer` and a key which is used by the related route to identify the desired entity. The framework will pass the key object to the `KeyProducer` instance which is assigned to the HypermediaObject's route, here `CustomerRouteKeyProducer`. Explicit assignment of RouteKeyProducers is optional. `KeyAttribute` can be used alternativly on key properties of the HypermediaObject. For more details on attributed routes see [Attributed routes](## Attributed routes).
 
 Example from the CarShack demo project `CustomerController.cs`
 ```

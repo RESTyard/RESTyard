@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Numerics;
 using System.Threading.Tasks;
 using CarShack.Domain.Customer;
 using CarShack.Hypermedia.Customers;
@@ -26,13 +25,14 @@ namespace CarShack.Controllers.Customers
 
         #region HypermediaObjects
         // Route to the HypermediaCustomer. References to HypermediaCustomer type will be resolved to this route.
-        // This RouteTemplate also contains a key, so a RouteKeyProducer is required.
+        // This RouteTemplate also contains a key, so a RouteKeyProducer can be provided. In this case the RouteKeyProducer
+        // could be ommited and KeyAttribute could be used on HypermediaCustomer instead.
         [HttpGetHypermediaObject("{key:int}", typeof(HypermediaCustomer), typeof(CustomerRouteKeyProducer))]
         public async Task<ActionResult> GetEntity(int key)
         {
             try
             {
-                var customer = await customerRepository.GetEnitityByKeyAsync(key);
+                var customer = await customerRepository.GetEnitityByKeyAsync(key).ConfigureAwait(false);
                 var result = new HypermediaCustomer(customer);
                 return Ok(result);
             }
@@ -44,16 +44,14 @@ namespace CarShack.Controllers.Customers
         #endregion
 
         #region Actions
-        // Action routes need no RouteKeyProducer because they are only resolved for a specific Customer.
-        // The the template shares the same keys as the Customer.
         [HttpPostHypermediaAction("MyFavoriteCustomers", typeof(HypermediaActionCustomerMarkAsFavorite))]
-        public async Task<ActionResult> MarkAsFovoriteAction([SingleParameterBinder(typeof(FavoriteCustomer))]  FavoriteCustomer favoriteCustomer)
+        public async Task<ActionResult> MarkAsFavoriteAction([SingleParameterBinder(typeof(FavoriteCustomer))]  FavoriteCustomer favoriteCustomer)
         {
             try
             {
                 var id = ExtractIdFromCustomerUri(favoriteCustomer.CustomerLink);
 
-                var customer = await customerRepository.GetEnitityByKeyAsync(id);
+                var customer = await customerRepository.GetEnitityByKeyAsync(id).ConfigureAwait(false);
                 var hypermediaCustomer = new HypermediaCustomer(customer);
                 hypermediaCustomer.MarkAsFavoriteAction.Execute(favoriteCustomer);
                 return Ok();
@@ -109,7 +107,7 @@ namespace CarShack.Controllers.Customers
 
             try
             {
-                var customer = await customerRepository.GetEnitityByKeyAsync(key);
+                var customer = await customerRepository.GetEnitityByKeyAsync(key).ConfigureAwait(false);
                 var hypermediaCustomer = new HypermediaCustomer(customer);
                 hypermediaCustomer.MoveAction.Execute(newAddress);
                 return Ok();
