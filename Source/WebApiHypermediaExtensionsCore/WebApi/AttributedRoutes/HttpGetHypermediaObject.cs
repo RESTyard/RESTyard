@@ -46,7 +46,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.AttributedRoutes
 
             var routeTemplate = TemplateParser.Parse(template);
             if (routeTemplate.Parameters.Count > 0 && routeKeyProducerType == null 
-                                                   && routeType.GetProperties().All(p => p.GetCustomAttribute<KeyAttribute>() == null))
+                                                   && routeType.GetTypeInfo().GetProperties().All(p => p.GetCustomAttribute<KeyAttribute>() == null))
             {
                 throw new HypermediaRouteException($"Route '{this.Name}' with parameters requires either a RouteKeyProducer type or properties with attribute KeyAttribute on type {routeType.Name}.");
             }
