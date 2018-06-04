@@ -20,12 +20,15 @@ namespace WebApiHypermediaExtensionsCore.Util
 
                 var index = t.Name.LastIndexOf("`", StringComparison.Ordinal);
                 if (index < 0)
+                { 
                     return t.Name;
+                }
 
 
                 sb.Append(t.Name.Substring(0, index));
                 var i = 0;
-                t.GetGenericArguments().Aggregate(sb,
+                t.GetGenericArguments().Aggregate(
+                    sb,
                     (a, type) => a.Append(i++ == 0 ? "<" : ",").Append(BeautifulName(type)));
                 sb.Append(">");
 
