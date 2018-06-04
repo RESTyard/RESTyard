@@ -86,6 +86,11 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
             return keyProducer;
         }
 
+        public bool TryGetRoute(Type lookupType, out string routeName)
+        {
+            return this.routeRegister.TryGetValue(lookupType, out routeName);
+        }
+
         private void AddRoute(Type type, string routeName)
         {
             if (this.RouteExists(type))

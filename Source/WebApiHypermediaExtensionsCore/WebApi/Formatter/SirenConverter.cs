@@ -167,7 +167,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.Formatter
             };
 
             string classRoute;
-            if (!routeResolver.TryConvertTypeToRoute(actionParameterType, out classRoute))
+            if (!routeResolver.TryGetRouteByType(actionParameterType, out classRoute))
             {
                 classRoute = actionParameterType.BeautifulName();
             }
