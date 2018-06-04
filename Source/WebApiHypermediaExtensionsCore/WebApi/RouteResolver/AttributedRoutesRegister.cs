@@ -19,7 +19,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 
         private void RegisterAssemblyRoutes(Assembly assembly)
         {
-            var assemblyMethods = assembly.GetTypes().SelectMany(t => t.GetMethods());
+            var assemblyMethods = assembly.GetTypes().SelectMany(t => t.GetTypeInfo().GetMethods());
             foreach (var method in assemblyMethods)
             {
                 AddAttributedRoute<HttpGetHypermediaObject>(method, this.AddHypermediaObjectRoute, true);
@@ -53,7 +53,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
                 var keyProducer = (IKeyProducer)Activator.CreateInstance(attribute.RouteKeyProducerType);
                 this.AddRouteKeyProducer(attribute.RouteType, keyProducer);
             }
-            else if (autoAddRouteKeyProducers && !typeof(HypermediaQueryResult).IsAssignableFrom(attribute.RouteType) && attribute.Template != null)
+            else if (autoAddRouteKeyProducers && !typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(attribute.RouteType) && attribute.Template != null)
             {
                 var template = TemplateParser.Parse(attribute.Template);
                 if (template.Parameters.Count > 0)
