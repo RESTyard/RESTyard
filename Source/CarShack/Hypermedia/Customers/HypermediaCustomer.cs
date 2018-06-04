@@ -1,8 +1,8 @@
 ﻿using CarShack.Domain.Customer;
-using WebApiHypermediaExtensionsCore.Exceptions;
-using WebApiHypermediaExtensionsCore.Hypermedia;
-using WebApiHypermediaExtensionsCore.Hypermedia.Attributes;
-using WebApiHypermediaExtensionsCore.WebApi.RouteResolver;
+using WebApi.HypermediaExtensions.Exceptions;
+using WebApi.HypermediaExtensions.Hypermedia;
+using WebApi.HypermediaExtensions.Hypermedia.Attributes;
+using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace CarShack.Hypermedia.Customers
 {

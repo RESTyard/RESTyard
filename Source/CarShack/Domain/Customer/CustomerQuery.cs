@@ -1,9 +1,8 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
-using WebApiHypermediaExtensionsCore.Util.Enum;
-using WebApiHypermediaExtensionsCore.Util.Repository;
+using WebApi.HypermediaExtensions.Util.Enum;
+using WebApi.HypermediaExtensions.Util.Repository;
 
 namespace CarShack.Domain.Customer
 {

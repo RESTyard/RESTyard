@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <AssemblyName>WebApi.HypermediaExtensions.Test</AssemblyName>
+    <PackageId>WebApi.HypermediaExtensions.Test</PackageId>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
+    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hypermedia.MediaTypes\Hypermedia.MediaTypes.csproj" />
+    <ProjectReference Include="..\Hypermedia.Relations\Hypermedia.Relations.csproj" />
+    <ProjectReference Include="..\WebApi.HypermediaExtensions\WebApi.HypermediaExtensions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="5.3.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.2" />
+    <PackageReference Include="MSTest.TestAdapter" Version="1.3.1" />
+    <PackageReference Include="Moq" Version="4.8.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="1.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+
+</Project>

@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using WebApiHypermediaExtensionsCore.Hypermedia;
-using WebApiHypermediaExtensionsCore.Hypermedia.Attributes;
-using WebApiHypermediaExtensionsCore.Hypermedia.Links;
-using WebApiHypermediaExtensionsCore.Hypermedia.Extensions;
+using WebApi.HypermediaExtensions.Hypermedia;
+using WebApi.HypermediaExtensions.Hypermedia.Attributes;
+using WebApi.HypermediaExtensions.Hypermedia.Links;
+using WebApi.HypermediaExtensions.Hypermedia.Extensions;
 using CarShack.Domain.Customer;
-using Hypermedia.Util;
+using Hypermedia.Relations;
 
 namespace CarShack.Hypermedia.Customers
 {

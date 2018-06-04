@@ -1,5 +1,5 @@
 ﻿using System;
-using WebApiHypermediaExtensionsCore.Hypermedia.Actions;
+using WebApi.HypermediaExtensions.Hypermedia.Actions;
 
 namespace CarShack.Hypermedia.Customers
 {

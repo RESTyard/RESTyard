@@ -3,8 +3,8 @@ using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
-using WebApiHypermediaExtensionsCore.ErrorHandling;
-using WebApiHypermediaExtensionsCore.Exceptions;
+using WebApi.HypermediaExtensions.ErrorHandling;
+using WebApi.HypermediaExtensions.Exceptions;
 
 namespace CarShack.Util.GloblaExceptionHandler
 {
@@ -40,7 +40,7 @@ namespace CarShack.Util.GloblaExceptionHandler
             var response = new ExceptionProblemJson(context.Exception)
             {
                 Title = "Not authorized.",
-                ProblemType = "WebApiHypermediaExtensionsCore.NotAuthorized",
+                ProblemType = "WebApi.HypermediaExtensions.NotAuthorized",
                 StatusCode = (int)HttpStatusCode.Unauthorized
             };
 
@@ -52,7 +52,7 @@ namespace CarShack.Util.GloblaExceptionHandler
             var response = new ExceptionProblemJson(context.Exception)
             {
                 Title = "Hypermedia error.",
-                ProblemType = "WebApiHypermediaExtensionsCore.HyperrmediaError",
+                ProblemType = "WebApi.HypermediaExtensions.HyperrmediaError",
                 StatusCode = (int)HttpStatusCode.InternalServerError
             };
 
@@ -63,7 +63,7 @@ namespace CarShack.Util.GloblaExceptionHandler
         {
             var response = new ExceptionProblemJson(context.Exception) {
                 Title = "Sorry, something went wrong.",
-                ProblemType = "WebApiHypermediaExtensionsCore.InternalError",
+                ProblemType = "WebApi.HypermediaExtensions.InternalError",
                 StatusCode = (int)HttpStatusCode.InternalServerError
             };
 

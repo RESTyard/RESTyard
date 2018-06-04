@@ -119,7 +119,7 @@ Entities.Add("NiceCar", new HypermediaObjectReference(new HypermediaCar("VW", 2)
 ```
 
 *Note*
-The used function is an convenience extension contained in `WebApiHypermediaExtensionsCore.Hypermedia.Extensions`
+The used function is an convenience extension contained in `WebApi.HypermediaExtensions.Hypermedia.Extensions`
 
 #### Option 2: If no instance is available or not neccessary
 To allow referencing of HypermediaObjects without the need to instantiate them, for reference purpose only, there are two additional references available.

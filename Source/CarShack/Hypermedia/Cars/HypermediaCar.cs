@@ -1,6 +1,6 @@
-﻿using WebApiHypermediaExtensionsCore.Hypermedia;
-using WebApiHypermediaExtensionsCore.Hypermedia.Attributes;
-using WebApiHypermediaExtensionsCore.WebApi.RouteResolver;
+﻿using WebApi.HypermediaExtensions.Hypermedia;
+using WebApi.HypermediaExtensions.Hypermedia.Attributes;
+using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace CarShack.Hypermedia.Cars
 {

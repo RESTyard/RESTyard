@@ -14,7 +14,7 @@ using CarShack.Hypermedia.Cars;
 using CarShack.Hypermedia.Customers;
 using CarShack.Hypermedia.EntryPoint;
 using CarShack.Util.GloblaExceptionHandler;
-using WebApiHypermediaExtensionsCore.WebApi.ExtensionMethods;
+using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
 
 namespace CarShack
 {
