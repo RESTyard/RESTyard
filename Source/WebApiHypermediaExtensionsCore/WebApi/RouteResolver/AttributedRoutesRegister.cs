@@ -22,13 +22,13 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
             var assemblyMethods = assembly.GetTypes().SelectMany(t => t.GetMethods());
             foreach (var method in assemblyMethods)
             {
-                AddAttributedRoute<HttpGetHypermediaObject>(method, this.AddHypermediaObjectRoute);
+                AddAttributedRoute<HttpGetHypermediaObject>(method, this.AddHypermediaObjectRoute, true);
                 AddAttributedRoute<HttpPostHypermediaAction>(method, this.AddActionRoute);
                 AddAttributedRoute<HttpGetHypermediaActionParameterInfo>(method, this.AddParameterTypeRoute);
             }
         }
 
-        private void AddAttributedRoute<T>(MethodInfo method, Action<Type, string> addAction) where T : HttpMethodAttribute, IHaveRouteInfo
+        private void AddAttributedRoute<T>(MethodInfo method, Action<Type, string> addAction, bool autoAddRouteKeyProducers = false) where T : HttpMethodAttribute, IHaveRouteInfo
         {
             var attribute = method.GetCustomAttribute<T>();
             if (attribute == null)
@@ -53,12 +53,11 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
                 var keyProducer = (IKeyProducer)Activator.CreateInstance(attribute.RouteKeyProducerType);
                 this.AddRouteKeyProducer(attribute.RouteType, keyProducer);
             }
-            else if (!typeof(HypermediaQueryResult).IsAssignableFrom(attribute.RouteType) && attribute.Template != null)
+            else if (autoAddRouteKeyProducers && !typeof(HypermediaQueryResult).IsAssignableFrom(attribute.RouteType) && attribute.Template != null)
             {
                 var template = TemplateParser.Parse(attribute.Template);
                 if (template.Parameters.Count > 0)
                 {
-                    //TODO: how to handle multiple parameters
                     this.AddRouteKeyProducer(attribute.RouteType, RouteKeyProducer.Create(attribute.RouteType, template.Parameters.Select(p => p.Name).ToList()));
                 }
             }

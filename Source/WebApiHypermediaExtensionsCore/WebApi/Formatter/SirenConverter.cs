@@ -162,7 +162,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.Formatter
         {
             var jfield = new JObject
             {
-                {"name", actionParameterType.BeautifulName()},
+                {"name", actionParameterType.BeautifulName() },
                 {"type", DefaultContentTypes.ApplicationJson}
             };
 

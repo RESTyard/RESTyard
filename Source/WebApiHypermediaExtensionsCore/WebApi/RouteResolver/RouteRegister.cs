@@ -78,12 +78,9 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
             this.routeKeyProducerRegister.Add(keySourceType, keyProducer);
         }
 
-        public IKeyProducer GetKeyProducer(Type type)
+        public bool TryGetKeyProducer(Type type, out IKeyProducer keyProducer)
         {
-            IKeyProducer keyProducer;
-            this.routeKeyProducerRegister.TryGetValue(type, out keyProducer);
-
-            return keyProducer;
+            return this.routeKeyProducerRegister.TryGetValue(type, out keyProducer);
         }
 
         public bool TryGetRoute(Type lookupType, out string routeName)
