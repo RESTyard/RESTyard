@@ -12,3 +12,4 @@
 - serialize TimeSpan to Siren
 - add development options
 	- allow serialization of objects with no corresponding routes to ease development when creating a lot of HTO first
+- rework MarkAsFavorite action on customer so it nolonger accepts a link, but an id. Example is misleading
