@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>0.1.0</VersionPrefix>
-    <TargetFrameworks>netstandard1.6</TargetFrameworks>
+    <Version>0.1.0</Version>
+    <TargetFramework>netstandard1.6</TargetFramework>
     <AssemblyName>HypermediaClient</AssemblyName>
     <PackageId>HypermediaClient</PackageId>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
@@ -23,9 +22,4 @@
   <ItemGroup>
     <ProjectReference Include="..\Hypermedia.Util\Hypermedia.Util.csproj" />
   </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
-  </ItemGroup>
-
 </Project>

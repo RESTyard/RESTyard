@@ -6,8 +6,18 @@ using HypermediaClient.Hypermedia.Commands;
 
 namespace HypermediaClient
 {
-    class RegisterHypermediaCommandFactory : IHypermediaCommandFactory
+    internal class RegisterHypermediaCommandFactory : IHypermediaCommandFactory
     {
+        public static RegisterHypermediaCommandFactory Create()
+        {
+            var hypermediaCommandFactory = new RegisterHypermediaCommandFactory();
+            hypermediaCommandFactory.Register(typeof(IHypermediaClientAction), typeof(HypermediaClientAction));
+            hypermediaCommandFactory.Register(typeof(IHypermediaClientAction<>), typeof(HypermediaClientAction<>));
+            hypermediaCommandFactory.Register(typeof(IHypermediaClientFunction<>), typeof(HypermediaClientFunction<>));
+            hypermediaCommandFactory.Register(typeof(IHypermediaClientFunction<,>), typeof(HypermediaClientFunction<,>));
+            return hypermediaCommandFactory;
+        }
+
         private Dictionary<Type, Type> InterfaceImplementationLookup { get; set; }
 
         public RegisterHypermediaCommandFactory()
@@ -22,8 +32,8 @@ namespace HypermediaClient
                 throw new Exception($"Interface already registered '{interfaceType.Name}'");
             }
 
-            var isImplementation = interfaceType.IsAssignableFrom(implementation);
-            var isGenericImplementation = implementation.GetInterfaces().Any(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == interfaceType);
+            var isImplementation = interfaceType.GetTypeInfo().IsAssignableFrom(implementation);
+            var isGenericImplementation = implementation.GetTypeInfo().GetInterfaces().Any(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == interfaceType);
 
             if (!isImplementation && !isGenericImplementation)
             {
@@ -42,7 +52,7 @@ namespace HypermediaClient
             if (isGenericType)
             {
                 var genericTypeDefinition = commandInterfaceType.GetGenericTypeDefinition();
-                var genericTypeArguments = commandInterfaceType.GetGenericArguments();
+                var genericTypeArguments = commandInterfaceType.GetTypeInfo().GetGenericArguments();
 
                 lookupType = genericTypeDefinition;
                 Type commandType;

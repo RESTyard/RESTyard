@@ -45,7 +45,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 
             if (attribute.RouteKeyProducerType != null)
             {
-                if (typeof(HypermediaQueryResult).IsAssignableFrom(attribute.RouteType))
+                if (typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(attribute.RouteType))
                 {
                     throw new RouteRegisterException($"Routes to Querys may not require a key '{attribute.RouteType}'. Queries should not be handled on a Entity.");
                 }

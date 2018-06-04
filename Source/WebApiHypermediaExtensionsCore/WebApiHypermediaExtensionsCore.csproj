@@ -3,9 +3,9 @@
   <PropertyGroup>
     <Description>Web Api extensions to create restful Web services using Siren as Hypermedia format</Description>
     <AssemblyTitle>Web Api Hypermedia Extensions</AssemblyTitle>
-    <VersionPrefix>1.3.0</VersionPrefix>
+    <Version>1.3.0$(VersionSuffix)</Version>
     <Authors>Mathias Reichardt</Authors>
-    <TargetFrameworks>netstandard1.6</TargetFrameworks>
+    <TargetFramework>netstandard1.6</TargetFramework>
     <NoWarn>$(NoWarn);1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>WebApiHypermediaExtensionsCore</AssemblyName>
@@ -13,7 +13,6 @@
     <PackageTags>WebApi;REST;Siren;Hypermedia</PackageTags>
     <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/bluehands/WebApiHypermediaExtensions/blob/master/LICENSE.md</PackageLicenseUrl>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>

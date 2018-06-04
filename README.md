@@ -151,6 +151,7 @@ public object CreateFromKeyObject(object keyObject)
 }
 ```
 
+#### Option 3: If a query result should be referenced
 Use a `HypermediaObjectQueryReference` if the object requires also query object `IHypermediaQuery` to be created e.g. a result object which contains several Customers.
 For a reference to a query result: `HypermediaQueryResult` it is also required to provide the query to the reference, so the link to the object can be constructed.
 
@@ -280,6 +281,14 @@ public async Task<ActionResult> Query([FromQuery] CustomerQuery query)
     return Ok(result);
 }
 ```
+
+## Options
+For some configuration you can pass a `HypermediaExtensionsOptions` object to `AddHypermediaExtensions` method.
+
+- `ReturnDefaultRouteForUnknownHto` if set to `true` the `IHypermediaRouteResolver` will return a default route (see: `DefaultRouteSegmentForUnknownHto`) if a Hto's route is unknown.
+  This is useful during development time when first writing some Hto's and not all controllers are implemented. Default is `false`.
+
+- `DefaultRouteSegmentForUnknownHto` a `string` wich will pe appended to `<scheme>://<authority>/` as default route.
 
 ## Recommendations for route design
 The extensions were build with some idears about how routes should be build in mind. The Extensions do not enforce this design but it is useful to know the basic idears.

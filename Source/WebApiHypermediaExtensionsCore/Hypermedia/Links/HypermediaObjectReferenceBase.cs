@@ -12,7 +12,7 @@ namespace WebApiHypermediaExtensionsCore.Hypermedia.Links
 
         protected HypermediaObjectReferenceBase(Type hypermediaObjectType)
         {
-            if (!typeof(HypermediaObject).IsAssignableFrom(hypermediaObjectType))
+            if (!typeof(HypermediaObject).GetTypeInfo().IsAssignableFrom(hypermediaObjectType))
             {
                 throw new HypermediaException($"Type does not derive from {typeof(HypermediaObject)}.");
             }

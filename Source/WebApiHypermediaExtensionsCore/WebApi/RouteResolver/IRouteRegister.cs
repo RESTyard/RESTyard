@@ -4,7 +4,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 {
     public interface IRouteRegister
     {
-        string GetRoute(Type lookupType);
+        bool TryGetRoute(Type lookupType, out string routeName);
 
         void AddActionRoute(Type hypermediaActionType, string routeName);
 
@@ -15,6 +15,5 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
         void AddRouteKeyProducer(Type attributeRouteType, IKeyProducer keyProducer);
 
         bool TryGetKeyProducer(Type getType, out IKeyProducer keyProducer);
-        bool TryGetRoute(Type lookupType, out string routeName);
     }
 }

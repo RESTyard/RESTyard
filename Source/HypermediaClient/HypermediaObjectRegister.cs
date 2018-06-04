@@ -14,7 +14,7 @@ namespace HypermediaClient
 
         public void Register(Type hypermediaObjectType)
         {
-            if (!typeof(HypermediaClientObject).IsAssignableFrom(hypermediaObjectType))
+            if (!typeof(HypermediaClientObject).GetTypeInfo().IsAssignableFrom(hypermediaObjectType))
             {
                 throw new Exception($"Can only register {typeof(HypermediaClientObject).Name}");
             }

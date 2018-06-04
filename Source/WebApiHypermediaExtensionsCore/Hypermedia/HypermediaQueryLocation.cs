@@ -12,7 +12,7 @@ namespace WebApiHypermediaExtensionsCore.Hypermedia
 
         public HypermediaQueryLocation(Type queryType, IHypermediaQuery queryParameter = null)
         {
-            if (!typeof(HypermediaQueryResult).IsAssignableFrom(queryType))
+            if (!typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(queryType))
             {
                 throw new HypermediaQueryException($"HypermediaQueryLocation requires a type derived from '{typeof(HypermediaQueryResult)}'");
             }

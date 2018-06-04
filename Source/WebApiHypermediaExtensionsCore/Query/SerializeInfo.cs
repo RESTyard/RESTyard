@@ -18,7 +18,7 @@ namespace WebApiHypermediaExtensionsCore.Query
 
             IsClass = itemTypeInfo.IsClass;
             IsString = itemType == typeof(string);
-            IsIEnumerable = typeof(IEnumerable).IsAssignableFrom(itemType);
+            IsIEnumerable = typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(itemType);
             IsStructWithNesting = CheckStructWithNesting(itemType, itemTypeInfo);
         }
 
@@ -26,7 +26,7 @@ namespace WebApiHypermediaExtensionsCore.Query
         {
             IsClass = propertyInfo.IsClass;
             IsString = type == typeof(string);
-            IsIEnumerable = typeof(IEnumerable).IsAssignableFrom(type);
+            IsIEnumerable = typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type);
             IsStructWithNesting = CheckStructWithNesting(type, propertyInfo);
         }
 

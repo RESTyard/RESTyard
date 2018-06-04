@@ -19,15 +19,16 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
             routeKeyProducerRegister = new Dictionary<Type, IKeyProducer>();
         }
 
-        public string GetRoute(Type lookupType)
+        public bool TryGetRoute(Type lookupType, out string routeName)
         {
-            string routeName;
             if (!this.routeRegister.TryGetValue(lookupType, out routeName))
             {
-                throw new RouteRegisterException($"Route to type '{lookupType}' not found in RouteRegister.");
+                routeName = string.Empty;
+                return false;
+               
             }
 
-            return routeName;
+            return true;
         }
 
         public void AddActionRoute(Type hypermediaActionType, string routeName)
@@ -43,12 +44,12 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 
         private static bool IsHypermediaAction(Type hypermediaActionType)
         {
-            return typeof(HypermediaActionBase).IsAssignableFrom(hypermediaActionType);
+            return typeof(HypermediaActionBase).GetTypeInfo().IsAssignableFrom(hypermediaActionType);
         }
 
         public void AddHypermediaObjectRoute(Type hypermediaObjectType, string routeName)
         {
-            if (!typeof(HypermediaObject).IsAssignableFrom(hypermediaObjectType))
+            if (!typeof(HypermediaObject).GetTypeInfo().IsAssignableFrom(hypermediaObjectType))
             {
                 throw new RouteRegisterException(
                     $"Type {hypermediaObjectType} must derive from {typeof(HypermediaObject).Name}.");
@@ -59,7 +60,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
 
         public void AddParameterTypeRoute(Type iHypermediaActionParameter, string routeName)
         {
-            if (!typeof(IHypermediaActionParameter).IsAssignableFrom(iHypermediaActionParameter))
+            if (!typeof(IHypermediaActionParameter).GetTypeInfo().IsAssignableFrom(iHypermediaActionParameter))
             {
                 throw new RouteRegisterException(
                     $"Type {iHypermediaActionParameter} must derive from {typeof(IHypermediaActionParameter).Name}.");
@@ -81,11 +82,6 @@ namespace WebApiHypermediaExtensionsCore.WebApi.RouteResolver
         public bool TryGetKeyProducer(Type type, out IKeyProducer keyProducer)
         {
             return this.routeKeyProducerRegister.TryGetValue(type, out keyProducer);
-        }
-
-        public bool TryGetRoute(Type lookupType, out string routeName)
-        {
-            return this.routeRegister.TryGetValue(lookupType, out routeName);
         }
 
         private void AddRoute(Type type, string routeName)

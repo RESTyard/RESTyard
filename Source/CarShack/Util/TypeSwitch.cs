@@ -17,7 +17,7 @@ namespace CarShack.Util
             var type = source.GetType();
             foreach (var entry in cases)
             {
-                if (entry.IsDefault || entry.Target.IsAssignableFrom(type))
+                if (entry.IsDefault || entry.Target.GetTypeInfo().IsAssignableFrom(type))
                 {
                     entry.Action(source);
                     break;

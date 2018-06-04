@@ -9,7 +9,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.AttributedRoutes
     {
         public static void EnsureIsRouteKeyProducer(Type routeKeyProducerType)
         {
-            if (routeKeyProducerType != null && !typeof(IKeyProducer).IsAssignableFrom(routeKeyProducerType))
+            if (routeKeyProducerType != null && !typeof(IKeyProducer).GetTypeInfo().IsAssignableFrom(routeKeyProducerType))
             {
                 throw new HypermediaRouteException(
                     $"{typeof(HttpGetHypermediaObject).Name} requires a {typeof(IKeyProducer).Name} type.");
@@ -18,7 +18,7 @@ namespace WebApiHypermediaExtensionsCore.WebApi.AttributedRoutes
 
         public static void EnsureIs<T>(Type hypermediaObjectType)
         {
-            if (!typeof(T).IsAssignableFrom(hypermediaObjectType))
+            if (!typeof(T).GetTypeInfo().IsAssignableFrom(hypermediaObjectType))
             {
                 throw new HypermediaRouteException($"RouteType must be a {typeof(T).Name}");
             }
