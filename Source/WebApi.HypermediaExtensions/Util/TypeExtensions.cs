@@ -27,7 +27,7 @@
 
                 sb.Append(t.Name.Substring(0, index));
                 var i = 0;
-                t.GetGenericArguments().Aggregate(
+                t.GetTypeInfo().GetGenericArguments().Aggregate(
                     sb,
                     (a, type) => a.Append(i++ == 0 ? "<" : ",").Append(BeautifulName(type)));
                 sb.Append(">");
