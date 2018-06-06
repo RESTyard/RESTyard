@@ -29,22 +29,19 @@ namespace WebApi.HypermediaExtensions.Test.JsonSchema
         public static async Task<JsonSchema4> GenerateSchemaAsync(Type type)
         {
             var schema = await JsonSchema4.FromTypeAsync(type, s_JsonSchemaGeneratorSettings).ConfigureAwait(false);
-            var keyProperties = type.GetTypeInfo().GetProperties()
-                .Select(p => new { p, att = p.GetCustomAttribute<KeyFromUriAttribute>() })
-                .Where(p => p.att != null)
-                .ToImmutableArray();
+            var keyProperties = type.GetKeyFromUriProperties();
 
             foreach (var keyProperty in keyProperties)
             {
-                RemoveProperty(schema, keyProperty.p.Name);
+                RemoveProperty(schema, keyProperty.PropertyInfo.Name);
             }
 
-            foreach (var propertyGroup in keyProperties.GroupBy(p => p.att.SchemaProperyName ?? p.p.Name))
+            foreach (var propertyGroup in keyProperties.GroupBy(p => p.SchemaPropertyName))
             {
                 var schemaPropertyName = propertyGroup.Key;
                 if (schema.Properties.ContainsKey(schemaPropertyName))
                 {
-                    throw new JsonSchemaGenerationException($"Key property '{propertyGroup.First().p.Name}' maps to property '{schemaPropertyName}' that already exists on type {type.BeautifulName()}");
+                    throw new JsonSchemaGenerationException($"Key property '{propertyGroup.First().PropertyInfo.Name}' maps to property '{schemaPropertyName}' that already exists on type {type.BeautifulName()}");
                 }
 
                 var property = new JsonProperty { Type = JsonObjectType.String, Format = JsonFormatStrings.Uri, MinLength = 1 };
@@ -71,6 +68,35 @@ namespace WebApi.HypermediaExtensions.Test.JsonSchema
             public JsonSchemaGenerationException(string message) : base(message)
             {
             }
+        }
+    }
+
+    public static class KeyFromUriExtension
+    {
+        public static ImmutableArray<KeyFromUriProperty> GetKeyFromUriProperties(this Type type)
+        {
+            return type.GetTypeInfo()
+                .GetProperties()
+                .Select(p => new { p, att = p.GetCustomAttribute<KeyFromUriAttribute>() })
+                .Where(p => p.att != null)
+                .Select(_ => new KeyFromUriProperty(_.att.ReferencedHypermediaObjectType, _.p, _.att.SchemaProperyName, _.att.RouteTemplateParameterName))
+                .ToImmutableArray();
+        }
+    }
+
+    public class KeyFromUriProperty
+    {
+        public Type TargetType { get; }
+        public PropertyInfo PropertyInfo { get; }
+        public string SchemaPropertyName { get; }
+        public string RouteTemplateParameterName { get; }
+
+        public KeyFromUriProperty(Type targetType, PropertyInfo propertyInfo, string schemaPropertyName, string routeTemplateParameterName)
+        {
+            TargetType = targetType;
+            PropertyInfo = propertyInfo;
+            SchemaPropertyName = schemaPropertyName ?? propertyInfo.Name;
+            RouteTemplateParameterName = routeTemplateParameterName;
         }
     }
 }
