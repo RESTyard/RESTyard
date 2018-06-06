@@ -11,25 +11,10 @@ using WebApi.HypermediaExtensions.Hypermedia;
 
 namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
 {
-
-
     public class RouteKeyProducer : IKeyProducer
     {
         readonly bool isComplexKey;
         readonly ImmutableList<Accessor> keyAccessors;
-
-        public class Accessor
-        {
-            public string TemplateParameterName { get; }
-
-            public Func<object, object> GetKey { get; }
-
-            public Accessor(string templateParameterName, Func<object, object> getKey)
-            {
-                this.TemplateParameterName = templateParameterName;
-                this.GetKey = getKey;
-            }
-        }
 
         public static RouteKeyProducer Create(Type hypermediaObjectType, ICollection<string> templateParameterNames)
         {
@@ -37,7 +22,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
             return new RouteKeyProducer(accessors);
         }
 
-        public static IEnumerable<Accessor> MakeAccessors(Type hypermediaObjectType, ICollection<string> templateParameterNames)
+        static IEnumerable<Accessor> MakeAccessors(Type hypermediaObjectType, ICollection<string> templateParameterNames)
         {
             var keyProperties = hypermediaObjectType.GetTypeInfo().GetProperties()
                 .Select(p => new {p, att = p.GetCustomAttribute<KeyAttribute>()})
@@ -86,17 +71,17 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
             return (Func<object, object>) lambda.Compile();
         }
 
-        public RouteKeyProducer(IEnumerable<Accessor> keyAccessors)
+        RouteKeyProducer(IEnumerable<Accessor> keyAccessors)
         {
             this.keyAccessors = keyAccessors.ToImmutableList();
-            this.isComplexKey = this.keyAccessors.Count > 1;
+            isComplexKey = this.keyAccessors.Count > 1;
         }
 
         public object CreateFromHypermediaObject(HypermediaObject hypermediaObject)
         {
             var dynamic = new ExpandoObject();
             var dict = (IDictionary<string, object>)dynamic;
-            foreach (var accessor in this.keyAccessors)
+            foreach (var accessor in keyAccessors)
             {
                 dict.Add(accessor.TemplateParameterName, accessor.GetKey(hypermediaObject));
             }
@@ -105,16 +90,29 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
 
         public object CreateFromKeyObject(object keyObject)
         {
-            if (this.isComplexKey)
+            if (isComplexKey)
                 return keyObject;
 
             var dynamic = new ExpandoObject();
             var dict = (IDictionary<string, object>)dynamic;
-            foreach (var accessor in this.keyAccessors)
+            foreach (var accessor in keyAccessors)
             {
                 dict.Add(accessor.TemplateParameterName, keyObject);
             }
             return dynamic;
+        }
+
+        class Accessor
+        {
+            public string TemplateParameterName { get; }
+
+            public Func<object, object> GetKey { get; }
+
+            public Accessor(string templateParameterName, Func<object, object> getKey)
+            {
+                TemplateParameterName = templateParameterName;
+                GetKey = getKey;
+            }
         }
     }
 }
