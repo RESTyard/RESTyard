@@ -1,13 +1,37 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using WebApi.HypermediaExtensions.Hypermedia.Actions;
 using WebApi.HypermediaExtensions.Util;
 
-namespace WebApi.HypermediaExtensions.Test.JsonSchema
+namespace WebApi.HypermediaExtensions.JsonSchema
 {
+    public class FromBodyHypermediaParameterBinderProvider : IModelBinderProvider
+    {
+        readonly Func<Type, string> getRouteTemplateForType;
+        
+        public FromBodyHypermediaParameterBinderProvider(Func<Type, string> getRouteTemplateForType)
+        {
+            this.getRouteTemplateForType = getRouteTemplateForType;
+        }
+
+        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        {
+            var modelType = context.Metadata.ModelType;
+            if (typeof(IHypermediaActionParameter).GetTypeInfo().IsAssignableFrom(modelType) && context.BindingInfo.BinderType == null && context.BindingInfo.BindingSource == null)
+            {
+                return new FromBodyHypermediaParameterBinder(modelType, getRouteTemplateForType);
+            }
+
+            return null;
+        }
+    }
+
     public class FromBodyHypermediaParameterBinder : IModelBinder
     {
         readonly Type modelType;
@@ -25,6 +49,12 @@ namespace WebApi.HypermediaExtensions.Test.JsonSchema
             if (bindingContext.ModelType != modelType)
             {
                 bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"ModelBinder does not match model type '{modelTypeName}' != '{bindingContext.ModelType}'");
+                return Task.FromResult(false);
+            }
+
+            if (bindingContext.ActionContext.HttpContext.Request.Method != HttpMethods.Post)
+            {
+                bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Invalid http method {bindingContext.ActionContext.HttpContext.Request.Method} exptected Post");
                 return Task.FromResult(false);
             }
 

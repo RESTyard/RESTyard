@@ -7,6 +7,7 @@ using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.HypermediaExtensions.ErrorHandling;
 using WebApi.HypermediaExtensions.Exceptions;
+using WebApi.HypermediaExtensions.JsonSchema;
 using WebApi.HypermediaExtensions.WebApi;
 using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
 using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
@@ -45,13 +46,12 @@ namespace CarShack.Controllers.Customers
 
         #region Actions
         [HttpPostHypermediaAction("MyFavoriteCustomers", typeof(HypermediaActionCustomerMarkAsFavorite))]
-        public async Task<ActionResult> MarkAsFavoriteAction([SingleParameterBinder(typeof(FavoriteCustomer))]  FavoriteCustomer favoriteCustomer)
+        public async Task<ActionResult> MarkAsFavoriteAction(FavoriteCustomer favoriteCustomer)
         {
             try
             {
-                var id = ExtractIdFromCustomerUri(favoriteCustomer.CustomerLink);
-
-                var customer = await customerRepository.GetEnitityByKeyAsync(id).ConfigureAwait(false);
+                //var id =  ExtractIdFromCustomerUri(favoriteCustomer.CustomerLink);
+                var customer = await customerRepository.GetEnitityByKeyAsync(favoriteCustomer.CustomerId).ConfigureAwait(false);
                 var hypermediaCustomer = new HypermediaCustomer(customer);
                 hypermediaCustomer.MarkAsFavoriteAction.Execute(favoriteCustomer);
                 return Ok();
@@ -75,7 +75,6 @@ namespace CarShack.Controllers.Customers
             {
                 return this.CanNotExecute();
             }
-
         }
 
         private int ExtractIdFromCustomerUri(string favoriteCustomerCustomerLink)
@@ -89,7 +88,6 @@ namespace CarShack.Controllers.Customers
             try
             {
                 return Convert.ToInt16(lastSegment);
-
             }
             catch (Exception)
             {
@@ -137,10 +135,9 @@ namespace CarShack.Controllers.Customers
         #region TypeRoutes
         // Provide type information for Action parameters. Does not depend on a specific customer.
         [HttpGetHypermediaActionParameterInfo("NewAddressType", typeof(NewAddress))]
-        public ActionResult NewAddressType()
+        public async Task<ActionResult> NewAddressType()
         {
-            var schema = JsonSchemaFactory.Generate(typeof(NewAddress));
-
+            var schema = await JsonSchemaFactory.Generate(typeof(NewAddress)).ConfigureAwait(false);
             return Ok(schema);
         }
         #endregion

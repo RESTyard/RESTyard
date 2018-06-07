@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WebApi.HypermediaExtensions.Test.JsonSchema
+namespace WebApi.HypermediaExtensions.JsonSchema
 {
     public class KeyFromUriAttribute : Attribute
     {

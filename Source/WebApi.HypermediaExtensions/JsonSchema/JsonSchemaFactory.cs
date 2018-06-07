@@ -8,7 +8,7 @@ using NJsonSchema;
 using NJsonSchema.Generation;
 using WebApi.HypermediaExtensions.Util;
 
-namespace WebApi.HypermediaExtensions.Test.JsonSchema
+namespace WebApi.HypermediaExtensions.JsonSchema
 {
     public static class JsonSchemaFactory
     {
@@ -16,7 +16,6 @@ namespace WebApi.HypermediaExtensions.Test.JsonSchema
         {
             FlattenInheritanceHierarchy = true,
             DefaultEnumHandling = EnumHandling.String,
-
         };
 
         public static async Task<object> Generate(Type type)
@@ -33,7 +32,7 @@ namespace WebApi.HypermediaExtensions.Test.JsonSchema
 
             foreach (var keyProperty in keyProperties)
             {
-                RemoveProperty(schema, keyProperty.PropertyInfo.Name);
+                RemoveProperty(schema, keyProperty.Property.Name);
             }
 
             foreach (var propertyGroup in keyProperties.GroupBy(p => p.SchemaPropertyName))
@@ -41,7 +40,7 @@ namespace WebApi.HypermediaExtensions.Test.JsonSchema
                 var schemaPropertyName = propertyGroup.Key;
                 if (schema.Properties.ContainsKey(schemaPropertyName))
                 {
-                    throw new JsonSchemaGenerationException($"Key property '{propertyGroup.First().PropertyInfo.Name}' maps to property '{schemaPropertyName}' that already exists on type {type.BeautifulName()}");
+                    throw new JsonSchemaGenerationException($"Key property '{propertyGroup.First().Property.Name}' maps to property '{schemaPropertyName}' that already exists on type {type.BeautifulName()}");
                 }
 
                 var property = new JsonProperty { Type = JsonObjectType.String, Format = JsonFormatStrings.Uri, MinLength = 1 };
@@ -87,17 +86,22 @@ namespace WebApi.HypermediaExtensions.Test.JsonSchema
     public class KeyFromUriProperty
     {
         public Type TargetType { get; }
-        public PropertyInfo PropertyInfo { get; }
+        public PropertyInfo Property { get; }
         public string SchemaPropertyName { get; }
         public string RouteTemplateParameterName { get; }
-        public string ResolvedRouteTemplateParameterName => RouteTemplateParameterName ?? PropertyInfo.Name;
+        public string ResolvedRouteTemplateParameterName => RouteTemplateParameterName ?? Property.Name;
 
-        public KeyFromUriProperty(Type targetType, PropertyInfo propertyInfo, string schemaPropertyName, string routeTemplateParameterName)
+        public KeyFromUriProperty(Type targetType, PropertyInfo property, string schemaPropertyName, string routeTemplateParameterName)
         {
             TargetType = targetType;
-            PropertyInfo = propertyInfo;
-            SchemaPropertyName = schemaPropertyName ?? propertyInfo.Name;
+            Property = property;
+            SchemaPropertyName = schemaPropertyName ?? property.Name;
             RouteTemplateParameterName = routeTemplateParameterName;
+        }
+
+        public override string ToString()
+        {
+            return $"{nameof(TargetType)}: {TargetType.BeautifulName()}, {nameof(Property)}: {Property.Name}, {nameof(RouteTemplateParameterName)}: {RouteTemplateParameterName}";
         }
     }
 }

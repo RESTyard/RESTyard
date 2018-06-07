@@ -7,9 +7,9 @@ using Newtonsoft.Json;
 using NJsonSchema;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
+using WebApi.HypermediaExtensions.JsonSchema;
 using WebApi.HypermediaExtensions.Test.Helpers;
 using WebApi.HypermediaExtensions.Test.Hypermedia;
-using static System.FormattableString;
 
 namespace WebApi.HypermediaExtensions.Test.JsonSchema
 {
@@ -184,7 +184,7 @@ namespace WebApi.HypermediaExtensions.Test.JsonSchema
 
         public override void When()
         {
-            clientParameter = new MyClientParameter(Invariant($"http://mydomain.com/customers/{GrandParentId}/{WeirdUncleId}/{ParentId}/{Id}"), 3, "http://www.anothersite.com");
+            clientParameter = new MyClientParameter(FormattableString.Invariant($"http://mydomain.com/customers/{GrandParentId}/{WeirdUncleId}/{ParentId}/{Id}"), 3, "http://www.anothersite.com");
             var json = JsonConvert.SerializeObject(clientParameter);
             deserialized = (MyParameter)new JsonDeserializer(typeof(MyParameter), t => "customers/{grandParentId}/{weirdUncleId}/{parentId}/{id}").Deserialize(json.ToStream());
         }

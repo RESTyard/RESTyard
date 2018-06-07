@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
 
-namespace WebApi.HypermediaExtensions.Test.JsonSchema
+namespace WebApi.HypermediaExtensions.JsonSchema
 {
     public static class RouteMatcher
     {

@@ -53,7 +53,7 @@ namespace CarShack.Hypermedia.Customers
         {
             var customer = CustomerService.CreateRandomCustomer();
             customer.Name = arg.Name;
-            await customerRepository.AddEntityAsync(customer);
+            await customerRepository.AddEntityAsync(customer).ConfigureAwait(false);
 
             return customer;
         }

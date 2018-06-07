@@ -19,7 +19,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// <param name="hypermediaUrlConfig">Configures the URL used in Hypermedia responses.</param>
         /// <param name="hypermediaConverterConfiguration">Configures the creation of Hypermedia documents.</param>
         /// <param name="hypermediaOptions">Configures general options for teh extensions.</param>
-        public static void AddHypermediaExtensions(
+        public static MvcOptions AddHypermediaExtensions(
             this MvcOptions options,
             IRouteRegister alternateRouteRegister = null,
             IQueryStringBuilder alternateQueryStringBuilder = null,
@@ -43,6 +43,8 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
             options.OutputFormatters.Insert(0, hypermediaQueryLocationFormatter);
             options.OutputFormatters.Insert(0, hypermediaEntityLocationFormatter);
             options.OutputFormatters.Insert(0, sirenHypermediaFormatter);
+
+            return options;
         }
     }
 }

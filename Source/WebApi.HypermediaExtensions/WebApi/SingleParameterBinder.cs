@@ -74,7 +74,6 @@ namespace WebApi.HypermediaExtensions.WebApi
                 T result;
                 try
                 {
-
                     result = parameterObject.ToObject<T>();
                 }
                 catch (JsonReaderException)
