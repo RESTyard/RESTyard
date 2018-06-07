@@ -90,6 +90,7 @@ namespace WebApi.HypermediaExtensions.Test.JsonSchema
         public PropertyInfo PropertyInfo { get; }
         public string SchemaPropertyName { get; }
         public string RouteTemplateParameterName { get; }
+        public string ResolvedRouteTemplateParameterName => RouteTemplateParameterName ?? PropertyInfo.Name;
 
         public KeyFromUriProperty(Type targetType, PropertyInfo propertyInfo, string schemaPropertyName, string routeTemplateParameterName)
         {

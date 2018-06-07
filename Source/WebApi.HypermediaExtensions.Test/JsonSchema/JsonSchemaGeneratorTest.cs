@@ -1,22 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using NJsonSchema;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
+using WebApi.HypermediaExtensions.Test.Helpers;
 using WebApi.HypermediaExtensions.Test.Hypermedia;
-using JsonProperty = Newtonsoft.Json.Serialization.JsonProperty;
+using static System.FormattableString;
 
 namespace WebApi.HypermediaExtensions.Test.JsonSchema
 {
@@ -125,9 +119,9 @@ namespace WebApi.HypermediaExtensions.Test.JsonSchema
 
         public override void When()
         {
-            clientParameter = new MyClientParameter($"http://mydomain.com/customers/{ObjectId}", 3, "http://www.blubs.com");
+            clientParameter = new MyClientParameter($"http://mydomain.com/customers/{ObjectId}", 3, "http://www.anothersite.com");
             var json = JsonConvert.SerializeObject(clientParameter);
-            deserialized = (MyParameter)new JsonDeserializer(typeof(MyParameter), "customers/{Id}").Deserialize(GenerateStreamFromString(json));
+            deserialized = (MyParameter)new JsonDeserializer(typeof(MyParameter), "customers/{Id}").Deserialize(json.ToStream());
         }
 
         [TestMethod]
@@ -143,21 +137,13 @@ namespace WebApi.HypermediaExtensions.Test.JsonSchema
             deserialized.Uri.Should().Be(clientParameter.Uri);
         }
 
-        public static Stream GenerateStreamFromString(string s)
-        {
-            var stream = new MemoryStream();
-            var writer = new StreamWriter(stream);
-            writer.Write(s);
-            writer.Flush();
-            stream.Position = 0;
-            return stream;
-        }
-
         class MyClientParameter
         {
+            // ReSharper disable UnusedAutoPropertyAccessor.Local
             public string Id { get; }
             public int SomeValue { get; }
             public string Uri { get; }
+            // ReSharper restore UnusedAutoPropertyAccessor.Local
 
             public MyClientParameter(string id, int someValue, string uri)
             {
@@ -170,15 +156,16 @@ namespace WebApi.HypermediaExtensions.Test.JsonSchema
         class MyParameter : IHypermediaActionParameter
         {
             // ReSharper disable UnusedMember.Local
+            // ReSharper disable UnusedAutoPropertyAccessor.Local
             [Required]
             [KeyFromUri(typeof(MyHypermediaObject))]
             public Guid Id { get; set; }
-
+            
             public int SomeValue { get; set; }
-
             [Required]
             public Uri Uri { get; set; }
             // ReSharper restore UnusedMember.Local
+            // ReSharper restore UnusedAutoPropertyAccessor.Local
         }
 
         class MyHypermediaObject : HypermediaObject
@@ -186,148 +173,81 @@ namespace WebApi.HypermediaExtensions.Test.JsonSchema
         }
     }
 
-    public class JsonDeserializer
+    [TestClass]
+    public class When_deserializing_a_parameter_composite_keys_of_different_types : TestSpecification
     {
-        readonly Type type;
-        readonly TemplateMatcher templateMatcher;
-        ImmutableArray<KeyFromUriProperty> keyFromUriProperties;
-        readonly JsonSerializerSettings jsonSerializerSettings;
+        MyParameter deserialized;
+        MyClientParameter clientParameter;
+        const string ParentId = "myParentId";
+        const int Id = 42;
+        const long GrandParentId = 23;
+        const double WeirdUncleId = 23.42;
 
-        public JsonDeserializer(Type type, string routeTemplate)
+        public override void When()
         {
-            this.type = type;
+            clientParameter = new MyClientParameter(Invariant($"http://mydomain.com/customers/{GrandParentId}/{WeirdUncleId}/{ParentId}/{Id}"), 3, "http://www.anothersite.com");
+            var json = JsonConvert.SerializeObject(clientParameter);
+            deserialized = (MyParameter)new JsonDeserializer(typeof(MyParameter), "customers/{grandParentId}/{weirdUncleId}/{parentId}/{id}").Deserialize(json.ToStream());
+        }
 
-            var template = TemplateParser.Parse(routeTemplate);
-            templateMatcher = new TemplateMatcher(template, GetDefaults(template));
+        [TestMethod]
+        public void Then_the_objects_key_is_extracted_from_the_uri()
+        {
+            deserialized.MyId.Should().Be(Id);
+            deserialized.MyParentId.Should().Be(ParentId);
+            deserialized.MyGrandParentId.Should().Be(GrandParentId);
+            deserialized.MyWeirdUncleId.Should().Be(WeirdUncleId);
+        }
 
-            keyFromUriProperties = type.GetKeyFromUriProperties();
-            jsonSerializerSettings = new JsonSerializerSettings();
+        [TestMethod]
+        public void Then_all_other_properties_are_deserialized_correctly()
+        {
+            deserialized.SomeValue.Should().Be(clientParameter.SomeValue);
+            deserialized.Uri.Should().Be(clientParameter.Uri);
+        }
 
-            if (keyFromUriProperties.Any())
+        class MyClientParameter
+        {
+            // ReSharper disable UnusedAutoPropertyAccessor.Local
+            public string UriToHmo { get; }
+            public int SomeValue { get; }
+            public string Uri { get; }
+            // ReSharper restore UnusedAutoPropertyAccessor.Local
+
+            public MyClientParameter(string uriToHmo, int someValue, string uri)
             {
-                jsonSerializerSettings.ContractResolver = new IgnorePropertiesContractResolver(keyFromUriProperties.Select(p => p.SchemaPropertyName));
+                UriToHmo = uriToHmo;
+                SomeValue = someValue;
+                Uri = uri;
             }
         }
 
-        static RouteValueDictionary GetDefaults(RouteTemplate parsedTemplate)
+        class MyParameter : IHypermediaActionParameter
         {
-            var result = new RouteValueDictionary();
+            // ReSharper disable UnusedMember.Local
+            // ReSharper disable UnusedAutoPropertyAccessor.Local
+            [Required]
+            [KeyFromUri(typeof(MyHypermediaObject), "UriToHmo", "id")]
+            public int MyId { get; set; }
+            [Required]
+            [KeyFromUri(typeof(MyHypermediaObject), "UriToHmo", "parentId")]
+            public string MyParentId { get; set; }
+            [Required]
+            [KeyFromUri(typeof(MyHypermediaObject), "UriToHmo", "grandParentId")]
+            public long MyGrandParentId { get; set; }
+            [Required]
+            [KeyFromUri(typeof(MyHypermediaObject), "UriToHmo", "weirdUncleId")]
+            public double MyWeirdUncleId { get; set; }
 
-            foreach (var parameter in parsedTemplate.Parameters)
-            {
-                if (parameter.DefaultValue != null)
-                {
-                    result.Add(parameter.Name, parameter.DefaultValue);
-                }
-            }
-
-            return result;
+            public int SomeValue { get; set; }
+            [Required]
+            public Uri Uri { get; set; }
+            // ReSharper restore UnusedMember.Local
+            // ReSharper restore UnusedAutoPropertyAccessor.Local
         }
 
-        public object Deserialize(Stream stream)
+        class MyHypermediaObject : HypermediaObject
         {
-            var serializer = JsonSerializer.Create(jsonSerializerSettings);
-            using (var sr = new StreamReader(stream))
-            using (var jsonTextReader = new JsonTextReader(sr))
-            {
-                var raw = (JObject)new JsonSerializer().Deserialize(jsonTextReader);
-                foreach (var propertyByUriProperty in keyFromUriProperties.GroupBy(p => p.SchemaPropertyName))
-                {
-                    var uri = (string)raw[propertyByUriProperty.Key];
-                    raw.Remove(propertyByUriProperty.Key);
-                    RouteValueDictionary values;
-                    if (templateMatcher.TryGetValuesFromRequest(new Uri(uri).LocalPath, out values))
-                    {
-                        foreach (var keyFromUriProperty in propertyByUriProperty)
-                        {
-                            //TODO: parse to correct type
-                            raw.Add(new JProperty(keyFromUriProperty.PropertyInfo.Name, (string)values[keyFromUriProperty.RouteTemplateParameterName ?? keyFromUriProperty.PropertyInfo.Name]));
-                        }
-                    }
-                }
-
-                var json = raw.ToString();
-                return raw.ToObject(type);
-            }
         }
-
-        class IgnorePropertiesContractResolver : DefaultContractResolver
-        {
-            readonly ImmutableHashSet<string> propertiesToIgnore;
-
-            public IgnorePropertiesContractResolver(IEnumerable<string> propertiesToIgnore)
-            {
-                this.propertiesToIgnore = propertiesToIgnore.ToImmutableHashSet();
-            }
-
-            protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
-            {
-                var properties = base.CreateProperties(type, memberSerialization);
-                return properties.Where(p => !propertiesToIgnore.Contains(p.PropertyName)).ToList();
-            }
-        }
-
-        
     }
-
-    public static class RouteMatcher
-        {
-            public static bool TryMatch(string routeTemplate, Uri requestPath, out RouteValueDictionary values)
-            {
-                var template = TemplateParser.Parse(routeTemplate);
-                var matcher = new TemplateMatcher(template, GetDefaults(template));
-
-                var requestLocalPath = requestPath.LocalPath;
-                return TryGetValuesFromRequest(matcher, requestLocalPath, out values);
-            }
-
-            public static bool TryGetValuesFromRequest(this TemplateMatcher matcher, string requestLocalPath, out RouteValueDictionary values)
-            {
-                values = new RouteValueDictionary();
-                return matcher.TryMatch(requestLocalPath, values);
-            }
-
-            // This method extracts the default argument values from the template.
-            private static RouteValueDictionary GetDefaults(RouteTemplate parsedTemplate)
-            {
-                var result = new RouteValueDictionary();
-
-                foreach (var parameter in parsedTemplate.Parameters)
-                {
-                    if (parameter.DefaultValue != null)
-                    {
-                        result.Add(parameter.Name, parameter.DefaultValue);
-                    }
-                }
-
-                return result;
-            }
-
-            public static string GetKeyFromRequest(string routeTemplate, string key, Uri request)
-            {
-                return GetKeyFromRequest(routeTemplate, key, request, s => s);
-            }
-
-            public static Guid GetGuidKeyFromRequest(string routeTemplate, string key, Uri request)
-            {
-                return GetKeyFromRequest(routeTemplate, key, request, Guid.Parse);
-            }
-
-            public static T GetKeyFromRequest<T>(string routeTemplate, string key, Uri request, Func<string, T> keyFromString)
-            {
-                RouteValueDictionary dict;
-                if (!TryMatch(routeTemplate, request, out dict))
-                {
-                    throw new ArgumentException($"Unexpected uri '{request}'. Expected uri for template: {routeTemplate}");
-                }
-
-                object value;
-                if (!dict.TryGetValue(key, out value))
-                {
-                    throw new ArgumentException($"Key {key} not found in {request}");
-                }
-
-                return keyFromString((string)value);
-            }
-        }
 }
