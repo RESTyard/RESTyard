@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -121,7 +120,7 @@ namespace WebApi.HypermediaExtensions.Test.JsonSchema
         {
             clientParameter = new MyClientParameter($"http://mydomain.com/customers/{ObjectId}", 3, "http://www.anothersite.com");
             var json = JsonConvert.SerializeObject(clientParameter);
-            deserialized = (MyParameter)new JsonDeserializer(typeof(MyParameter), "customers/{Id}").Deserialize(json.ToStream());
+            deserialized = (MyParameter)new JsonDeserializer(typeof(MyParameter), t => "customers/{Id}").Deserialize(json.ToStream());
         }
 
         [TestMethod]
@@ -187,7 +186,7 @@ namespace WebApi.HypermediaExtensions.Test.JsonSchema
         {
             clientParameter = new MyClientParameter(Invariant($"http://mydomain.com/customers/{GrandParentId}/{WeirdUncleId}/{ParentId}/{Id}"), 3, "http://www.anothersite.com");
             var json = JsonConvert.SerializeObject(clientParameter);
-            deserialized = (MyParameter)new JsonDeserializer(typeof(MyParameter), "customers/{grandParentId}/{weirdUncleId}/{parentId}/{id}").Deserialize(json.ToStream());
+            deserialized = (MyParameter)new JsonDeserializer(typeof(MyParameter), t => "customers/{grandParentId}/{weirdUncleId}/{parentId}/{id}").Deserialize(json.ToStream());
         }
 
         [TestMethod]
