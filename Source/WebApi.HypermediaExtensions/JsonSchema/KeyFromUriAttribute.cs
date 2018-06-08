@@ -14,15 +14,35 @@ namespace WebApi.HypermediaExtensions.JsonSchema
         public string RouteTemplateParameterName { get; }
         public Type ReferencedHypermediaObjectType { get; }
 
+        /// <summary>
+        /// Use when a single property represents the objects key. Property name in json schema will be the attributed properties name. 
+        /// </summary>
+        /// <param name="referencedHypermediaObjectType"></param>
         public KeyFromUriAttribute(Type referencedHypermediaObjectType)
         {
             ReferencedHypermediaObjectType = referencedHypermediaObjectType;
         }
 
-        public KeyFromUriAttribute(Type referencedHypermediaObjectType, string schemaProperyName,
-            string routeTemplateParameterName) : this(referencedHypermediaObjectType)
+        /// <summary>
+        /// Use when a single property represents the objects key /// </summary>
+        /// <param name="referencedHypermediaObjectType"></param>
+        /// <param name="schemaProperyName">Name of property in json schema</param>
+        public KeyFromUriAttribute(Type referencedHypermediaObjectType, string schemaProperyName) : this(referencedHypermediaObjectType)
         {
             SchemaProperyName = schemaProperyName;
+        }
+
+        /// <summary>
+        /// Use for composite keys represented by multiple properties.
+        /// </summary>
+        /// <param name="schemaProperyName">Name of property in json schema</param>
+        /// <param name="routeTemplateParameterName">
+        /// Has to match the template parameter name in GET route for type <see cref="ReferencedHypermediaObjectType"/> of the corresponding controller. 
+        /// </param>
+        /// <param name="referencedHypermediaObjectType"></param>
+        public KeyFromUriAttribute(Type referencedHypermediaObjectType, string schemaProperyName,
+            string routeTemplateParameterName) : this(referencedHypermediaObjectType, schemaProperyName)
+        {
             RouteTemplateParameterName = routeTemplateParameterName;
         }
     }
