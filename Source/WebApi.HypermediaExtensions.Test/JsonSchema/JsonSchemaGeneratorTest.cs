@@ -38,7 +38,7 @@ namespace WebApi.HypermediaExtensions.Test.JsonSchema
 
             public int SomeValue { get; set; }
 
-            [Required]
+            //[Required]
             public Uri Uri { get; set; }
             // ReSharper restore UnusedMember.Local
         }

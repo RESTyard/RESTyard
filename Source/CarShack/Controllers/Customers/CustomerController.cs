@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using CarShack.Domain.Customer;
+using CarShack.Hypermedia.Cars;
 using CarShack.Hypermedia.Customers;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
@@ -46,7 +47,7 @@ namespace CarShack.Controllers.Customers
 
         #region Actions
         [HttpPostHypermediaAction("MyFavoriteCustomers", typeof(HypermediaActionCustomerMarkAsFavorite))]
-        public async Task<ActionResult> MarkAsFavoriteAction(FavoriteCustomer favoriteCustomer)
+        public async Task<ActionResult> MarkAsFavoriteAction([HypermediaActionParameterFromBody]FavoriteCustomer favoriteCustomer)
         {
             try
             {
@@ -77,21 +78,36 @@ namespace CarShack.Controllers.Customers
             }
         }
 
-        private int ExtractIdFromCustomerUri(string favoriteCustomerCustomerLink)
+        [HttpPostHypermediaAction("{key:int}/BuysCar", typeof(HypermediaActionCustomerBuysCar))]
+        public async Task<ActionResult> BuyCar(int key, [HypermediaActionParameterFromBody]HypermediaActionCustomerBuysCar.Parameter parameter)
         {
-            if (string.IsNullOrWhiteSpace(favoriteCustomerCustomerLink))
+            if (parameter == null)
             {
-                throw new InvalidLinkException($"Provided Link is empty '{favoriteCustomerCustomerLink}'");
+                var problem = new ProblemJson
+                {
+                    Title = $"Can not use provided object of type '{typeof(HypermediaActionCustomerBuysCar.Parameter)}'",
+                    Detail = "Json or contained links might be invalid",
+                    ProblemType = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
+                    StatusCode = 422 // Unprocessable Entity
+                };
+                return this.UnprocessableEntity(problem);
             }
-            var lastSegment = favoriteCustomerCustomerLink.Split('/').Last();
 
             try
             {
-                return Convert.ToInt16(lastSegment);
+                //shortcut for get car from repository
+                var car = new HypermediaCar(parameter.Brand, parameter.CarId);
+                var customer = await customerRepository.GetEnitityByKeyAsync(key).ConfigureAwait(false);
+                //do what has to be done
+                return Ok();
             }
-            catch (Exception)
+            catch (EntityNotFoundException)
             {
-                throw new InvalidLinkException($"Provided Link is invalid '{favoriteCustomerCustomerLink}', provide propper self link.");
+                return this.Problem(ProblemJsonBuilder.CreateEntityNotFound());
+            }
+            catch (CanNotExecuteActionException)
+            {
+                return this.CanNotExecute();
             }
         }
 
@@ -138,6 +154,13 @@ namespace CarShack.Controllers.Customers
         public async Task<ActionResult> NewAddressType()
         {
             var schema = await JsonSchemaFactory.Generate(typeof(NewAddress)).ConfigureAwait(false);
+            return Ok(schema);
+        }
+
+        [HttpGetHypermediaActionParameterInfo("CustomerBuysCarParameter", typeof(HypermediaActionCustomerBuysCar.Parameter))]
+        public async Task<ActionResult> HypermediaActionCustomerBuysCarParameter()
+        {
+            var schema = await JsonSchemaFactory.Generate(typeof(HypermediaActionCustomerBuysCar.Parameter)).ConfigureAwait(false);
             return Ok(schema);
         }
         #endregion

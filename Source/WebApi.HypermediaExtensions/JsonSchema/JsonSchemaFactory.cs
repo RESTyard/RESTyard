@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -43,8 +44,12 @@ namespace WebApi.HypermediaExtensions.JsonSchema
                     throw new JsonSchemaGenerationException($"Key property '{propertyGroup.First().Property.Name}' maps to property '{schemaPropertyName}' that already exists on type {type.BeautifulName()}");
                 }
 
-                var property = new JsonProperty { Type = JsonObjectType.String, Format = JsonFormatStrings.Uri, MinLength = 1 };
-                AddRequiredProperty(schema, schemaPropertyName, property);
+                var isRequired = propertyGroup.Any(p => p.Property.GetCustomAttribute<RequiredAttribute>() != null);
+                var property = new JsonProperty { Type = JsonObjectType.String, Format = JsonFormatStrings.Uri };
+                //schema factory sets minlegth of required uri properties, so do it here as well
+                if (isRequired)
+                    property.MinLength = 1;
+                AddProperty(schema, schemaPropertyName, property, isRequired);
             }
 
             return schema;
@@ -56,10 +61,11 @@ namespace WebApi.HypermediaExtensions.JsonSchema
             schema.RequiredProperties.Remove(propertyName);
         }
 
-        static void AddRequiredProperty(JsonSchema4 schema, string propertyName, JsonProperty property)
+        static void AddProperty(JsonSchema4 schema, string propertyName, JsonProperty property, bool isRequired)
         {
             schema.Properties.Add(propertyName, property);
-            schema.RequiredProperties.Add(propertyName);
+            if (isRequired)
+                schema.RequiredProperties.Add(propertyName);
         }
 
         public class JsonSchemaGenerationException : Exception

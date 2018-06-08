@@ -67,7 +67,7 @@ namespace CarShack
                 options.AddHypermediaExtensions(hypermediaOptions: new HypermediaExtensionsOptions
                 {
                     ReturnDefaultRouteForUnknownHto = true
-                }).AddHypermediaParameterBinders();
+                }).AddHypermediaParameterBinders(true);
             });
             builder.AddMvcOptions(o => { o.Filters.Add(new GlobalExceptionFilter(null)); });
 

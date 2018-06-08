@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -11,33 +12,45 @@ using WebApi.HypermediaExtensions.Util;
 
 namespace WebApi.HypermediaExtensions.JsonSchema
 {
-    public class FromBodyHypermediaParameterBinderProvider : IModelBinderProvider
+    public class HypermediaActionParameterFromBodyAttribute : ModelBinderAttribute
+    {
+        public HypermediaActionParameterFromBodyAttribute()
+        {
+            BinderType = typeof(HypermediaParameterFromBodyBinder);
+        }
+    }
+
+    public class HypermediaParameterFromBodyBinderProvider : IModelBinderProvider
     {
         readonly Func<Type, string> getRouteTemplateForType;
-        
-        public FromBodyHypermediaParameterBinderProvider(Func<Type, string> getRouteTemplateForType)
+        readonly bool explicitUsage;
+
+        public HypermediaParameterFromBodyBinderProvider(Func<Type, string> getRouteTemplateForType, bool explicitUsage = false)
         {
             this.getRouteTemplateForType = getRouteTemplateForType;
+            this.explicitUsage = explicitUsage;
         }
 
         public IModelBinder GetBinder(ModelBinderProviderContext context)
         {
             var modelType = context.Metadata.ModelType;
-            if (typeof(IHypermediaActionParameter).GetTypeInfo().IsAssignableFrom(modelType) && context.BindingInfo.BinderType == null && context.BindingInfo.BindingSource == null)
+            if (typeof(IHypermediaActionParameter).GetTypeInfo().IsAssignableFrom(modelType) 
+                && (context.BindingInfo.BinderType == typeof(HypermediaParameterFromBodyBinder)
+                || !explicitUsage && context.BindingInfo.BinderType == null && context.BindingInfo.BindingSource == null))
             {
-                return new FromBodyHypermediaParameterBinder(modelType, getRouteTemplateForType);
+                return new HypermediaParameterFromBodyBinder(modelType, getRouteTemplateForType);
             }
 
             return null;
         }
     }
 
-    public class FromBodyHypermediaParameterBinder : IModelBinder
+    public class HypermediaParameterFromBodyBinder : IModelBinder
     {
         readonly Type modelType;
         readonly JsonDeserializer serializer;
 
-        public FromBodyHypermediaParameterBinder(Type modelType, Func<Type, string> getRouteTemplateForType)
+        public HypermediaParameterFromBodyBinder(Type modelType, Func<Type, string> getRouteTemplateForType)
         {
             this.modelType = modelType;
             serializer = new JsonDeserializer(modelType, getRouteTemplateForType);
