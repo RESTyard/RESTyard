@@ -51,7 +51,6 @@ namespace CarShack.Controllers.Customers
         {
             try
             {
-                //var id =  ExtractIdFromCustomerUri(favoriteCustomer.CustomerLink);
                 var customer = await customerRepository.GetEnitityByKeyAsync(favoriteCustomer.CustomerId).ConfigureAwait(false);
                 var hypermediaCustomer = new HypermediaCustomer(customer);
                 hypermediaCustomer.MarkAsFavoriteAction.Execute(favoriteCustomer);
