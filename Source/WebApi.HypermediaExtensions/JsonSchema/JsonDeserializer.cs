@@ -15,7 +15,7 @@ namespace WebApi.HypermediaExtensions.JsonSchema
     public class JsonDeserializer
     {
         readonly Type type;
-        readonly ImmutableArray<KeyPropertiesOfSchemaProperty> keyFromUriProperties;
+        readonly ImmutableArray<KeyPropertiesOfSchema> keyFromUriProperties;
 
         public JsonDeserializer(Type type, Func<Type, string> getRouteTemplateForType)
         {
@@ -24,7 +24,7 @@ namespace WebApi.HypermediaExtensions.JsonSchema
             keyFromUriProperties = type
                 .GetKeyFromUriProperties()
                 .GroupBy(k => k.SchemaPropertyName)
-                .Select(_ => new KeyPropertiesOfSchemaProperty(_.Key, _, getRouteTemplateForType))
+                .Select(_ => new KeyPropertiesOfSchema(_.Key, _, getRouteTemplateForType))
                 .ToImmutableArray();
         }
 
@@ -73,7 +73,7 @@ namespace WebApi.HypermediaExtensions.JsonSchema
             return raw.ToObject(type);
         }
 
-        class KeyPropertiesOfSchemaProperty
+        class KeyPropertiesOfSchema
         {
             public string SchemaPropertyName { get; }
             public Type TargetType { get; }
@@ -81,7 +81,7 @@ namespace WebApi.HypermediaExtensions.JsonSchema
             public TemplateMatcher TemplateMatcher { get; }
             public ImmutableArray<KeyFromUriProperty> Properties { get; }
 
-            public KeyPropertiesOfSchemaProperty(string schemaPropertyName, IEnumerable<KeyFromUriProperty> properties, Func<Type, string> getTemplate)
+            public KeyPropertiesOfSchema(string schemaPropertyName, IEnumerable<KeyFromUriProperty> properties, Func<Type, string> getTemplate)
             {
                 SchemaPropertyName = schemaPropertyName;
                 Properties = properties.ToImmutableArray();

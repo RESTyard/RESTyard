@@ -10,6 +10,7 @@ using WebApi.HypermediaExtensions.Hypermedia.Actions;
 using WebApi.HypermediaExtensions.JsonSchema;
 using WebApi.HypermediaExtensions.Test.Helpers;
 using WebApi.HypermediaExtensions.Test.Hypermedia;
+using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace WebApi.HypermediaExtensions.Test.JsonSchema
 {

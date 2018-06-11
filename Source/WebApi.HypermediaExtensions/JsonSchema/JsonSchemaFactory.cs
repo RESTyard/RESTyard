@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using NJsonSchema;
 using NJsonSchema.Generation;
 using WebApi.HypermediaExtensions.Util;
+using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace WebApi.HypermediaExtensions.JsonSchema
 {

@@ -169,7 +169,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             string classRoute;
             if (!routeResolver.TryGetRouteByType(actionParameterType, out classRoute))
             {
-                classRoute = actionParameterType.BeautifulName();
+                classRoute = routeResolver.RouteUrl(RouteNames.ActionParameterTypes, new{ parameterTypeName = actionParameterType.BeautifulName()});
             }
 
             jfield.Add("class", new JArray { classRoute });

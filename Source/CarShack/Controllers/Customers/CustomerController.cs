@@ -149,7 +149,7 @@ namespace CarShack.Controllers.Customers
 
         #region TypeRoutes
         // Provide type information for Action parameters. Does not depend on a specific customer.
-        [HttpGetHypermediaActionParameterInfo("NewAddressType", typeof(NewAddress))]
+        //[HttpGetHypermediaActionParameterInfo("NewAddressType", typeof(NewAddress))]
         public async Task<ActionResult> NewAddressType()
         {
             var schema = await JsonSchemaFactory.Generate(typeof(NewAddress)).ConfigureAwait(false);

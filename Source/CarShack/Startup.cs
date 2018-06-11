@@ -73,6 +73,7 @@ namespace CarShack
 
             // Required by Hypermedia Extensions
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            services.RegisterActionTypeController();
 
             // Domain
             services.AddSingleton<HypermediaEntryPoint>();

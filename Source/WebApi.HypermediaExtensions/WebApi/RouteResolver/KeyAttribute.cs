@@ -23,7 +23,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
         /// Use for composite keys represented by multiple properties.
         /// </summary>
         /// <param name="templateParameterName">
-        /// Has to match the template parameter name in GET route of the corresponding controller. 
+        /// Has to match the template parameter name in Get route of the corresponding controller. 
         /// </param>
         public KeyAttribute(string templateParameterName)
         {

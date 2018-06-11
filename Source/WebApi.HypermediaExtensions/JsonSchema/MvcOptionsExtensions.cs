@@ -1,11 +1,12 @@
 ﻿using System;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
 using WebApi.HypermediaExtensions.Util;
-using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
+using WebApi.HypermediaExtensions.WebApi.Controller;
+using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace WebApi.HypermediaExtensions.JsonSchema
 {
@@ -24,69 +25,26 @@ namespace WebApi.HypermediaExtensions.JsonSchema
         /// <returns></returns>
         public static MvcOptions AddHypermediaParameterBinders(this MvcOptions options, bool forAttributedActionParametersOnly = false, params Assembly[] controllerAssemblies)
         {
-            controllerAssemblies = controllerAssemblies.Any() ? controllerAssemblies : new[] { Assembly.GetEntryAssembly() };
-
-            var controllerMethods = controllerAssemblies
-                .SelectMany(a => a.GetTypes()
-                    .Select(t => t.GetTypeInfo())
-                    .Where(t => typeof(Controller).GetTypeInfo().IsAssignableFrom(t))
-                    .Select(t => new { t, methods = t.GetMethods() }))
-                .ToImmutableArray();
-
-            var getHmoMethods = controllerMethods
-                .Select(_ => new
-                {
-                    _.t,
-                    methods = _.methods.Select(m => new
-                    {
-                        m,
-                        att = m.GetCustomAttribute<HttpGetHypermediaObject>()
-                    }).Where(m => m.att != null)
-                });
-
-            var routesByHmoType = getHmoMethods
-                .SelectMany(_ => _.methods)
-                .ToDictionary(m => m.att.RouteType, m =>
-                {
-                    var controllerTemplate = m.m.DeclaringType.GetTypeInfo().GetCustomAttribute<RouteAttribute>()?.Template;
-                    return string.Concat(controllerTemplate, "/", m.att.Template).Replace("//", "/").Replace("///", "/");
-                }).ToImmutableDictionary();
-
+            var applicationModel = ApplicationModel.Create(controllerAssemblies);
 
             options.ModelBinderProviders.Insert(0, new HypermediaParameterFromBodyBinderProvider(t =>
             {
-                if (!routesByHmoType.TryGetValue(t, out string template))
+                if (!applicationModel.HmoTypes.TryGetValue(t, out var hmoType))
                 {
                     throw new ArgumentException($"No route found for type {t.BeautifulName()}");
                 }
 
-                return template;
+                return hmoType.GetHmoMethod.RouteTemplateFull;
             }, forAttributedActionParametersOnly));
 
             return options;
+        }
 
-
-            //var hypermediaActionMethods = controllerMethods
-            //    .Select(_ => new
-            //    {
-            //        _.t,
-            //        methods = _.methods.Select(m => new
-            //        {
-            //            m,
-            //            att = m.GetCustomAttribute<HttpPostHypermediaAction>()
-            //        }).Where(m => m.att != null)
-            //    }).ToImmutableArray();
-
-            //var hypermediaGetParameterInfoMethods = controllerMethods
-            //    .Select(_ => new
-            //    {
-            //        _.t,
-            //        methods = _.methods.Select(m => new
-            //        {
-            //            m,
-            //            att = m.GetCustomAttribute<HttpGetHypermediaActionParameterInfo>()
-            //        }).Where(m => m.att != null)
-            //    });
+        public static IServiceCollection RegisterActionTypeController(this IServiceCollection serviceCollection)
+        {
+            var applicationModel = ApplicationModel.Create();
+            var controller = new ActionParameterSchemas(applicationModel.ActionParameterTypes.Values.Select(_ => _.Type));
+            return serviceCollection.AddSingleton(controller);
         }
     }
 }
