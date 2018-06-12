@@ -3,7 +3,6 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -12,15 +11,7 @@ using WebApi.HypermediaExtensions.Util;
 
 namespace WebApi.HypermediaExtensions.JsonSchema
 {
-    public class HypermediaActionParameterFromBodyAttribute : ModelBinderAttribute
-    {
-        public HypermediaActionParameterFromBodyAttribute()
-        {
-            BinderType = typeof(HypermediaParameterFromBodyBinder);
-        }
-    }
-
-    public class HypermediaParameterFromBodyBinderProvider : IModelBinderProvider
+    class HypermediaParameterFromBodyBinderProvider : IModelBinderProvider
     {
         readonly Func<Type, string> getRouteTemplateForType;
         readonly bool explicitUsage;
@@ -45,7 +36,7 @@ namespace WebApi.HypermediaExtensions.JsonSchema
         }
     }
 
-    public class HypermediaParameterFromBodyBinder : IModelBinder
+    class HypermediaParameterFromBodyBinder : IModelBinder
     {
         readonly Type modelType;
         readonly JsonDeserializer serializer;
@@ -121,7 +112,6 @@ namespace WebApi.HypermediaExtensions.JsonSchema
                 jObject = null;
                 return false;
             }
-
 
             jObject = wrapperArray[0][modelTypeName] as JObject;
             if (jObject == null)

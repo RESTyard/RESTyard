@@ -8,10 +8,12 @@ using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.HypermediaExtensions.ErrorHandling;
 using WebApi.HypermediaExtensions.Exceptions;
+using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 using WebApi.HypermediaExtensions.JsonSchema;
 using WebApi.HypermediaExtensions.WebApi;
 using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
 using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
+using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace CarShack.Controllers.Customers
 {

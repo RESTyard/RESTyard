@@ -1,6 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using System.Linq;
+using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using WebApi.HypermediaExtensions.Hypermedia.Actions;
+using WebApi.HypermediaExtensions.JsonSchema;
 using WebApi.HypermediaExtensions.Query;
+using WebApi.HypermediaExtensions.Util;
 using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
+using WebApi.HypermediaExtensions.WebApi.Controller;
 using WebApi.HypermediaExtensions.WebApi.Formatter;
 using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
@@ -45,6 +53,48 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
             options.OutputFormatters.Insert(0, sirenHypermediaFormatter);
 
             return options;
+        }
+
+        /// <summary>
+        /// Add custom binder for parameters of hypermedia actions that derive from <see cref="IHypermediaActionParameter"/>. 
+        /// Enables usage of <see cref="KeyFromUriAttribute"/> for properties of those parameter types. 
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="forAttributedActionParametersOnly">
+        ///     If set custom binder will be used for all parameter types that are not attributed differently. 
+        ///     If set to false custom binder will be used for parameter types explicitly attributed with <see cref="HypermediaActionParameterFromBodyAttribute"/> only.
+        ///  </param>
+        /// <param name="controllerAssemblies"></param>
+        /// <returns></returns>
+        public static MvcOptions AddHypermediaParameterBinders(this MvcOptions options, bool forAttributedActionParametersOnly = false, params Assembly[] controllerAssemblies)
+        {
+            var applicationModel = ApplicationModel.Create(controllerAssemblies);
+
+            options.ModelBinderProviders.Insert(0, new HypermediaParameterFromBodyBinderProvider(t =>
+            {
+                if (!applicationModel.HmoTypes.TryGetValue(t, out var hmoType))
+                {
+                    throw new ArgumentException($"No route found for type {t.BeautifulName()}");
+                }
+
+                return hmoType.GetHmoMethod.RouteTemplateFull;
+            }, forAttributedActionParametersOnly));
+
+            return options;
+        }
+
+        /// <summary>
+        /// Automatically deliver NJson schema for hypermedia action parameters. Custom schemas can still be delivered by implementing controller methods attributed
+        /// with <see cref="HttpGetHypermediaActionParameterInfo"/> attibute.
+        /// </summary>
+        /// <param name="serviceCollection"></param>
+        /// <param name="controllerAssemblies"></param>
+        /// <returns></returns>
+        public static IServiceCollection AutoDeliverActionParameterSchemas(this IServiceCollection serviceCollection, params Assembly[] controllerAssemblies)
+        {
+            var applicationModel = ApplicationModel.Create(controllerAssemblies);
+            var controller = new ActionParameterSchemas(applicationModel.ActionParameterTypes.Values.Select(_ => _.Type));
+            return serviceCollection.AddSingleton(controller);
         }
     }
 }

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Routing.Template;
 
 namespace WebApi.HypermediaExtensions.JsonSchema
 {
-    public static class RouteMatcher
+    static class RouteMatcher
     {
         public static bool TryMatch(string routeTemplate, Uri requestPath, out RouteValueDictionary values)
         {
@@ -55,14 +55,12 @@ namespace WebApi.HypermediaExtensions.JsonSchema
 
         public static T GetKeyFromRequest<T>(string routeTemplate, string key, Uri request, Func<string, T> keyFromString)
         {
-            RouteValueDictionary dict;
-            if (!TryMatch(routeTemplate, request, out dict))
+            if (!TryMatch(routeTemplate, request, out var dict))
             {
                 throw new ArgumentException($"Unexpected uri '{request}'. Expected uri for template: {routeTemplate}");
             }
 
-            object value;
-            if (!dict.TryGetValue(key, out value))
+            if (!dict.TryGetValue(key, out var value))
             {
                 throw new ArgumentException($"Key {key} not found in {request}");
             }

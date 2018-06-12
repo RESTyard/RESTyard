@@ -1,5 +1,6 @@
 ﻿using System;
 using WebApi.HypermediaExtensions.JsonSchema;
+using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
 
 namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
 {

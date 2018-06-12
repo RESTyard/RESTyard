@@ -166,17 +166,14 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
                 {"type", DefaultMediaTypes.ApplicationJson}
             };
 
-            string classRoute;
-            if (!routeResolver.TryGetRouteByType(actionParameterType, out classRoute))
+            if (!routeResolver.TryGetRouteByType(actionParameterType, out var classRoute))
             {
-                classRoute = routeResolver.RouteUrl(RouteNames.ActionParameterTypes, new{ parameterTypeName = actionParameterType.BeautifulName()});
+                classRoute = routeResolver.RouteUrl(RouteNames.ActionParameterTypes, new { parameterTypeName = actionParameterType.BeautifulName() });
             }
 
             jfield.Add("class", new JArray { classRoute });
 
-            var jFields = new JArray();
-            jFields.Add(jfield);
-            jAction.Add("fields", jFields);
+            jAction.Add("fields", new JArray { jfield });
         }
 
         private static bool IsHypermediaAction(PropertyInfo property)
@@ -223,8 +220,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             {
                 var jLink = new JObject();
 
-                var jRel = new JArray();
-                jRel.Add(hypermediaLink.Key);
+                var jRel = new JArray { hypermediaLink.Key };
                 jLink.Add("rel", jRel);
 
                 var resolvedAdress = ResolveReferenceRoute(hypermediaLink.Value.Reference);
