@@ -17,15 +17,5 @@ namespace CarShack.Controllers.Customers
         {
             this.customerRepository = customerRepository;
         }
-
-        #region TypeRoutes
-        // Provide type information for Action parameters. Does not depend on a specific customer.
-        [HttpGetHypermediaActionParameterInfo("FavoriteCustomer", typeof(FavoriteCustomer))]
-        public async Task<ActionResult> FavoriteCustomerType()
-        {
-            var schema = await JsonSchemaFactory.Generate(typeof(FavoriteCustomer)).ConfigureAwait(false);
-            return Ok(schema);
-        }
-        #endregion
     }
 }

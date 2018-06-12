@@ -6,9 +6,7 @@ using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
 using WebApi.HypermediaExtensions.Hypermedia.Links;
-using WebApi.HypermediaExtensions.JsonSchema;
 using WebApi.HypermediaExtensions.Util.Repository;
-using WebApi.HypermediaExtensions.WebApi;
 using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
 using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
 
@@ -61,7 +59,7 @@ namespace CarShack.Controllers.Customers
 #region Actions
         // Provides a link to the result Query.
         [HttpPostHypermediaAction("Queries", typeof(HypermediaAction<CustomerQuery>))]
-        public ActionResult NewQueryAction([SingleParameterBinder(typeof(CustomerQuery))] CustomerQuery query)
+        public ActionResult NewQueryAction(CustomerQuery query)
         {
             if (query == null)
             {
@@ -78,7 +76,7 @@ namespace CarShack.Controllers.Customers
         }
 
         [HttpPostHypermediaAction("CreateCustomer", typeof(HypermediaFunction<CreateCustomerParameters, Task<Customer>>))]
-        public async Task<ActionResult> NewCustomerAction([SingleParameterBinder(typeof(CreateCustomerParameters))] CreateCustomerParameters createCustomerParameters)
+        public async Task<ActionResult> NewCustomerAction(CreateCustomerParameters createCustomerParameters)
         {
             if (createCustomerParameters == null)
             {
@@ -89,23 +87,6 @@ namespace CarShack.Controllers.Customers
 
             // Will create a Location header with a URI to the result.
             return this.Created(new HypermediaCustomer(createdCustomer));
-        }
-#endregion
-
-#region TypeRoutes
-        // Provide type information for Action parameters
-        [HttpGetHypermediaActionParameterInfo("CreateCustomerParametersType", typeof(CreateCustomerParameters))]
-        public async Task<ActionResult> CreateCustomerParametersType()
-        {
-            var schema = await JsonSchemaFactory.Generate(typeof(CreateCustomerParameters)).ConfigureAwait(false);
-            return Ok(schema);
-        }
-
-        [HttpGetHypermediaActionParameterInfo("CustomerQueryType", typeof(CustomerQuery))]
-        public async Task<ActionResult> CustomerQueryType()
-        {
-            var schema = await JsonSchemaFactory.Generate(typeof(CustomerQuery)).ConfigureAwait(false);
-            return Ok(schema);
         }
 #endregion
     }

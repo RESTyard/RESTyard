@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using CarShack.Domain.Customer;
 using CarShack.Hypermedia.Cars;
 using CarShack.Hypermedia.Customers;
@@ -8,12 +6,10 @@ using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.HypermediaExtensions.ErrorHandling;
 using WebApi.HypermediaExtensions.Exceptions;
-using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 using WebApi.HypermediaExtensions.JsonSchema;
 using WebApi.HypermediaExtensions.WebApi;
 using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
 using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
-using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace CarShack.Controllers.Customers
 {
@@ -80,7 +76,7 @@ namespace CarShack.Controllers.Customers
         }
 
         [HttpPostHypermediaAction("{key:int}/BuysCar", typeof(HypermediaActionCustomerBuysCar))]
-        public async Task<ActionResult> BuyCar(int key, [HypermediaActionParameterFromBody]HypermediaActionCustomerBuysCar.Parameter parameter)
+        public async Task<ActionResult> BuyCar(int key, HypermediaActionCustomerBuysCar.Parameter parameter)
         {
             if (parameter == null)
             {
@@ -113,7 +109,7 @@ namespace CarShack.Controllers.Customers
         }
 
         [HttpPostHypermediaAction("{key:int}/Moves", typeof(HypermediaActionCustomerMoveAction), typeof(CustomerRouteKeyProducer))]
-        public async Task<ActionResult> CustomerMove(int key, [SingleParameterBinder(typeof(NewAddress))] NewAddress newAddress)
+        public async Task<ActionResult> CustomerMove(int key, NewAddress newAddress)
         {
             if (newAddress == null)
             {
@@ -150,18 +146,12 @@ namespace CarShack.Controllers.Customers
         #endregion
 
         #region TypeRoutes
-        // Provide type information for Action parameters. Does not depend on a specific customer.
-        //[HttpGetHypermediaActionParameterInfo("NewAddressType", typeof(NewAddress))]
+        // Provide type information for Action parameters. Does not depend on a specific customer. Optional when using
+        // MvcOptionsExtension.AutoDeliverActionParameterSchemas
+        [HttpGetHypermediaActionParameterInfo("NewAddressType", typeof(NewAddress))]
         public async Task<ActionResult> NewAddressType()
         {
             var schema = await JsonSchemaFactory.Generate(typeof(NewAddress)).ConfigureAwait(false);
-            return Ok(schema);
-        }
-
-        [HttpGetHypermediaActionParameterInfo("CustomerBuysCarParameter", typeof(HypermediaActionCustomerBuysCar.Parameter))]
-        public async Task<ActionResult> HypermediaActionCustomerBuysCarParameter()
-        {
-            var schema = await JsonSchemaFactory.Generate(typeof(HypermediaActionCustomerBuysCar.Parameter)).ConfigureAwait(false);
             return Ok(schema);
         }
         #endregion
