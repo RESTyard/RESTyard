@@ -7,6 +7,7 @@ namespace Hypermedia.Client.Resolver
     using global::Hypermedia.Client.Authentication;
     using global::Hypermedia.Client.Hypermedia;
     using global::Hypermedia.Client.Hypermedia.Commands;
+    using global::Hypermedia.Client.Reader;
 
     public interface IHypermediaResolver
     {

@@ -12,9 +12,10 @@ namespace Hypermedia.Client.Resolver
     using global::Hypermedia.Client.Hypermedia;
     using global::Hypermedia.Client.Hypermedia.Commands;
     using global::Hypermedia.Client.ParameterSerializer;
+    using global::Hypermedia.Client.Reader;
     using global::Hypermedia.MediaTypes;
 
-    public  class HttpHypermediaResolver : IHypermediaResolver, IDisposable
+    public class HttpHypermediaResolver : IHypermediaResolver, IDisposable
     {
         private readonly IParameterSerializer parameterSerializer;
         private IHypermediaReader hypermediaReader;
@@ -37,7 +38,7 @@ namespace Hypermedia.Client.Resolver
         public async Task<ResolverResult<T>> ResolveLinkAsync<T>(Uri uriToResolve) where T : HypermediaClientObject
         {
             var result = await this.httpClient.GetAsync(uriToResolve);
-            var resolverResult =  new ResolverResult<T>();
+            var resolverResult = new ResolverResult<T>();
 
             if (!result.IsSuccessStatusCode)
             {

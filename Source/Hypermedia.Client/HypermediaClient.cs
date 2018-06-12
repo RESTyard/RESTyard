@@ -4,6 +4,7 @@ namespace Hypermedia.Client
     using System.Threading.Tasks;
 
     using global::Hypermedia.Client.Hypermedia;
+    using global::Hypermedia.Client.Reader;
     using global::Hypermedia.Client.Resolver;
 
     public class HypermediaClient<TEntryPoint> : IHypermediaClient<TEntryPoint> where TEntryPoint : HypermediaClientObject

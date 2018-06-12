@@ -7,6 +7,7 @@
     using global::Hypermedia.Client.Authentication;
     using global::Hypermedia.Client.Extensions;
     using global::Hypermedia.Client.ParameterSerializer;
+    using global::Hypermedia.Client.Reader;
     using global::Hypermedia.Client.Resolver;
     using global::Hypermedia.Client.Test.Hypermedia;
 

@@ -1,4 +1,4 @@
-namespace Hypermedia.Client
+namespace Hypermedia.Client.Reader
 {
     using System;
     using System.Collections.Generic;
