@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-
-namespace HypermediaClient.Hypermedia.Commands
+﻿namespace Hypermedia.Client.Hypermedia.Commands
 {
+    using System.Threading.Tasks;
+
     public interface IHypermediaClientAction : IHypermediaClientCommand
     {
         Task<HypermediaCommandResult> ExecuteAsync();

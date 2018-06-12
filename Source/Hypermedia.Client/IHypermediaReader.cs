@@ -1,6 +1,6 @@
-namespace HypermediaClient
+namespace Hypermedia.Client
 {
-    using HypermediaClient.Hypermedia;
+    using global::Hypermedia.Client.Hypermedia;
 
     public interface IHypermediaReader
     {

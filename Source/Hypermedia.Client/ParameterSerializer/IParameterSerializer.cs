@@ -1,4 +1,4 @@
-namespace HypermediaClient.ParameterSerializer
+namespace Hypermedia.Client.ParameterSerializer
 {
     public interface IParameterSerializer
     {

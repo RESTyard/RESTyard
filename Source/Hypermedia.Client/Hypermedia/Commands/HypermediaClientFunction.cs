@@ -1,24 +1,24 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace HypermediaClient.Hypermedia.Commands
+﻿namespace Hypermedia.Client.Hypermedia.Commands
 {
+    using System;
+    using System.Threading.Tasks;
+
     public class HypermediaClientFunction<TResultType> : HypermediaClientCommandBase, IHypermediaClientFunction<TResultType> where TResultType : HypermediaClientObject
     {
         public HypermediaClientFunction()
         {
-            HasParameters = false;
-            HasResultLink = true;
+            this.HasParameters = false;
+            this.HasResultLink = true;
         }
 
         public Task<HypermediaFunctionResult<TResultType>> ExecuteAsync()
         {
-            if (!CanExecute)
+            if (!this.CanExecute)
             {
                 throw new Exception("Can not execute Action.");
             }
 
-            return Resolver.ResolveFunctionAsync<TResultType>(Uri, Method);
+            return this.Resolver.ResolveFunctionAsync<TResultType>(this.Uri, this.Method);
         }
     }
 
@@ -26,18 +26,18 @@ namespace HypermediaClient.Hypermedia.Commands
     {
         public HypermediaClientFunction()
         {
-            HasParameters = true;
-            HasResultLink = true;
+            this.HasParameters = true;
+            this.HasResultLink = true;
         }
 
         public Task<HypermediaFunctionResult<TResultType>> ExecuteAsync(TParameters parameters)
         {
-            if (!CanExecute)
+            if (!this.CanExecute)
             {
                 throw new Exception("Can not execute Action.");
             }
 
-            return Resolver.ResolveFunctionAsync<TResultType>(Uri, Method, ParameterDescriptions, parameters);
+            return this.Resolver.ResolveFunctionAsync<TResultType>(this.Uri, this.Method, this.ParameterDescriptions, parameters);
         }
     }
 }

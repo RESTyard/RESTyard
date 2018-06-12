@@ -1,24 +1,24 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace HypermediaClient.Hypermedia.Commands
+﻿namespace Hypermedia.Client.Hypermedia.Commands
 {
+    using System;
+    using System.Threading.Tasks;
+
     public class HypermediaClientAction : HypermediaClientCommandBase, IHypermediaClientAction
     {
         public HypermediaClientAction()
         {
-            HasParameters = false;
-            HasResultLink = false;
+            this.HasParameters = false;
+            this.HasResultLink = false;
         }
 
         public Task<HypermediaCommandResult> ExecuteAsync()
         {
-            if (!CanExecute)
+            if (!this.CanExecute)
             {
                 throw new Exception("Can not execute Action.");
             }
 
-            return Resolver.ResolveActionAsync(Uri, Method);
+            return this.Resolver.ResolveActionAsync(this.Uri, this.Method);
         }
     }
 
@@ -26,18 +26,18 @@ namespace HypermediaClient.Hypermedia.Commands
     {
         public HypermediaClientAction()
         {
-            HasParameters = true;
-            HasResultLink = false;
+            this.HasParameters = true;
+            this.HasResultLink = false;
         }
 
         public Task<HypermediaCommandResult> ExecuteAsync(TParameters parameters)
         {
-            if (!CanExecute)
+            if (!this.CanExecute)
             {
                 throw new Exception("Can not execute Action.");
             }
 
-            return Resolver.ResolveActionAsync(Uri, Method, ParameterDescriptions, parameters);
+            return this.Resolver.ResolveActionAsync(this.Uri, this.Method, this.ParameterDescriptions, parameters);
         }
     }
 }

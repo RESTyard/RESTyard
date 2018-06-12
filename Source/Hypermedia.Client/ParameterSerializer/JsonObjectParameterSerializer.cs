@@ -1,4 +1,4 @@
-namespace HypermediaClient.ParameterSerializer
+namespace Hypermedia.Client.ParameterSerializer
 {
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;

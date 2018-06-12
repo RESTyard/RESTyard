@@ -1,10 +1,11 @@
-using System;
-using System.Threading.Tasks;
-using HypermediaClient.Hypermedia;
-using HypermediaClient.Resolver;
-
-namespace HypermediaClient.Extensions
+namespace Hypermedia.Client.Extensions
 {
+    using System;
+    using System.Threading.Tasks;
+
+    using global::Hypermedia.Client.Hypermedia;
+    using global::Hypermedia.Client.Resolver;
+
     public static class NavigateExtension
     {
         public static async Task<TResult> NavigateAsync<TIn, TResult>(this Task<TIn> hco, Func<TIn, MandatoryHypermediaLink<TResult>> linkSelector)

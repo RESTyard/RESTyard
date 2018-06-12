@@ -1,11 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using HypermediaClient.Hypermedia.Commands;
-
-namespace HypermediaClient
+namespace Hypermedia.Client
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+
+    using global::Hypermedia.Client.Hypermedia.Commands;
+
     internal class RegisterHypermediaCommandFactory : IHypermediaCommandFactory
     {
         public static RegisterHypermediaCommandFactory Create()
@@ -22,12 +23,12 @@ namespace HypermediaClient
 
         public RegisterHypermediaCommandFactory()
         {
-            InterfaceImplementationLookup = new Dictionary<Type, Type>();
+            this.InterfaceImplementationLookup = new Dictionary<Type, Type>();
         }
 
         public void Register(Type interfaceType, Type implementation)
         {
-            if (InterfaceImplementationLookup.ContainsKey(interfaceType))
+            if (this.InterfaceImplementationLookup.ContainsKey(interfaceType))
             {
                 throw new Exception($"Interface already registered '{interfaceType.Name}'");
             }
@@ -40,7 +41,7 @@ namespace HypermediaClient
                 throw new Exception($"Implementing type '{implementation}' does not imlement interface '{interfaceType.Name}'");
             }
 
-            InterfaceImplementationLookup[interfaceType] = implementation;
+            this.InterfaceImplementationLookup[interfaceType] = implementation;
         }
 
         public IHypermediaClientCommand Create(Type commandInterfaceType)
@@ -56,7 +57,7 @@ namespace HypermediaClient
 
                 lookupType = genericTypeDefinition;
                 Type commandType;
-                if (!InterfaceImplementationLookup.TryGetValue(lookupType, out commandType))
+                if (!this.InterfaceImplementationLookup.TryGetValue(lookupType, out commandType))
                 {
                     throw new Exception($"Requested command interface type not found '{commandInterfaceType.Name}' ");
                 }
@@ -69,7 +70,7 @@ namespace HypermediaClient
             {
                 lookupType = commandInterfaceType;
                 Type commandType;
-                if (!InterfaceImplementationLookup.TryGetValue(lookupType, out commandType))
+                if (!this.InterfaceImplementationLookup.TryGetValue(lookupType, out commandType))
                 {
                     throw new Exception($"Requested command interface type not found '{commandInterfaceType.Name}' ");
                 }

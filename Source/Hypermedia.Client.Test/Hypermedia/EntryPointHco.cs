@@ -1,13 +1,11 @@
 ﻿using Hypermedia.Relations;
 
-using HypermediaClient.Hypermedia;
-using HypermediaClient.Hypermedia.Attributes;
-
 namespace Hypermedia.Client.Test.Hypermedia
 {
+    using global::Hypermedia.Client.Hypermedia;
+    using global::Hypermedia.Client.Hypermedia.Attributes;
 
-
-    [HypermediaClientObject(Classes = new[] { "EntryPoint" })]
+    [global::Hypermedia.Client.Hypermedia.Attributes.HypermediaClientObjectAttribute(Classes = new[] { "EntryPoint" })]
     public class EntryPointHco : HypermediaClientObject
     {
         [Mandatory]

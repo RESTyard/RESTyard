@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using HypermediaClient.Hypermedia.Attributes;
-
-namespace HypermediaClient.Hypermedia
+﻿namespace Hypermedia.Client.Hypermedia
 {
+    using System.Collections.Generic;
+
+    using global::Hypermedia.Client.Hypermedia.Attributes;
 
     public abstract class HypermediaClientObject
     {

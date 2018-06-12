@@ -1,8 +1,9 @@
-using System;
-using HypermediaClient.Hypermedia.Commands;
-
-namespace HypermediaClient
+namespace Hypermedia.Client
 {
+    using System;
+
+    using global::Hypermedia.Client.Hypermedia.Commands;
+
     public interface IHypermediaCommandFactory
     {
         IHypermediaClientCommand Create(Type commandInterfaceType);

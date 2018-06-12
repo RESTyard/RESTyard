@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using HypermediaClient.Resolver;
-
-namespace HypermediaClient.Hypermedia.Commands
+﻿namespace Hypermedia.Client.Hypermedia.Commands
 {
+    using System;
+    using System.Collections.Generic;
+
+    using global::Hypermedia.Client.Resolver;
+
     public abstract class HypermediaClientCommandBase : IHypermediaClientCommand
     {
         public string Name { get; set; }

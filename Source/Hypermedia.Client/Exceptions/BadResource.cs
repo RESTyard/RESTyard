@@ -3,7 +3,7 @@
     using System;
 
     /// <summary>
-    /// The resource resolved is not of the expected type.
+    /// The resource resolved is not of the expected type or is not readable.
     /// </summary>
     public class BadResource : HypermediaClientException
     {
