@@ -3,7 +3,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,7 +13,6 @@ using CarShack.Hypermedia.Cars;
 using CarShack.Hypermedia.Customers;
 using CarShack.Hypermedia.EntryPoint;
 using CarShack.Util.GloblaExceptionHandler;
-using WebApi.HypermediaExtensions.JsonSchema;
 using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
 
 namespace CarShack
