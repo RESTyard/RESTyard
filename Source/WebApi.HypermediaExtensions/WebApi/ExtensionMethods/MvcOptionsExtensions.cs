@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
 using WebApi.HypermediaExtensions.JsonSchema;
@@ -16,6 +17,23 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
 {
     public static class MvcOptionsExtensions
     {
+        public static IMvcBuilder AddHypermediaExtensions(this IMvcBuilder builder, IServiceCollection services, 
+            HypermediaExtensionsOptions hypermediaOptions,
+            params Assembly[] controllerAndHypermediaAssemblies)
+        {
+            //TODO: register ApplicationModel as singleton and use it everywhere to replace runtime reflection 
+            builder.AddMvcOptions(o => 
+                o.AddHypermediaExtensions(controllerAndHypermediaAssemblies: controllerAndHypermediaAssemblies)
+                .AddHypermediaParameterBinders(!hypermediaOptions.ImplicitHypermediaActionParameterBinders)
+            );
+            if (hypermediaOptions.AutoDeliverNJsonSchemaForActionParameterTypes)
+                services.AutoDeliverActionParameterSchemas(controllerAndHypermediaAssemblies);
+
+            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+
+            return builder;
+        }
+
         /// <summary>
         /// Adds the Hypermedia Extensions.
         /// by default a Siren Formatters is added and
@@ -27,16 +45,18 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// <param name="hypermediaUrlConfig">Configures the URL used in Hypermedia responses.</param>
         /// <param name="hypermediaConverterConfiguration">Configures the creation of Hypermedia documents.</param>
         /// <param name="hypermediaOptions">Configures general options for teh extensions.</param>
+        /// <param name="controllerAndHypermediaAssemblies">Assemblies to crawl for controller routes and hypermedia objects</param>
         public static MvcOptions AddHypermediaExtensions(
             this MvcOptions options,
             IRouteRegister alternateRouteRegister = null,
             IQueryStringBuilder alternateQueryStringBuilder = null,
             IHypermediaUrlConfig hypermediaUrlConfig = null,
             IHypermediaConverterConfiguration hypermediaConverterConfiguration = null,
-            HypermediaExtensionsOptions hypermediaOptions = null)
+            HypermediaExtensionsOptions hypermediaOptions = null,
+            params Assembly[] controllerAndHypermediaAssemblies)
         {
             hypermediaOptions = hypermediaOptions ?? new HypermediaExtensionsOptions();
-            var routeRegister = alternateRouteRegister ?? new AttributedRoutesRegister();
+            var routeRegister = alternateRouteRegister ?? new AttributedRoutesRegister(controllerAndHypermediaAssemblies);
 
             var routeResolverFactory = new RegisterRouteResolverFactory(routeRegister, hypermediaOptions);
             var routeKeyFactory = new RouteKeyFactory(routeRegister);

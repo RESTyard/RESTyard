@@ -1,20 +1,28 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing.Template;
 using WebApi.HypermediaExtensions.Exceptions;
 using WebApi.HypermediaExtensions.Hypermedia;
+using WebApi.HypermediaExtensions.Util.Extensions;
 using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
 
 namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
 {
     public class AttributedRoutesRegister : RouteRegister
     {
-        public AttributedRoutesRegister(Assembly assembly = null)
+        public AttributedRoutesRegister(params Assembly[] controllerAndHypermediaAssemblies)
         {
-            var assemblyToCrawl = assembly ?? Assembly.GetEntryAssembly();
-            RegisterAssemblyRoutes(assemblyToCrawl);
+            var assembliesToCrawl = controllerAndHypermediaAssemblies.Length > 0
+                ? controllerAndHypermediaAssemblies
+                : Assembly.GetEntryAssembly().Yield();
+
+            foreach (var assemblyToCrawl in assembliesToCrawl)
+            {
+                RegisterAssemblyRoutes(assemblyToCrawl);
+            }
         }
 
         private void RegisterAssemblyRoutes(Assembly assembly)

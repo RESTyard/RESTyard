@@ -62,18 +62,15 @@ namespace CarShack
                         NullValueHandling = NullValueHandling.Ignore,
                         DefaultValueHandling = DefaultValueHandling.Ignore
                     }, ArrayPool<char>.Shared));
-
-                // Initializes and adds the Hypermedia Extensions
-                options.AddHypermediaExtensions(hypermediaOptions: new HypermediaExtensionsOptions
-                {
-                    ReturnDefaultRouteForUnknownHto = true
-                }).AddHypermediaParameterBinders();
             });
             builder.AddMvcOptions(o => { o.Filters.Add(new GlobalExceptionFilter(null)); });
 
-            // Required by Hypermedia Extensions
-            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
-            services.AutoDeliverActionParameterSchemas();
+            // Initializes and adds the Hypermedia Extensions
+            builder.AddHypermediaExtensions(services,
+                hypermediaOptions: new HypermediaExtensionsOptions
+                {
+                    ReturnDefaultRouteForUnknownHto = true
+                });
 
             // Domain
             services.AddSingleton<HypermediaEntryPoint>();
