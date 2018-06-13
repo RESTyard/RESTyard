@@ -20,8 +20,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hypermedia.MediaTypes" Version="1.4.0-CI-20180604-130332" />
-    <PackageReference Include="Hypermedia.Relations" Version="1.4.0-CI-20180604-130330" />
+    <PackageReference Include="Hypermedia.MediaTypes" Version="1.4.0-CI-20180613-165856" />
+    <PackageReference Include="Hypermedia.Relations" Version="1.4.0-CI-20180613-165947" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="System.Net.Http" Version="4.3.3" />
   </ItemGroup>
