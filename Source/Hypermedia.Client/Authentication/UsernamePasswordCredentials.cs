@@ -1,4 +1,4 @@
-﻿namespace HypermediaClient.Authentication
+﻿namespace Hypermedia.Client.Authentication
 {
     public class UsernamePasswordCredentials
     {

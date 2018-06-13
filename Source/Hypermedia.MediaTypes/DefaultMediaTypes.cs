@@ -6,6 +6,6 @@
 
         public const string Siren = "application/vnd.siren+json";
 
-        public const string ProblemJson = "application/api-problem+json";
+        public const string ProblemJson = "application/problem+json";
     }
 }

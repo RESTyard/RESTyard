@@ -13,3 +13,5 @@
 - add development options
 	- allow serialization of objects with no corresponding routes to ease development when creating a lot of HTO first
 - rework MarkAsFavorite action on customer so it nolonger accepts a link, but an id. Example is misleading
+- fix: content type of problem json: return "application/problem+json", ensure formatter is pressent
+- fix: use Uri in problem json to be in line with RFC 7807, add remaining properties from rfc, adapt client

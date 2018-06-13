@@ -1,12 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using HypermediaClient.Hypermedia;
-using HypermediaClient.Hypermedia.Commands;
-
-namespace HypermediaClient.Resolver
+namespace Hypermedia.Client.Resolver
 {
-    using HypermediaClient.Authentication;
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+
+    using global::Hypermedia.Client.Authentication;
+    using global::Hypermedia.Client.Hypermedia;
+    using global::Hypermedia.Client.Hypermedia.Commands;
+    using global::Hypermedia.Client.Reader;
 
     public interface IHypermediaResolver
     {

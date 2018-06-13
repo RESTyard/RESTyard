@@ -1,10 +1,12 @@
-using System;
-using System.Threading.Tasks;
-using HypermediaClient.Hypermedia;
-using HypermediaClient.Resolver;
-
-namespace HypermediaClient
+namespace Hypermedia.Client
 {
+    using System;
+    using System.Threading.Tasks;
+
+    using global::Hypermedia.Client.Hypermedia;
+    using global::Hypermedia.Client.Reader;
+    using global::Hypermedia.Client.Resolver;
+
     public class HypermediaClient<TEntryPoint> : IHypermediaClient<TEntryPoint> where TEntryPoint : HypermediaClientObject
     {
         private readonly IHypermediaReader sirenHypermediaReader;
@@ -17,15 +19,15 @@ namespace HypermediaClient
             IHypermediaResolver hypermediaResolver,
             IHypermediaReader hypermediaReader) 
         {
-            UriApiEntryPoint = uriApiEntryPoint;
-            resolver = hypermediaResolver;
-            sirenHypermediaReader = hypermediaReader;
-            resolver.InitializeHypermediaReader(sirenHypermediaReader);
+            this.UriApiEntryPoint = uriApiEntryPoint;
+            this.resolver = hypermediaResolver;
+            this.sirenHypermediaReader = hypermediaReader;
+            this.resolver.InitializeHypermediaReader(this.sirenHypermediaReader);
         }
 
         public async Task<TEntryPoint> EnterAsync()
         {
-            var result = await resolver.ResolveLinkAsync<TEntryPoint>(UriApiEntryPoint);
+            var result = await this.resolver.ResolveLinkAsync<TEntryPoint>(this.UriApiEntryPoint);
 
             if (!result.Success)
             {

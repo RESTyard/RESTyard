@@ -1,7 +1,7 @@
-using Newtonsoft.Json.Linq;
-
-namespace HypermediaClient.ParameterSerializer
+namespace Hypermedia.Client.ParameterSerializer
 {
+    using Newtonsoft.Json.Linq;
+
     public class SingleJsonObjectParameterSerializer : IParameterSerializer
     {
         public string SerializeParameterObject(string parameterObjectName, object parameterObject)

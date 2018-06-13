@@ -1,12 +1,11 @@
 ﻿namespace Hypermedia.Client.Test.Hypermedia
 {
+    using global::Hypermedia.Client.Hypermedia;
+    using global::Hypermedia.Client.Hypermedia.Attributes;
+    using global::Hypermedia.Client.Hypermedia.Commands;
     using global::Hypermedia.Relations;
 
-    using HypermediaClient.Hypermedia;
-    using HypermediaClient.Hypermedia.Attributes;
-    using HypermediaClient.Hypermedia.Commands;
-
-    [HypermediaClientObject(Classes = new[] { "CustomersRoot" })]
+    [global::Hypermedia.Client.Hypermedia.Attributes.HypermediaClientObjectAttribute(Classes = new[] { "CustomersRoot" })]
     public class CustomersRootHco : HypermediaClientObject
     {
         [Mandatory]

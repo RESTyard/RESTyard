@@ -1,15 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using HypermediaClient.Resolver;
-
-namespace HypermediaClient.Hypermedia
+namespace Hypermedia.Client.Hypermedia
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+
+    using global::Hypermedia.Client.Resolver;
+
     public class MandatoryHypermediaLink<T> : HypermediaLink<T> where T : HypermediaClientObject
     {
         public async Task<T> ResolveAsync()
         {
-            var result = await Resolver.ResolveLinkAsync<T>(Uri);
+            var result = await this.Resolver.ResolveLinkAsync<T>(this.Uri);
             if (!result.Success)
             {
                 throw new Exception("Could not resolve mandatory link.");
@@ -29,12 +30,12 @@ namespace HypermediaClient.Hypermedia
 
         public async Task<ResolverResult<T>> TryResolveAsync()
         {
-            if (Uri == null)
+            if (this.Uri == null)
             {
                 return new ResolverResult<T> {Success = false};
             }
 
-            var result = await Resolver.ResolveLinkAsync<T>(Uri);
+            var result = await this.Resolver.ResolveLinkAsync<T>(this.Uri);
             return result;
         }
     }

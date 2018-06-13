@@ -1,16 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using HypermediaClient.Hypermedia;
-using HypermediaClient.Hypermedia.Attributes;
-using HypermediaClient.Hypermedia.Commands;
-using HypermediaClient.Resolver;
-using HypermediaClient.Util;
-using Newtonsoft.Json.Linq;
-
-namespace HypermediaClient
+namespace Hypermedia.Client.Reader
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+
+    using global::Hypermedia.Client.Hypermedia;
+    using global::Hypermedia.Client.Hypermedia.Attributes;
+    using global::Hypermedia.Client.Hypermedia.Commands;
+    using global::Hypermedia.Client.Resolver;
+    using global::Hypermedia.Client.Util;
+
+    using Newtonsoft.Json.Linq;
+
     internal enum HypermediaPropertyType
     {
         Unknown,
@@ -37,19 +39,21 @@ namespace HypermediaClient
 
         public HypermediaClientObject Read(string contentString)
         {
-            var jObject = JObject.Parse(contentString); // TODO inject deserializer
-            var result = ReadHypermediaObject(jObject);
+            // TODO inject deserializer
+            // todo catch exception: invalid format
+            var jObject = JObject.Parse(contentString);
+            var result = this.ReadHypermediaObject(jObject);
             return result;
         }
 
         private HypermediaClientObject ReadHypermediaObject(JObject jObject)
         {
             var classes = ReadClasses(jObject);
-            var hypermediaObjectInstance = hypermediaObjectRegister.CreateFromClasses(classes);
+            var hypermediaObjectInstance = this.hypermediaObjectRegister.CreateFromClasses(classes);
 
-            ReadTitle(hypermediaObjectInstance, jObject);
-            ReadRelations(hypermediaObjectInstance, jObject);
-            FillHypermediaProperties(hypermediaObjectInstance, jObject);
+            this.ReadTitle(hypermediaObjectInstance, jObject);
+            this.ReadRelations(hypermediaObjectInstance, jObject);
+            this.FillHypermediaProperties(hypermediaObjectInstance, jObject);
             
 
             return hypermediaObjectInstance;
@@ -75,17 +79,17 @@ namespace HypermediaClient
                         break;
                    
                     case HypermediaPropertyType.Link:
-                        FillLink(hypermediaObjectInstance, propertyInfo, jObject);
+                        this.FillLink(hypermediaObjectInstance, propertyInfo, jObject);
                         break;
 
                     case HypermediaPropertyType.Entity:
-                        FillEntity(hypermediaObjectInstance, propertyInfo, jObject);
+                        this.FillEntity(hypermediaObjectInstance, propertyInfo, jObject);
                         break;
                     case HypermediaPropertyType.EntityCollection:
-                        FillEntities(hypermediaObjectInstance, propertyInfo, jObject);
+                        this.FillEntities(hypermediaObjectInstance, propertyInfo, jObject);
                         break;
                     case HypermediaPropertyType.Command:
-                        FillCommand(hypermediaObjectInstance, propertyInfo, jObject);
+                        this.FillCommand(hypermediaObjectInstance, propertyInfo, jObject);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -99,7 +103,7 @@ namespace HypermediaClient
         private void FillEntities(HypermediaClientObject hypermediaObjectInstance, PropertyInfo propertyInfo, JObject jObject)
         {
             var relationsAttribute = propertyInfo.GetCustomAttribute<HypermediaRelationsAttribute>();
-            var classes = GetClassesFromEntitiesListProperty(propertyInfo);
+            var classes = this.GetClassesFromEntitiesListProperty(propertyInfo);
 
             var entityCollection = Activator.CreateInstance(propertyInfo.PropertyType);
             propertyInfo.SetValue(hypermediaObjectInstance, entityCollection);
@@ -111,13 +115,13 @@ namespace HypermediaClient
             }
 
             var jEntities = entities.Cast<JObject>().Where(e =>
-                EntityRelationsMatch(e, relationsAttribute.Relations) && EntityClassMatch(e, classes, propertyInfo.Name));
+                this.EntityRelationsMatch(e, relationsAttribute.Relations) && this.EntityClassMatch(e, classes, propertyInfo.Name));
 
             var genericAddFunction = entityCollection.GetType().GetTypeInfo().GetMethod("Add");
 
             foreach (var jEntity in jEntities)
             {
-                var entity = ReadHypermediaObject(jEntity);
+                var entity = this.ReadHypermediaObject(jEntity);
                 genericAddFunction.Invoke(entityCollection, new object[] { entity });
             }
 
@@ -133,13 +137,13 @@ namespace HypermediaClient
             }
 
             // create instance in any case so CanExecute can be called
-            var commandInstance = CreateHypermediaClientCommand(propertyInfo.PropertyType);
-            commandInstance.Resolver = resolver;
+            var commandInstance = this.CreateHypermediaClientCommand(propertyInfo.PropertyType);
+            commandInstance.Resolver = this.resolver;
 
             propertyInfo.SetValue(hypermediaObjectInstance, commandInstance);
 
             var actions = jObject["actions"] as JArray;
-            var jAction = actions.Cast<JObject>().FirstOrDefault(e => IsDesiredAction(e, commandAttribute.Name));
+            var jAction = actions.Cast<JObject>().FirstOrDefault(e => this.IsDesiredAction(e, commandAttribute.Name));
             if (actions == null || jAction == null)
             {
                 if (IsMandatoryHypermediaProperty(propertyInfo))
@@ -149,7 +153,7 @@ namespace HypermediaClient
                 return;
             }
             
-            FillCommandParameters(commandInstance, jAction, commandAttribute.Name);
+            this.FillCommandParameters(commandInstance, jAction, commandAttribute.Name);
         }
 
         private void FillCommandParameters(IHypermediaClientCommand commandInstance, JObject jAction, string commandName)
@@ -207,7 +211,7 @@ namespace HypermediaClient
 
         private IHypermediaClientCommand CreateHypermediaClientCommand(Type commandType)
         {
-            var commandInstance = hypermediaCommandFactory.Create(commandType);
+            var commandInstance = this.hypermediaCommandFactory.Create(commandType);
             return commandInstance;
         }
 
@@ -238,9 +242,9 @@ namespace HypermediaClient
             }
 
             var jEntity = entities.Cast<JObject>().FirstOrDefault( e =>
-                EntityRelationsMatch(e, relationsAttribute.Relations) && EntityClassMatch(e, classes, propertyInfo.Name));
+                this.EntityRelationsMatch(e, relationsAttribute.Relations) && this.EntityClassMatch(e, classes, propertyInfo.Name));
 
-            var entity = ReadHypermediaObject(jEntity);
+            var entity = this.ReadHypermediaObject(jEntity);
             propertyInfo.SetValue(hypermediaObjectInstance, entity);
         }
 
@@ -280,7 +284,7 @@ namespace HypermediaClient
                 return false;
             }
 
-            return stringCollectionComparer.Equals(jClasses.Values<string>().ToArray(), classes);
+            return this.stringCollectionComparer.Equals(jClasses.Values<string>().ToArray(), classes);
         }
 
         private bool EntityRelationsMatch(JObject jObject, string[] relations)
@@ -296,7 +300,7 @@ namespace HypermediaClient
                 return false;
             }
 
-            return stringCollectionComparer.Equals(rels.Values<string>().ToArray(), relations);
+            return this.stringCollectionComparer.Equals(rels.Values<string>().ToArray(), relations);
         }
 
 
@@ -309,7 +313,7 @@ namespace HypermediaClient
             }
 
             var hypermediaLink = (IHypermediaLink)Activator.CreateInstance(propertyInfo.PropertyType);
-            hypermediaLink.Resolver = resolver;
+            hypermediaLink.Resolver = this.resolver;
             propertyInfo.SetValue(hypermediaObjectInstance, hypermediaLink);
 
             var links = jObject["links"];
@@ -322,7 +326,7 @@ namespace HypermediaClient
                 return;
             }
 
-            var link = links.FirstOrDefault(l => stringCollectionComparer.Equals(l["rel"].Values<string>().ToList(), linkAttribute.Relations.ToList()));
+            var link = links.FirstOrDefault(l => this.stringCollectionComparer.Equals(l["rel"].Values<string>().ToList(), linkAttribute.Relations.ToList()));
             if (link == null)
             {
                 if (IsMandatoryHypermediaLink(propertyInfo))

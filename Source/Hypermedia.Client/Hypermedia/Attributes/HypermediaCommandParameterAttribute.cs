@@ -1,13 +1,13 @@
-﻿using System;
-
-namespace HypermediaClient.Hypermedia.Attributes
+﻿namespace Hypermedia.Client.Hypermedia.Attributes
 {
+    using System;
+
     [AttributeUsage(AttributeTargets.Class)]
     public sealed class HypermediaCommandParameterAttribute : Attribute
     {
         public HypermediaCommandParameterAttribute(string[] parameterClasses)
         {
-            Classes = parameterClasses;
+            this.Classes = parameterClasses;
         }
 
         public string[] Classes { get; private set; }

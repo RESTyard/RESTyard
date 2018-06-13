@@ -1,4 +1,4 @@
-namespace HypermediaClient.Resolver
+namespace Hypermedia.Client.Resolver
 {
     public interface ICanResolve
     {

@@ -1,13 +1,12 @@
 using System.Collections.Generic;
 using Hypermedia.Relations;
-using HypermediaClient.Hypermedia;
-using HypermediaClient.Hypermedia.Attributes;
 
 namespace Hypermedia.Client.Test.Hypermedia
 {
+    using global::Hypermedia.Client.Hypermedia;
+    using global::Hypermedia.Client.Hypermedia.Attributes;
 
-
-    [HypermediaClientObject(Classes = new[] { "CustomersQueryResult" })]
+    [global::Hypermedia.Client.Hypermedia.Attributes.HypermediaClientObjectAttribute(Classes = new[] { "CustomersQueryResult" })]
     public class CustomerQueryResultHco : HypermediaClientObject
     {
         [Mandatory]

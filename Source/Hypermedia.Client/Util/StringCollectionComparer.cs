@@ -1,8 +1,8 @@
-using System.Collections.Generic;
-using System.Linq;
-
-namespace HypermediaClient.Util
+namespace Hypermedia.Client.Util
 {
+    using System.Collections.Generic;
+    using System.Linq;
+
     public class StringCollectionComparer : IEqualityComparer<ICollection<string>>
     {
         public bool Equals(ICollection<string> x, ICollection<string> y)

@@ -1,4 +1,4 @@
-﻿namespace HypermediaClient.Hypermedia.Commands
+﻿namespace Hypermedia.Client.Hypermedia.Commands
 {
     public class HypermediaCommandResult
     {

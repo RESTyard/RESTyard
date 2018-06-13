@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-
-namespace HypermediaClient.Hypermedia.Commands
+﻿namespace Hypermedia.Client.Hypermedia.Commands
 {
+    using System.Collections.Generic;
+
     public class ParameterDescription
     {
         public string Name { get; set; }

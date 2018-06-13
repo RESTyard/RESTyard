@@ -1,13 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using HypermediaClient.Hypermedia;
-using HypermediaClient.Hypermedia.Attributes;
-using HypermediaClient.Util;
-
-namespace HypermediaClient
+namespace Hypermedia.Client
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+
+    using global::Hypermedia.Client.Hypermedia;
+    using global::Hypermedia.Client.Hypermedia.Attributes;
+    using global::Hypermedia.Client.Util;
+
     public class HypermediaObjectRegister : IHypermediaObjectRegister
     {
         private readonly Dictionary<List<string>, Type> hypermediaObjectTypeDictionary = new Dictionary<List<string>, Type>(new StringCollectionComparer());
@@ -22,18 +23,18 @@ namespace HypermediaClient
             var attribute = hypermediaObjectType.GetTypeInfo().GetCustomAttribute<HypermediaClientObjectAttribute>();
             if (attribute == null)
             {
-                hypermediaObjectTypeDictionary.Add(new List<string> { hypermediaObjectType.Name }, hypermediaObjectType);
+                this.hypermediaObjectTypeDictionary.Add(new List<string> { hypermediaObjectType.Name }, hypermediaObjectType);
             }
             else
             {
-                hypermediaObjectTypeDictionary.Add(attribute.Classes.ToList(), hypermediaObjectType);
+                this.hypermediaObjectTypeDictionary.Add(attribute.Classes.ToList(), hypermediaObjectType);
             }
             
         }
 
         public HypermediaClientObject CreateFromClasses(List<string> classes)
         {
-            var hypermediaObjectType = GethypermediaType(classes);
+            var hypermediaObjectType = this.GethypermediaType(classes);
 
             return (HypermediaClientObject)Activator.CreateInstance(hypermediaObjectType);
         }
@@ -41,7 +42,7 @@ namespace HypermediaClient
         public Type GethypermediaType(List<string> classes)
         {
             Type hypermediaObjectType;
-            if (!hypermediaObjectTypeDictionary.TryGetValue(classes, out hypermediaObjectType))
+            if (!this.hypermediaObjectTypeDictionary.TryGetValue(classes, out hypermediaObjectType))
             {
                 throw new Exception($"No Type registered for classes: {classes}");
             }

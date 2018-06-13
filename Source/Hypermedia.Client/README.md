@@ -11,6 +11,7 @@ There is still a lot to do:
 - (more) Authentification/Authorization
 - Use chache info from header so client may cache resolved documents
 - Allow actions with schemas OR fields
+- Add a attribute wich holds the json property name which should be desrialized into a hco property
 ...
 
 Assumptions:
