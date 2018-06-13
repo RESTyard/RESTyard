@@ -3,16 +3,19 @@ namespace Hypermedia.Client.Resolver
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Net;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Text;
     using System.Threading.Tasks;
 
     using global::Hypermedia.Client.Authentication;
+    using global::Hypermedia.Client.Exceptions;
     using global::Hypermedia.Client.Hypermedia;
     using global::Hypermedia.Client.Hypermedia.Commands;
     using global::Hypermedia.Client.ParameterSerializer;
     using global::Hypermedia.Client.Reader;
+    using global::Hypermedia.Client.Reader.ProblemJson;
     using global::Hypermedia.MediaTypes;
 
     public class HttpHypermediaResolver : IHypermediaResolver, IDisposable
@@ -38,11 +41,9 @@ namespace Hypermedia.Client.Resolver
         public async Task<ResolverResult<T>> ResolveLinkAsync<T>(Uri uriToResolve) where T : HypermediaClientObject
         {
             var result = await this.httpClient.GetAsync(uriToResolve);
-            var resolverResult = new ResolverResult<T>();
-
             if (!result.IsSuccessStatusCode)
             {
-                return resolverResult;
+                ThrowRequestErrorException(result);
             }
 
             var hypermediaObjectSiren = await result.Content.ReadAsStringAsync(); //TODO READ AS STREAM for pref
@@ -56,10 +57,23 @@ namespace Hypermedia.Client.Resolver
             {
                 throw new Exception($"Could not retrieve result as {typeof(T).Name} ");
             }
+
+            var resolverResult = new ResolverResult<T>();
             resolverResult.ResultObject = desiredResultObject;
             resolverResult.Success = true;
 
             return resolverResult;
+        }
+
+        private static void ThrowRequestErrorException(HttpResponseMessage result)
+        {
+            var hasProblemDescription = ProblemJsonReader.TryReadProblemJson(result, out var problemDescription);
+            if (hasProblemDescription)
+            {
+                throw new HypermediaProblemException(problemDescription);
+            }
+
+            ThrowExceptionFromResult(result);
         }
 
         public async Task<HypermediaCommandResult> ResolveActionAsync(Uri uri, string method)
@@ -92,6 +106,12 @@ namespace Hypermedia.Client.Resolver
             var responseMessage = await this.SendCommand(uri, method, serializedParameters);
             var actionResult = this.HandleFunctionResponse<T>(responseMessage);
             return actionResult;
+        }
+
+        private static void ThrowExceptionFromResult(HttpResponseMessage result)
+        {
+            var detail = result.Content?.ReadAsStringAsync().Result;
+            throw new HypermediaClientException($"{result.ReasonPhrase} ({result.StatusCode})", $"{detail}");
         }
 
         private string ProcessParameters(List<ParameterDescription> parameterDescriptions, object parameterObject)
@@ -131,21 +151,25 @@ namespace Hypermedia.Client.Resolver
 
         private static HypermediaCommandResult HandleResponse(HttpResponseMessage responseMessage)
         {
-            var actionResult = new HypermediaCommandResult();
-            if (responseMessage.IsSuccessStatusCode)
+            if (!responseMessage.IsSuccessStatusCode)
             {
-                actionResult.Success = true;
+                ThrowRequestErrorException(responseMessage);
             }
+
+            var actionResult = new HypermediaCommandResult();
+            actionResult.Success = true;
             return actionResult;
         }
 
         private HypermediaFunctionResult<T> HandleFunctionResponse<T>(HttpResponseMessage responseMessage) where T : HypermediaClientObject
         {
-            var actionResult = new HypermediaFunctionResult<T>();
-            if (responseMessage.IsSuccessStatusCode)
+            if (!responseMessage.IsSuccessStatusCode)
             {
-                actionResult.Success = true;
+                ThrowRequestErrorException(responseMessage);
             }
+
+            var actionResult = new HypermediaFunctionResult<T>();
+            actionResult.Success = true;
 
             var location = responseMessage.Headers.Location;
             if (location == null)

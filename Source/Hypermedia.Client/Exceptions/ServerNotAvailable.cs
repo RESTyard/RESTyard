@@ -5,9 +5,9 @@
     /// <summary>
     /// Server is not available.
     /// </summary>
-    public class ServerNotAvailable : HypermediaClientException
+    public class ServerNotAvailable : HypermediaProblemException
     {
-        public ServerNotAvailable(string Title, Uri ProblemType, string Detail)
+        public ServerNotAvailable(string Title, string ProblemType, string Detail)
             : base(Title, ProblemType, Detail)
         {
         }

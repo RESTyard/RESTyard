@@ -5,9 +5,9 @@
     /// <summary>
     /// The requested operation timed out.
     /// </summary>
-    public class OperationTimeout : HypermediaClientException
+    public class OperationTimeout : HypermediaProblemException
     {
-        public OperationTimeout(string Title, Uri ProblemType, string Detail)
+        public OperationTimeout(string Title, string ProblemType, string Detail)
             : base(Title, ProblemType, Detail)
         {
         }

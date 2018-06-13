@@ -9,7 +9,7 @@ namespace CarShack.Util
             var problem = new ProblemJson
             {
                 Title = "Entity not found",
-                Detail = "",
+                Detail = string.Empty,
                 ProblemType = "CarShack.EntityNotFound",
                 StatusCode = 404
             };

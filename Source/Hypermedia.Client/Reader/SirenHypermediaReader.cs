@@ -39,7 +39,9 @@ namespace Hypermedia.Client.Reader
 
         public HypermediaClientObject Read(string contentString)
         {
-            var jObject = JObject.Parse(contentString); // TODO inject deserializer
+            // TODO inject deserializer
+            // todo catch exception: invalid format
+            var jObject = JObject.Parse(contentString);
             var result = this.ReadHypermediaObject(jObject);
             return result;
         }

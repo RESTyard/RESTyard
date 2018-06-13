@@ -5,9 +5,9 @@
     /// <summary>
     /// The resource resolved is not of the expected type or is not readable.
     /// </summary>
-    public class BadResource : HypermediaClientException
+    public class BadResource : HypermediaProblemException
     {
-        public BadResource(string Title, Uri ProblemType, string Detail)
+        public BadResource(string Title, string ProblemType, string Detail)
             : base(Title, ProblemType, Detail)
         {
         }

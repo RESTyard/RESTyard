@@ -5,9 +5,9 @@
     /// <summary>
     /// The parameters for an Action are not correct.
     /// </summary>
-    public class BadParameters : HypermediaClientException
+    public class BadParameters : HypermediaProblemException
     {
-        public BadParameters(string Title, Uri ProblemType, string Detail)
+        public BadParameters(string Title, string ProblemType, string Detail)
             : base(Title, ProblemType, Detail)
         {
         }

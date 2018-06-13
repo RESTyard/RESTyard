@@ -3,11 +3,11 @@
     using System;
 
     /// <summary>
-    /// The the client is not authorized.
+    /// The the client is not authentificated.
     /// </summary>
-    public class Unauthorized : HypermediaClientException
+    public class Unauthorized : HypermediaProblemException
     {
-        public Unauthorized(string Title, Uri ProblemType, string Detail)
+        public Unauthorized(string Title, string ProblemType, string Detail)
             : base(Title, ProblemType, Detail)
         {
         }

@@ -5,9 +5,9 @@
     /// <summary>
     /// Unhandled error on the server.
     /// </summary>
-    public class ServerError : HypermediaClientException
+    public class ServerError : HypermediaProblemException
     {
-        public ServerError(string Title, Uri ProblemType, string Detail)
+        public ServerError(string Title, string ProblemType, string Detail)
             : base(Title, ProblemType, Detail)
         {
         }
