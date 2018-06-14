@@ -20,7 +20,7 @@ namespace CarShack.Hypermedia.Customers
         [HypermediaAction(Title = "Marks a Customer as a favorite buyer.")]
         public HypermediaActionCustomerMarkAsFavorite MarkAsFavoriteAction { get; private set; }
 
-        [HypermediaAction(Title = "Marks a Customer as a favorite buyer.")]
+        [HypermediaAction(Title = "Buy a car.")]
         public HypermediaActionCustomerBuysCar BuyCarAction { get; private set; } = new HypermediaActionCustomerBuysCar();
 
         // Hides the Property so it will not be pressent in the Hypermedia.
