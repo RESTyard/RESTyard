@@ -71,7 +71,7 @@
                 Assert.Inconclusive("Action can not be run on server, not offered.");
             }
 
-            var actionResult = await customer.MarkAsFavorite.ExecuteAsync(new FavoriteCustomer{ CustomerLink = customer.Self.Uri.ToString() }); 
+            var actionResult = await customer.MarkAsFavorite.ExecuteAsync(new FavoriteCustomer{ Customer = customer.Self.Uri.ToString() }); 
 
             customer = await customer.Self.ResolveAsync();
             Assert.IsTrue(actionResult.Success);

@@ -42,7 +42,7 @@ namespace Hypermedia.Client.Test.Hypermedia
     [HypermediaCommandParameter(new[] { "http://localhost:5000/MyFavoriteCustomers/FavoriteCustomer" })]
     public class FavoriteCustomer
     {
-        public string CustomerLink { get; set; }
+        public string Customer { get; set; }
     }
 }
 
