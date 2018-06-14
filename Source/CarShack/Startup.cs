@@ -51,7 +51,7 @@ namespace CarShack
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var builder = services.AddMvc(options =>
+            var builder = services.AddMvcCore(options =>
             {
                 options.OutputFormatters.Clear();
                 options.OutputFormatters.Add(new JsonOutputFormatter(
@@ -69,6 +69,9 @@ namespace CarShack
                 {
                     ReturnDefaultRouteForUnknownHto = true
                 });
+
+            // Infrastructure
+            services.AddCors();
 
             // Domain
             services.AddSingleton<HypermediaEntryPoint>();
