@@ -7,8 +7,8 @@
     /// </summary>
     public class MissingPermissions : HypermediaProblemException
     {
-        public MissingPermissions(string Title, string ProblemType, string Detail)
-            : base(Title, ProblemType, Detail)
+        public MissingPermissions(ProblemDescription problemDescription, Exception inner = null)
+            : base(problemDescription, inner)
         {
         }
     }

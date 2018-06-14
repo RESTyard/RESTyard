@@ -7,8 +7,8 @@
     /// </summary>
     public class ServerNotAvailable : HypermediaProblemException
     {
-        public ServerNotAvailable(string Title, string ProblemType, string Detail)
-            : base(Title, ProblemType, Detail)
+        public ServerNotAvailable(ProblemDescription problemDescription, Exception inner = null)
+            : base(problemDescription, inner)
         {
         }
     }

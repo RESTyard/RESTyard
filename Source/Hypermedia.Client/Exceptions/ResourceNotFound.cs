@@ -7,8 +7,8 @@
     /// </summary>
     public class ResourceNotFound : HypermediaProblemException
     {
-        public ResourceNotFound(string Title, string ProblemType, string Detail)
-            : base(Title, ProblemType, Detail)
+        public ResourceNotFound(ProblemDescription problemDescription, Exception inner = null)
+            : base(problemDescription, inner)
         {
         }
     }

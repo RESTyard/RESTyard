@@ -16,5 +16,10 @@
         /// An human readable explanation specific to this occurrence of the problem.
         /// </summary>
         public string Detail { get; set; }
+
+        /// <summary>
+        /// The HTTP status code set by the origin server for this occurrence of the problem.
+        /// </summary>
+        public int StatusCode { get; set; }
     }
 }

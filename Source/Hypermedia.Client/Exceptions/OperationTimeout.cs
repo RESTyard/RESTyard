@@ -7,8 +7,8 @@
     /// </summary>
     public class OperationTimeout : HypermediaProblemException
     {
-        public OperationTimeout(string Title, string ProblemType, string Detail)
-            : base(Title, ProblemType, Detail)
+        public OperationTimeout(ProblemDescription problemDescription, Exception inner = null)
+            : base(problemDescription, inner)
         {
         }
     }

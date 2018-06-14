@@ -7,8 +7,8 @@
     /// </summary>
     public class ServerError : HypermediaProblemException
     {
-        public ServerError(string Title, string ProblemType, string Detail)
-            : base(Title, ProblemType, Detail)
+        public ServerError(ProblemDescription problemDescription, Exception inner = null)
+            : base(problemDescription, inner)
         {
         }
     }

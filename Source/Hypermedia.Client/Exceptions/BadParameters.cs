@@ -7,8 +7,8 @@
     /// </summary>
     public class BadParameters : HypermediaProblemException
     {
-        public BadParameters(string Title, string ProblemType, string Detail)
-            : base(Title, ProblemType, Detail)
+        public BadParameters(ProblemDescription problemDescription, Exception inner = null)
+            : base(problemDescription, inner)
         {
         }
     }

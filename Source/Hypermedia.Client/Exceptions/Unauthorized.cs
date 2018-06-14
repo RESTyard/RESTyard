@@ -7,8 +7,8 @@
     /// </summary>
     public class Unauthorized : HypermediaProblemException
     {
-        public Unauthorized(string Title, string ProblemType, string Detail)
-            : base(Title, ProblemType, Detail)
+        public Unauthorized(ProblemDescription problemDescription, Exception inner = null)
+            : base(problemDescription, inner)
         {
         }
     }

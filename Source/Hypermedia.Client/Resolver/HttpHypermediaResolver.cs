@@ -65,17 +65,6 @@ namespace Hypermedia.Client.Resolver
             return resolverResult;
         }
 
-        private static void ThrowRequestErrorException(HttpResponseMessage result)
-        {
-            var hasProblemDescription = ProblemJsonReader.TryReadProblemJson(result, out var problemDescription);
-            if (hasProblemDescription)
-            {
-                throw new HypermediaProblemException(problemDescription);
-            }
-
-            ThrowExceptionFromResult(result);
-        }
-
         public async Task<HypermediaCommandResult> ResolveActionAsync(Uri uri, string method)
         {
             var responseMessage = await this.SendCommand(uri, method);
@@ -108,10 +97,23 @@ namespace Hypermedia.Client.Resolver
             return actionResult;
         }
 
-        private static void ThrowExceptionFromResult(HttpResponseMessage result)
+        private static void ThrowRequestErrorException(HttpResponseMessage result)
         {
-            var detail = result.Content?.ReadAsStringAsync().Result;
-            throw new HypermediaClientException($"{result.ReasonPhrase} ({result.StatusCode})", $"{detail}");
+            var hasProblemDescription = ProblemJsonReader.TryReadProblemJson(result, out var problemDescription);
+            if (hasProblemDescription)
+            {
+                try
+                {
+                    result.EnsureSuccessStatusCode();
+                }
+                catch (Exception inner)
+                {
+                    throw new HypermediaProblemException(problemDescription, inner);
+                }
+            }
+
+            // we found no problem json, throw anyway
+            result.EnsureSuccessStatusCode();
         }
 
         private string ProcessParameters(List<ParameterDescription> parameterDescriptions, object parameterObject)

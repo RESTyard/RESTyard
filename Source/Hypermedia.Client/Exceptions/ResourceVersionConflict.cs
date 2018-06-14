@@ -7,8 +7,8 @@
     /// </summary>
     public class ResourceVersionConflict : HypermediaProblemException
     {
-        public ResourceVersionConflict(string Title, string ProblemType, string Detail)
-            : base(Title, ProblemType, Detail)
+        public ResourceVersionConflict(ProblemDescription problemDescription, Exception inner = null)
+            : base(problemDescription, inner)
         {
         }
     }

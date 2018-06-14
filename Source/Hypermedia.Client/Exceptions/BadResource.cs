@@ -7,8 +7,8 @@
     /// </summary>
     public class BadResource : HypermediaProblemException
     {
-        public BadResource(string Title, string ProblemType, string Detail)
-            : base(Title, ProblemType, Detail)
+        public BadResource(ProblemDescription problemDescription, Exception inner = null)
+            : base(problemDescription, inner)
         {
         }
     }
