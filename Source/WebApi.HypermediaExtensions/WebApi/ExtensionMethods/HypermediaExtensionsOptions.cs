@@ -22,10 +22,10 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         public string DefaultRouteSegmentForUnknownHto { get; set; } = "unknown/object/route";
 
         /// <summary>
-        /// Automatically deliver NJson schema for hypermedia action parameters. Custom schemas can still be delivered by implementing controller methods attributed
+        /// Automatically deliver json schema for hypermedia action parameters. Custom schemas can still be delivered by implementing controller methods attributed
         /// with <see cref="HttpGetHypermediaActionParameterInfo"/> attibute.
         /// </summary>
-        public bool AutoDeliverNJsonSchemaForActionParameterTypes { get; set; } = true;
+        public bool AutoDeliverJsonSchemaForActionParameterTypes { get; set; } = true;
 
         /// <summary>
         /// Implictly add custom binder for parameters of hypermedia actions that derive from <see cref="IHypermediaActionParameter"/>. 

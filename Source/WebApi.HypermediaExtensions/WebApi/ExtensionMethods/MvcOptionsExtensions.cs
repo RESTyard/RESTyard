@@ -27,7 +27,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
                 o.AddHypermediaExtensions(controllerAndHypermediaAssemblies: controllerAndHypermediaAssemblies)
                 .AddHypermediaParameterBinders(!hypermediaOptions.ImplicitHypermediaActionParameterBinders)
             );
-            if (hypermediaOptions.AutoDeliverNJsonSchemaForActionParameterTypes)
+            if (hypermediaOptions.AutoDeliverJsonSchemaForActionParameterTypes)
                 services.AutoDeliverActionParameterSchemas(controllerAndHypermediaAssemblies);
 
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
