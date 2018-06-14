@@ -88,13 +88,14 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
             var actionsArray = (JArray)singleField["class"];
             Assert.AreEqual(actionsArray.Count, 1);
 
+            var route = ((JValue)actionsArray[0]).Value<string>();
             if (!classIsRoute)
             {
-                Assert.AreEqual(actionsArray[0], actionParameterClass);
+                AssertRoute(route, "ActionParameterTypes", $"{{ parameterTypeName = {actionParameterClass} }}");
             }
             else
             {
-                AssertRoute(((JValue)actionsArray[0]).Value<string>(), actionParameterClass);
+                AssertRoute(route, actionParameterClass);
             }
         }
 
