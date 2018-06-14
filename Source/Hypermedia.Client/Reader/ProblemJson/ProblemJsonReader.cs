@@ -27,7 +27,7 @@
             {
                 return false;
             }
-            return true;
+            return problemDescription != null;
         }
     }
 }
