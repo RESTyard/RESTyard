@@ -47,8 +47,8 @@ namespace WebApi.HypermediaExtensions.WebApi.Controller
             {
                 return this.Problem(new ProblemJson
                 {
-                    ProblemType = $"Invalid parameter type name: '{parameterTypeName}'",
-                    StatusCode = (int)HttpStatusCode.BadRequest,
+                    ProblemType = $"Unknwon parameter type name: '{parameterTypeName}'",
+                    StatusCode = (int)HttpStatusCode.NotFound,
                     Title = "Unkown action parameter type"
                 });
             }

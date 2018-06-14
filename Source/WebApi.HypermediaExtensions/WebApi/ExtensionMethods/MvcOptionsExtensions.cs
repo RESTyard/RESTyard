@@ -4,6 +4,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
 using WebApi.HypermediaExtensions.JsonSchema;
 using WebApi.HypermediaExtensions.Query;
@@ -29,7 +30,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
             if (hypermediaOptions.AutoDeliverNJsonSchemaForActionParameterTypes)
                 services.AutoDeliverActionParameterSchemas(controllerAndHypermediaAssemblies);
 
-            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
             return builder;
         }
