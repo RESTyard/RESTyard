@@ -47,6 +47,18 @@ namespace CarShack.Controllers.Customers
         [HttpPostHypermediaAction("MyFavoriteCustomers", typeof(HypermediaActionCustomerMarkAsFavorite))]
         public async Task<ActionResult> MarkAsFavoriteAction([HypermediaActionParameterFromBody]FavoriteCustomer favoriteCustomer)
         {
+            if (favoriteCustomer == null)
+            {
+                var problem = new ProblemJson
+                {
+                    Title = $"Can not use provided object of type '{typeof(FavoriteCustomer)}'",
+                    Detail = "Json or contained links might be invalid",
+                    ProblemType = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
+                    StatusCode = 422 // Unprocessable Entity
+                };
+                return this.UnprocessableEntity(problem);
+            }
+
             try
             {
                 var customer = await customerRepository.GetEnitityByKeyAsync(favoriteCustomer.CustomerId).ConfigureAwait(false);
