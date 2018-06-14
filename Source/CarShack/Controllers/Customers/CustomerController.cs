@@ -1,12 +1,12 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using CarShack.Domain.Customer;
+using CarShack.Hypermedia.Cars;
 using CarShack.Hypermedia.Customers;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.HypermediaExtensions.ErrorHandling;
 using WebApi.HypermediaExtensions.Exceptions;
+using WebApi.HypermediaExtensions.JsonSchema;
 using WebApi.HypermediaExtensions.WebApi;
 using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
 using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
@@ -45,13 +45,11 @@ namespace CarShack.Controllers.Customers
 
         #region Actions
         [HttpPostHypermediaAction("MyFavoriteCustomers", typeof(HypermediaActionCustomerMarkAsFavorite))]
-        public async Task<ActionResult> MarkAsFavoriteAction([SingleParameterBinder(typeof(FavoriteCustomer))]  FavoriteCustomer favoriteCustomer)
+        public async Task<ActionResult> MarkAsFavoriteAction([HypermediaActionParameterFromBody]FavoriteCustomer favoriteCustomer)
         {
             try
             {
-                var id = ExtractIdFromCustomerUri(favoriteCustomer.CustomerLink);
-
-                var customer = await customerRepository.GetEnitityByKeyAsync(id).ConfigureAwait(false);
+                var customer = await customerRepository.GetEnitityByKeyAsync(favoriteCustomer.CustomerId).ConfigureAwait(false);
                 var hypermediaCustomer = new HypermediaCustomer(customer);
                 hypermediaCustomer.MarkAsFavoriteAction.Execute(favoriteCustomer);
                 return Ok();
@@ -75,30 +73,43 @@ namespace CarShack.Controllers.Customers
             {
                 return this.CanNotExecute();
             }
-
         }
 
-        private int ExtractIdFromCustomerUri(string favoriteCustomerCustomerLink)
+        [HttpPostHypermediaAction("{key:int}/BuysCar", typeof(HypermediaActionCustomerBuysCar))]
+        public async Task<ActionResult> BuyCar(int key, HypermediaActionCustomerBuysCar.Parameter parameter)
         {
-            if (string.IsNullOrWhiteSpace(favoriteCustomerCustomerLink))
+            if (parameter == null)
             {
-                throw new InvalidLinkException($"Provided Link is empty '{favoriteCustomerCustomerLink}'");
+                var problem = new ProblemJson
+                {
+                    Title = $"Can not use provided object of type '{typeof(HypermediaActionCustomerBuysCar.Parameter)}'",
+                    Detail = "Json or contained links might be invalid",
+                    ProblemType = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
+                    StatusCode = 422 // Unprocessable Entity
+                };
+                return this.UnprocessableEntity(problem);
             }
-            var lastSegment = favoriteCustomerCustomerLink.Split('/').Last();
 
             try
             {
-                return Convert.ToInt16(lastSegment);
-
+                //shortcut for get car from repository
+                var car = new HypermediaCar(parameter.Brand, parameter.CarId);
+                var customer = await customerRepository.GetEnitityByKeyAsync(key).ConfigureAwait(false);
+                //do what has to be done
+                return Ok();
             }
-            catch (Exception)
+            catch (EntityNotFoundException)
             {
-                throw new InvalidLinkException($"Provided Link is invalid '{favoriteCustomerCustomerLink}', provide propper self link.");
+                return this.Problem(ProblemJsonBuilder.CreateEntityNotFound());
+            }
+            catch (CanNotExecuteActionException)
+            {
+                return this.CanNotExecute();
             }
         }
 
         [HttpPostHypermediaAction("{key:int}/Moves", typeof(HypermediaActionCustomerMoveAction), typeof(CustomerRouteKeyProducer))]
-        public async Task<ActionResult> CustomerMove(int key, [SingleParameterBinder(typeof(NewAddress))] NewAddress newAddress)
+        public async Task<ActionResult> CustomerMove(int key, NewAddress newAddress)
         {
             if (newAddress == null)
             {
@@ -135,12 +146,12 @@ namespace CarShack.Controllers.Customers
         #endregion
 
         #region TypeRoutes
-        // Provide type information for Action parameters. Does not depend on a specific customer.
+        // Provide type information for Action parameters. Does not depend on a specific customer. Optional when using
+        // MvcOptionsExtension.AutoDeliverActionParameterSchemas
         [HttpGetHypermediaActionParameterInfo("NewAddressType", typeof(NewAddress))]
-        public ActionResult NewAddressType()
+        public async Task<ActionResult> NewAddressType()
         {
-            var schema = JsonSchemaFactory.Generate(typeof(NewAddress));
-
+            var schema = await JsonSchemaFactory.Generate(typeof(NewAddress)).ConfigureAwait(false);
             return Ok(schema);
         }
         #endregion

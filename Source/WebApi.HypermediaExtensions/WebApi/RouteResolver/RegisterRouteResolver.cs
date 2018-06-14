@@ -75,13 +75,17 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
 
         public bool TryGetRouteByType(Type type, out string route, object routeKeys = null)
         {
-            string routeName;
             route = null;
-            if (this.RouteRegister.TryGetRoute(type, out routeName))
+            if (this.RouteRegister.TryGetRoute(type, out var routeName))
             {
-                route = this.urlHelper.RouteUrl(routeName, routeKeys, hypermediaUrlConfig.Scheme, hypermediaUrlConfig.Host.ToUriComponent());
+                route = RouteUrl(routeName, routeKeys);
             }
             return route != null;
+        }
+
+        public string RouteUrl(string routeName, object routeKeys = null)
+        {
+            return this.urlHelper.RouteUrl(routeName, routeKeys, hypermediaUrlConfig.Scheme, hypermediaUrlConfig.Host.ToUriComponent());
         }
 
         private string GetRouteByType(Type lookupType, object routeKeys = null)

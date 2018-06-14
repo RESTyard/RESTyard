@@ -10,4 +10,6 @@ namespace CarShack.Hypermedia.Customers
         {
         }
     }
+
+    // Action on a HypermediaCustoemr which must be posted to the corresponding route. See CustomerController
 }

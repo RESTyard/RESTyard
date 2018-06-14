@@ -3,7 +3,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -61,17 +60,15 @@ namespace CarShack
                         NullValueHandling = NullValueHandling.Ignore,
                         DefaultValueHandling = DefaultValueHandling.Ignore
                     }, ArrayPool<char>.Shared));
-
-                // Initializes and adds the Hypermedia Extensions
-                options.AddHypermediaExtensions(hypermediaOptions: new HypermediaExtensionsOptions
-                {
-                    ReturnDefaultRouteForUnknownHto = true
-                });
             });
             builder.AddMvcOptions(o => { o.Filters.Add(new GlobalExceptionFilter(null)); });
 
-            // Required by Hypermedia Extensions
-            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            // Initializes and adds the Hypermedia Extensions
+            builder.AddHypermediaExtensions(services,
+                hypermediaOptions: new HypermediaExtensionsOptions
+                {
+                    ReturnDefaultRouteForUnknownHto = true
+                });
 
             // Domain
             services.AddSingleton<HypermediaEntryPoint>();

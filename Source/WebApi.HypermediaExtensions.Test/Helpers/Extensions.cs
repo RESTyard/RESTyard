@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.IO;
 
 namespace WebApi.HypermediaExtensions.Test.Helpers
 {
@@ -13,6 +14,16 @@ namespace WebApi.HypermediaExtensions.Test.Helpers
         public static string ToStringZNotation(this IFormattable formattable)
         {
             return formattable.ToString("o", CultureInfo.InvariantCulture);
+        }
+
+        public static Stream ToStream(this string s)
+        {
+            var stream = new MemoryStream();
+            var writer = new StreamWriter(stream);
+            writer.Write(s);
+            writer.Flush();
+            stream.Position = 0;
+            return stream;
         }
     }
 }

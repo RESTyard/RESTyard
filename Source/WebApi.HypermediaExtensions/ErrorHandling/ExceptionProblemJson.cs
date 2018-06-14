@@ -7,12 +7,12 @@ namespace WebApi.HypermediaExtensions.ErrorHandling
         public ExceptionProblemJson(Exception exception)
         {
 #if DEBUG
-            this.StackTrace = exception.StackTrace;
+            this.ExceptionDetail = exception.ToString();
 #endif
         }
 
 #if DEBUG
-        public string StackTrace { get; set; }
+        public string ExceptionDetail { get; set; }
 #endif
     }
 }

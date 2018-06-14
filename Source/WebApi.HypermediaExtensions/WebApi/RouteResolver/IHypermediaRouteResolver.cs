@@ -18,5 +18,6 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
         
         string TypeToRoute(Type actionParameterType);
         bool TryGetRouteByType(Type type, out string route, object routeKeys = null);
+        string RouteUrl(string routeName, object routeKeys = null);
     }
 }

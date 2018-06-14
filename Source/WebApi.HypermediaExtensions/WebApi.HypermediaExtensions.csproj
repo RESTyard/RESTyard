@@ -25,6 +25,7 @@
     <PackageReference Include="Hypermedia.MediaTypes" Version="1.4.0-CI-20180613-165856" />
     <PackageReference Include="Hypermedia.Relations" Version="1.4.0-CI-20180613-165947" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.7" />
+    <PackageReference Include="NJsonSchema" Version="9.10.50" />
   </ItemGroup>
 
 </Project>
