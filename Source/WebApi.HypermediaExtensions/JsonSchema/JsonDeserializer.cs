@@ -40,6 +40,11 @@ namespace WebApi.HypermediaExtensions.JsonSchema
 
         public object Deserialize(JObject raw)
         {
+            if (raw == null)
+            {
+                return null;
+            }
+
             foreach (var schemaProperyGroup in keyFromUriProperties)
             {
                 var uriPropertyName = schemaProperyGroup.SchemaPropertyName;
