@@ -228,8 +228,58 @@ public ActionResult CreateCustomerParametersType()
 }
 ```
 
+Also see See: [extracting keys from action parameter urls](#extracting-keys-from-action-parameter-urls)
+
+
 ### Routes with a placeholder in the route template
-For access to entities a route template may contain placeholder variables like _key_ in the example below. If a `HypermediaObject` is referenced, e.g. the self link or a link to another Customer, the formatter must be able to create the URI to the linked `HypermediaObject`. To propperly fill the placeholder variables for such routes a `KeyProducer` is required. The formatter will call the producer if he has a instance of the referenced Object (e.g. from `HypermediaObjectReference.GetInstance()`) and passes it to the `IKeyProducer:CreateFromHypermediaObject()` function. Otherwise it will call `IKeyProducer:CreateFromKeyObject()` and passes the object provided by `HypermediaObjectKeyReference:GetKey(IKeyProducer keyProducer)`. The `KeyProducer` must return an anonymous object filled with a property for each placeholder variable to be filled in the `HypermediaObject`'s route, here _key_.
+For access to entities a route template may contain placeholder variables like _key_ in the example below.
+If a `HypermediaObject` is referenced, e.g. the self link or a link to another Customer, the formatter must be able to create the URI to the linked `HypermediaObject`.
+To propperly fill the placeholder variables for such routes a `KeyProducer` is required.
+
+#### Use attributes to indicate keys
+Use the `Key` attribute to indicate which properties of the HTO should be used to fill the route template variables.
+If there is only one variable to fill it is enough to put the attribute above the desired HTO property.
+
+Example:
+The route template: `[HttpGetHypermediaObject("{key:int}", typeof(MyHypermediaObject))]`
+The attributed HTO:
+```csharp
+public class MyHypermediaObject : HypermediaObject
+{
+    [Key]
+    public int Id { get; set; }
+...
+```
+
+If the route has more than one variable, the `Key` attribute receives the name of the related route template variable.
+
+Example:
+The route template: `[HttpGetHypermediaObject("{brand}/{key:int}", typeof(HypermediaCar))]`
+The attributed HTO:
+```csharp
+[HypermediaObject(Title = "A Car", Classes = new[] { "Car" })]
+public class HypermediaCar : HypermediaObject
+{
+    // Marks property as part of the objects key so it is can be mapped to route parameters when creating links.
+    [Key("brand")]
+    public string Brand { get; set; }
+
+    // Marks property as part of the objects key so it is can be mapped to route parameters when creating links
+    [Key("key")]
+    public int Id { get; set; }
+
+    ...
+}
+```
+
+#### Use a custom `KeyProducer`
+Us use a custom `KeyProducer` implement IKeyProducer and add it to the attributed routes:
+`[HttpGetHypermediaObject("{key:int}", typeof(HypermediaCustomer), typeof(CustomerRouteKeyProducer))]` to tell the framework which `KeyProducer to use for the route.
+
+The formatter will call the producer if he has a instance of the referenced
+Object (e.g. from `HypermediaObjectReference.GetInstance()`) and passes it to the `IKeyProducer:CreateFromHypermediaObject()` function.
+Otherwise it will call `IKeyProducer:CreateFromKeyObject()` and passes the object provided by `HypermediaObjectKeyReference:GetKey(IKeyProducer keyProducer)`.
+The `KeyProducer` must return an anonymous object filled with a property for each placeholder variable to be filled in the `HypermediaObject`'s route, here _key_.
 
 A `KeyProducer` is added directly to the Attributed route as a Type and will be instantiated once by the framework.
 See `CustomerRouteKeyProducer` in the demo project for an example.
@@ -242,7 +292,8 @@ public async Task<ActionResult> GetEntity(int key)
 }
 ```
 
-By design the Extension encourages routes to not have multiple keys in the route template. Also only routes to a `HypermediaObject` may have a key. Actions related to a `HypermediaObject` must be available as a sub route to its corresponding object so required route template variables can be filled for the current `HypermediaObject`.
+By design the Extension encourages routes to not have multiple keys in the route template. Also only routes to a `HypermediaObject` may have a key. Actions related to
+a `HypermediaObject` must be available as a sub route to its corresponding object so required route template variables can be filled for the actions host `HypermediaObject`.
 Example:
 ```
 http://localhost:5000/Customers/{key}
@@ -289,6 +340,76 @@ For some configuration you can pass a `HypermediaExtensionsOptions` object to `A
   This is useful during development time when first writing some Hto's and not all controllers are implemented. Default is `false`.
 
 - `DefaultRouteSegmentForUnknownHto` a `string` wich will pe appended to `<scheme>://<authority>/` as default route.
+
+- `AutoDeliverJsonSchemaForActionParameterTypes`: if set to `true` (default) the routes to action parameters (implementing `IHypermediaActionParameter`) will be generated automatically except when there is a explict rout created.
+
+- `ImplicitHypermediaActionParameterBinders`: if set to `true` (default) actions receiving a `IHypermediaActionParameter` will have a automatic binder added. 
+  The binder allows to use the `KeyFromUriAttribute` attribute. See: [extracting keys from action parameter urls](#extracting-keys-from-action-parameter-urls).
+
+## Extracting keys from action parameter URLs
+When it is required to reference an other ressource as action parameter it is often required to get the identifying keys from the resources URL. 
+Enable `ImplicitHypermediaActionParameterBinders` to use this feature.
+This can be automated by using attributes in parameters.
+If there is only one key inused in the URL it can be attributed like this:
+
+``` csharp
+public class FavoriteCustomer : IHypermediaActionParameter
+{
+    [Required]
+    [KeyFromUri(typeof(HypermediaCustomer), schemaProperyName: "Customer")]
+    public int CustomerId { get; set; }
+}
+```
+
+- The first parameter `typeof(HypermediaCustomer)` gives the expected `HypermediaObject` so the frame work knows which route layout it should use, and there to what kind of Resource the provided URL should lead.
+- The second parameter `schemaProperyName: "Customer"` is to identify the property which holds the URL in the payload JSON object.
+  Note: when using `AutoDeliverJsonSchemaForActionParameterTypes` the delivered schemas are adapted so a URL property with the name `Customer` is required.
+
+The post would look like:
+```
+[
+  {
+    "FavoriteCustomer": {
+      "Customer": "http://localhost:5000/Customers/1"
+    }
+  }
+]
+```
+
+The binder will then extract the customersvalue `1` from the URL and sets it to the parameter whic is attributed.
+
+### More than one key
+If your ressource is addressed using more than one key the binder needs additional information.
+
+Example `HypermediaActionCustomerBuysCar.Parameter`:
+
+``` csharp
+public class Parameter : IHypermediaActionParameter
+{
+    [KeyFromUri(typeof(HypermediaCar), schemaProperyName: "CarUri", routeTemplateParameterName: "brand")]
+    public string Brand { get; set; }
+    [KeyFromUri(typeof(HypermediaCar), schemaProperyName: "CarUri", routeTemplateParameterName: "key")]
+    public int CarId { get; set; }
+    [Required]
+    public double Price { get; set; }
+}
+```
+
+Not two properties have an attribute indicating that tey should be filled: `Brand` and `CarId`. Both share the same type of ressource and `schemaProperyName` because the source of their value is a single URL in the JSON payload.
+To configure which route template variable (see your attributed route) should be used to fill the parameter property `routeTemplateParameterName` is used.
+The route template: `{brand}/{key:int}`. Be carefule to match the variable name and `routeTemplateParameterName`.
+
+The corresponding post would look like: 
+``` csharp
+[
+  {
+    "HypermediaActionCustomerBuysCar.Parameter": {
+      "CarUri": "http://localhost:5000/Cars/VW/2",
+      "Price": 133
+    }
+  }
+]
+```
 
 ## Recommendations for route design
 The extensions were build with some idears about how routes should be build in mind. The Extensions do not enforce this design but it is useful to know the basic idears.
