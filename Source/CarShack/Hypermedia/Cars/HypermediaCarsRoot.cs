@@ -17,7 +17,7 @@ namespace CarShack.Hypermedia.Cars
 
             // Add object with no corresponding route. This will throw an exception if serialized
             // or a default route if HypermediaExtensionsOptions.ReturnDefaultRouteForUnknownHto is set to true
-            Links.Add("Truck", new HypermediaObjectReference(new HypermediaTruck("Daimler", 11)));
+            // Links.Add("Truck", new HypermediaObjectReference(new HypermediaTruck("Daimler", 11)));
         }
     }
 }

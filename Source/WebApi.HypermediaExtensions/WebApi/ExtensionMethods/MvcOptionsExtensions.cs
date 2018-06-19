@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,14 +26,37 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
             //TODO: register ApplicationModel as singleton and use it everywhere to replace runtime reflection 
             builder.AddMvcOptions(o => 
                 o.AddHypermediaExtensions(controllerAndHypermediaAssemblies: controllerAndHypermediaAssemblies)
-                .AddHypermediaParameterBinders(!hypermediaOptions.ImplicitHypermediaActionParameterBinders)
+                 .AddHypermediaParameterBinders(!hypermediaOptions.ImplicitHypermediaActionParameterBinders)
             );
-            if (hypermediaOptions.AutoDeliverJsonSchemaForActionParameterTypes)
-                services.AutoDeliverActionParameterSchemas(controllerAndHypermediaAssemblies);
-
-            services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            RegisterServices(services, hypermediaOptions, controllerAndHypermediaAssemblies);
 
             return builder;
+        }
+
+        public static IMvcCoreBuilder AddHypermediaExtensions(this IMvcCoreBuilder builder, IServiceCollection services,
+            HypermediaExtensionsOptions hypermediaOptions,
+            params Assembly[] controllerAndHypermediaAssemblies)
+        {
+            //TODO: register ApplicationModel as singleton and use it everywhere to replace runtime reflection 
+            builder.AddMvcOptions(o =>
+                o.AddHypermediaExtensions(controllerAndHypermediaAssemblies: controllerAndHypermediaAssemblies)
+                 .AddHypermediaParameterBinders(!hypermediaOptions.ImplicitHypermediaActionParameterBinders)
+            );
+            RegisterServices(services, hypermediaOptions, controllerAndHypermediaAssemblies);
+
+            return builder;
+        }
+
+        private static void RegisterServices(
+            IServiceCollection services,
+            HypermediaExtensionsOptions hypermediaOptions,
+            Assembly[] controllerAndHypermediaAssemblies)
+        {
+            if (hypermediaOptions.AutoDeliverJsonSchemaForActionParameterTypes) { 
+                services.AutoDeliverActionParameterSchemas(controllerAndHypermediaAssemblies);
+            }
+
+            services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
         }
 
         /// <summary>
