@@ -44,7 +44,7 @@ namespace Hypermedia.Client
             Type hypermediaObjectType;
             if (!this.hypermediaObjectTypeDictionary.TryGetValue(classes, out hypermediaObjectType))
             {
-                throw new Exception($"No Type registered for classes: {classes}");
+                throw new Exception($"No HCO Type registered for classes: {string.Join(", ", classes)}");
             }
             return hypermediaObjectType;
         }
