@@ -41,10 +41,7 @@ namespace Hypermedia.Client.Resolver
         public async Task<ResolverResult<T>> ResolveLinkAsync<T>(Uri uriToResolve) where T : HypermediaClientObject
         {
             var result = await this.httpClient.GetAsync(uriToResolve);
-            if (!result.IsSuccessStatusCode)
-            {
-                ThrowRequestErrorException(result);
-            }
+            EnsureRequestIsSuccessful(result);
 
             var hypermediaObjectSiren = await result.Content.ReadAsStringAsync(); //TODO READ AS STREAM for pref
 
@@ -97,23 +94,37 @@ namespace Hypermedia.Client.Resolver
             return actionResult;
         }
 
-        private static void ThrowRequestErrorException(HttpResponseMessage result)
+        private static void EnsureRequestIsSuccessful(HttpResponseMessage result)
         {
+            if (result.IsSuccessStatusCode)
+            {
+                return;
+            }
+
+            var innerException = GetInnerException(result);
+
             var hasProblemDescription = ProblemJsonReader.TryReadProblemJson(result, out var problemDescription);
             if (hasProblemDescription)
             {
-                try
-                {
-                    result.EnsureSuccessStatusCode();
-                }
-                catch (Exception inner)
-                {
-                    throw new HypermediaProblemException(problemDescription, inner);
-                }
+                throw new HypermediaProblemException(problemDescription, innerException);
             }
 
-            // we found no problem json, throw anyway
-            result.EnsureSuccessStatusCode();
+            var message = innerException.Message ?? string.Empty;
+            throw new RequestNotSuccessfulException(message, (int)result.StatusCode, innerException);
+        }
+
+        private static Exception GetInnerException(HttpResponseMessage result)
+        {
+            try
+            {
+                result.EnsureSuccessStatusCode();
+            }
+            catch (Exception inner)
+            {
+                return inner;
+            }
+
+            return null;
         }
 
         private string ProcessParameters(List<ParameterDescription> parameterDescriptions, object parameterObject)
@@ -153,10 +164,7 @@ namespace Hypermedia.Client.Resolver
 
         private static HypermediaCommandResult HandleResponse(HttpResponseMessage responseMessage)
         {
-            if (!responseMessage.IsSuccessStatusCode)
-            {
-                ThrowRequestErrorException(responseMessage);
-            }
+            EnsureRequestIsSuccessful(responseMessage);
 
             var actionResult = new HypermediaCommandResult();
             actionResult.Success = true;
@@ -165,10 +173,7 @@ namespace Hypermedia.Client.Resolver
 
         private HypermediaFunctionResult<T> HandleFunctionResponse<T>(HttpResponseMessage responseMessage) where T : HypermediaClientObject
         {
-            if (!responseMessage.IsSuccessStatusCode)
-            {
-                ThrowRequestErrorException(responseMessage);
-            }
+            EnsureRequestIsSuccessful(responseMessage);
 
             var actionResult = new HypermediaFunctionResult<T>();
             actionResult.Success = true;
