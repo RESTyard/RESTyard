@@ -19,16 +19,17 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
 {
     public static class MvcOptionsExtensions
     {
-        public static IMvcBuilder AddHypermediaExtensions(this IMvcBuilder builder, IServiceCollection services, 
+        public static IMvcBuilder AddHypermediaExtensions(this IMvcBuilder builder, IServiceCollection services,
             HypermediaExtensionsOptions hypermediaOptions,
             params Assembly[] controllerAndHypermediaAssemblies)
         {
-            //TODO: register ApplicationModel as singleton and use it everywhere to replace runtime reflection 
-            builder.AddMvcOptions(o => 
+            ApplicationModelSingleton.Instance = ApplicationModel.Create(controllerAndHypermediaAssemblies);
+
+            builder.AddMvcOptions(o =>
                 o.AddHypermediaExtensions(controllerAndHypermediaAssemblies: controllerAndHypermediaAssemblies)
                  .AddHypermediaParameterBinders(!hypermediaOptions.ImplicitHypermediaActionParameterBinders)
             );
-            RegisterServices(services, hypermediaOptions, controllerAndHypermediaAssemblies);
+            RegisterServices(services, hypermediaOptions);
 
             return builder;
         }
@@ -37,23 +38,24 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
             HypermediaExtensionsOptions hypermediaOptions,
             params Assembly[] controllerAndHypermediaAssemblies)
         {
-            //TODO: register ApplicationModel as singleton and use it everywhere to replace runtime reflection 
+            ApplicationModelSingleton.Instance = ApplicationModel.Create(controllerAndHypermediaAssemblies);
+
             builder.AddMvcOptions(o =>
                 o.AddHypermediaExtensions(controllerAndHypermediaAssemblies: controllerAndHypermediaAssemblies)
                  .AddHypermediaParameterBinders(!hypermediaOptions.ImplicitHypermediaActionParameterBinders)
             );
-            RegisterServices(services, hypermediaOptions, controllerAndHypermediaAssemblies);
+            RegisterServices(services, hypermediaOptions);
 
             return builder;
         }
 
         private static void RegisterServices(
             IServiceCollection services,
-            HypermediaExtensionsOptions hypermediaOptions,
-            Assembly[] controllerAndHypermediaAssemblies)
+            HypermediaExtensionsOptions hypermediaOptions)
         {
-            if (hypermediaOptions.AutoDeliverJsonSchemaForActionParameterTypes) { 
-                services.AutoDeliverActionParameterSchemas(controllerAndHypermediaAssemblies);
+            if (hypermediaOptions.AutoDeliverJsonSchemaForActionParameterTypes)
+            {
+                services.AutoDeliverActionParameterSchemas();
             }
 
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
@@ -80,6 +82,8 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
             HypermediaExtensionsOptions hypermediaOptions = null,
             params Assembly[] controllerAndHypermediaAssemblies)
         {
+            if (ApplicationModelSingleton.Instance == null) ApplicationModelSingleton.Instance = ApplicationModel.Create(controllerAndHypermediaAssemblies);
+
             hypermediaOptions = hypermediaOptions ?? new HypermediaExtensionsOptions();
             var routeRegister = alternateRouteRegister ?? new AttributedRoutesRegister(controllerAndHypermediaAssemblies);
 
@@ -109,14 +113,12 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         ///     If set custom binder will be used for all parameter types that are not attributed differently. 
         ///     If set to false custom binder will be used for parameter types explicitly attributed with <see cref="HypermediaActionParameterFromBodyAttribute"/> only.
         ///  </param>
-        /// <param name="controllerAssemblies"></param>
         /// <returns></returns>
-        public static MvcOptions AddHypermediaParameterBinders(this MvcOptions options, bool forAttributedActionParametersOnly = false, params Assembly[] controllerAssemblies)
+        public static MvcOptions AddHypermediaParameterBinders(this MvcOptions options, bool forAttributedActionParametersOnly = false)
         {
-            var applicationModel = ApplicationModel.Create(controllerAssemblies);
-
             options.ModelBinderProviders.Insert(0, new HypermediaParameterFromBodyBinderProvider(t =>
             {
+                var applicationModel = ApplicationModelSingleton.Instance;
                 if (!applicationModel.HmoTypes.TryGetValue(t, out var hmoType))
                 {
                     throw new ArgumentException($"No route found for type {t.BeautifulName()}");
@@ -133,12 +135,11 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// with <see cref="HttpGetHypermediaActionParameterInfo"/> attibute.
         /// </summary>
         /// <param name="serviceCollection"></param>
-        /// <param name="controllerAssemblies"></param>
         /// <returns></returns>
-        public static IServiceCollection AutoDeliverActionParameterSchemas(this IServiceCollection serviceCollection, params Assembly[] controllerAssemblies)
+        public static IServiceCollection AutoDeliverActionParameterSchemas(this IServiceCollection serviceCollection)
         {
-            var applicationModel = ApplicationModel.Create(controllerAssemblies);
-            var controller = new ActionParameterSchemas(applicationModel.ActionParameterTypes.Values.Select(_ => _.Type));
+            //TODO: to allow dynamic actions handle ApplicationModel updates in controller somehow
+            var controller = new ActionParameterSchemas(ApplicationModelSingleton.Instance.ActionParameterTypes.Values.Select(_ => _.Type));
             return serviceCollection.AddSingleton(controller);
         }
     }

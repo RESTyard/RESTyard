@@ -2,17 +2,19 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
+using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 using WebApi.HypermediaExtensions.Util;
 using WebApi.HypermediaExtensions.Util.Extensions;
 using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
 
 namespace WebApi.HypermediaExtensions
 {
-    class ApplicationModel
+    public class ApplicationModel
     {
         public ImmutableDictionary<Type, HmoType> HmoTypes { get; }
         public ImmutableDictionary<Type, ActionParameterType> ActionParameterTypes { get; }
@@ -38,7 +40,11 @@ namespace WebApi.HypermediaExtensions
             var hmoTypes = implementingAssemblies
                 .SelectMany(a => a.GetTypes()
                     .Where(t => typeof(HypermediaObject).GetTypeInfo().IsAssignableFrom(t))
-                    .Select(t => new HmoType(t, FindGetMethods(controllerTypes, t)))
+                    .Select(t =>
+                    {
+                        var hmoAttribute = t.GetTypeInfo().GetCustomAttribute<HypermediaObjectAttribute>();
+                        return new HmoType(t, FindGetMethods(controllerTypes, t), hmoAttribute?.Classes, hmoAttribute?.Title, GetHmoProperties(t));
+                    })
                 ).ToImmutableDictionary(_ => _.Type);
 
             var actionParameterTypes = implementingAssemblies
@@ -48,6 +54,61 @@ namespace WebApi.HypermediaExtensions
                 ).ToImmutableDictionary(_ => _.Type);
 
             return new ApplicationModel(hmoTypes, actionParameterTypes, controllerTypes);
+        }
+
+        static IEnumerable<HmoProperty> GetHmoProperties(Type t)
+        {
+            return t.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Select(ToHmoProperty);
+        }
+
+        static HmoProperty ToHmoProperty(PropertyInfo property)
+        {
+            bool isIgnored = PropertyHasIgnoreAttribute(property);
+            if (isIgnored)
+                return null;
+            bool isAction = IsHypermediaAction(property);
+            if (isAction)
+                return null;
+
+            var propertyType = property.PropertyType;
+            var propertyTypeInfo = propertyType.GetTypeInfo();
+            if (propertyTypeInfo.IsClass && propertyType != typeof(string))
+                return null;
+
+            var name = GetPropertyName(property);
+
+            return new HmoProperty(name, property);
+        }
+
+        static bool PropertyHasIgnoreAttribute(PropertyInfo publicProperty)
+        {
+            return publicProperty.CustomAttributes.Any(a => a.AttributeType == typeof(FormatterIgnoreHypermediaPropertyAttribute));
+        }
+
+        static bool IsHypermediaAction(PropertyInfo property)
+        {
+            return typeof(HypermediaActionBase).GetTypeInfo().IsAssignableFrom(property.PropertyType);
+        }
+
+        private static string GetPropertyName(PropertyInfo publicProperty)
+        {
+            string propertyName;
+            var hypermediaPropertyAttribute = GetHypermediaPropertyAttribute(publicProperty);
+            if (!string.IsNullOrEmpty(hypermediaPropertyAttribute?.Name))
+            {
+                propertyName = hypermediaPropertyAttribute.Name;
+            }
+            else
+            {
+                propertyName = publicProperty.Name;
+            }
+            return propertyName;
+        }
+
+        private static HypermediaPropertyAttribute GetHypermediaPropertyAttribute(PropertyInfo hypermediaPropertyInfo)
+        {
+            return hypermediaPropertyInfo.GetCustomAttribute<HypermediaPropertyAttribute>();
         }
 
         static GetActionParameterInfoMethod FindGetParameterInfoMethodOrNull(ImmutableArray<ControllerType> controllerTypes, Type type)
@@ -103,15 +164,34 @@ namespace WebApi.HypermediaExtensions
             /// </summary>
             public ImmutableArray<GetHmoMethod> GetHmoMethods { get; }
 
-            public HmoType(Type type, IEnumerable<GetHmoMethod> getHmoMethods)
+            public ImmutableArray<string> Classes { get; }
+            public string Title { get; }
+            public ImmutableArray<HmoProperty> Properties { get; }
+
+            public HmoType(Type type, IEnumerable<GetHmoMethod> getHmoMethods, IEnumerable<string> classes, string title, IEnumerable<HmoProperty> properties)
             {
                 Type = type;
-                GetHmoMethods = getHmoMethods.ToImmutableArray();
+                GetHmoMethods = getHmoMethods.ToImmutableArraySafe();
+                Classes = classes.ToImmutableArraySafe();
+                Title = title;
+                Properties = properties.ToImmutableArraySafe();
             }
 
             public override string ToString()
             {
                 return $"{Type.BeautifulName()}, Get routes: {string.Join(",", GetHmoMethods.Select(g => g.RouteTemplateFull))}";
+            }
+        }
+
+        public class HmoProperty
+        {
+            public string Name { get; }
+            public PropertyInfo PropertyInfo { get; }
+
+            public HmoProperty(string name, PropertyInfo propertyInfo)
+            {
+                Name = name;
+                PropertyInfo = propertyInfo;
             }
         }
 

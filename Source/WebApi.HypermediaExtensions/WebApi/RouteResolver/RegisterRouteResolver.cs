@@ -95,7 +95,6 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
                 return this.HandleUnknownRoute(lookupType);
             }
 
-
             var route = this.urlHelper.RouteUrl(routeName, routeKeys, hypermediaUrlConfig.Scheme, hypermediaUrlConfig.Host.ToUriComponent());
             if (route == null)
             {

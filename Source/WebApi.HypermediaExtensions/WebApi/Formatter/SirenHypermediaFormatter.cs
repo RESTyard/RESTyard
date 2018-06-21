@@ -11,7 +11,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
 {
     public class SirenHypermediaFormatter : HypermediaOutputFormatter
     {
-        private readonly ISirenHypermediaConverterFactory sirenHypermediaConverterFactory;
+        readonly ISirenHypermediaConverterFactory sirenHypermediaConverterFactory;
 
         public SirenHypermediaFormatter(
             IRouteResolverFactory routeResolverFactory,
@@ -46,28 +46,30 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
         
         public override async Task WriteAsync(OutputFormatterWriteContext context)
         {
-            var hypermediaObject = context.Object as HypermediaObject;
-            if (hypermediaObject == null)
+            if (!(context.Object is HypermediaObject hypermediaObject))
             {
                 throw new HypermediaFormatterException("Formatter expected a HypermediaObject but is not.");
             }
 
             // context influences how routes are resolved
             var routeResolver = CreateRouteResolver(context);
-            var converter = sirenHypermediaConverterFactory.CreateSirenConverter(routeResolver);
+            
+            //other possibility: (ApplicationModel)context.HttpContext.RequestServices.GetService(typeof(ApplicationModel)) but how to change a replace a registered singleton in controller call?
+            var applicationModel = ApplicationModelSingleton.Instance;
+            var converter = sirenHypermediaConverterFactory.CreateSirenConverter(routeResolver, applicationModel);
             var sirenJson = converter.ConvertToString(hypermediaObject);
 
             var response = context.HttpContext.Response;
             response.ContentType = DefaultMediaTypes.Siren;
-            await WriteToBody(context, response, sirenJson);
+            await WriteToBody(context, response, sirenJson).ConfigureAwait(false);
         }
 
         private static async Task WriteToBody(OutputFormatterWriteContext context, HttpResponse response, string content)
         {
             using (var writer = context.WriterFactory(response.Body, Encoding.UTF8))
             {
-                await writer.WriteAsync(content);
-                await writer.FlushAsync();
+                await writer.WriteAsync(content).ConfigureAwait(false);
+                await writer.FlushAsync().ConfigureAwait(false);
             }
         }
     }

@@ -14,9 +14,9 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             this.sirenConverterConfiguration = sirenConverterConfiguration;
         }
 
-        public IHypermediaConverter CreateSirenConverter(IHypermediaRouteResolver hypermediaRouteResolver)
+        public IHypermediaConverter CreateSirenConverter(IHypermediaRouteResolver hypermediaRouteResolver, ApplicationModel applicationModel)
         {
-            return new SirenConverter(hypermediaRouteResolver, queryStringBuilder, sirenConverterConfiguration);
+            return new SirenConverter(hypermediaRouteResolver, queryStringBuilder, applicationModel, sirenConverterConfiguration);
         }
     }
 }

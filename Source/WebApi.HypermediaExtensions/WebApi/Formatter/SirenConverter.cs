@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -22,12 +23,15 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
         private static readonly ISirenConverterConfiguration defaultConfiguration = new SirenConverterConfiguration();
 
         private readonly IQueryStringBuilder queryStringBuilder;
+        readonly ApplicationModel applicationModel;
         private readonly IHypermediaRouteResolver routeResolver;
         private readonly ISirenConverterConfiguration configuration;
 
-        public SirenConverter(IHypermediaRouteResolver routeResolver, IQueryStringBuilder queryStringBuilder, ISirenConverterConfiguration configuration = null)
+        public SirenConverter(IHypermediaRouteResolver routeResolver, IQueryStringBuilder queryStringBuilder,
+            ApplicationModel applicationModel, ISirenConverterConfiguration configuration = null)
         {
             this.queryStringBuilder = queryStringBuilder;
+            this.applicationModel = applicationModel;
             this.routeResolver = routeResolver;
 
             this.configuration = configuration ?? defaultConfiguration;
@@ -47,9 +51,13 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
         {
             var sirenJson = new JObject();
 
-            var hypermediaObjectAttribute = GetHypermediaObjectAttribute(hypermediaObject);
-            AddClasses(hypermediaObject, sirenJson, hypermediaObjectAttribute);
-            AddTitle(sirenJson, hypermediaObjectAttribute);
+            if (!applicationModel.HmoTypes.TryGetValue(hypermediaObject.GetType(), out var hmoType))
+            {
+                throw new HypermediaException($"Type {hypermediaObject.GetType()} not registered in ApplicationModel");
+            }
+
+            AddClasses(hypermediaObject, sirenJson, hmoType.Classes);
+            AddTitle(sirenJson, hmoType.Title);
 
             if (isEmbedded)
             {
@@ -61,7 +69,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
                 AddEmbeddedEntityRelations(sirenJson, embeddedEntityRelations);
             }
 
-            AddProperties(hypermediaObject, sirenJson);
+            AddProperties(hypermediaObject, hmoType.Properties, sirenJson);
             SirenAddEntities(hypermediaObject, sirenJson);
             AddActions(hypermediaObject, sirenJson);
             AddLinks(hypermediaObject, sirenJson);
@@ -238,44 +246,27 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             var resolvedAdress = routeResolver.ReferenceToRoute(reference);
             var query = reference.GetQuery();
             resolvedAdress += queryStringBuilder.CreateQueryString(query);
-
             return resolvedAdress;
         }
 
-        private void AddProperties(HypermediaObject hypermediaObject, JObject sirenJson)
+        private void AddProperties(HypermediaObject hypermediaObject, ImmutableArray<ApplicationModel.HmoProperty> properties, JObject sirenJson)
         {
-            var type = hypermediaObject.GetType();
-            var publicProperties = type.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
             var jProperties = new JObject();
-            foreach (var publicProperty in publicProperties)
+            foreach (var property in properties)
             {
-                AddProperty(hypermediaObject, publicProperty, jProperties);
+                AddProperty(hypermediaObject, property, jProperties);
             }
 
             sirenJson.Add("properties", jProperties);
         }
 
-        private void AddProperty(HypermediaObject hypermediaObject, PropertyInfo publicProperty, JObject jProperties)
+        private void AddProperty(HypermediaObject hypermediaObject, ApplicationModel.HmoProperty property, JObject jProperties)
         {
-            if (PropertyHasIgnoreAttribute(publicProperty))
-            {
-                return;
-            }
-            if (IsHypermediaAction(publicProperty))
-            {
-                return;
-            }
-
-            var propertyType = publicProperty.PropertyType;
+            var propertyPropertyInfo = property.PropertyInfo;
+            var propertyType = property.PropertyInfo.PropertyType;
             var propertyTypeInfo = propertyType.GetTypeInfo();
-            if (propertyTypeInfo.IsClass && propertyType != typeof(string))
-            {
-                return;
-            }
-
-            var propertyName = GetPropertyName(publicProperty);
-            var value = publicProperty.GetValue(hypermediaObject);
+            var value = propertyPropertyInfo.GetValue(hypermediaObject);
+            var propertyName = property.Name;
 
             if (value == null)
             {
@@ -335,18 +326,18 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             return publicProperty.CustomAttributes.Any(a => a.AttributeType == typeof(FormatterIgnoreHypermediaPropertyAttribute));
         }
 
-        private static void AddClasses(HypermediaObject hypermediaObject, JObject sirenJson, HypermediaObjectAttribute hypermediaObjectAttribute)
+        private static void AddClasses(HypermediaObject hypermediaObject, JObject sirenJson, ImmutableArray<string> classes)
         {
-            AddClasses(hypermediaObject.GetType(), sirenJson, hypermediaObjectAttribute);
+            AddClasses(hypermediaObject.GetType(), sirenJson, classes);
         }
 
-        private static void AddClasses(Type hypermediaObjectType, JObject sirenJson, HypermediaObjectAttribute hypermediaObjectAttribute)
+        private static void AddClasses(Type hypermediaObjectType, JObject sirenJson, ImmutableArray<string> classes)
         {
             var sirenClasses = new JArray();
 
-            if (hypermediaObjectAttribute?.Classes != null)
+            if (classes.Length > 0)
             {
-                foreach (var hypermediaClass in hypermediaObjectAttribute.Classes)
+                foreach (var hypermediaClass in classes)
                 {
                     sirenClasses.Add(hypermediaClass);
                 }
@@ -370,11 +361,11 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             jembeddedEntity.Add("rel", rels);
         }
 
-        private static void AddTitle(JObject sirenJson, HypermediaObjectAttribute hypermediaObjectAttribute)
+        private static void AddTitle(JObject sirenJson, string title)
         {
-            if (!string.IsNullOrEmpty(hypermediaObjectAttribute?.Title))
+            if (!string.IsNullOrEmpty(title))
             {
-                sirenJson.Add("title", hypermediaObjectAttribute.Title);
+                sirenJson.Add("title", title);
             }
         }
     }

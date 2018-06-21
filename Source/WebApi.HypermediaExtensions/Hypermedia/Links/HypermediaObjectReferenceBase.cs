@@ -21,7 +21,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Links
         }
 
         /// <summary>
-        ///  Indicates if this reference can be resolved to a instance.
+        ///  Indicates if this reference can be resolved to an instance.
         /// </summary>
         public abstract bool CanResolve();
 
@@ -32,7 +32,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Links
         public abstract HypermediaObject GetInstance();
 
         /// <summary>
-        ///  Indicates if this reference is backed by a instance.
+        ///  Indicates if this reference is backed by an instance.
         /// </summary>
         public abstract bool IsResolved();
 
