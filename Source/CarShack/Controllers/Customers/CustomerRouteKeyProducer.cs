@@ -15,8 +15,7 @@ namespace CarShack.Controllers.Customers
     {
         public object CreateFromHypermediaObject(HypermediaObject hypermediaObject)
         {
-            var customer = hypermediaObject as HypermediaCustomer;
-            if (customer == null)
+            if (!(hypermediaObject is HypermediaCustomer customer))
             {
                 throw new HypermediaException($"Passed object is not a {typeof(HypermediaCustomer)}");
             }

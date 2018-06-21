@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -13,10 +14,10 @@ namespace WebApi.HypermediaExtensions.JsonSchema
 {
     class HypermediaParameterFromBodyBinderProvider : IModelBinderProvider
     {
-        readonly Func<Type, string> getRouteTemplateForType;
+        readonly Func<Type, ImmutableArray<string>> getRouteTemplateForType;
         readonly bool explicitUsage;
 
-        public HypermediaParameterFromBodyBinderProvider(Func<Type, string> getRouteTemplateForType, bool explicitUsage = false)
+        public HypermediaParameterFromBodyBinderProvider(Func<Type, ImmutableArray<string>> getRouteTemplateForType, bool explicitUsage = false)
         {
             this.getRouteTemplateForType = getRouteTemplateForType;
             this.explicitUsage = explicitUsage;
@@ -41,10 +42,10 @@ namespace WebApi.HypermediaExtensions.JsonSchema
         readonly Type modelType;
         readonly JsonDeserializer serializer;
 
-        public HypermediaParameterFromBodyBinder(Type modelType, Func<Type, string> getRouteTemplateForType)
+        public HypermediaParameterFromBodyBinder(Type modelType, Func<Type, ImmutableArray<string>> getRouteTemplatesForType)
         {
             this.modelType = modelType;
-            serializer = new JsonDeserializer(modelType, getRouteTemplateForType);
+            serializer = new JsonDeserializer(modelType, getRouteTemplatesForType);
         }
 
         public Task BindModelAsync(ModelBindingContext bindingContext)

@@ -50,8 +50,7 @@ namespace WebApi.HypermediaExtensions.WebApi
                     }
                 }
 
-                var wrapperArray = rawDeserialized as JArray;
-                if (wrapperArray == null)
+                if (!(rawDeserialized is JArray wrapperArray))
                 {
                     bindingContext.ModelState.AddModelError(bindingContext.ModelName, "Action field not wrapped in an Array.");
                     return Task.FromResult(false);

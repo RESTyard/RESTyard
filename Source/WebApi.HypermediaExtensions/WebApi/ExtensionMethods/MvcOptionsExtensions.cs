@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -122,7 +122,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
                     throw new ArgumentException($"No route found for type {t.BeautifulName()}");
                 }
 
-                return hmoType.GetHmoMethod.RouteTemplateFull;
+                return hmoType.GetHmoMethods.Select(_ => _.RouteTemplateFull).ToImmutableArray();
             }, forAttributedActionParametersOnly));
 
             return options;

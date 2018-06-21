@@ -1,7 +1,10 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using NJsonSchema;
@@ -10,6 +13,7 @@ using WebApi.HypermediaExtensions.Hypermedia.Actions;
 using WebApi.HypermediaExtensions.JsonSchema;
 using WebApi.HypermediaExtensions.Test.Helpers;
 using WebApi.HypermediaExtensions.Test.Hypermedia;
+using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
 using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace WebApi.HypermediaExtensions.Test.JsonSchema
@@ -248,6 +252,65 @@ namespace WebApi.HypermediaExtensions.Test.JsonSchema
 
         class MyHypermediaObject : HypermediaObject
         {
+        }
+    }
+
+    [TestClass]
+    public class When_creating_application_model_from_an_application_using_hmos_deriving_from_each_other : TestSpecification
+    {
+        ApplicationModel applicationModel;
+
+        public override void When()
+        {
+            applicationModel = ApplicationModel.Create(typeof(BaseHmo).GetTypeInfo().Assembly);
+        }
+
+        [TestMethod]
+        public void Then_all_routes_to_derived_types_should_be_found_for_base_type()
+        {
+            var getHmoMethods = applicationModel.HmoTypes[typeof(BaseHmo)].GetHmoMethods;
+            getHmoMethods.Should().HaveCount(2);
+            getHmoMethods.Select(s => s.RouteTemplate).Should().BeEquivalentTo("Route/To/Hmo1/{key}", "Route/To/Hmo2/{key}");
+        }
+
+        public abstract class BaseHmo : HypermediaObject
+        {
+            [HypermediaExtensions.WebApi.RouteResolver.Key]
+            public string Key { get; }
+
+            protected BaseHmo(string key)
+            {
+                Key = key;
+            }
+        }
+
+        public class DerivedHmo1 : BaseHmo
+        {
+            public DerivedHmo1(string key) : base(key)
+            {
+            }
+        }
+
+        public class DerivedHmo2 : BaseHmo
+        {
+            public DerivedHmo2(string key) : base(key)
+            {
+            }
+        }
+
+        public class MyController : Controller
+        {
+            [HttpGetHypermediaObject("Route/To/Hmo1/{key}", typeof(DerivedHmo1))]
+            public DerivedHmo1 GetDerivedHmo1(string key)
+            {
+                return new DerivedHmo1(key);
+            }
+
+            [HttpGetHypermediaObject("Route/To/Hmo2/{key}", typeof(DerivedHmo2))]
+            public DerivedHmo2 GetDerivedHmo2(string key)
+            {
+                return new DerivedHmo2(key);
+            }
         }
     }
 }

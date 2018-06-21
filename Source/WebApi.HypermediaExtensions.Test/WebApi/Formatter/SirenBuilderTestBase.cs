@@ -156,8 +156,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
             var foundLink = false;
             foreach (var link in linksArray)
             {
-                var linkObject = link as JObject;
-                if (linkObject == null)
+                if (!(link is JObject linkObject))
                 {
                     throw new Exception("Link array item should be a JObject");
                 }

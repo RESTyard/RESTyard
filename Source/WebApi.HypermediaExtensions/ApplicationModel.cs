@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
 using WebApi.HypermediaExtensions.Util;
@@ -40,7 +38,7 @@ namespace WebApi.HypermediaExtensions
             var hmoTypes = implementingAssemblies
                 .SelectMany(a => a.GetTypes()
                     .Where(t => typeof(HypermediaObject).GetTypeInfo().IsAssignableFrom(t))
-                    .Select(t => new HmoType(t, FindGetMethodOrNull(controllerTypes, t)))
+                    .Select(t => new HmoType(t, FindGetMethods(controllerTypes, t)))
                 ).ToImmutableDictionary(_ => _.Type);
 
             var actionParameterTypes = implementingAssemblies
@@ -58,12 +56,14 @@ namespace WebApi.HypermediaExtensions
                 .FirstOrDefault(m => m.ActionParameterType == type);
         }
 
-        static GetHmoMethod FindGetMethodOrNull(ImmutableArray<ControllerType> controllerTypes, Type type)
+        static IEnumerable<GetHmoMethod> FindGetMethods(ImmutableArray<ControllerType> controllerTypes, Type type)
         {
-            return controllerTypes.SelectMany(t => t.Methods).OfType<GetHmoMethod>()
-                .FirstOrDefault(m => m.HmoType == type);
+            return controllerTypes
+                .SelectMany(t => t.Methods)
+                .OfType<GetHmoMethod>()
+                .Where(m => type.GetTypeInfo().IsAssignableFrom(m.HmoType))
+                .OrderBy(m => m.HmoType == type ? 0 : 1);
         }
-
 
         static ControllerMethod GetControllerMethodOrNull(MethodInfo methodInfo, ControllerType controllerType)
         {
@@ -98,17 +98,20 @@ namespace WebApi.HypermediaExtensions
         {
             public Type Type { get; }
 
-            public GetHmoMethod GetHmoMethod { get; }
+            /// <summary>
+            /// Should be single method for concrete hypermedia object. For a hmo base type should be all get methods of types derived from that type.
+            /// </summary>
+            public ImmutableArray<GetHmoMethod> GetHmoMethods { get; }
 
-            public HmoType(Type type, GetHmoMethod getHmoMethod)
+            public HmoType(Type type, IEnumerable<GetHmoMethod> getHmoMethods)
             {
                 Type = type;
-                GetHmoMethod = getHmoMethod;
+                GetHmoMethods = getHmoMethods.ToImmutableArray();
             }
 
             public override string ToString()
             {
-                return $"{Type.BeautifulName()}, Get route: {GetHmoMethod?.RouteTemplateFull}";
+                return $"{Type.BeautifulName()}, Get routes: {string.Join(",", GetHmoMethods.Select(g => g.RouteTemplateFull))}";
             }
         }
 
