@@ -352,7 +352,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
 
         static void AddClasses(Type hmoType, JObject sirenJson, HypermediaObjectAttribute hypermediaObjectAttribute)
         {
-            AddClasses(hmoType.BeautifulName(), sirenJson, hypermediaObjectAttribute.Classes);
+            AddClasses(hmoType.BeautifulName(), sirenJson, hypermediaObjectAttribute?.Classes);
         }
 
         private static void AddClasses(string defaultClass, JObject sirenJson, IEnumerable<string> classes)

@@ -60,7 +60,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
             Assert.IsTrue(obj["class"].Type == JTokenType.Array);
             var classArray = (JArray)obj["class"];
             Assert.AreEqual(1, classArray.Count);
-            Assert.IsTrue(obj["class"].First.ToString() == type.Name);
+            Assert.IsTrue(obj["class"].First.ToString() == type.BeautifulName());
         }
 
         public static void AssertHasOnlySelfLink(JObject obj, string routeName)
