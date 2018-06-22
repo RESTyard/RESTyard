@@ -56,6 +56,11 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
                 return externalReferenceObject.ExternalUri.ToString();
             }
 
+            if (reference is HypermediaExternalObjectReference)
+            {
+                throw new HypermediaRouteException("Can not get instance for HypermediaExternalObjectReference.");
+            }
+
             var routeKeys = this.routeKeyFactory.GetHypermediaRouteKeys(reference);
             return this.GetRouteByType(lookupType, routeKeys);
         }
