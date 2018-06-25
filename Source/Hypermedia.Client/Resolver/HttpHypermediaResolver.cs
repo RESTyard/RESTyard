@@ -3,7 +3,6 @@ namespace Hypermedia.Client.Resolver
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Net;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Text;
@@ -25,6 +24,8 @@ namespace Hypermedia.Client.Resolver
         private HttpClient httpClient;
 
         private UsernamePasswordCredentials UsernamePasswordCredentials { get; set; }
+
+        private Action<HttpRequestHeaders> AddCustomDefaultHeadersAction { get; set; }
 
         public HttpHypermediaResolver(IParameterSerializer parameterSerializer)
         {
@@ -211,6 +212,11 @@ namespace Hypermedia.Client.Resolver
             this.httpClient.DefaultRequestHeaders.Accept.Clear();
             this.httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(DefaultMediaTypes.Siren));
 
+            if (this.AddCustomDefaultHeadersAction != null)
+            {
+                this.AddCustomDefaultHeadersAction.Invoke(this.httpClient.DefaultRequestHeaders);
+            }
+
             if (this.HasCredentials())
             {
                 this.httpClient.DefaultRequestHeaders.Authorization = CreateBasicAuthHeaderValue(this.UsernamePasswordCredentials);
@@ -250,6 +256,12 @@ namespace Hypermedia.Client.Resolver
             this.UsernamePasswordCredentials = usernamePasswordCredentials;
             this.InitializeHttpClient();
             // todo if using a cache clear it, new user migth not be able to access cached content
+        }
+
+        public void SetCustomDefaultHeaders(Action<HttpRequestHeaders> addCustomDefaultHeadersAction)
+        {
+            this.AddCustomDefaultHeadersAction = addCustomDefaultHeadersAction;
+            this.InitializeHttpClient();
         }
 
         public void Dispose()

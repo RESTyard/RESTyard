@@ -2,6 +2,7 @@
 {
     using System;
     using System.Linq;
+    using System.Net.Http.Headers;
     using System.Threading.Tasks;
 
     using global::Hypermedia.Client.Authentication;
@@ -19,9 +20,12 @@
     [TestClass]
     public class HypermediaClientTestRuns
     {
-        private HypermediaObjectRegister HypermediaObjectRegister { get; set; }
-        private HypermediaClient<EntryPointHco> SirenClient { get; set; }
         private static readonly Uri ApiEntryPoint = new Uri("http://localhost:5000/entrypoint");
+
+        private HypermediaObjectRegister HypermediaObjectRegister { get; set; }
+
+        private HypermediaClient<EntryPointHco> SirenClient { get; set; }
+
 
         [TestInitialize]
         public void Initialize()
@@ -31,6 +35,7 @@
             var resolver = new HttpHypermediaResolver(new SingleJsonObjectParameterSerializer());
             // be sure to use https
             resolver.SetCredentials(new UsernamePasswordCredentials("User", "Password"));
+            resolver.SetCustomDefaultHeaders(headers => headers.AcceptLanguage.Add(new StringWithQualityHeaderValue("en", 1.0)));
 
             var hypermediaReader = new SirenHypermediaReader(this.HypermediaObjectRegister, resolver);
             this.SirenClient = new HypermediaClient<EntryPointHco>(ApiEntryPoint, resolver, hypermediaReader);
