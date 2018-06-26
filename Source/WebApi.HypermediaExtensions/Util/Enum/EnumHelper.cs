@@ -34,7 +34,7 @@ namespace WebApi.HypermediaExtensions.Util.Enum
         {
             
             var enumvalueAsString = enumValue.ToString();
-            var fieldInfo = enumType.GetField(enumvalueAsString);
+            var fieldInfo = enumType.GetTypeInfo().GetField(enumvalueAsString);
             if (fieldInfo == null)
             {
                 throw new ArgumentException($"Enum '{enumType.Name}' has no value '{enumValue}'.");
