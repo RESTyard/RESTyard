@@ -208,11 +208,14 @@ namespace Hypermedia.Client.Resolver
 
         private void InitializeHttpClient()
         {
-            this.httpClient = new HttpClient();
-            this.httpClient.DefaultRequestHeaders.Accept.Clear();
-            this.httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(DefaultMediaTypes.Siren));
+            if (this.httpClient == null)
+            {
+                this.httpClient = new HttpClient();
+            }
 
-            if (this.AddCustomDefaultHeadersAction != null)
+            this.httpClient.DefaultRequestHeaders.Clear();
+
+            if (this.HasCustomHeaders())
             {
                 this.AddCustomDefaultHeadersAction.Invoke(this.httpClient.DefaultRequestHeaders);
             }
@@ -221,6 +224,13 @@ namespace Hypermedia.Client.Resolver
             {
                 this.httpClient.DefaultRequestHeaders.Authorization = CreateBasicAuthHeaderValue(this.UsernamePasswordCredentials);
             }
+
+            this.httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(DefaultMediaTypes.Siren));
+        }
+
+        private bool HasCustomHeaders()
+        {
+            return this.AddCustomDefaultHeadersAction != null;
         }
 
         private static AuthenticationHeaderValue CreateBasicAuthHeaderValue(UsernamePasswordCredentials credentials)
