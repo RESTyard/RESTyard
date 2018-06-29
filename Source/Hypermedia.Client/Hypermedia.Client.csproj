@@ -13,10 +13,15 @@
     <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
     <Description>Type safe generic Client which uses the Siren hypermedia format.</Description>
     <PackageTags>Client;REST;Siren;Hypermedia;</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard1.6|AnyCPU'">
-    <DocumentationFile>bin\Debug\netstandard1.6\HypermediaClient.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\netstandard1.6\Hypermedia.Client.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\netstandard1.6\Hypermedia.Client.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
