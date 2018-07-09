@@ -3,13 +3,11 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 using WebApi.HypermediaExtensions.Test.Helpers;
 using WebApi.HypermediaExtensions.Util.Enum;
 using WebApi.HypermediaExtensions.WebApi.Formatter;
 
-namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
+namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
 {
     [TestClass]
     public class SirenBuilderPropertiesTest : SirenBuilderTestBase
@@ -140,7 +138,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
             Assert.IsTrue(siren["properties"].Type == JTokenType.Object);
             var propertiesObject = (JObject)siren["properties"];
 
-            CompareHypermediaAndJson(propertiesObject, ho);
+            PropertieCompareHelpers.CompareHypermediaPropertiesAndJson(propertiesObject, ho);
         }
 
         [TestMethod]
@@ -150,8 +148,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
             RouteRegister.AddHypermediaObjectRoute(typeof(PropertyHypermediaObject), routeName);
 
             var ho = new PropertyHypermediaObject();
-            var sirenBuilderWithNoNullProperties = CreateSirenConverter(new SirenConverterConfiguration {WriteNullProperties = false});
-            var siren = sirenBuilderWithNoNullProperties.ConvertToJson(ho);
+            var siren = SirenConverterNoNullProperties.ConvertToJson(ho);
 
             AssertDefaultClassName(siren, typeof(PropertyHypermediaObject));
             AssertEmptyEntities(siren);
@@ -161,7 +158,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
             Assert.IsTrue(siren["properties"].Type == JTokenType.Object);
             var propertiesObject = (JObject)siren["properties"];
 
-            CompareHypermediaAndJsonNoNullProperties(propertiesObject, ho);
+            PropertieCompareHelpers.CompareHypermediaPropertiesAndJsonNoNullProperties(propertiesObject, ho);
         }
 
         [TestMethod]
@@ -198,7 +195,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
             Assert.IsTrue(siren["properties"].Type == JTokenType.Object);
             var propertiesObject = (JObject)siren["properties"];
 
-            CompareHypermediaAndJson(propertiesObject, ho);
+            PropertieCompareHelpers.CompareHypermediaPropertiesAndJson(propertiesObject, ho);
         }
 
         [TestMethod]
@@ -248,114 +245,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
 
             Assert.AreEqual(propertiesObject.Properties().Count(), 0);
         }
-
-        private static void CompareHypermediaAndJson(JObject propertiesObject, PropertyHypermediaObject ho)
-        {
-            var propertyInfos = typeof(PropertyHypermediaObject).GetProperties()
-                .Where(p => p.Name != "Entities" && p.Name != "Links")
-                .ToList();
-            Assert.AreEqual(propertiesObject.Properties().Count(), propertyInfos.Count);
-
-            CompareNotNullProperties(propertiesObject, ho);
-
-            Assert.IsFalse(propertiesObject["AString"].HasValues);
-            Assert.IsFalse(propertiesObject["ANullableInt"].HasValues);
-        }
-
-        private static void CompareNotNullProperties(JObject propertiesObject, PropertyHypermediaObject ho)
-        {
-            Assert.AreEqual(propertiesObject["ABool"].ToString(), ho.ABool.ToString());
-
-            Assert.AreEqual(propertiesObject["AInt"].ToString(), ho.AInt.ToInvariantString());
-            Assert.AreEqual(propertiesObject["ALong"].ToString(), ho.ALong.ToInvariantString());
-            Assert.AreEqual(((float) propertiesObject["AFloat"]).ToInvariantString(), ho.AFloat.ToInvariantString());
-            Assert.AreEqual(((double) propertiesObject["ADouble"]).ToInvariantString(), ho.ADouble.ToInvariantString());
-
-            Assert.AreEqual(propertiesObject["AEnum"].ToString(), EnumHelper.GetEnumMemberValue(ho.AEnum));
-            Assert.AreEqual(propertiesObject["AEnumWithNames"].ToString(), EnumHelper.GetEnumMemberValue(ho.AEnumWithNames));
-
-            Assert.AreEqual(((IFormattable) propertiesObject["ADateTime"]).ToStringZNotation(),
-                ho.ADateTime.ToStringZNotation());
-            Assert.AreEqual(((IFormattable) propertiesObject["ADateTimeOffset"]).ToStringZNotation(),
-                ho.ADateTimeOffset.ToStringZNotation());
-            Assert.AreEqual(propertiesObject["ATimeSpan"].ToString(), ho.ATimeSpan.ToInvariantString());
-            Assert.AreEqual(propertiesObject["ADecimal"].ToString(), ho.ADecimal.ToInvariantString());
-        }
-
-        private static void CompareHypermediaAndJsonNoNullProperties(JObject propertiesObject, PropertyHypermediaObject ho)
-        {
-            var propertyInfos = typeof(PropertyHypermediaObject).GetProperties()
-                .Where(p => p.Name != "Entities" && p.Name != "Links")
-                .ToList();
-            Assert.AreEqual(propertiesObject.Properties().Count(), propertyInfos.Count - 2);
-
-            CompareNotNullProperties(propertiesObject, ho);
-
-            Assert.IsNull(propertiesObject["AString"]);
-            Assert.IsNull(propertiesObject["ANullableInt"]);
-        }
-
-
     }
 
-    public class EmptyHypermediaObject : HypermediaObject
-    {
-    }
-
-    [HypermediaObject(Title = "A Title", Classes = new[] { "CustomClass1", "CustomClass2" })]
-    public class AttributedEmptyHypermediaObject : HypermediaObject
-    {
-    }
-
-    public class PropertyDuplicateHypermediaObject : HypermediaObject
-    {
-        [HypermediaProperty(Name = "DuplicateRename")]
-        public bool Property1 { get; set; }
-
-        [HypermediaProperty(Name = "DuplicateRename")]
-        public bool Property2 { get; set; }
-    }
-
-    public class PropertyNestedClassHypermediaObject : HypermediaObject
-    {
-        public ChildClass AChild { get; set; }
-    }
-
-    public class AttributedPropertyHypermediaObject : HypermediaObject
-    {
-        [HypermediaProperty(Name = "Property1Renamed")]
-        public bool Property1 { get; set; }
-
-        [HypermediaProperty(Name = "Property2Renamed")]
-        public bool Property2 { get; set; }
-
-        [FormatterIgnoreHypermediaProperty]
-        public bool IgnoredProperty { get; set; }
-
-        public bool NotRenamed { get; set; }
-    }
-
-    public class PropertyHypermediaObject : HypermediaObject
-    {
-        public bool ABool { get; set; }
-        public string AString { get; set; }
-        public int AInt { get; set; }
-        public long ALong { get; set; }
-        public float AFloat { get; set; }
-        public double ADouble { get; set; }
-
-        public TestEnum AEnum { get; set; }
-        public TestEnumWithNames AEnumWithNames { get; set; }
-
-        public DateTime ADateTime { get; set; }
-        public DateTimeOffset ADateTimeOffset { get; set; }
-        public TimeSpan ATimeSpan { get; set; }
-        public decimal ADecimal { get; set; }
-        public int? ANullableInt { get; set; }
-    }
-
-    public class ChildClass
-    {
-        public bool ABool { get; set; }
-    }
+    
 }
