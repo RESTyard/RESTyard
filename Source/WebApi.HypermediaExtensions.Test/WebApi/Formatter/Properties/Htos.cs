@@ -69,6 +69,8 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
         public IEnumerable<int?> ANullableList { get; set; }
 
         public IEnumerable<string> AReferenceList { get; set; }
+
+        public int[] AValueArray { get; set; } // arrays need special treatment
     }
 
     public class ChildClass

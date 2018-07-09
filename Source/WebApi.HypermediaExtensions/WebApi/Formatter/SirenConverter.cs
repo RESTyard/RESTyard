@@ -208,10 +208,10 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
                     {
                         var entityType = embeddedEntity.Reference.GetHypermediaType();
                         var hypermediaObjectAttribute = GetHypermediaObjectAttribute(entityType);
-                        AddClasses(entityType, jLink, hypermediaObjectAttribute);    
+                        AddClasses(entityType, jLink, hypermediaObjectAttribute);
                         resolvedAdress = ResolveReferenceRoute(embeddedEntity.Reference);
                     }
-                    
+
                     AddEmbeddedEntityRelations(jLink, embeddedEntity.Relations);
                     jLink.Add("href", resolvedAdress);
                     jEntities.Add(jLink);
@@ -279,7 +279,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
 
             var propertyType = publicProperty.PropertyType;
             var propertyTypeInfo = propertyType.GetTypeInfo();
-            if (propertyTypeInfo.IsClass && propertyType != typeof(string))
+            if (propertyTypeInfo.IsClass && propertyType != typeof(string) && !propertyTypeInfo.IsArray)
             {
                 return;
             }
@@ -287,55 +287,69 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             var propertyName = GetPropertyName(publicProperty);
             var value = publicProperty.GetValue(hypermediaObject);
 
+            var jvalue = ValueToJToken(value, propertyType, propertyTypeInfo);
+            if (jvalue != null || configuration.WriteNullProperties)
+            {
+                jProperties.Add(propertyName, jvalue);
+            }
+        }
+
+        private JToken ValueToJToken(object value, Type propertyType, TypeInfo propertyTypeInfo)
+        {
             if (value == null)
             {
-                if (configuration.WriteNullProperties)
-                {
-                    jProperties.Add(propertyName, null);
-                }
-                return;
+                return null;
+            }
+
+            // enum is also a value type so check first
+            if (propertyTypeInfo.IsEnum)
+            {
+                var enumAsString = EnumHelper.GetEnumMemberValue(propertyType, value);
+                return new JValue(enumAsString);
             }
 
             if (propertyTypeInfo.IsValueType)
             {
-                if (propertyTypeInfo.IsEnum)
-                {
-                    var enumAsString = EnumHelper.GetEnumMemberValue(propertyType, value);
-                    jProperties.Add(propertyName, new JValue(enumAsString));
-                }
-                else
-                {
-                    jProperties.Add(propertyName, new JValue(value));
-                }
+                return new JValue(value);
+            }
 
-                return;
+            // string is also enumerable so check first
+            if (propertyType == typeof(string))
+            {
+                return new JValue(string.Format(CultureInfo.InvariantCulture, "{0}", value));
             }
 
             if (IsTimeType(propertyType))
             {
-                jProperties.Add(propertyName, ((IFormattable)value).ToString("o", CultureInfo.InvariantCulture));
-                return;
+                return new JValue(((IFormattable)value).ToString("o", CultureInfo.InvariantCulture));
             }
 
             if (IsIEnumerable(value, propertyType, out var ienumerable))
             {
-                jProperties.Add(propertyName, SerializeEnumerable(ienumerable));
-                return;
+                return SerializeEnumerable(ienumerable);
             }
 
-
-            jProperties.Add(propertyName, string.Format(CultureInfo.InvariantCulture, "{0}", value));
+            throw new HypermediaFormatterException($"Can not serialize type: {propertyType.BeautifulName()} value: {value}");
         }
 
         private JToken SerializeEnumerable(IEnumerable ienumerable)
         {
-            var result = new JArray();
+            var enumerableType = ienumerable.GetType();
 
-            //TODO
-            //foreach (var item in ienumerable)
-            //{
-                
-            //}
+            var itemType = enumerableType.IsArray ? enumerableType.GetElementType() : enumerableType.GenericTypeArguments.Single();
+            var itemTypeInfo = itemType.GetTypeInfo();
+
+            var result = new JArray();
+            foreach (var item in ienumerable)
+            {
+                if (item == null)
+                {
+                    result.Add(JValue.CreateNull());
+                    continue;
+                }
+
+                result.Add(ValueToJToken(item, itemType, itemTypeInfo));
+            }
 
             return result;
         }

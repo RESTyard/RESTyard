@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -19,28 +21,26 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
 
             CompareNotNullProperties(propertiesObject, ho);
 
-            Assert.IsFalse(propertiesObject["AString"].HasValues);
-            Assert.IsFalse(propertiesObject["ANullableInt"].HasValues);
+            Assert.AreEqual(ho.AString, propertiesObject["AString"].Value<string>());
+            Assert.AreEqual(ho.ANullableInt, propertiesObject["ANullableInt"]);
         }
 
         public static void CompareNotNullProperties(JObject propertiesObject, PropertyHypermediaObject ho)
         {
-            Assert.AreEqual(propertiesObject["ABool"].ToString(), ho.ABool.ToString());
+            Assert.AreEqual(ho.ABool.ToString(), propertiesObject["ABool"].ToString());
 
-            Assert.AreEqual(propertiesObject["AInt"].ToString(), ho.AInt.ToInvariantString());
-            Assert.AreEqual(propertiesObject["ALong"].ToString(), ho.ALong.ToInvariantString());
-            Assert.AreEqual(((float)propertiesObject["AFloat"]).ToInvariantString(), ho.AFloat.ToInvariantString());
-            Assert.AreEqual(((double)propertiesObject["ADouble"]).ToInvariantString(), ho.ADouble.ToInvariantString());
+            Assert.AreEqual(ho.AInt.ToInvariantString(), propertiesObject["AInt"].ToString());
+            Assert.AreEqual(ho.ALong.ToInvariantString(), propertiesObject["ALong"].ToString());
+            Assert.AreEqual(ho.AFloat.ToInvariantString(), ((float)propertiesObject["AFloat"]).ToInvariantString());
+            Assert.AreEqual(ho.ADouble.ToInvariantString(), ((double)propertiesObject["ADouble"]).ToInvariantString());
 
-            Assert.AreEqual(propertiesObject["AEnum"].ToString(), EnumHelper.GetEnumMemberValue(ho.AEnum));
-            Assert.AreEqual(propertiesObject["AEnumWithNames"].ToString(), EnumHelper.GetEnumMemberValue(ho.AEnumWithNames));
+            Assert.AreEqual(EnumHelper.GetEnumMemberValue(ho.AEnum), propertiesObject["AEnum"].ToString());
+            Assert.AreEqual(EnumHelper.GetEnumMemberValue(ho.AEnumWithNames), propertiesObject["AEnumWithNames"].ToString());
 
-            Assert.AreEqual(((IFormattable)propertiesObject["ADateTime"]).ToStringZNotation(),
-                ho.ADateTime.ToStringZNotation());
-            Assert.AreEqual(((IFormattable)propertiesObject["ADateTimeOffset"]).ToStringZNotation(),
-                ho.ADateTimeOffset.ToStringZNotation());
-            Assert.AreEqual(propertiesObject["ATimeSpan"].ToString(), ho.ATimeSpan.ToInvariantString());
-            Assert.AreEqual(propertiesObject["ADecimal"].ToString(), ho.ADecimal.ToInvariantString());
+            Assert.AreEqual(ho.ADateTime.ToStringZNotation(), ((IFormattable)propertiesObject["ADateTime"]).ToStringZNotation());
+            Assert.AreEqual(ho.ADateTimeOffset.ToStringZNotation(), ((IFormattable)propertiesObject["ADateTimeOffset"]).ToStringZNotation());
+            Assert.AreEqual(ho.ATimeSpan.ToInvariantString(), propertiesObject["ATimeSpan"].ToString());
+            Assert.AreEqual(ho.ADecimal.ToInvariantString(), propertiesObject["ADecimal"].ToString());
         }
 
         public static void CompareHypermediaPropertiesAndJsonNoNullProperties(JObject propertiesObject, PropertyHypermediaObject ho)
@@ -67,13 +67,32 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
             foreach (var property in propertiesObject.Properties())
             {
                 var htoProperty = propertyInfos.Single(p => p.Name == property.Name);
-                if (htoProperty.GetValue(ho) == null) { 
+                var hoValue = (IEnumerable)htoProperty.GetValue(ho);
+                if (hoValue == null) { 
                     Assert.AreEqual(JTokenType.Null, property.Value.Type);
                 }
                 else
                 {
                     Assert.AreEqual(JTokenType.Array, property.Value.Type);
-                    // todo check content
+                    var jarray = (JArray)property.Value;
+
+
+                    var index = 0;
+                    foreach (var value in hoValue)
+                    {
+                        if (value == null)
+                        {
+                            Assert.IsTrue(jarray[index].Type == JTokenType.Null);
+                        }
+                        else
+                        {
+                            Assert.AreEqual(value.ToString(), jarray[index].Value<object>().ToString());
+                        }
+                        index++;
+                    }
+
+                    // no extra items
+                    Assert.AreEqual(index, jarray.Count);
                 }
             }
         }

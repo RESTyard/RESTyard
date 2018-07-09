@@ -95,6 +95,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
             ho.AValueList = new List<int> { 3, 5, 7 };
             ho.ANullableList = new List<int?> { 2, null, 4 };
             ho.AReferenceList = new List<string> {"a", "xyz"};
+            ho.AValueArray = new[] { 6, 9, 2 };
 
             var siren = SirenConverter.ConvertToJson(ho);
 
