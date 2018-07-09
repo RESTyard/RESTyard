@@ -7,7 +7,6 @@
 - [done] serialize reference properties to siren properties as json object
 	- serialize Lists/Collections
 	- serialize Objects into properties
-- serialize TimeSpan to Siren
 - [done] add development options
 	- allow serialization of objects with no corresponding routes to ease development when creating a lot of HTO first
 
