@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using WebApi.HypermediaExtensions.Query;
+using WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties;
 using WebApi.HypermediaExtensions.Util;
 using WebApi.HypermediaExtensions.WebApi;
 using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
@@ -91,8 +92,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
 
         public static void AssertEmptyProperties(JObject siren)
         {
-            Assert.IsTrue(siren["properties"].Type == JTokenType.Object);
-            var propertiesObject = (JObject)siren["properties"];
+            var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
             Assert.AreEqual(0, propertiesObject.Properties().Count());
         }
 
