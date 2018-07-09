@@ -49,5 +49,10 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Links
         {
             return null;
         }
+
+        public static implicit operator HypermediaObjectReference(HypermediaObject hypermediaObject)
+        {
+            return new HypermediaObjectReference(hypermediaObject);
+        }
     }
 }
