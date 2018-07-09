@@ -6,6 +6,7 @@ using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Hypermedia.Extensions;
 using WebApi.HypermediaExtensions.Hypermedia.Links;
 using WebApi.HypermediaExtensions.Query;
+using WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties;
 using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
