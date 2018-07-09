@@ -24,6 +24,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
         protected RegisterRouteResolverFactory RouteResolverFactory;
         protected RouteKeyFactory RouteKeyFactory;
         protected SirenConverter SirenConverter;
+        protected SirenConverter SirenConverterNoNullProperties;
         protected IHypermediaRouteResolver RouteResolver;
         private static readonly StringCollectionComparer stringListComparer = new StringCollectionComparer();
 
@@ -48,6 +49,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
 
             RouteResolver = RouteResolverFactory.CreateRouteResolver(UrlHelper, RouteKeyFactory, TestUrlConfig);
             SirenConverter = CreateSirenConverter();
+            SirenConverterNoNullProperties = CreateSirenConverter(new SirenConverterConfiguration { WriteNullProperties = false });
         }
 
         protected SirenConverter CreateSirenConverter(ISirenConverterConfiguration configuration = null)

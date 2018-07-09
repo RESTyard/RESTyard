@@ -148,8 +148,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
             RouteRegister.AddHypermediaObjectRoute(typeof(PropertyHypermediaObject), routeName);
 
             var ho = new PropertyHypermediaObject();
-            var sirenBuilderWithNoNullProperties = CreateSirenConverter(new SirenConverterConfiguration {WriteNullProperties = false});
-            var siren = sirenBuilderWithNoNullProperties.ConvertToJson(ho);
+            var siren = SirenConverterNoNullProperties.ConvertToJson(ho);
 
             AssertDefaultClassName(siren, typeof(PropertyHypermediaObject));
             AssertEmptyEntities(siren);

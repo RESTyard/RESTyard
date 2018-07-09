@@ -12,7 +12,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
     {
         public static void CompareHypermediaPropertiesAndJson(JObject propertiesObject, PropertyHypermediaObject ho)
         {
-            var propertyInfos = typeof(PropertyHypermediaObject).GetProperties()
+            var propertyInfos = ho.GetType().GetProperties()
                 .Where(p => p.Name != "Entities" && p.Name != "Links")
                 .ToList();
             Assert.AreEqual(propertiesObject.Properties().Count(), propertyInfos.Count);
@@ -54,6 +54,28 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
 
             Assert.IsNull(propertiesObject["AString"]);
             Assert.IsNull(propertiesObject["ANullableInt"]);
+        }
+
+        public static void CompareHypermediaListPropertiesAndJson(JObject propertiesObject, HypermediaObjectWithListProperties ho)
+        {
+            var propertyInfos = ho.GetType().GetProperties()
+                .Where(p => p.Name != "Entities" && p.Name != "Links")
+                .ToList();
+            Assert.AreEqual(propertiesObject.Properties().Count(), propertyInfos.Count);
+
+
+            foreach (var property in propertiesObject.Properties())
+            {
+                var htoProperty = propertyInfos.Single(p => p.Name == property.Name);
+                if (htoProperty.GetValue(ho) == null) { 
+                    Assert.AreEqual(JTokenType.Null, property.Value.Type);
+                }
+                else
+                {
+                    Assert.AreEqual(JTokenType.Array, property.Type);
+                    // todo check content
+                }
+            }
         }
     }
 }

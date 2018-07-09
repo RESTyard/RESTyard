@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 using WebApi.HypermediaExtensions.Test.Helpers;
@@ -59,6 +60,15 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
         public TimeSpan ATimeSpan { get; set; }
         public decimal ADecimal { get; set; }
         public int? ANullableInt { get; set; }
+    }
+
+    public class HypermediaObjectWithListProperties : HypermediaObject
+    {
+        public IEnumerable<int> AValueList { get; set; }
+
+        public IEnumerable<int?> ANullableList { get; set; }
+
+        public IEnumerable<string> AReferenceList { get; set; }
     }
 
     public class ChildClass
