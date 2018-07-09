@@ -254,19 +254,10 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
 
         private void AddProperties(HypermediaObject hypermediaObject, JObject sirenJson)
         {
-            var type = hypermediaObject.GetType();
-            var publicProperties = type.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-            var jProperties = new JObject();
-            foreach (var publicProperty in publicProperties)
-            {
-                AddProperty(hypermediaObject, publicProperty, jProperties);
-            }
-
-            sirenJson.Add("properties", jProperties);
+            sirenJson.Add("properties", SerializeObjectProperties(hypermediaObject));
         }
 
-        private void AddProperty(HypermediaObject hypermediaObject, PropertyInfo publicProperty, JObject jProperties)
+        private void AddProperty(object hypermediaObject, PropertyInfo publicProperty, JObject jProperties)
         {
             if (PropertyHasIgnoreAttribute(publicProperty))
             {
@@ -279,10 +270,6 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
 
             var propertyType = publicProperty.PropertyType;
             var propertyTypeInfo = propertyType.GetTypeInfo();
-            if (propertyTypeInfo.IsClass && propertyType != typeof(string) && !propertyTypeInfo.IsArray)
-            {
-                return;
-            }
 
             var propertyName = GetPropertyName(publicProperty);
             var value = publicProperty.GetValue(hypermediaObject);
@@ -329,7 +316,27 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
                 return SerializeEnumerable(ienumerable);
             }
 
+            // check last so special types can be handled first
+            if (propertyTypeInfo.IsClass)
+            {
+                return SerializeObjectProperties(value);
+            }
+
             throw new HypermediaFormatterException($"Can not serialize type: {propertyType.BeautifulName()} value: {value}");
+        }
+
+        private JObject SerializeObjectProperties(object propertyObject)
+        {
+            var type = propertyObject.GetType();
+            var publicProperties = type.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            var jProperties = new JObject();
+            foreach (var publicProperty in publicProperties)
+            {
+                AddProperty(propertyObject, publicProperty, jProperties);
+            }
+
+            return jProperties;
         }
 
         private JToken SerializeEnumerable(IEnumerable ienumerable)
@@ -374,7 +381,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             return type == typeof(DateTime) || type == typeof(DateTimeOffset);
         }
 
-        private bool IsIEnumerable(object publicProperty, Type propertyType, out IEnumerable iEnumerable)
+        private static bool IsIEnumerable(object publicProperty, Type propertyType, out IEnumerable iEnumerable)
         {
             if (propertyType.GetInterfaces().Contains(typeof(IEnumerable)))
             {

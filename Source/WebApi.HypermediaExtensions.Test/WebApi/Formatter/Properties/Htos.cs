@@ -26,7 +26,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
 
     public class PropertyNestedClassHypermediaObject : HypermediaObject
     {
-        public ChildClass AChild { get; set; }
+        public AttributedPropertyHypermediaObject AChild { get; set; }
     }
 
     public class AttributedPropertyHypermediaObject : HypermediaObject
@@ -71,10 +71,20 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
         public IEnumerable<string> AReferenceList { get; set; }
 
         public int[] AValueArray { get; set; } // arrays need special treatment
+
+        public IEnumerable<Nested> AObjectList { get; set; }
+
+        public IEnumerable<IEnumerable<int>> ListOfLists { get; set; }
     }
 
-    public class ChildClass
+    public class Nested
     {
-        public bool ABool { get; set; }
+        public Nested(int i)
+        {
+            AInt = i;
+        }
+
+        public int AInt { get; set; }
     }
+
 }

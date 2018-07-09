@@ -91,8 +91,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
             AssertEmptyActions(siren);
             AssertHasOnlySelfLink(siren, routeName);
 
-            Assert.IsTrue(siren["properties"].Type == JTokenType.Object);
-            var propertiesObject = (JObject)siren["properties"];
+            var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
             var propertyInfos = typeof(AttributedPropertyHypermediaObject).GetProperties()
                 .Where(p =>
@@ -135,10 +134,9 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
             AssertEmptyActions(siren);
             AssertHasOnlySelfLink(siren, routeName);
 
-            Assert.IsTrue(siren["properties"].Type == JTokenType.Object);
-            var propertiesObject = (JObject)siren["properties"];
+            var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
-            PropertieCompareHelpers.CompareHypermediaPropertiesAndJson(propertiesObject, ho);
+            PropertyHelpers.CompareHypermediaPropertiesAndJson(propertiesObject, ho);
         }
 
         [TestMethod]
@@ -155,10 +153,9 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
             AssertEmptyActions(siren);
             AssertHasOnlySelfLink(siren, routeName);
 
-            Assert.IsTrue(siren["properties"].Type == JTokenType.Object);
-            var propertiesObject = (JObject)siren["properties"];
+            var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
-            PropertieCompareHelpers.CompareHypermediaPropertiesAndJsonNoNullProperties(propertiesObject, ho);
+            PropertyHelpers.CompareHypermediaPropertiesAndJsonNoNullProperties(propertiesObject, ho);
         }
 
         [TestMethod]
@@ -192,60 +189,9 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
             AssertEmptyActions(siren);
             AssertHasOnlySelfLink(siren, routeName);
 
-            Assert.IsTrue(siren["properties"].Type == JTokenType.Object);
-            var propertiesObject = (JObject)siren["properties"];
+            var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
-            PropertieCompareHelpers.CompareHypermediaPropertiesAndJson(propertiesObject, ho);
-        }
-
-        [TestMethod]
-        public void PropertyNestedClassHypermediaObject()
-        {
-            var routeName = typeof(PropertyNestedClassHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyNestedClassHypermediaObject), routeName);
-
-            var ho = new PropertyNestedClassHypermediaObject()
-            {
-                AChild = new ChildClass()
-            };
-
-            var siren = SirenConverter.ConvertToJson(ho);
-
-            AssertDefaultClassName(siren, typeof(PropertyNestedClassHypermediaObject));
-            AssertEmptyEntities(siren);
-            AssertEmptyActions(siren);
-            AssertHasOnlySelfLink(siren, routeName);
-
-            Assert.IsTrue(siren["properties"].Type == JTokenType.Object);
-            var propertiesObject = (JObject)siren["properties"];
-
-            Assert.AreEqual(propertiesObject.Properties().Count(), 0);
-        }
-
-        [TestMethod]
-        public void PropertyNestedClassNullHypermediaObject()
-        {
-            var routeName = typeof(PropertyNestedClassHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyNestedClassHypermediaObject), routeName);
-
-            var ho = new PropertyNestedClassHypermediaObject()
-            {
-                AChild = null
-            };
-
-            var siren = SirenConverter.ConvertToJson(ho);
-
-            AssertDefaultClassName(siren, typeof(PropertyNestedClassHypermediaObject));
-            AssertEmptyEntities(siren);
-            AssertEmptyActions(siren);
-            AssertHasOnlySelfLink(siren, routeName);
-
-            Assert.IsTrue(siren["properties"].Type == JTokenType.Object);
-            var propertiesObject = (JObject)siren["properties"];
-
-            Assert.AreEqual(propertiesObject.Properties().Count(), 0);
+            PropertyHelpers.CompareHypermediaPropertiesAndJson(propertiesObject, ho);
         }
     }
-
-    
 }

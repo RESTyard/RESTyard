@@ -10,8 +10,15 @@ using WebApi.HypermediaExtensions.Util.Enum;
 
 namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
 {
-    public class PropertieCompareHelpers
+    public class PropertyHelpers
     {
+        public static JObject GetPropertiesJObject(JObject siren)
+        {
+            Assert.IsTrue(siren["properties"].Type == JTokenType.Object);
+            var propertiesObject = (JObject)siren["properties"];
+            return propertiesObject;
+        }
+
         public static void CompareHypermediaPropertiesAndJson(JObject propertiesObject, PropertyHypermediaObject ho)
         {
             var propertyInfos = ho.GetType().GetProperties()
@@ -86,8 +93,14 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
                         }
                         else
                         {
-                            Assert.AreEqual(value.ToString(), jarray[index].Value<object>().ToString());
+                            var valueType = value.GetType();
+                            var valueTypeInfo = valueType.GetTypeInfo();
+                            if (IsNestedList(valueTypeInfo, valueType))
+                            {
+                                Assert.AreEqual(value.ToString(), jarray[index].Value<object>().ToString());
+                            }
                         }
+
                         index++;
                     }
 
@@ -95,6 +108,11 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
                     Assert.AreEqual(index, jarray.Count);
                 }
             }
+        }
+
+        private static bool IsNestedList(TypeInfo valueTypeInfo, Type valueType)
+        {
+            return !valueTypeInfo.IsClass || valueType == typeof(string);
         }
     }
 }

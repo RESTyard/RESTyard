@@ -2,7 +2,6 @@
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using WebApi.HypermediaExtensions.WebApi.Formatter;
 
 namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
 {
@@ -35,10 +34,9 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
             AssertEmptyActions(siren);
             AssertHasOnlySelfLink(siren, routeName);
 
-            Assert.IsTrue(siren["properties"].Type == JTokenType.Object);
-            var propertiesObject = (JObject)siren["properties"];
+            var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
-            PropertieCompareHelpers.CompareHypermediaListPropertiesAndJson(propertiesObject, ho);
+            PropertyHelpers.CompareHypermediaListPropertiesAndJson(propertiesObject, ho);
         }
 
         [TestMethod]
@@ -55,8 +53,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
             AssertEmptyActions(siren);
             AssertHasOnlySelfLink(siren, routeName);
 
-            Assert.IsTrue(siren["properties"].Type == JTokenType.Object);
-            var propertiesObject = (JObject)siren["properties"];
+            var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
             Assert.AreEqual(propertiesObject.Properties().Count(), 0);
         }
@@ -79,10 +76,9 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
             AssertEmptyActions(siren);
             AssertHasOnlySelfLink(siren, routeName);
 
-            Assert.IsTrue(siren["properties"].Type == JTokenType.Object);
-            var propertiesObject = (JObject)siren["properties"];
+            var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
-            PropertieCompareHelpers.CompareHypermediaListPropertiesAndJson(propertiesObject, ho);
+            PropertyHelpers.CompareHypermediaListPropertiesAndJson(propertiesObject, ho);
         }
 
         [TestMethod]
@@ -95,7 +91,18 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
             ho.AValueList = new List<int> { 3, 5, 7 };
             ho.ANullableList = new List<int?> { 2, null, 4 };
             ho.AReferenceList = new List<string> {"a", "xyz"};
-            ho.AValueArray = new[] { 6, 9, 2 };
+            ho.AValueArray = new[] { 6, 9, 2, 7 };
+            ho.AObjectList = new List<Nested>
+            {
+                new Nested(3),
+                new Nested(5)
+            };
+
+            ho.ListOfLists = new List<IEnumerable<int>>
+            {
+                new List<int> { 3,4,5},
+                new List<int> { 6,7,8}
+            };
 
             var siren = SirenConverter.ConvertToJson(ho);
 
@@ -104,10 +111,44 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
             AssertEmptyActions(siren);
             AssertHasOnlySelfLink(siren, routeName);
 
-            Assert.IsTrue(siren["properties"].Type == JTokenType.Object);
-            var propertiesObject = (JObject)siren["properties"];
+            var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
-            PropertieCompareHelpers.CompareHypermediaListPropertiesAndJson(propertiesObject, ho);
+            PropertyHelpers.CompareHypermediaListPropertiesAndJson(propertiesObject, ho);
+
+            AssertObjectList(ho, siren);
+            AssertListOfLists(ho, siren);
+        }
+
+        private static void AssertListOfLists(HypermediaObjectWithListProperties ho, JObject siren)
+        {
+            Assert.AreEqual(ho.ListOfLists.Count(), siren["properties"]["ListOfLists"].Count());
+            var index = 0;
+            foreach (var nested in ho.ListOfLists)
+            {
+                var nestedList = nested.ToList();
+                var innerJArray = siren["properties"]["ListOfLists"][index].Value<JArray>();
+                Assert.AreEqual(nestedList.Count(), innerJArray.Count);
+
+                var innerIndex = 0;
+                foreach (var value in nestedList)
+                {
+                    Assert.AreEqual(value, innerJArray[innerIndex].Value<int>());
+                    innerIndex++;
+                }
+
+                index++;
+            }
+        }
+
+        private static void AssertObjectList(HypermediaObjectWithListProperties ho, JObject siren)
+        {
+            Assert.AreEqual(ho.AObjectList.Count(), siren["properties"]["AObjectList"].Count());
+            var index = 0;
+            foreach (var nested in ho.AObjectList)
+            {
+                Assert.AreEqual(nested.AInt, siren["properties"]["AObjectList"][index].Value<JObject>()[nameof(Nested.AInt)].Value<int>());
+                index++;
+            }
         }
     }
     
