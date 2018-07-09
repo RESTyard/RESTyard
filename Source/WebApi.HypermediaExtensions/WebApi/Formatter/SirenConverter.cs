@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -316,7 +317,27 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
                 return;
             }
 
+            if (IsIEnumerable(value, propertyType, out var ienumerable))
+            {
+                jProperties.Add(propertyName, SerializeEnumerable(ienumerable));
+                return;
+            }
+
+
             jProperties.Add(propertyName, string.Format(CultureInfo.InvariantCulture, "{0}", value));
+        }
+
+        private JToken SerializeEnumerable(IEnumerable ienumerable)
+        {
+            var result = new JArray();
+
+            //TODO
+            //foreach (var item in ienumerable)
+            //{
+                
+            //}
+
+            return result;
         }
 
         private static string GetPropertyName(PropertyInfo publicProperty)
@@ -337,6 +358,18 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
         private static bool IsTimeType(Type type)
         {
             return type == typeof(DateTime) || type == typeof(DateTimeOffset);
+        }
+
+        private bool IsIEnumerable(object publicProperty, Type propertyType, out IEnumerable iEnumerable)
+        {
+            if (propertyType.GetInterfaces().Contains(typeof(IEnumerable)))
+            {
+                iEnumerable = (IEnumerable)publicProperty;
+                return true;
+            }
+
+            iEnumerable = null;
+            return false;
         }
 
         private static bool PropertyHasIgnoreAttribute(PropertyInfo publicProperty)

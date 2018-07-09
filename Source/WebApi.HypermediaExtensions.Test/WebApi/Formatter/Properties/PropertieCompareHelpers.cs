@@ -72,7 +72,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
                 }
                 else
                 {
-                    Assert.AreEqual(JTokenType.Array, property.Type);
+                    Assert.AreEqual(JTokenType.Array, property.Value.Type);
                     // todo check content
                 }
             }
