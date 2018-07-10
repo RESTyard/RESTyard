@@ -383,7 +383,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
 
         private static bool IsIEnumerable(object publicProperty, Type propertyType, out IEnumerable iEnumerable)
         {
-            if (propertyType.GetInterfaces().Contains(typeof(IEnumerable)))
+            if (propertyType.GetTypeInfo().GetInterfaces().Contains(typeof(IEnumerable)))
             {
                 iEnumerable = (IEnumerable)publicProperty;
                 return true;
