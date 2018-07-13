@@ -26,7 +26,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
             //TODO: register ApplicationModel as singleton and use it everywhere to replace runtime reflection 
             builder.AddMvcOptions(o => 
                 o.AddHypermediaExtensions(controllerAndHypermediaAssemblies: controllerAndHypermediaAssemblies)
-                 .AddHypermediaParameterBinders(!hypermediaOptions.ImplicitHypermediaActionParameterBinders)
+                 .AddHypermediaParameterBinders(!hypermediaOptions.ImplicitHypermediaActionParameterBinders, controllerAndHypermediaAssemblies)
             );
             RegisterServices(services, hypermediaOptions, controllerAndHypermediaAssemblies);
 
@@ -40,7 +40,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
             //TODO: register ApplicationModel as singleton and use it everywhere to replace runtime reflection 
             builder.AddMvcOptions(o =>
                 o.AddHypermediaExtensions(controllerAndHypermediaAssemblies: controllerAndHypermediaAssemblies)
-                 .AddHypermediaParameterBinders(!hypermediaOptions.ImplicitHypermediaActionParameterBinders)
+                 .AddHypermediaParameterBinders(!hypermediaOptions.ImplicitHypermediaActionParameterBinders, controllerAndHypermediaAssemblies)
             );
             RegisterServices(services, hypermediaOptions, controllerAndHypermediaAssemblies);
 
