@@ -70,7 +70,12 @@ namespace WebApi.HypermediaExtensions.JsonSchema
                 RouteValueDictionary values = null;
                 if (!schemaProperyGroup.TemplateMatchers.Any(t => t.TryGetValuesFromRequest(request.LocalPath, out values)))
                 {
-                    throw new ArgumentException($"Local path '{request.LocalPath}' does not match any expected route template '{string.Join(",", schemaProperyGroup.TemplateMatchers.Select(r => r.Template.TemplateText))}'");
+                    //trim first path part if application is hosted with a base path part (only one supported...). Passing the base path from configuration would be the better approach.
+                    var basePathTrimmed = TrimFirstPathPart(request.LocalPath);
+                    if (!schemaProperyGroup.TemplateMatchers.Any(t => t.TryGetValuesFromRequest(basePathTrimmed, out values)))
+                    {
+                        throw new ArgumentException($"Local path '{request.LocalPath}' does not match any expected route template '{string.Join(",", schemaProperyGroup.TemplateMatchers.Select(r => r.Template.TemplateText))}'");
+                    }
                 }
 
                 raw.Remove(uriPropertyName);
@@ -83,6 +88,11 @@ namespace WebApi.HypermediaExtensions.JsonSchema
             }
 
             return raw.ToObject(type);
+        }
+
+        static string TrimFirstPathPart(string requestLocalPath)
+        {
+            return requestLocalPath.Substring(requestLocalPath.IndexOf('/', 1));
         }
 
         class KeyPropertiesOfSchema
