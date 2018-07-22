@@ -17,3 +17,4 @@
 - rework demo app to have better operation names
 	- rework MarkAsFavorite action on customer so it nolonger accepts a link, but an id. Example is misleading
 	- add list/object property examples
+- fix: prevent endless recursion for cyclic object property serialization
