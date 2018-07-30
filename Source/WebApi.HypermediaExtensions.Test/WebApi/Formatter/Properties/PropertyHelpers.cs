@@ -27,6 +27,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
 
             CompareNotNullProperties(propertiesObject, ho);
 
+            Assert.AreEqual(ho.AnUri?.ToString(), propertiesObject[nameof(PropertyHypermediaObject.AnUri)].Value<string>());
             Assert.AreEqual(ho.AString, propertiesObject[nameof(PropertyHypermediaObject.AString)].Value<string>());
             Assert.AreEqual(ho.ANullableInt, propertiesObject[nameof(PropertyHypermediaObject.ANullableInt)]);
         }
@@ -46,7 +47,6 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
             Assert.AreEqual(ho.ADateTime.ToStringZNotation(), ((IFormattable)propertiesObject[nameof(PropertyHypermediaObject.ADateTime)]).ToStringZNotation());
             Assert.AreEqual(ho.ADateTimeOffset.ToStringZNotation(), ((IFormattable)propertiesObject[nameof(PropertyHypermediaObject.ADateTimeOffset)]).ToStringZNotation());
             Assert.AreEqual(ho.ATimeSpan.ToInvariantString(), propertiesObject[nameof(PropertyHypermediaObject.ATimeSpan)].ToString());
-            Assert.AreEqual(ho.AnUri.ToString(), propertiesObject[nameof(PropertyHypermediaObject.AnUri)].ToString());
             Assert.AreEqual(ho.ADecimal.ToInvariantString(), propertiesObject[nameof(PropertyHypermediaObject.ADecimal)].ToString());
         }
 
@@ -55,12 +55,13 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
             var propertyInfos = typeof(PropertyHypermediaObject).GetProperties()
                 .Where(p => p.Name != "Entities" && p.Name != "Links")
                 .ToList();
-            Assert.AreEqual(propertiesObject.Properties().Count(), propertyInfos.Count - 2);
+            Assert.AreEqual(propertiesObject.Properties().Count(), propertyInfos.Count - 3);
 
             CompareNotNullProperties(propertiesObject, ho);
 
-            Assert.IsNull(propertiesObject["AString"]);
-            Assert.IsNull(propertiesObject["ANullableInt"]);
+            Assert.IsNull(propertiesObject[nameof(PropertyHypermediaObject.AnUri)]);
+            Assert.IsNull(propertiesObject[nameof(PropertyHypermediaObject.AString)]);
+            Assert.IsNull(propertiesObject[nameof(PropertyHypermediaObject.ANullableInt)]);
         }
 
         public static void CompareHypermediaListPropertiesAndJson(JObject propertiesObject, HypermediaObjectWithListProperties ho)

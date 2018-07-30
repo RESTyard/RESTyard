@@ -313,7 +313,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
 
             if (IsContainerTypeForString(propertyType))
             {
-                return new JValue(value);
+                return new JValue(value.ToString());
             }
 
             if (IsIEnumerable(value, propertyType, out var ienumerable))
