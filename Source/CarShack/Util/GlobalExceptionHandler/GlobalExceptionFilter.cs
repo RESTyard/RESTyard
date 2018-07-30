@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using WebApi.HypermediaExtensions.ErrorHandling;
 using WebApi.HypermediaExtensions.Exceptions;
 
-namespace CarShack.Util.GloblaExceptionHandler
+namespace CarShack.Util.GlobalExceptionHandler
 {
     public class GlobalExceptionFilter : IExceptionFilter, IDisposable
     {

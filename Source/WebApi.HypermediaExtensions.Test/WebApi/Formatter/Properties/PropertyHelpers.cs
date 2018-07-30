@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -28,26 +27,27 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
 
             CompareNotNullProperties(propertiesObject, ho);
 
-            Assert.AreEqual(ho.AString, propertiesObject["AString"].Value<string>());
-            Assert.AreEqual(ho.ANullableInt, propertiesObject["ANullableInt"]);
+            Assert.AreEqual(ho.AString, propertiesObject[nameof(PropertyHypermediaObject.AString)].Value<string>());
+            Assert.AreEqual(ho.ANullableInt, propertiesObject[nameof(PropertyHypermediaObject.ANullableInt)]);
         }
 
         public static void CompareNotNullProperties(JObject propertiesObject, PropertyHypermediaObject ho)
         {
-            Assert.AreEqual(ho.ABool.ToString(), propertiesObject["ABool"].ToString());
+            Assert.AreEqual(ho.ABool.ToString(), propertiesObject[nameof(PropertyHypermediaObject.ABool)].ToString());
 
-            Assert.AreEqual(ho.AInt.ToInvariantString(), propertiesObject["AInt"].ToString());
-            Assert.AreEqual(ho.ALong.ToInvariantString(), propertiesObject["ALong"].ToString());
-            Assert.AreEqual(ho.AFloat.ToInvariantString(), ((float)propertiesObject["AFloat"]).ToInvariantString());
-            Assert.AreEqual(ho.ADouble.ToInvariantString(), ((double)propertiesObject["ADouble"]).ToInvariantString());
+            Assert.AreEqual(ho.AnInt.ToInvariantString(), propertiesObject[nameof(PropertyHypermediaObject.AnInt)].ToString());
+            Assert.AreEqual(ho.ALong.ToInvariantString(), propertiesObject[nameof(PropertyHypermediaObject.ALong)].ToString());
+            Assert.AreEqual(ho.AFloat.ToInvariantString(), ((float)propertiesObject[nameof(PropertyHypermediaObject.AFloat)]).ToInvariantString());
+            Assert.AreEqual(ho.ADouble.ToInvariantString(), ((double)propertiesObject[nameof(PropertyHypermediaObject.ADouble)]).ToInvariantString());
 
-            Assert.AreEqual(EnumHelper.GetEnumMemberValue(ho.AEnum), propertiesObject["AEnum"].ToString());
-            Assert.AreEqual(EnumHelper.GetEnumMemberValue(ho.AEnumWithNames), propertiesObject["AEnumWithNames"].ToString());
+            Assert.AreEqual(EnumHelper.GetEnumMemberValue(ho.AnEnum), propertiesObject[nameof(PropertyHypermediaObject.AnEnum)].ToString());
+            Assert.AreEqual(EnumHelper.GetEnumMemberValue(ho.AnEnumWithNames), propertiesObject[nameof(PropertyHypermediaObject.AnEnumWithNames)].ToString());
 
-            Assert.AreEqual(ho.ADateTime.ToStringZNotation(), ((IFormattable)propertiesObject["ADateTime"]).ToStringZNotation());
-            Assert.AreEqual(ho.ADateTimeOffset.ToStringZNotation(), ((IFormattable)propertiesObject["ADateTimeOffset"]).ToStringZNotation());
-            Assert.AreEqual(ho.ATimeSpan.ToInvariantString(), propertiesObject["ATimeSpan"].ToString());
-            Assert.AreEqual(ho.ADecimal.ToInvariantString(), propertiesObject["ADecimal"].ToString());
+            Assert.AreEqual(ho.ADateTime.ToStringZNotation(), ((IFormattable)propertiesObject[nameof(PropertyHypermediaObject.ADateTime)]).ToStringZNotation());
+            Assert.AreEqual(ho.ADateTimeOffset.ToStringZNotation(), ((IFormattable)propertiesObject[nameof(PropertyHypermediaObject.ADateTimeOffset)]).ToStringZNotation());
+            Assert.AreEqual(ho.ATimeSpan.ToInvariantString(), propertiesObject[nameof(PropertyHypermediaObject.ATimeSpan)].ToString());
+            Assert.AreEqual(ho.AnUri.ToString(), propertiesObject[nameof(PropertyHypermediaObject.AnUri)].ToString());
+            Assert.AreEqual(ho.ADecimal.ToInvariantString(), propertiesObject[nameof(PropertyHypermediaObject.ADecimal)].ToString());
         }
 
         public static void CompareHypermediaPropertiesAndJsonNoNullProperties(JObject propertiesObject, PropertyHypermediaObject ho)

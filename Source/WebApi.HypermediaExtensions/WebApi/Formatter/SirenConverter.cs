@@ -311,6 +311,11 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
                 return new JValue(((IFormattable)value).ToString("o", CultureInfo.InvariantCulture));
             }
 
+            if (IsContainerTypeForString(propertyType))
+            {
+                return new JValue(value);
+            }
+
             if (IsIEnumerable(value, propertyType, out var ienumerable))
             {
                 return SerializeEnumerable(ienumerable);
@@ -323,6 +328,11 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             }
 
             throw new HypermediaFormatterException($"Can not serialize type: {propertyType.BeautifulName()} value: {value}");
+        }
+
+        static bool IsContainerTypeForString(Type propertyType)
+        {
+            return propertyType == typeof(Uri);
         }
 
         private JObject SerializeObjectProperties(object propertyObject)

@@ -168,17 +168,18 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
             {
                 ABool = true,
                 AString = "My String",
-                AInt = 1,
+                AnInt = 1,
                 ALong = 2,
                 AFloat = 3.1f,
                 ADouble = 4.1,
 
-                AEnum = TestEnum.Value1,
-                AEnumWithNames = TestEnumWithNames.Value2,
+                AnEnum = TestEnum.Value1,
+                AnEnumWithNames = TestEnumWithNames.Value2,
 
                 ADateTime = new DateTime(2000, 11, 22, 18, 5, 32, 999),
                 ADateTimeOffset = new DateTimeOffset(2000, 11, 22, 18, 5, 32, 999, new TimeSpan(0, 2, 0, 0)),
                 ATimeSpan = new TimeSpan(1, 2, 3, 4),
+                AnUri = new Uri("http://localhost/myuri"),
                 ADecimal = 12345,
                 ANullableInt = 10,
             };

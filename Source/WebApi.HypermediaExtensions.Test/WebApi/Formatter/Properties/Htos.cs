@@ -47,19 +47,20 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
     {
         public bool ABool { get; set; }
         public string AString { get; set; }
-        public int AInt { get; set; }
+        public int AnInt { get; set; }
         public long ALong { get; set; }
         public float AFloat { get; set; }
         public double ADouble { get; set; }
 
-        public TestEnum AEnum { get; set; }
-        public TestEnumWithNames AEnumWithNames { get; set; }
+        public TestEnum AnEnum { get; set; }
+        public TestEnumWithNames AnEnumWithNames { get; set; }
 
         public DateTime ADateTime { get; set; }
         public DateTimeOffset ADateTimeOffset { get; set; }
         public TimeSpan ATimeSpan { get; set; }
         public decimal ADecimal { get; set; }
         public int? ANullableInt { get; set; }
+        public Uri AnUri { get; set; }
     }
 
     public class HypermediaObjectWithListProperties : HypermediaObject
