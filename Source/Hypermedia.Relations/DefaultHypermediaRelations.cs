@@ -1,4 +1,4 @@
-﻿namespace Hypermedia.Relations
+﻿namespace Bluehands.Hypermedia.Relations
 {
     /// <summary>
     /// Collection of basic relations commonly used.

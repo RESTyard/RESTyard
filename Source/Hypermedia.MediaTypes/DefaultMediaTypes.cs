@@ -1,4 +1,4 @@
-﻿namespace Hypermedia.MediaTypes
+﻿namespace Bluehands.Hypermedia.MediaTypes
 {
     public static class DefaultMediaTypes
     {
