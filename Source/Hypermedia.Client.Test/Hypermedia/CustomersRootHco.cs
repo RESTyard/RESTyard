@@ -3,7 +3,7 @@
     using global::Hypermedia.Client.Hypermedia;
     using global::Hypermedia.Client.Hypermedia.Attributes;
     using global::Hypermedia.Client.Hypermedia.Commands;
-    using global::Hypermedia.Relations;
+    using Bluehands.Hypermedia.Relations;
 
     [global::Hypermedia.Client.Hypermedia.Attributes.HypermediaClientObjectAttribute(Classes = new[] { "CustomersRoot" })]
     public class CustomersRootHco : HypermediaClientObject

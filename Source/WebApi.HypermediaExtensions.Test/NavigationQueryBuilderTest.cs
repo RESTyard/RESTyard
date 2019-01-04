@@ -1,4 +1,4 @@
-﻿using Hypermedia.Relations;
+﻿using Bluehands.Hypermedia.Relations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WebApi.HypermediaExtensions.Util.Repository;
 

@@ -1,4 +1,4 @@
-﻿using Hypermedia.Relations;
+﻿using Bluehands.Hypermedia.Relations;
 using WebApi.HypermediaExtensions.Query;
 
 namespace WebApi.HypermediaExtensions.Util.Repository

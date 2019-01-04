@@ -1,6 +1,6 @@
 ﻿using System.Text;
 using System.Threading.Tasks;
-using Hypermedia.MediaTypes;
+using Bluehands.Hypermedia.MediaTypes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using WebApi.HypermediaExtensions.Exceptions;

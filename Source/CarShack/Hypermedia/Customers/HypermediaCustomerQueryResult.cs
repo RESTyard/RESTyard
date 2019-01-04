@@ -4,7 +4,7 @@ using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 using WebApi.HypermediaExtensions.Hypermedia.Links;
 using WebApi.HypermediaExtensions.Hypermedia.Extensions;
 using CarShack.Domain.Customer;
-using Hypermedia.Relations;
+using Bluehands.Hypermedia.Relations;
 
 namespace CarShack.Hypermedia.Customers
 {

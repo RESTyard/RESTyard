@@ -7,15 +7,16 @@ namespace Hypermedia.Client.Resolver
     using System.Net.Http.Headers;
     using System.Text;
     using System.Threading.Tasks;
+    using Bluehands.Hypermedia.MediaTypes;
 
-    using global::Hypermedia.Client.Authentication;
-    using global::Hypermedia.Client.Exceptions;
-    using global::Hypermedia.Client.Hypermedia;
-    using global::Hypermedia.Client.Hypermedia.Commands;
-    using global::Hypermedia.Client.ParameterSerializer;
-    using global::Hypermedia.Client.Reader;
-    using global::Hypermedia.Client.Reader.ProblemJson;
-    using global::Hypermedia.MediaTypes;
+    using Authentication;
+    using Exceptions;
+    using Hypermedia;
+    using Hypermedia.Commands;
+    using ParameterSerializer;
+    using Reader;
+    using Reader.ProblemJson;
+    
 
     public class HttpHypermediaResolver : IHypermediaResolver, IDisposable
     {
@@ -31,27 +32,27 @@ namespace Hypermedia.Client.Resolver
         {
             // todo maybe pass HttpClient as dependency so it can be modified by the user
             this.parameterSerializer = parameterSerializer;
-            this.InitializeHttpClient();
+            InitializeHttpClient();
         }
 
         public void InitializeHypermediaReader(IHypermediaReader reader)
         {
-            this.hypermediaReader = reader;
+            hypermediaReader = reader;
         }
 
         public async Task<ResolverResult<T>> ResolveLinkAsync<T>(Uri uriToResolve) where T : HypermediaClientObject
         {
-            var result = await this.httpClient.GetAsync(uriToResolve);
+            var result = await httpClient.GetAsync(uriToResolve);
             EnsureRequestIsSuccessful(result);
 
             var hypermediaObjectSiren = await result.Content.ReadAsStringAsync(); //TODO READ AS STREAM for pref
 
-            if (this.hypermediaReader == null)
+            if (hypermediaReader == null)
             {
-                throw new Exception($"Please setup the hypermediaReader before using the resolver. see {nameof(this.InitializeHypermediaReader)}");
+                throw new Exception($"Please setup the hypermediaReader before using the resolver. see {nameof(InitializeHypermediaReader)}");
             }
 
-            if (!(this.hypermediaReader.Read(hypermediaObjectSiren) is T desiredResultObject))
+            if (!(hypermediaReader.Read(hypermediaObjectSiren) is T desiredResultObject))
             {
                 throw new Exception($"Could not retrieve result as {typeof(T).Name} ");
             }
@@ -65,33 +66,33 @@ namespace Hypermedia.Client.Resolver
 
         public async Task<HypermediaCommandResult> ResolveActionAsync(Uri uri, string method)
         {
-            var responseMessage = await this.SendCommand(uri, method);
+            var responseMessage = await SendCommand(uri, method);
             var actionResult = HandleResponse(responseMessage);
             return actionResult;
         }
 
         public async Task<HypermediaCommandResult> ResolveActionAsync(Uri uri, string method, List<ParameterDescription> parameterDescriptions, object parameterObject)
         {
-            var serializedParameters = this.ProcessParameters(parameterDescriptions, parameterObject);
+            var serializedParameters = ProcessParameters(parameterDescriptions, parameterObject);
 
-            var responseMessage = await this.SendCommand(uri, method, serializedParameters);
+            var responseMessage = await SendCommand(uri, method, serializedParameters);
             var actionResult = HandleResponse(responseMessage);
             return actionResult;
         }
 
         public async Task<HypermediaFunctionResult<T>> ResolveFunctionAsync<T>(Uri uri, string method) where T : HypermediaClientObject
         {
-            var responseMessage = await this.SendCommand(uri, method);
-            var actionResult = this.HandleFunctionResponse<T>(responseMessage);
+            var responseMessage = await SendCommand(uri, method);
+            var actionResult = HandleFunctionResponse<T>(responseMessage);
             return actionResult;
         }
 
         public async Task<HypermediaFunctionResult<T>> ResolveFunctionAsync<T>(Uri uri, string method, List<ParameterDescription> parameterDescriptions, object parameterObject) where T : HypermediaClientObject
         {
-            var serializedParameters = this.ProcessParameters(parameterDescriptions, parameterObject);
+            var serializedParameters = ProcessParameters(parameterDescriptions, parameterObject);
 
-            var responseMessage = await this.SendCommand(uri, method, serializedParameters);
-            var actionResult = this.HandleFunctionResponse<T>(responseMessage);
+            var responseMessage = await SendCommand(uri, method, serializedParameters);
+            var actionResult = HandleFunctionResponse<T>(responseMessage);
             return actionResult;
         }
 
@@ -137,7 +138,7 @@ namespace Hypermedia.Client.Resolver
 
             var parameterDescription = GetParameterDescription(parameterDescriptions);
 
-            var serializedParameters = this.parameterSerializer.SerializeParameterObject(parameterDescription.Name, parameterObject);
+            var serializedParameters = parameterSerializer.SerializeParameterObject(parameterDescription.Name, parameterObject);
             return serializedParameters;
         }
 
@@ -193,7 +194,7 @@ namespace Hypermedia.Client.Resolver
 
         private async Task<HttpResponseMessage> SendCommand(Uri uri, string method, string payload = null)
         {
-            var httpMethod = this.GetHttpMethod(method);
+            var httpMethod = GetHttpMethod(method);
             var request = new HttpRequestMessage(httpMethod, uri);
 
             if (!string.IsNullOrEmpty(payload))
@@ -201,36 +202,36 @@ namespace Hypermedia.Client.Resolver
                 request.Content = new StringContent(payload, Encoding.UTF8, DefaultMediaTypes.ApplicationJson);//CONTENT-TYPE header    
             }
 
-            var responseMessage = await this.httpClient.SendAsync(request);
+            var responseMessage = await httpClient.SendAsync(request);
             
             return responseMessage;
         }
 
         private void InitializeHttpClient()
         {
-            if (this.httpClient == null)
+            if (httpClient == null)
             {
-                this.httpClient = new HttpClient();
+                httpClient = new HttpClient();
             }
 
-            this.httpClient.DefaultRequestHeaders.Clear();
+            httpClient.DefaultRequestHeaders.Clear();
 
-            if (this.HasCustomHeaders())
+            if (HasCustomHeaders())
             {
-                this.AddCustomDefaultHeadersAction.Invoke(this.httpClient.DefaultRequestHeaders);
+                AddCustomDefaultHeadersAction.Invoke(httpClient.DefaultRequestHeaders);
             }
 
-            if (this.HasCredentials())
+            if (HasCredentials())
             {
-                this.httpClient.DefaultRequestHeaders.Authorization = CreateBasicAuthHeaderValue(this.UsernamePasswordCredentials);
+                httpClient.DefaultRequestHeaders.Authorization = CreateBasicAuthHeaderValue(UsernamePasswordCredentials);
             }
 
-            this.httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(DefaultMediaTypes.Siren));
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(DefaultMediaTypes.Siren));
         }
 
         private bool HasCustomHeaders()
         {
-            return this.AddCustomDefaultHeadersAction != null;
+            return AddCustomDefaultHeadersAction != null;
         }
 
         private static AuthenticationHeaderValue CreateBasicAuthHeaderValue(UsernamePasswordCredentials credentials)
@@ -241,7 +242,7 @@ namespace Hypermedia.Client.Resolver
 
         private bool HasCredentials()
         {
-            return this.UsernamePasswordCredentials != null;
+            return UsernamePasswordCredentials != null;
         }
 
         private HttpMethod GetHttpMethod(string method)
@@ -263,20 +264,20 @@ namespace Hypermedia.Client.Resolver
 
         public void SetCredentials(UsernamePasswordCredentials usernamePasswordCredentials)
         {
-            this.UsernamePasswordCredentials = usernamePasswordCredentials;
-            this.InitializeHttpClient();
+            UsernamePasswordCredentials = usernamePasswordCredentials;
+            InitializeHttpClient();
             // todo if using a cache clear it, new user migth not be able to access cached content
         }
 
         public void SetCustomDefaultHeaders(Action<HttpRequestHeaders> addCustomDefaultHeadersAction)
         {
-            this.AddCustomDefaultHeadersAction = addCustomDefaultHeadersAction;
-            this.InitializeHttpClient();
+            AddCustomDefaultHeadersAction = addCustomDefaultHeadersAction;
+            InitializeHttpClient();
         }
 
         public void Dispose()
         {
-            this.httpClient?.Dispose();
+            httpClient?.Dispose();
         }
     }
 }

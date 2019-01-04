@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using CarShack.Domain.Customer;
-using Hypermedia.Relations;
+using Bluehands.Hypermedia.Relations;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
 using WebApi.HypermediaExtensions.Hypermedia.Attributes;

@@ -1,4 +1,4 @@
-﻿using Hypermedia.Relations;
+﻿using Bluehands.Hypermedia.Relations;
 
 namespace Hypermedia.Client.Test.Hypermedia
 {

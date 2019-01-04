@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using Hypermedia.MediaTypes;
+using Bluehands.Hypermedia.MediaTypes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using WebApi.HypermediaExtensions.Hypermedia;

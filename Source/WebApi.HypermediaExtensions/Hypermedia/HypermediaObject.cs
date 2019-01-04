@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Hypermedia.Relations;
+using Bluehands.Hypermedia.Relations;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
 using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 using WebApi.HypermediaExtensions.Hypermedia.Links;

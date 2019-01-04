@@ -11,7 +11,7 @@
     <PackageLicenseUrl>https://github.com/bluehands/WebApiHypermediaExtensions/blob/master/LICENSE.md</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
     <PackageTags>Media Types;REST;Hypermedia;Siren</PackageTags>
-    <Description>Media types often used by REST projects.</Description>
+    <Description>Media types used by REST projects.</Description>
     <AssemblyVersion>0.1.0.0</AssemblyVersion>
     <FileVersion>0.1.0.0</FileVersion>
     <Version>0.1.0</Version>

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Hypermedia.MediaTypes;
+using Bluehands.Hypermedia.MediaTypes;
 using Newtonsoft.Json.Linq;
 using WebApi.HypermediaExtensions.Exceptions;
 using WebApi.HypermediaExtensions.Hypermedia;
