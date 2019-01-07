@@ -1,11 +1,10 @@
-namespace Hypermedia.Client.Hypermedia
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Bluehands.Hypermedia.Client.Resolver;
+
+namespace Bluehands.Hypermedia.Client.Hypermedia
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-
-    using global::Hypermedia.Client.Resolver;
-
     public class MandatoryHypermediaLink<T> : HypermediaLink<T> where T : HypermediaClientObject
     {
         public async Task<T> ResolveAsync()

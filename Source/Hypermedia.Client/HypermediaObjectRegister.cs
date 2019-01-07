@@ -1,14 +1,13 @@
-namespace Hypermedia.Client
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Bluehands.Hypermedia.Client.Hypermedia;
+using Bluehands.Hypermedia.Client.Hypermedia.Attributes;
+using Bluehands.Hypermedia.Client.Util;
+
+namespace Bluehands.Hypermedia.Client
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-
-    using global::Hypermedia.Client.Hypermedia;
-    using global::Hypermedia.Client.Hypermedia.Attributes;
-    using global::Hypermedia.Client.Util;
-
     public class HypermediaObjectRegister : IHypermediaObjectRegister
     {
         private readonly Dictionary<List<string>, Type> hypermediaObjectTypeDictionary = new Dictionary<List<string>, Type>(new StringCollectionComparer());

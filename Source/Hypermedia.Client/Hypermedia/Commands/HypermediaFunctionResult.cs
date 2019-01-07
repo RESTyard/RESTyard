@@ -1,4 +1,4 @@
-﻿namespace Hypermedia.Client.Hypermedia.Commands
+﻿namespace Bluehands.Hypermedia.Client.Hypermedia.Commands
 {
     public class HypermediaCommandResult
     {

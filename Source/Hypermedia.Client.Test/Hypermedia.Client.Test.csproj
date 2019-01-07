@@ -2,25 +2,26 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp1.0</TargetFramework>
-    <AssemblyName>HypermediaClient.Test</AssemblyName>
-    <PackageId>HypermediaClient.Test</PackageId>
+    <AssemblyName>Bluehands.HypermediaClient.Test</AssemblyName>
+    <PackageId>Bluehands.HypermediaClient.Test</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
     <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <RootNamespace>Bluehands.Hypermedia.Client.Test</RootNamespace>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Hypermedia.Client\Hypermedia.Client.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Bluehands.Hypermedia.Relations" Version="0.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.2" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.3.1" />
     <PackageReference Include="MSTest.TestFramework" Version="1.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hypermedia.Client\Hypermedia.Client.csproj" />
   </ItemGroup>
 
   <ItemGroup>

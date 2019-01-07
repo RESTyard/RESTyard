@@ -1,8 +1,8 @@
-namespace Hypermedia.Client.Util
-{
-    using System.Collections.Generic;
-    using System.Linq;
+using System.Collections.Generic;
+using System.Linq;
 
+namespace Bluehands.Hypermedia.Client.Util
+{
     public class StringCollectionComparer : IEqualityComparer<ICollection<string>>
     {
         public bool Equals(ICollection<string> x, ICollection<string> y)

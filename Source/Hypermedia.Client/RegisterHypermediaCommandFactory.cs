@@ -1,12 +1,11 @@
-namespace Hypermedia.Client
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Bluehands.Hypermedia.Client.Hypermedia.Commands;
+
+namespace Bluehands.Hypermedia.Client
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-
-    using global::Hypermedia.Client.Hypermedia.Commands;
-
     internal class RegisterHypermediaCommandFactory : IHypermediaCommandFactory
     {
         public static RegisterHypermediaCommandFactory Create()

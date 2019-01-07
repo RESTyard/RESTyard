@@ -1,7 +1,7 @@
-﻿namespace Hypermedia.Client.Hypermedia.Commands
-{
-    using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
+namespace Bluehands.Hypermedia.Client.Hypermedia.Commands
+{
     public interface IHypermediaClientFunction<TResultType> : IHypermediaClientCommand where TResultType : HypermediaClientObject
     {
         Task<HypermediaFunctionResult<TResultType>> ExecuteAsync();

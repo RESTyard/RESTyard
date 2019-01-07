@@ -1,7 +1,7 @@
-﻿namespace Hypermedia.Client.Exceptions
-{
-    using System;
+﻿using System;
 
+namespace Bluehands.Hypermedia.Client.Exceptions
+{
     /// <summary>
     /// Unhandled error on the server.
     /// </summary>

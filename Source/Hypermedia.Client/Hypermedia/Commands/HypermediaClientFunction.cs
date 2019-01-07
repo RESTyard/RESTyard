@@ -1,8 +1,8 @@
-﻿namespace Hypermedia.Client.Hypermedia.Commands
-{
-    using System;
-    using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
+namespace Bluehands.Hypermedia.Client.Hypermedia.Commands
+{
     public class HypermediaClientFunction<TResultType> : HypermediaClientCommandBase, IHypermediaClientFunction<TResultType> where TResultType : HypermediaClientObject
     {
         public HypermediaClientFunction()

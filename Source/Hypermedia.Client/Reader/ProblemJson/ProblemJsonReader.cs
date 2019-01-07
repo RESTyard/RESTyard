@@ -1,13 +1,10 @@
-﻿namespace Hypermedia.Client.Reader.ProblemJson
+﻿using System;
+using System.Net.Http;
+using Bluehands.Hypermedia.Client.Exceptions;
+using Newtonsoft.Json;
+
+namespace Bluehands.Hypermedia.Client.Reader.ProblemJson
 {
-    using System;
-    using System.Net.Http;
-
-    using global::Hypermedia.Client.Exceptions;
-    using global::Hypermedia.Client.Resolver;
-
-    using Newtonsoft.Json;
-
     public static class ProblemJsonReader
     {
         public static bool TryReadProblemJson(HttpResponseMessage result, out ProblemDescription problemDescription)

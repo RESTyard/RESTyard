@@ -1,7 +1,7 @@
-namespace Hypermedia.Client.Resolver
-{
-    using global::Hypermedia.Client.Hypermedia;
+using Bluehands.Hypermedia.Client.Hypermedia;
 
+namespace Bluehands.Hypermedia.Client.Resolver
+{
     public class ResolverResult<T> where T : HypermediaClientObject
     {
         public bool Success { get; set; }

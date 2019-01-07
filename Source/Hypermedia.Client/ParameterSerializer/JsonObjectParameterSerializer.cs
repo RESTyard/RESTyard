@@ -1,8 +1,8 @@
-namespace Hypermedia.Client.ParameterSerializer
-{
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
+namespace Bluehands.Hypermedia.Client.ParameterSerializer
+{
     public class JsonObjectParameterSerializer : IParameterSerializer
     {
         private readonly Formatting formatting;

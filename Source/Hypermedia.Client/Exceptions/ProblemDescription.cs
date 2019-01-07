@@ -1,4 +1,4 @@
-﻿namespace Hypermedia.Client.Exceptions
+﻿namespace Bluehands.Hypermedia.Client.Exceptions
 {
     public class ProblemDescription
     {

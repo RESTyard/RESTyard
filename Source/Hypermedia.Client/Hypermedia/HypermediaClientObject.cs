@@ -1,9 +1,8 @@
-﻿namespace Hypermedia.Client.Hypermedia
+﻿using System.Collections.Generic;
+using Bluehands.Hypermedia.Client.Hypermedia.Attributes;
+
+namespace Bluehands.Hypermedia.Client.Hypermedia
 {
-    using System.Collections.Generic;
-
-    using global::Hypermedia.Client.Hypermedia.Attributes;
-
     public abstract class HypermediaClientObject
     {
         private static readonly List<string>  emptyRelation = new List<string>();

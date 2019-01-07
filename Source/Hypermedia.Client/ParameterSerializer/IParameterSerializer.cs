@@ -1,4 +1,4 @@
-namespace Hypermedia.Client.ParameterSerializer
+namespace Bluehands.Hypermedia.Client.ParameterSerializer
 {
     public interface IParameterSerializer
     {

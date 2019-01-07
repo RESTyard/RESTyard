@@ -1,7 +1,7 @@
-﻿namespace Hypermedia.Client.Exceptions
-{
-    using System;
+﻿using System;
 
+namespace Bluehands.Hypermedia.Client.Exceptions
+{
     /// <summary>
     /// If the request is not successful (http status code != 2xx) this exception is thrown.
     /// </summary>

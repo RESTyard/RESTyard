@@ -1,9 +1,8 @@
-namespace Hypermedia.Client
+using System.Threading.Tasks;
+using Bluehands.Hypermedia.Client.Hypermedia;
+
+namespace Bluehands.Hypermedia.Client
 {
-    using System.Threading.Tasks;
-
-    using global::Hypermedia.Client.Hypermedia;
-
     public interface IHypermediaClient<TEntryPoint> where TEntryPoint : HypermediaClientObject
     {
         Task<TEntryPoint> EnterAsync();

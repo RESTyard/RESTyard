@@ -1,14 +1,13 @@
-namespace Hypermedia.Client.Resolver
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Bluehands.Hypermedia.Client.Authentication;
+using Bluehands.Hypermedia.Client.Hypermedia;
+using Bluehands.Hypermedia.Client.Hypermedia.Commands;
+using Bluehands.Hypermedia.Client.Reader;
+
+namespace Bluehands.Hypermedia.Client.Resolver
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-
-    using global::Hypermedia.Client.Authentication;
-    using global::Hypermedia.Client.Hypermedia;
-    using global::Hypermedia.Client.Hypermedia.Commands;
-    using global::Hypermedia.Client.Reader;
-
     public interface IHypermediaResolver
     {
         void InitializeHypermediaReader(IHypermediaReader reader);

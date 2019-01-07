@@ -1,11 +1,10 @@
-﻿using Bluehands.Hypermedia.Relations;
+﻿using Bluehands.Hypermedia.Client.Hypermedia;
+using Bluehands.Hypermedia.Client.Hypermedia.Attributes;
+using Bluehands.Hypermedia.Relations;
 
-namespace Hypermedia.Client.Test.Hypermedia
+namespace Bluehands.Hypermedia.Client.Test.Hypermedia
 {
-    using global::Hypermedia.Client.Hypermedia;
-    using global::Hypermedia.Client.Hypermedia.Attributes;
-
-    [global::Hypermedia.Client.Hypermedia.Attributes.HypermediaClientObjectAttribute(Classes = new[] { "EntryPoint" })]
+    [HypermediaClientObject(Classes = new[] { "EntryPoint" })]
     public class EntryPointHco : HypermediaClientObject
     {
         [Mandatory]

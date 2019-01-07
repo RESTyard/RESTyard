@@ -1,11 +1,11 @@
-﻿namespace Hypermedia.Client.Test.Hypermedia
-{
-    using global::Hypermedia.Client.Hypermedia;
-    using global::Hypermedia.Client.Hypermedia.Attributes;
-    using global::Hypermedia.Client.Hypermedia.Commands;
-    using Bluehands.Hypermedia.Relations;
+﻿using Bluehands.Hypermedia.Client.Hypermedia;
+using Bluehands.Hypermedia.Client.Hypermedia.Attributes;
+using Bluehands.Hypermedia.Client.Hypermedia.Commands;
+using Bluehands.Hypermedia.Relations;
 
-    [global::Hypermedia.Client.Hypermedia.Attributes.HypermediaClientObjectAttribute(Classes = new[] { "CustomersRoot" })]
+namespace Bluehands.Hypermedia.Client.Test.Hypermedia
+{
+    [HypermediaClientObject(Classes = new[] { "CustomersRoot" })]
     public class CustomersRootHco : HypermediaClientObject
     {
         [Mandatory]

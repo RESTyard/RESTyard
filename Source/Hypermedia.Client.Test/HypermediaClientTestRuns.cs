@@ -1,19 +1,17 @@
-﻿namespace Hypermedia.Client.Test
+﻿using System;
+using System.Linq;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+using Bluehands.Hypermedia.Client.Authentication;
+using Bluehands.Hypermedia.Client.Extensions;
+using Bluehands.Hypermedia.Client.ParameterSerializer;
+using Bluehands.Hypermedia.Client.Reader;
+using Bluehands.Hypermedia.Client.Resolver;
+using Bluehands.Hypermedia.Client.Test.Hypermedia;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace Bluehands.Hypermedia.Client.Test
 {
-    using System;
-    using System.Linq;
-    using System.Net.Http.Headers;
-    using System.Threading.Tasks;
-
-    using global::Hypermedia.Client.Authentication;
-    using global::Hypermedia.Client.Extensions;
-    using global::Hypermedia.Client.ParameterSerializer;
-    using global::Hypermedia.Client.Reader;
-    using global::Hypermedia.Client.Resolver;
-    using global::Hypermedia.Client.Test.Hypermedia;
-
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-
     /// <summary>
     /// Tests used during prototyping.
     /// </summary>

@@ -1,7 +1,7 @@
-﻿namespace Hypermedia.Client.Hypermedia.Attributes
-{
-    using System;
+﻿using System;
 
+namespace Bluehands.Hypermedia.Client.Hypermedia.Attributes
+{
     [AttributeUsage(AttributeTargets.Property)]
     public sealed class HypermediaCommandAttribute : Attribute
     {

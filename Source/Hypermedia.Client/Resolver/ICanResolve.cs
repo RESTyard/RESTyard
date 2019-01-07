@@ -1,4 +1,4 @@
-namespace Hypermedia.Client.Resolver
+namespace Bluehands.Hypermedia.Client.Resolver
 {
     public interface ICanResolve
     {

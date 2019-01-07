@@ -1,12 +1,11 @@
-namespace Hypermedia.Client
+using System;
+using System.Threading.Tasks;
+using Bluehands.Hypermedia.Client.Hypermedia;
+using Bluehands.Hypermedia.Client.Reader;
+using Bluehands.Hypermedia.Client.Resolver;
+
+namespace Bluehands.Hypermedia.Client
 {
-    using System;
-    using System.Threading.Tasks;
-
-    using global::Hypermedia.Client.Hypermedia;
-    using global::Hypermedia.Client.Reader;
-    using global::Hypermedia.Client.Resolver;
-
     public class HypermediaClient<TEntryPoint> : IHypermediaClient<TEntryPoint> where TEntryPoint : HypermediaClientObject
     {
         private readonly IHypermediaReader sirenHypermediaReader;

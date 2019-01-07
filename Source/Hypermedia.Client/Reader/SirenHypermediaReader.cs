@@ -1,18 +1,16 @@
-namespace Hypermedia.Client.Reader
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Bluehands.Hypermedia.Client.Hypermedia;
+using Bluehands.Hypermedia.Client.Hypermedia.Attributes;
+using Bluehands.Hypermedia.Client.Hypermedia.Commands;
+using Bluehands.Hypermedia.Client.Resolver;
+using Bluehands.Hypermedia.Client.Util;
+using Newtonsoft.Json.Linq;
+
+namespace Bluehands.Hypermedia.Client.Reader
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-
-    using global::Hypermedia.Client.Hypermedia;
-    using global::Hypermedia.Client.Hypermedia.Attributes;
-    using global::Hypermedia.Client.Hypermedia.Commands;
-    using global::Hypermedia.Client.Resolver;
-    using global::Hypermedia.Client.Util;
-
-    using Newtonsoft.Json.Linq;
-
     internal enum HypermediaPropertyType
     {
         Unknown,

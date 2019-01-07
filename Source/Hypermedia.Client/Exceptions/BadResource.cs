@@ -1,7 +1,7 @@
-﻿namespace Hypermedia.Client.Exceptions
-{
-    using System;
+﻿using System;
 
+namespace Bluehands.Hypermedia.Client.Exceptions
+{
     /// <summary>
     /// The resource resolved is not of the expected type or is not readable.
     /// </summary>

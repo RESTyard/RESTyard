@@ -1,23 +1,21 @@
-namespace Hypermedia.Client.Resolver
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading.Tasks;
+using Bluehands.Hypermedia.Client.Authentication;
+using Bluehands.Hypermedia.Client.Exceptions;
+using Bluehands.Hypermedia.Client.Hypermedia;
+using Bluehands.Hypermedia.Client.Hypermedia.Commands;
+using Bluehands.Hypermedia.Client.ParameterSerializer;
+using Bluehands.Hypermedia.Client.Reader;
+using Bluehands.Hypermedia.Client.Reader.ProblemJson;
+using Bluehands.Hypermedia.MediaTypes;
+
+namespace Bluehands.Hypermedia.Client.Resolver
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Bluehands.Hypermedia.MediaTypes;
-
-    using Authentication;
-    using Exceptions;
-    using Hypermedia;
-    using Hypermedia.Commands;
-    using ParameterSerializer;
-    using Reader;
-    using Reader.ProblemJson;
-    
-
     public class HttpHypermediaResolver : IHypermediaResolver, IDisposable
     {
         private readonly IParameterSerializer parameterSerializer;

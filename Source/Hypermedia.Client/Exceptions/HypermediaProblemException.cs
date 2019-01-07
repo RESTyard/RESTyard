@@ -1,9 +1,7 @@
-﻿using Hypermedia.Client.Resolver;
+﻿using System;
 
-namespace Hypermedia.Client.Exceptions
+namespace Bluehands.Hypermedia.Client.Exceptions
 {
-    using System;
-
     /// <summary>
     /// If a request error occurs in the client he trys to read a ProblemJson from the body and throws this exception.
     /// </summary>

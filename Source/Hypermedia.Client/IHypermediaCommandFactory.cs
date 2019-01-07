@@ -1,9 +1,8 @@
-namespace Hypermedia.Client
+using System;
+using Bluehands.Hypermedia.Client.Hypermedia.Commands;
+
+namespace Bluehands.Hypermedia.Client
 {
-    using System;
-
-    using global::Hypermedia.Client.Hypermedia.Commands;
-
     public interface IHypermediaCommandFactory
     {
         IHypermediaClientCommand Create(Type commandInterfaceType);

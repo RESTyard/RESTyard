@@ -1,4 +1,4 @@
-﻿namespace Hypermedia.Client.Authentication
+﻿namespace Bluehands.Hypermedia.Client.Authentication
 {
     public class UsernamePasswordCredentials
     {
