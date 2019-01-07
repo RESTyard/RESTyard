@@ -12,7 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Hypermedia.Relations\Hypermedia.Relations.csproj" />
     <ProjectReference Include="..\WebApi.HypermediaExtensions\WebApi.HypermediaExtensions.csproj" />
   </ItemGroup>
 
