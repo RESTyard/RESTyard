@@ -39,7 +39,7 @@ Also the Extension needs a `IActionContextAccessor` service to work.
 To configure the generated URLs in the Hypermedia documents pass a `HypermediaUrlConfig` to `AddHypermediaExtensions()`. In this way absolute URLs can be generated which have a different scheme or another host e.g. a load balancer.
 
 ## HypermediaObject
-This is the base class for all entities (in Siren format) which shall be returned from the server. Derived types from HypermediaObjects can be thougth of as kind of a DTO (Data Transfer Object). A fitting name would be HTO, Hypermedia Transfer Object. They accumulate all information which should be pressent in the formatted Hypermedia document and will be formatted as Siren Hypermedia by the included formatter.
+This is the base class for all entities (in Siren format) which shall be returned from the server. Derived types from HypermediaObjects can be thought of as kind of a DTO (Data Transfer Object). A fitting name would be HTO, Hypermedia Transfer Object. They accumulate all information which should be present in the formatted Hypermedia document and will be formatted as Siren Hypermedia by the included formatter.
 An Example from the demo project CarShack:
 
 ```csharp
@@ -121,14 +121,14 @@ Entities.Add("NiceCar", new HypermediaObjectReference(new HypermediaCar("VW", 2)
 *Note*
 The used function is an convenience extension contained in `WebApi.HypermediaExtensions.Hypermedia.Extensions`
 
-#### Option 2: If no instance is available or not neccessary
+#### Option 2: If no instance is available or not necessary
 To allow referencing of HypermediaObjects without the need to instantiate them, for reference purpose only, there are two additional references available.
 
 use a `HypermediaObjectKeyReference` if the object requires a key to be identified e.g. the Customers id.
 ```
 Links.Add("BestCustomer", new HypermediaObjectKeyReference(typeof(HypermediaCustomer), 1));
 ```
-The reference requires the type of the referenced HypermediaObject, here `HypermediaCustomer` and a key which is used by the related route to identify the desired entity. The framework will pass the key object to the `KeyProducer` instance which is assigned to the HypermediaObject's route, here `CustomerRouteKeyProducer`. Explicit assignment of RouteKeyProducers is optional. `KeyAttribute` can be used alternativly on key properties of the HypermediaObject. For more details on attributed routes see [Attributed routes](## Attributed routes).
+The reference requires the type of the referenced HypermediaObject, here `HypermediaCustomer` and a key which is used by the related route to identify the desired entity. The framework will pass the key object to the `KeyProducer` instance which is assigned to the HypermediaObject's route, here `CustomerRouteKeyProducer`. Explicit assignment of RouteKeyProducers is optional. `KeyAttribute` can be used alternatively on key properties of the HypermediaObject. For more details on attributed routes see [Attributed routes](## Attributed routes).
 
 Example from the CarShack demo project `CustomerController.cs`
 ```
@@ -162,7 +162,7 @@ Links.Add(DefaultHypermediaRelations.Queries.All, new HypermediaObjectQueryRefer
 ```
 
 #### External References
-It migth be neccessary to reference a external source or a route which can not be build by the framework. In this case use the `ExternalReference`. This object works around the default route resolving process by providing its own URI. It can only be used in combination with `HypermediaObjectReference`.
+It might be necessary to reference a external source or a route which can not be build by the framework. In this case use the `ExternalReference`. This object works around the default route resolving process by providing its own URI. It can only be used in combination with `HypermediaObjectReference`.
 
 Example reference of an external site:
 ```
@@ -237,13 +237,13 @@ public ActionResult CreateCustomerParametersType()
 }
 ```
 
-Also see See: [extracting keys from action parameter urls](#extracting-keys-from-action-parameter-urls)
+Also see See: [extracting keys from action parameter URLs](#extracting-keys-from-action-parameter-urls)
 
 
 ### Routes with a placeholder in the route template
 For access to entities a route template may contain placeholder variables like _key_ in the example below.
 If a `HypermediaObject` is referenced, e.g. the self link or a link to another Customer, the formatter must be able to create the URI to the linked `HypermediaObject`.
-To propperly fill the placeholder variables for such routes a `KeyProducer` is required.
+To properly fill the placeholder variables for such routes a `KeyProducer` is required.
 
 #### Use attributes to indicate keys
 Use the `Key` attribute to indicate which properties of the HTO should be used to fill the route template variables.
@@ -345,21 +345,21 @@ public async Task<ActionResult> Query([FromQuery] CustomerQuery query)
 ## Options
 For some configuration you can pass a `HypermediaExtensionsOptions` object to `AddHypermediaExtensions` method.
 
-- `ReturnDefaultRouteForUnknownHto` if set to `true` the `IHypermediaRouteResolver` will return a default route (see: `DefaultRouteSegmentForUnknownHto`) if a Hto's route is unknown.
-  This is useful during development time when first writing some Hto's and not all controllers are implemented. Default is `false`.
+- `ReturnDefaultRouteForUnknownHto` if set to `true` the `IHypermediaRouteResolver` will return a default route (see: `DefaultRouteSegmentForUnknownHto`) if a HTO's route is unknown.
+  This is useful during development time when first writing some HTO's and not all controllers are implemented. Default is `false`.
 
-- `DefaultRouteSegmentForUnknownHto` a `string` wich will pe appended to `<scheme>://<authority>/` as default route.
+- `DefaultRouteSegmentForUnknownHto` a `string` which will be appended to `<scheme>://<authority>/` as default route.
 
-- `AutoDeliverJsonSchemaForActionParameterTypes`: if set to `true` (default) the routes to action parameters (implementing `IHypermediaActionParameter`) will be generated automatically except when there is a explict rout created.
+- `AutoDeliverJsonSchemaForActionParameterTypes`: if set to `true` (default) the routes to action parameters (implementing `IHypermediaActionParameter`) will be generated automatically except when there is a explicit rout created.
 
 - `ImplicitHypermediaActionParameterBinders`: if set to `true` (default) actions receiving a `IHypermediaActionParameter` will have a automatic binder added. 
-  The binder allows to use the `KeyFromUriAttribute` attribute. See: [extracting keys from action parameter urls](#extracting-keys-from-action-parameter-urls).
+  The binder allows to use the `KeyFromUriAttribute` attribute. See: [extracting keys from action parameter URLs](#extracting-keys-from-action-parameter-urls).
 
 ## Extracting keys from action parameter URLs
-When it is required to reference an other ressource as action parameter it is often required to get the identifying keys from the resources URL. 
+When it is required to reference an other resource as action parameter it is often required to get the identifying keys from the resources URL. 
 Enable `ImplicitHypermediaActionParameterBinders` to use this feature.
 This can be automated by using attributes in parameters.
-If there is only one key inused in the URL it can be attributed like this:
+If there is only one key in use in the URL it can be attributed like this:
 
 ``` csharp
 public class FavoriteCustomer : IHypermediaActionParameter
@@ -385,10 +385,10 @@ The post would look like:
 ]
 ```
 
-The binder will then extract the customersvalue `1` from the URL and sets it to the parameter whic is attributed.
+The binder will then extract the customers value `1` from the URL and sets it to the parameter which is attributed.
 
 ### More than one key
-If your ressource is addressed using more than one key the binder needs additional information.
+If your resource is addressed using more than one key the binder needs additional information.
 
 Example `HypermediaActionCustomerBuysCar.Parameter`:
 
@@ -404,9 +404,9 @@ public class Parameter : IHypermediaActionParameter
 }
 ```
 
-Not two properties have an attribute indicating that tey should be filled: `Brand` and `CarId`. Both share the same type of ressource and `schemaProperyName` because the source of their value is a single URL in the JSON payload.
+Not two properties have an attribute indicating that they should be filled: `Brand` and `CarId`. Both share the same type of resource and `schemaProperyName` because the source of their value is a single URL in the JSON payload.
 To configure which route template variable (see your attributed route) should be used to fill the parameter property `routeTemplateParameterName` is used.
-The route template: `{brand}/{key:int}`. Be carefule to match the variable name and `routeTemplateParameterName`.
+The route template: `{brand}/{key:int}`. Be careful to match the variable name and `routeTemplateParameterName`.
 
 The corresponding post would look like: 
 ``` csharp
@@ -421,9 +421,9 @@ The corresponding post would look like:
 ```
 
 ## Recommendations for route design
-The extensions were build with some idears about how routes should be build in mind. The Extensions do not enforce this design but it is useful to know the basic idears.
+The extensions were build with some ideas about how routes should be build in mind. The Extensions do not enforce this design but it is useful to know the basic ideas.
 
-- The api is entered by a root document which leads to all or some of the other `HypermediaObject`'s (see `HypermediaEntryPoint` in CarShack)
+- The API is entered by a root document which leads to all or some of the other `HypermediaObject`'s (see `HypermediaEntryPoint` in CarShack)
 Examples
 ```
 http://localhost:5000/entrypoint
@@ -437,7 +437,7 @@ http://localhost:5000/Customers/CreateQuery
 http://localhost:5000/Customers/CreateCustomer
 ```
 
-- Entities are accessed through a collection but do not host child Entities. These should be handled in their own collections. The routes to the actual objects should not matter, so no need to nest them. This helps to flatten the Controller hierarchy and avoids deep routes. If a placeholder variable is required in the route templae name it _key_ (see Known Issues below).
+- Entities are accessed through a collection but do not host child Entities. These should be handled in their own collections. The routes to the actual objects should not matter, so no need to nest them. This helps to flatten the Controller hierarchy and avoids deep routes. If a placeholder variable is required in the route template name it _key_ (see Known Issues below).
 Examples
 ```
 http://localhost:5000/Customers/1
@@ -445,7 +445,7 @@ http://localhost:5000/Customers/1/Move
 ```
 
 ## Notes on serialization
-- Enums in `HypermediaObjects` and Action parameters can be attributed using `EnumMember` to specify fixed string names for enum values. If no attribute is present the value wil be serialized using `ToString()`
+- Enums in `HypermediaObjects` and Action parameters can be attributed using `EnumMember` to specify fixed string names for enum values. If no attribute is present the value will be serialized using `ToString()`
 - `DateTime` and `DateTimeOffset` will be serialized using ISO 8601 notation: e.g. `2000-11-22T18:05:32.9990000+02:00`
 
 ## Known Issues
@@ -465,7 +465,7 @@ Tested for:
 ### WebApiHypermediaExtensions v1.3.0
 
 #### Features:
-- Routes with multiple variable templates are now suported, also the dependency on route variable names is removed. The KeyProducers now handle that. See documentation for details.
+- Routes with multiple variable templates are now supported, also the dependency on route variable names is removed. The KeyProducers now handle that. See documentation for details.
 - Multiple Relations are now allowed for Links
 - Add configuration option to SirenBuilder so writing null properties in the JSON output can be disabled
 - Allow HypermediaObjects with no self link as specified by Siren
@@ -473,7 +473,7 @@ Tested for:
 - Add extension methods for convenience when working with embedded entities
 - Add Exception if null is passed to HypermediaObjectReference
 - Add ExternalReference to work around situations where a route or URI can not be constructed by the framework.
-- Added a ApiMap to the CarShack project which shows an overview on the navigation possibilities for the Api
+- Added a ApiMap to the CarShack project which shows an overview on the navigation possibilities for the API
 - Updated CarShack project to show new features: see 'Cars' routes with multiple variable templates
 - Updated README.md
 
@@ -481,9 +481,9 @@ Tested for:
 - Generalize Formatter concept so there can be other Formatters
 - Renamed HypermediaAction with return value to HypermediaFunction
 - Simplified Siren builder
-- Rename RoutKeyProducer to KeyProducer because functionality is not tied to WebApi
+- Rename RoutKeyProducer to KeyProducer because functionality is not tied to Web Api
 - Remove some reflections
-- Renaming for clearity
+- Renaming for clarity
 - Now using NJsonSchema to generate JSON schemas
 - HypermediaQueryResult: Remove NavigationQueries from constructor
 - HypermediaQueryResult: Entities are no longer added by constructor
@@ -498,7 +498,7 @@ Tested for:
 - Fix HypermediaQueryResult exposed Query property
 
 #### Hypermedia Client Prototype:
-There is a new project: HypemediaClient. This is a *prototype* which explores a the possibilities of a generic client wich still has strong types for Hypermedia documents. To execute it see the test project: HypermediaClient.Test. The client expects a local CarShack service to communicate with.
+There is a new project: HypemediaClient. This is a *prototype* which explores a the possibilities of a generic client which still has strong types for Hypermedia documents. To execute it see the test project: HypermediaClient.Test. The client expects a local CarShack service to communicate with.
 
 ### WebApiHypermediaExtensions v1.2.0
 - ADD: It is now possible to configure generated URIs by providing a HypermediaUrlConfig (host, scheme) for links
@@ -514,7 +514,7 @@ There is a new project: HypemediaClient. This is a *prototype* which explores a 
 - FIX: NavigationQueryBuilder next page was build but not valid
 - FIX: DisablePagination() did not set PageOffset to 0
 - FIX: Siren JSON creation:
-  - Primitives like integers and bools were not serialited properly (serialized as string)
+  - Primitives like integers and bools were not serialized properly (serialized as string)
   - Null properties were not serialized to null but a string "null"
   - Nested classes in properties were serialized
   - Enum values were serialized as string
