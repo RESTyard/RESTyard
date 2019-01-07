@@ -9,7 +9,7 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>WebApi.HypermediaExtensions</AssemblyName>
-    <PackageId>WebApi.HypermediaExtensions</PackageId>
+    <PackageId>WebApiHypermediaExtensionsCore</PackageId>
     <PackageTags>WebApi;REST;Siren;Hypermedia;ASP.NET Core;</PackageTags>
     <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/bluehands/WebApiHypermediaExtensions/blob/master/LICENSE.md</PackageLicenseUrl>
