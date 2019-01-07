@@ -1,10 +1,8 @@
 {
-	"variables": [],
 	"info": {
+		"_postman_id": "64f545ab-e585-e7d4-38ce-3e5989bbaab8",
 		"name": "CarShack",
-		"_postman_id": "9a312f92-c908-5886-5650-f5b05c09239c",
-		"description": "",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -21,14 +19,20 @@
 				}
 			],
 			"request": {
-				"url": "http://localhost:5000/entrypoint",
 				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": []
-				},
-				"description": ""
+				"body": {},
+				"url": {
+					"raw": "http://localhost:5000/entrypoint",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"entrypoint"
+					]
+				}
 			},
 			"response": []
 		},
@@ -46,14 +50,20 @@
 				}
 			],
 			"request": {
-				"url": "http://localhost:5000/Customers",
 				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": []
-				},
-				"description": ""
+				"body": {},
+				"url": {
+					"raw": "http://localhost:5000/Customers",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"Customers"
+					]
+				}
 			},
 			"response": []
 		},
@@ -71,14 +81,24 @@
 				}
 			],
 			"request": {
-				"url": "http://localhost:5000/Customers/1",
 				"method": "GET",
 				"header": [],
 				"body": {
 					"mode": "raw",
 					"raw": "[\r\n{\r\n  \"Address\": \"Fritz Huber\"\r\n}\r\n}"
 				},
-				"description": ""
+				"url": {
+					"raw": "http://localhost:5000/Customers/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"Customers",
+						"1"
+					]
+				}
 			},
 			"response": []
 		},
@@ -96,14 +116,46 @@
 				}
 			],
 			"request": {
-				"url": "http://localhost:5000/Customers/Query?Pagination.PageSize=4&Pagination.PageOffset=2&SortBy.PropertyName=Age&SortBy.SortType=Ascending&Filter.MinAge=21",
 				"method": "GET",
 				"header": [],
 				"body": {
 					"mode": "raw",
 					"raw": "{\r\n  \"Filter\": {\r\n  \t\"MinAge\": \"21\"\r\n  },\r\n  \"SortBy\":{\r\n  \t\"PropertyName\":\"Age\",\r\n    \"SortType\": \"Ascending\"\r\n  },\r\n  \"Pagination\": {\r\n  \t\"PageSize\": \"4\",\r\n  \t\"PageOffset\":\"2\"\r\n  }\r\n}"
 				},
-				"description": ""
+				"url": {
+					"raw": "http://localhost:5000/Customers/Query?Pagination.PageSize=4&Pagination.PageOffset=2&SortBy.PropertyName=Age&SortBy.SortType=Ascending&Filter.MinAge=21",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"Customers",
+						"Query"
+					],
+					"query": [
+						{
+							"key": "Pagination.PageSize",
+							"value": "4"
+						},
+						{
+							"key": "Pagination.PageOffset",
+							"value": "2"
+						},
+						{
+							"key": "SortBy.PropertyName",
+							"value": "Age"
+						},
+						{
+							"key": "SortBy.SortType",
+							"value": "Ascending"
+						},
+						{
+							"key": "Filter.MinAge",
+							"value": "21"
+						}
+					]
+				}
 			},
 			"response": []
 		},
@@ -121,14 +173,21 @@
 				}
 			],
 			"request": {
-				"url": "http://localhost:5000/Customers/CreateCustomerParametersType",
 				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": []
-				},
-				"description": ""
+				"body": {},
+				"url": {
+					"raw": "http://localhost:5000/ActionParmameterTypes/CreateCustomerParameters",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"ActionParmameterTypes",
+						"CreateCustomerParameters"
+					]
+				}
 			},
 			"response": []
 		},
@@ -146,20 +205,29 @@
 				}
 			],
 			"request": {
-				"url": "http://localhost:5000/Customers/CreateCustomer",
 				"method": "POST",
 				"header": [
 					{
 						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
+						"value": "application/json"
 					}
 				],
 				"body": {
 					"mode": "raw",
 					"raw": "[{\"CreateCustomerParameters\": \r\n\t{\r\n\t  \"Name\":\"Hans Schmid\"\r\n\t}\r\n}]"
 				},
-				"description": ""
+				"url": {
+					"raw": "http://localhost:5000/Customers/CreateCustomer",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"Customers",
+						"CreateCustomer"
+					]
+				}
 			},
 			"response": []
 		},
@@ -183,20 +251,29 @@
 				}
 			],
 			"request": {
-				"url": "http://localhost:5000/Customers/CreateQuery",
 				"method": "POST",
 				"header": [
 					{
 						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
+						"value": "application/json"
 					}
 				],
 				"body": {
 					"mode": "raw",
 					"raw": "[{\"CustomerQuery\": \r\n\t{\r\n\t  \"Filter\": {\r\n\t  \t\"MinAge\": \"21\"\r\n\t  },\r\n\t  \"SortBy\":{\r\n\t  \t\"PropertyName\":\"Age\",\r\n\t    \"SortType\": \"Ascending\"\r\n\t  },\r\n\t  \"Pagination\": {\r\n\t  \t\"PageSize\" : \"4\",\r\n\t  \t\"PageOffset\":\"2\"\r\n\t  }\r\n\t}\r\n}]"
 				},
-				"description": ""
+				"url": {
+					"raw": "http://localhost:5000/Customers/Queries",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"Customers",
+						"Queries"
+					]
+				}
 			},
 			"response": []
 		},
@@ -214,20 +291,30 @@
 				}
 			],
 			"request": {
-				"url": "http://localhost:5000/Customers/1/Move",
 				"method": "POST",
 				"header": [
 					{
 						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
+						"value": "application/json"
 					}
 				],
 				"body": {
 					"mode": "raw",
 					"raw": "[{\r\n\t\"NewAddress\": {\r\n\t\t\"Address\": \"Mainstreet 3 Hometown\"\r\n\t}\r\n}]\r\n"
 				},
-				"description": ""
+				"url": {
+					"raw": "http://localhost:5000/Customers/1/Moves",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"Customers",
+						"1",
+						"Moves"
+					]
+				}
 			},
 			"response": []
 		},
@@ -245,14 +332,79 @@
 				}
 			],
 			"request": {
-				"url": "http://localhost:5000/Customers/1/MarkAsFavorite",
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
 				"body": {
 					"mode": "raw",
-					"raw": ""
+					"raw": "[\n\t{\n\t\t\"FavoriteCustomer\":\n\t\t{\n\t\t\t\"Customer\":\"http://localhost:5000/Customers/6\"\n\t\t\t\n\t\t}\n\t\t\n\t}\n]"
 				},
-				"description": ""
+				"url": {
+					"raw": "http://localhost:5000/Customers/MyFavoriteCustomers",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"Customers",
+						"MyFavoriteCustomers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cars",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:5000/Cars",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"Cars"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Customers/1/BuysCar",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"HypermediaActionCustomerBuysCar.Parameter\":\n\t{\n\t\t\"CarUri\":\"http://localhost:5000/Cars/Porsche/5\",\n\t\t\"Price\":2000\n\t\t\n\t}\n}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/Customers/1/BuysCar",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"Customers",
+						"1",
+						"BuysCar"
+					]
+				}
 			},
 			"response": []
 		}
