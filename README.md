@@ -462,6 +462,23 @@ Tested for:
 
 ## Release Notes
 
+### WebApiHypermediaExtensions v1.4.0
+
+#### Features:
+- Action parameter objects no longer need to be wrapped in an array
+- Automatic rout key producers added, so in most cases no RouteKeyProducer is needed
+- Automatic mapping of HTO parameter URLs to parameter object values by URL decomposition, also represented in generated JsonSchema
+- Option to auto deliver JsonSchema for ActionParameter types by crawling assemblies for parameter objects
+- Option to deliver virtual URLs to HTOs which are not jet developed to ease development
+- IEnumerable and arbitrary Objects in HTO properties are now serialized to Siren
+- Configuration via `IMvcCoreBuilder`
+- Work on HypermediaClient
+    - Use a single HttpClient instance
+    - Add basic authentication
+
+#### Fixes:
+- Update `Microsoft.AspNetCore.Mvc` for security reasons.
+
 ### WebApiHypermediaExtensions v1.3.0
 
 #### Features:
