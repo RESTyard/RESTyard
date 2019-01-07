@@ -217,6 +217,15 @@ A valid JSON for this route would look like this:
 }]
 ```
 
+The parameter binder also allows to pass a parameter object without the wrapping array:
+``` json
+{"CreateCustomerParameters": 
+	{
+	  "Name":"Hans Schmid"
+	}
+}
+```
+
 Parameters for actions may define a route which provides additional type information to the client. These routes will be added to the Siren fields object as "class".
 
 ```csharp
