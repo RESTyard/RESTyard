@@ -11,6 +11,7 @@ To develop C# client applications there is a generic REST client. It is in an ea
 
 ## On nuget.org
 The Extensions: [https://www.nuget.org/packages/WebApiHypermediaExtensionsCore](https://www.nuget.org/packages/WebApiHypermediaExtensionsCore)
+
 The Client: [https://www.nuget.org/packages/Bluehands.Hypermedia.Client/](https://www.nuget.org/packages/Bluehands.Hypermedia.Client/)
 
 # UI client
