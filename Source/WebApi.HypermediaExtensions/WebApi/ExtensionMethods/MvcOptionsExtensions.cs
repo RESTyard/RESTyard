@@ -71,7 +71,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// <param name="hypermediaConverterConfiguration">Configures the creation of Hypermedia documents.</param>
         /// <param name="hypermediaOptions">Configures general options for teh extensions.</param>
         /// <param name="controllerAndHypermediaAssemblies">Assemblies to crawl for controller routes and hypermedia objects</param>
-        public static MvcOptions AddHypermediaExtensions(
+        private static MvcOptions AddHypermediaExtensions(
             this MvcOptions options,
             IRouteRegister alternateRouteRegister = null,
             IQueryStringBuilder alternateQueryStringBuilder = null,
