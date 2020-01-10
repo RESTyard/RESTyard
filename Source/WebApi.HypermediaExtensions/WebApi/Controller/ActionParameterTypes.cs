@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using WebApi.HypermediaExtensions.ErrorHandling;
 using WebApi.HypermediaExtensions.JsonSchema;
 using WebApi.HypermediaExtensions.Util;
@@ -15,10 +16,10 @@ namespace WebApi.HypermediaExtensions.WebApi.Controller
     {
         readonly ImmutableDictionary<string, object> schemaByTypeName;
 
-        public ActionParameterSchemas(IEnumerable<Type> actionParameterTypes)
+        public ActionParameterSchemas(IEnumerable<Type> actionParameterTypes, bool lowercaseUrls)
         {
             schemaByTypeName = actionParameterTypes.ToImmutableDictionary(
-                t => t.BeautifulName(),
+                t => lowercaseUrls ? t.BeautifulName().ToLower() : t.BeautifulName(),
                 t => JsonSchemaFactory.Generate(t).GetAwaiter().GetResult()
             );
         }

@@ -53,7 +53,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
             Assembly[] controllerAndHypermediaAssemblies)
         {
             if (hypermediaOptions.AutoDeliverJsonSchemaForActionParameterTypes) { 
-                services.AutoDeliverActionParameterSchemas(controllerAndHypermediaAssemblies);
+                services.AutoDeliverActionParameterSchemas(hypermediaOptions.LowercaseUrls, controllerAndHypermediaAssemblies);
             }
 
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
@@ -135,10 +135,10 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// <param name="serviceCollection"></param>
         /// <param name="controllerAssemblies"></param>
         /// <returns></returns>
-        public static IServiceCollection AutoDeliverActionParameterSchemas(this IServiceCollection serviceCollection, params Assembly[] controllerAssemblies)
+        public static IServiceCollection AutoDeliverActionParameterSchemas(this IServiceCollection serviceCollection, bool lowercaseUrls, params Assembly[] controllerAssemblies)
         {
             var applicationModel = ApplicationModel.Create(controllerAssemblies);
-            var controller = new ActionParameterSchemas(applicationModel.ActionParameterTypes.Values.Select(_ => _.Type));
+            var controller = new ActionParameterSchemas(applicationModel.ActionParameterTypes.Values.Select(_ => _.Type), lowercaseUrls);
             return serviceCollection.AddSingleton(controller);
         }
     }
