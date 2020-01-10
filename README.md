@@ -14,7 +14,7 @@ The Extensions: [https://www.nuget.org/packages/WebApiHypermediaExtensionsCore](
 
 The Client: [https://www.nuget.org/packages/Bluehands.Hypermedia.Client/](https://www.nuget.org/packages/Bluehands.Hypermedia.Client/)
 
-# UI client
+## UI client
 There is a partner project which aims for a generic UI client: [HypermediaUi](https://github.com/MathiasReichardt/HypermediaUi)
 
 ## Key concepts
