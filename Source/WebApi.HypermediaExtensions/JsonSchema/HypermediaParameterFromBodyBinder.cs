@@ -26,14 +26,35 @@ namespace WebApi.HypermediaExtensions.JsonSchema
         public IModelBinder GetBinder(ModelBinderProviderContext context)
         {
             var modelType = context.Metadata.ModelType;
-            if (typeof(IHypermediaActionParameter).GetTypeInfo().IsAssignableFrom(modelType) 
-                && (context.BindingInfo.BinderType == typeof(HypermediaParameterFromBodyBinder)
-                || !explicitUsage && context.BindingInfo.BinderType == null && context.BindingInfo.BindingSource == null))
+            if (ParameterIsHypermediaActionType(modelType) 
+                && (ThisBinderIsSelectedOnMethod(context) || this.UseThisBinderImplicit(context)))
             {
                 return new HypermediaParameterFromBodyBinder(modelType, getRouteTemplateForType);
             }
 
             return null;
+        }
+
+        private bool UseThisBinderImplicit(ModelBinderProviderContext context)
+        {
+            return !this.explicitUsage
+                   && context.BindingInfo.BinderType == null
+                   && DataIsInTheBodyOrNull(context);
+        }
+
+        private static bool DataIsInTheBodyOrNull(ModelBinderProviderContext context)
+        {
+            return (context.BindingInfo.BindingSource == null || context.BindingInfo.BindingSource == BindingSource.Body);
+        }
+
+        private static bool ThisBinderIsSelectedOnMethod(ModelBinderProviderContext context)
+        {
+            return context.BindingInfo.BinderType == typeof(HypermediaParameterFromBodyBinder);
+        }
+
+        private static bool ParameterIsHypermediaActionType(Type modelType)
+        {
+            return typeof(IHypermediaActionParameter).GetTypeInfo().IsAssignableFrom(modelType);
         }
     }
 
