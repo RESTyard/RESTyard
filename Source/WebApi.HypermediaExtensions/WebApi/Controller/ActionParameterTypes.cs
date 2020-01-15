@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using WebApi.HypermediaExtensions.ErrorHandling;
 using WebApi.HypermediaExtensions.JsonSchema;
 using WebApi.HypermediaExtensions.Util;
@@ -16,11 +15,12 @@ namespace WebApi.HypermediaExtensions.WebApi.Controller
     {
         readonly ImmutableDictionary<string, object> schemaByTypeName;
 
-        public ActionParameterSchemas(IEnumerable<Type> actionParameterTypes, bool lowercaseUrls)
+        public ActionParameterSchemas(IEnumerable<Type> actionParameterTypes, bool useCaseSensitiveParameterMatching)
         {
             schemaByTypeName = actionParameterTypes.ToImmutableDictionary(
-                t => lowercaseUrls ? t.BeautifulName().ToLower() : t.BeautifulName(),
-                t => JsonSchemaFactory.Generate(t).GetAwaiter().GetResult()
+                t => t.BeautifulName(),
+                t => JsonSchemaFactory.Generate(t).GetAwaiter().GetResult(),
+                useCaseSensitiveParameterMatching ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase
             );
         }
 
@@ -30,7 +30,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Controller
         }
     }
 
-    [Route("ActionParmameterTypes")]
+    [Route("ActionParameterTypes")]
     public class ActionParameterTypes : Microsoft.AspNetCore.Mvc.Controller
     {
         readonly ActionParameterSchemas schemaByTypeName;
@@ -50,7 +50,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Controller
                 {
                     ProblemType = $"Unknwon parameter type name: '{parameterTypeName}'",
                     StatusCode = (int)HttpStatusCode.NotFound,
-                    Title = "Unkown action parameter type"
+                    Title = "Unknown action parameter type"
                 });
             }
 

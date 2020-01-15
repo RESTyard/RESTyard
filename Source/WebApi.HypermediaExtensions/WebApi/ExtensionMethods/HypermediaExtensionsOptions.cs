@@ -28,15 +28,14 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         public bool AutoDeliverJsonSchemaForActionParameterTypes { get; set; } = true;
 
         /// <summary>
-        /// Implictly add custom binder for parameters of hypermedia actions that derive from <see cref="IHypermediaActionParameter"/>. 
+        /// Matching type for generated routes of parameter types when using <see cref="AutoDeliverJsonSchemaForActionParameterTypes"/>
+        /// </summary>
+        public bool CaseSensitiveParameterMatching { get; set; }
+
+        /// <summary>
+        /// Implicitly add custom binder for parameters of hypermedia actions that derive from <see cref="IHypermediaActionParameter"/>. 
         /// Enables usage of <see cref="KeyFromUriAttribute"/> for properties of those parameter types.
         /// </summary>
         public bool ImplicitHypermediaActionParameterBinders { get; set; } = true;
-
-        /// <summary>
-        /// Tells the extensions that the routing will use lowercase URLs
-        /// E.g. needed so generated routes for parameter schemas can be matched correctly
-        /// </summary>
-        public bool LowercaseUrls { get; set; }
     }
 }
