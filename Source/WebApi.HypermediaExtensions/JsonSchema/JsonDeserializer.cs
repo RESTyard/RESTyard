@@ -75,6 +75,11 @@ namespace WebApi.HypermediaExtensions.JsonSchema
                     var basePathTrimmed = TrimFirstPathPart(request.LocalPath);
                     if (!schemaProperyGroup.TemplateMatchers.Any(t => t.TryGetValuesFromRequest(basePathTrimmed, out values)))
                     {
+                        if (request.LocalPath.Contains("[Area]") || request.LocalPath.Contains("[area]"))
+                        {
+                            throw new ArgumentException($"Local path '{request.LocalPath}' contains unsupported tokens. The tokens '[Area]' and '[area]' are not supported. Please replace them with fixed values.");
+                        }
+
                         throw new ArgumentException($"Local path '{request.LocalPath}' does not match any expected route template '{string.Join(",", schemaProperyGroup.TemplateMatchers.Select(r => r.Template.TemplateText))}'");
                     }
                 }
