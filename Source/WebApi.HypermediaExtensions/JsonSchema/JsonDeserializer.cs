@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using WebApi.HypermediaExtensions.Exceptions;
 using WebApi.HypermediaExtensions.Util;
+using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace WebApi.HypermediaExtensions.JsonSchema
 {
