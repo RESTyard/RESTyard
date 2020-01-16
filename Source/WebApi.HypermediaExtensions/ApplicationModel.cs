@@ -70,18 +70,18 @@ namespace WebApi.HypermediaExtensions
             var httpGetHypermediaObject = methodInfo.GetCustomAttribute<HttpGetHypermediaObject>();
             if (httpGetHypermediaObject != null)
             {
-                return new GetHmoMethod(httpGetHypermediaObject.RouteType, httpGetHypermediaObject.Template, controllerType);
+                return new GetHmoMethod(httpGetHypermediaObject.RouteType, httpGetHypermediaObject.Template, controllerType, methodInfo.Name);
             }
 
             var httpPostHypermediaAction = methodInfo.GetCustomAttribute<HttpPostHypermediaAction>();
             if (httpPostHypermediaAction != null)
             {
-                return new ActionMethod(httpPostHypermediaAction.RouteType, httpPostHypermediaAction.Template, controllerType);
+                return new ActionMethod(httpPostHypermediaAction.RouteType, httpPostHypermediaAction.Template, controllerType, methodInfo.Name);
             }
             var httpGetHypermediaActionParameterInfo = methodInfo.GetCustomAttribute<HttpGetHypermediaActionParameterInfo>();
             if (httpGetHypermediaActionParameterInfo != null)
             {
-                return new GetActionParameterInfoMethod(httpGetHypermediaActionParameterInfo.RouteType, httpGetHypermediaActionParameterInfo.Template, controllerType);
+                return new GetActionParameterInfoMethod(httpGetHypermediaActionParameterInfo.RouteType, httpGetHypermediaActionParameterInfo.Template, controllerType, methodInfo.Name);
             }
 
             return null;
@@ -157,14 +157,25 @@ namespace WebApi.HypermediaExtensions
             public string RouteTemplate { get; }
             public string RouteTemplateFull { get; }
 
-            protected ControllerMethod(string routeTemplate, ControllerType parent)
+            protected ControllerMethod(string routeTemplate, ControllerType parent, string methodName)
             {
-                RouteTemplate = routeTemplate;
+                RouteTemplate = ReplaceActionTokenInRouteTemplate(routeTemplate, methodName); ;
                 Parent = parent;
 
-                var filledParentRouteTemplate = FillControllerTokenInParentRouteTemplate(parent);
+                var filledRouteTemplate = FillControllerTokenInParentRouteTemplate(parent);
 
-                RouteTemplateFull = string.Concat(filledParentRouteTemplate, "/", routeTemplate).Replace("//", "/").Replace("///", "/");
+                RouteTemplateFull = string.Concat(filledRouteTemplate, "/", RouteTemplate).Replace("//", "/").Replace("///", "/");
+            }
+
+            private string ReplaceActionTokenInRouteTemplate(string routeTemplate, string methodName)
+            {
+                if (routeTemplate == null 
+                    || (!routeTemplate.Contains("[action]") && !routeTemplate.Contains("[Action]")))
+                {
+                    return routeTemplate;
+                }
+
+                return routeTemplate.Replace("[action]", methodName).Replace("[Action]", methodName);
             }
 
             private static string FillControllerTokenInParentRouteTemplate(ControllerType parent)
@@ -193,7 +204,7 @@ namespace WebApi.HypermediaExtensions
         {
             public Type HmoType { get; }
 
-            public GetHmoMethod(Type hmoType, string routeTemplate, ControllerType parent) : base(routeTemplate, parent)
+            public GetHmoMethod(Type hmoType, string routeTemplate, ControllerType parent, string methodName) : base(routeTemplate, parent, methodName)
             {
                 HmoType = hmoType;
             }
@@ -203,7 +214,7 @@ namespace WebApi.HypermediaExtensions
         {
             public Type ActionType { get; }
 
-            public ActionMethod(Type actionType, string routeTemplate, ControllerType parent) : base(routeTemplate, parent)
+            public ActionMethod(Type actionType, string routeTemplate, ControllerType parent, string methodName) : base(routeTemplate, parent, methodName)
             {
                 ActionType = actionType;
             }
@@ -213,7 +224,7 @@ namespace WebApi.HypermediaExtensions
         {
             public Type ActionParameterType { get; }
 
-            public GetActionParameterInfoMethod(Type actionParameterType, string routeTemplate, ControllerType parent) : base(routeTemplate, parent)
+            public GetActionParameterInfoMethod(Type actionParameterType, string routeTemplate, ControllerType parent, string methodName) : base(routeTemplate, parent, methodName)
             {
                 ActionParameterType = actionParameterType;
             }
