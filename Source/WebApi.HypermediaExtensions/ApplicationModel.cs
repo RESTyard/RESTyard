@@ -161,9 +161,32 @@ namespace WebApi.HypermediaExtensions
             {
                 RouteTemplate = routeTemplate;
                 Parent = parent;
-                RouteTemplateFull = string.Concat(parent.RouteTemplate, "/", routeTemplate).Replace("//", "/").Replace("///", "/");
+
+                var filledParentRouteTemplate = FillControllerTokenInParentRouteTemplate(parent);
+
+                RouteTemplateFull = string.Concat(filledParentRouteTemplate, "/", routeTemplate).Replace("//", "/").Replace("///", "/");
             }
 
+            private static string FillControllerTokenInParentRouteTemplate(ControllerType parent)
+            {
+                if (!parent.RouteTemplate.Contains("[controller]") && !parent.RouteTemplate.Contains("[Controller]"))
+                {
+                    return parent.RouteTemplate;
+                }
+
+                var controllerNameReplacement = RemoveControllerFromName(parent.Type.Name);
+
+                return parent.RouteTemplate.Replace("[controller]", controllerNameReplacement).Replace("[Controller]", controllerNameReplacement);
+            }
+
+            private static string RemoveControllerFromName(string controllerTypeName)
+            {
+                if (controllerTypeName.EndsWith("controller", StringComparison.OrdinalIgnoreCase))
+                {
+                    return controllerTypeName.Substring(0, controllerTypeName.LastIndexOf("controller", StringComparison.OrdinalIgnoreCase));
+                }
+                return controllerTypeName;
+            }
         }
 
         public class GetHmoMethod : ControllerMethod
