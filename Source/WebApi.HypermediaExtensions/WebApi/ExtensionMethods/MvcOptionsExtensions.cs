@@ -133,6 +133,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// with <see cref="HttpGetHypermediaActionParameterInfo"/> attibute.
         /// </summary>
         /// <param name="serviceCollection"></param>
+        /// <param name="useCaseSensitiveParameterMatching"></param>
         /// <param name="controllerAssemblies"></param>
         /// <returns></returns>
         public static IServiceCollection AutoDeliverActionParameterSchemas(this IServiceCollection serviceCollection, bool useCaseSensitiveParameterMatching, params Assembly[] controllerAssemblies)
