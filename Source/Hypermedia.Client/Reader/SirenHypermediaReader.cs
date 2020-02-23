@@ -228,19 +228,29 @@ namespace Bluehands.Hypermedia.Client.Reader
         {
             var relationsAttribute = propertyInfo.GetCustomAttribute<HypermediaRelationsAttribute>();
             var classes = GetClassesFromEntityProperty(propertyInfo.PropertyType.GetTypeInfo());
+            var isMandatoryHypermediaProperty = IsMandatoryHypermediaProperty(propertyInfo);
 
             var entities = jObject["entities"] as JArray;
             if (entities == null)
             {
-                if (IsMandatoryHypermediaProperty(propertyInfo))
+                if (isMandatoryHypermediaProperty)
                 {
-                    throw new Exception($"Mandatory hypermedia property not found {propertyInfo.Name}");
+                    throw new Exception($"Mandatory hypermedia property can not be filled {propertyInfo.Name}: server object contains no entities.");
                 }
                 return;
             }
 
             var jEntity = entities.Cast<JObject>().FirstOrDefault( e =>
                 this.EntityRelationsMatch(e, relationsAttribute.Relations) && this.EntityClassMatch(e, classes, propertyInfo.Name));
+
+            if (jEntity == null)
+            {
+                if (isMandatoryHypermediaProperty) { 
+                    throw new Exception($"Mandatory hypermedia property can not be filled {propertyInfo.Name}: server object contains no entity of matching type (relation and class).");
+                }
+
+                return;
+            }
 
             var entity = this.ReadHypermediaObject(jEntity);
             propertyInfo.SetValue(hypermediaObjectInstance, entity);
