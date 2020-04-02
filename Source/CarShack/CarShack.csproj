@@ -12,10 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WebApi.HypermediaExtensions\WebApi.HypermediaExtensions.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="1.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.7" />
     <PackageReference Include="Microsoft.AspNetCore.Routing" Version="1.1.2" />
@@ -30,6 +26,7 @@
     <PackageReference Include="System.Linq" Version="4.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.1.4" />
     <PackageReference Include="NJsonSchema" Version="9.10.50" />
+    <PackageReference Include="WebApiHypermediaExtensionsCore" Version="1.4.1-testNewSolutionSettingsOnPipeline-20200402.18" />
   </ItemGroup>
 
 </Project>
