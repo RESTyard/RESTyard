@@ -5,7 +5,7 @@
     <AssemblyTitle>Web Api Hypermedia Extensions</AssemblyTitle>-->
 
     <!--General settings-->
-    <Version>1.4.1$(VersionSuffix)</Version>
+    <Version>1.4.1</Version>
     <TargetFramework>netstandard1.6</TargetFramework>
     <NoWarn>$(NoWarn);1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -16,7 +16,7 @@
     <PackageDescription>Web Api extensions to create REST Web services using Siren as Hypermedia format</PackageDescription>
     <PackageTags>WebApi;REST;Siren;Hypermedia;ASP.NET Core;</PackageTags>
     <Authors>Mathias Reichardt</Authors>
-    <Copyright>Copyright 2001-2019 Bluehands GmbH &amp; C.ommunication KG</Copyright>
+    <Copyright>Copyright 2001-2020 Mathias Reichardt</Copyright>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
