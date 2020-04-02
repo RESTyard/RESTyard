@@ -143,6 +143,34 @@ namespace WebApi.HypermediaExtensions
                 RouteTemplate = type.GetTypeInfo().GetCustomAttribute<RouteAttribute>()?.Template;
                 Type = type;
                 Methods = methods(this).ToImmutableList();
+
+                FillControllerTokenInRouteTemplate();
+            }
+
+            private string FillControllerTokenInRouteTemplate()
+            {
+                if (string.IsNullOrWhiteSpace(RouteTemplate))
+                {
+                    return string.Empty;
+                }
+
+                if (!RouteTemplate.Contains("[controller]") && !RouteTemplate.Contains("[Controller]"))
+                {
+                    return RouteTemplate;
+                }
+
+                var controllerNameReplacement = RemoveControllerFromName(Type.Name);
+
+                return RouteTemplate.Replace("[controller]", controllerNameReplacement).Replace("[Controller]", controllerNameReplacement);
+            }
+
+            private static string RemoveControllerFromName(string controllerTypeName)
+            {
+                if (controllerTypeName.EndsWith("controller", StringComparison.OrdinalIgnoreCase))
+                {
+                    return controllerTypeName.Substring(0, controllerTypeName.LastIndexOf("controller", StringComparison.OrdinalIgnoreCase));
+                }
+                return controllerTypeName;
             }
 
             public override string ToString()
@@ -161,10 +189,7 @@ namespace WebApi.HypermediaExtensions
             {
                 RouteTemplate = ReplaceActionTokenInRouteTemplate(routeTemplate, methodName); ;
                 Parent = parent;
-
-                var filledRouteTemplate = FillControllerTokenInParentRouteTemplate(parent);
-
-                RouteTemplateFull = string.Concat(filledRouteTemplate, "/", RouteTemplate).Replace("//", "/").Replace("///", "/");
+                RouteTemplateFull = string.Concat(parent.RouteTemplate, "/", RouteTemplate).Replace("//", "/").Replace("///", "/");
             }
 
             private string ReplaceActionTokenInRouteTemplate(string routeTemplate, string methodName)
@@ -176,27 +201,6 @@ namespace WebApi.HypermediaExtensions
                 }
 
                 return routeTemplate.Replace("[action]", methodName).Replace("[Action]", methodName);
-            }
-
-            private static string FillControllerTokenInParentRouteTemplate(ControllerType parent)
-            {
-                if (!parent.RouteTemplate.Contains("[controller]") && !parent.RouteTemplate.Contains("[Controller]"))
-                {
-                    return parent.RouteTemplate;
-                }
-
-                var controllerNameReplacement = RemoveControllerFromName(parent.Type.Name);
-
-                return parent.RouteTemplate.Replace("[controller]", controllerNameReplacement).Replace("[Controller]", controllerNameReplacement);
-            }
-
-            private static string RemoveControllerFromName(string controllerTypeName)
-            {
-                if (controllerTypeName.EndsWith("controller", StringComparison.OrdinalIgnoreCase))
-                {
-                    return controllerTypeName.Substring(0, controllerTypeName.LastIndexOf("controller", StringComparison.OrdinalIgnoreCase));
-                }
-                return controllerTypeName;
             }
         }
 
