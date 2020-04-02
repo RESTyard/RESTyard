@@ -22,8 +22,8 @@
     <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
     <!--Deprecated <PackageLicenseUrl>https://github.com/bluehands/WebApiHypermediaExtensions/blob/master/LICENSE.md</PackageLicenseUrl>-->
     <RepositoryType>Git</RepositoryType>
-    <RepositoryUrl>>https://github.com/bluehands/WebApiHypermediaExtensions</RepositoryUrl>
-    <RepositoryBranch>master</RepositoryBranch>
+    <RepositoryUrl>https://github.com/bluehands/WebApiHypermediaExtensions.git</RepositoryUrl>
+    <RepositoryBranch>$(BranchName ? BranchName : master)</RepositoryBranch>
     <!--<PackageIcon>content\FunicularSwitch.png</PackageIcon>-->
 
     <!-- Package specific settings -->
