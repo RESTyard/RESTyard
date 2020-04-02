@@ -1,24 +1,45 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Web Api extensions to create REST Web services using Siren as Hypermedia format</Description>
-    <AssemblyTitle>Web Api Hypermedia Extensions</AssemblyTitle>
+    <!--<Description>Web Api extensions to create REST Web services using Siren as Hypermedia format</Description>
+    <AssemblyTitle>Web Api Hypermedia Extensions</AssemblyTitle>-->
+
+    <!--General settings-->
     <Version>1.4.1$(VersionSuffix)</Version>
-    <Authors>Mathias Reichardt</Authors>
     <TargetFramework>netstandard1.6</TargetFramework>
     <NoWarn>$(NoWarn);1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <AssemblyName>WebApi.HypermediaExtensions</AssemblyName>
-    <PackageId>WebApiHypermediaExtensionsCore</PackageId>
+    <!--<AssemblyName>WebApi.HypermediaExtensions</AssemblyName>-->
+
+    <!-- Descriptions and information-->
+    <Titel>Web Api Hypermedia Extensions</Titel>
+    <PackageDescription>Web Api extensions to create REST Web services using Siren as Hypermedia format</PackageDescription>
     <PackageTags>WebApi;REST;Siren;Hypermedia;ASP.NET Core;</PackageTags>
+    <Authors>Mathias Reichardt</Authors>
+    <Copyright>Copyright 2001-2019 Bluehands GmbH &amp; C.ommunication KG</Copyright>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/bluehands/WebApiHypermediaExtensions/blob/master/LICENSE.md</PackageLicenseUrl>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <!--Deprecated <PackageLicenseUrl>https://github.com/bluehands/WebApiHypermediaExtensions/blob/master/LICENSE.md</PackageLicenseUrl>-->
+    <RepositoryType>Git</RepositoryType>
+    <RepositoryUrl>>https://github.com/bluehands/WebApiHypermediaExtensions</RepositoryUrl>
+    <RepositoryBranch>master</RepositoryBranch>
+    <!--<PackageIcon>content\FunicularSwitch.png</PackageIcon>-->
+
+    <!-- Package specific settings -->
+    <PackageId>WebApiHypermediaExtensionsCore</PackageId>
+    <PackageVersion>$(Version)</PackageVersion>
+    <PackageReleaseNotes>Version $(Version)</PackageReleaseNotes>
+    <IsPackable>true</IsPackable>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <!--<ContentTargetFolders>content</ContentTargetFolders>-->
+    <!--<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <AssemblyVersion>1.4.0.0</AssemblyVersion>
-    <FileVersion>1.4.0.0</FileVersion>
+    <FileVersion>1.4.0.0</FileVersion>-->
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
