@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Net;
+using Bluehands.Hypermedia.MediaTypes;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using WebApi.HypermediaExtensions.ErrorHandling;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Hypermedia.Links;
@@ -52,7 +54,9 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// <returns></returns>
         public static ActionResult Problem(this Microsoft.AspNetCore.Mvc.Controller controller, ProblemJson problemJson)
         {
-            return new ObjectResult(problemJson) { StatusCode = problemJson.StatusCode };
+            var objectResult = new ObjectResult(problemJson) {StatusCode = problemJson.StatusCode};
+            objectResult.ContentTypes.Add(DefaultMediaTypes.ProblemJson);
+            return objectResult;
         }
 
         /// <summary>
