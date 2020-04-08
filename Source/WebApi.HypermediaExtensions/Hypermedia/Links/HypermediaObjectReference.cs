@@ -7,17 +7,12 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Links
     /// <summary>
     /// Reference to a HypermediaObject. Use this if you already have a HypermediaObject.
     /// </summary>
-    public class HypermediaObjectReference : HypermediaObjectReferenceBase
+    public class HypermediaObjectReference<T> : HypermediaObjectReferenceBase where T : HypermediaObject
     {
-        private readonly HypermediaObject reference;
+        private readonly T reference;
 
-        public HypermediaObjectReference(HypermediaObject hypermediaObject) : base (hypermediaObject.GetType())
+        public HypermediaObjectReference(T hypermediaObject) : base (hypermediaObject.GetType())
         {
-            if (hypermediaObject == null)
-            {
-                throw new HypermediaException("HypermediaObject is null.");
-            }
-
             this.reference = hypermediaObject;
         }
 
@@ -50,9 +45,9 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Links
             return null;
         }
 
-        public static implicit operator HypermediaObjectReference(HypermediaObject hypermediaObject)
+        public static implicit operator HypermediaObjectReference<T>(T hypermediaObject)
         {
-            return new HypermediaObjectReference(hypermediaObject);
+            return new HypermediaObjectReference<T>(hypermediaObject);
         }
     }
 }

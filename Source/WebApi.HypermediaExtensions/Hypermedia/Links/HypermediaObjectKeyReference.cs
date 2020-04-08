@@ -8,11 +8,11 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Links
     /// A reference to an <see cref="HypermediaObject"/> where the Type and (if required for the <see cref="HypermediaObject"/>) key are known.
     /// Allows to referenc an <see cref="HypermediaObject"/> without creating it for reference purpose only.
     /// </summary>
-    public class HypermediaObjectKeyReference : HypermediaObjectReferenceBase
+    public class HypermediaObjectKeyReference<T> : HypermediaObjectReferenceBase where T : HypermediaObject
     {
         private readonly object key;
 
-        public HypermediaObjectKeyReference(Type hypermediaObjectType, object key = null) : base(hypermediaObjectType)
+        public HypermediaObjectKeyReference(object key = null) : base(typeof(T))
         {
             this.key = key;
         }

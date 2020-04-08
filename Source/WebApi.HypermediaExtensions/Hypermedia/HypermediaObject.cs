@@ -63,7 +63,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia
         /// List of links to other HypermediaObjects which will be included in the formatted output.
         /// The key describes the relation to the linked HypermediaObject.
         /// </summary>
-        [FormatterIgnoreHypermediaProperty]
-        public RelationDictionary Links { get; private set; }
+        //[FormatterIgnoreHypermediaProperty]
+        //public RelationDictionary Links { get; private set; }
     }
 }

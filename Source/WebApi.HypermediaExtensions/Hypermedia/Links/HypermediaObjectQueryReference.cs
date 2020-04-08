@@ -7,11 +7,11 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Links
     /// A reference to an <see cref="IHypermediaQuery"/> where the Type and Query is known.
     /// Allows to referenc an <see cref="HypermediaQueryResult"/> without creating it for reference purpose only.
     /// </summary>
-    public class HypermediaObjectQueryReference : HypermediaObjectKeyReference
+    public class HypermediaObjectQueryReference<T> : HypermediaObjectKeyReference<T> where T : HypermediaObject
     {
         public IHypermediaQuery Query { get; }
 
-        public HypermediaObjectQueryReference(Type hypermediaObjectType, IHypermediaQuery query, object key = null) : base(hypermediaObjectType, key)
+        public HypermediaObjectQueryReference(IHypermediaQuery query, object key = null) : base(key)
         {
             Query = query;
         }
