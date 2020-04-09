@@ -1,4 +1,5 @@
-﻿using CarShack.Hypermedia.Cars;
+﻿using System.Collections.Generic;
+using CarShack.Hypermedia.Cars;
 using CarShack.Hypermedia.Customers;
 using WebApi.HypermediaExtensions.Hypermedia.Links;
 using WebApi.HypermediaExtensions.Hypermedia;
@@ -10,9 +11,22 @@ namespace CarShack.Hypermedia.EntryPoint
     public class HypermediaEntryPoint : HypermediaObject
     {
         public HypermediaEntryPoint(HypermediaCustomersRoot hypermediaCustomersRoot, HypermediaCarsRoot hypermediaCarsRoot)
-        {
-            Links.Add(HypermediaLinks.EntryPoint.CustomersRoot, new HypermediaObjectReference(hypermediaCustomersRoot));     
-            Links.Add(HypermediaLinks.EntryPoint.CarsRoot, new HypermediaObjectReference(hypermediaCarsRoot));
+        { 
+            CustomerRootReference = new HypermediaObjectReference<HypermediaCustomersRoot>(hypermediaCustomersRoot); 
+            CarsRootReference = new HypermediaObjectReference<HypermediaCarsRoot>(hypermediaCarsRoot);
         }
+
+        [Link(HypermediaLinks.EntryPoint.CustomersRoot)]
+        public HypermediaObjectReference<HypermediaCustomersRoot> CustomerRootReference { get; set; }
+
+        [Link(HypermediaLinks.EntryPoint.CarsRoot)]
+        public HypermediaObjectReference<HypermediaCarsRoot> CarsRootReference { get; set; }
+
+        [Link("HypermediaObjectKeyReference")]
+        public HypermediaObjectReferenceBase HypermediaObjectKeyReference { get; set; } = new HypermediaObjectKeyReference<HypermediaCarsRoot>();
+
+        [Link("HypermediaObjectKeyReference")] 
+        public HypermediaObjectReferenceBase BaseReference { get; set; } = new HypermediaObjectReference<HypermediaCarsRoot>(new HypermediaCarsRoot());
+
     }
 }

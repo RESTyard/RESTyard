@@ -45,21 +45,21 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
         {
             var lookupType = reference.GetHypermediaType();
 
-            // ExternalReference object is not registered in the RouteRegister and provides its own URI
-            if (typeof(ExternalReference).GetTypeInfo().IsAssignableFrom(lookupType))
-            {
-                if (!(reference.GetInstance() is ExternalReference externalReferenceObject))
-                {
-                    throw new HypermediaRouteException("Can not get instance for ExternalReference.");
-                }
+            //// ExternalReference object is not registered in the RouteRegister and provides its own URI
+            //if (typeof(ExternalReference).GetTypeInfo().IsAssignableFrom(lookupType))
+            //{
+            //    if (!(reference.GetInstance() is ExternalReference externalReferenceObject))
+            //    {
+            //        throw new HypermediaRouteException("Can not get instance for ExternalReference.");
+            //    }
 
-                return externalReferenceObject.ExternalUri.ToString();
-            }
+            //    return externalReferenceObject.ExternalUri.ToString();
+            //}
 
-            if (reference is HypermediaExternalObjectReference)
-            {
-                throw new HypermediaRouteException("Can not get instance for HypermediaExternalObjectReference.");
-            }
+            //if (reference is HypermediaExternalObjectReference)
+            //{
+            //    throw new HypermediaRouteException("Can not get instance for HypermediaExternalObjectReference.");
+            //}
 
             var routeKeys = this.routeKeyFactory.GetHypermediaRouteKeys(reference);
             return this.GetRouteByType(lookupType, routeKeys);

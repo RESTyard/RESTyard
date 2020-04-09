@@ -23,6 +23,11 @@ namespace CarShack.Hypermedia.Customers
         [HypermediaAction(Name = "CreateQuery", Title = "Query the Customers collection.")]
         public HypermediaAction<CustomerQuery> CreateQueryAction { get; private set; }
 
+        [Link("BestCustomer")]
+        public HypermediaObjectKeyReference<HypermediaCustomer> BestCustomerReference { get; set; } 
+
+        [Link("GreatSite")] public ExternalReference GreatSiteReference { get; set; }
+
         public HypermediaCustomersRoot(ICustomerRepository customerRepository)
         {
             this.customerRepository = customerRepository;
@@ -32,15 +37,15 @@ namespace CarShack.Hypermedia.Customers
 
             // Add Links:
             var allQuery = new CustomerQuery();
-            Links.Add(DefaultHypermediaRelations.Queries.All, new HypermediaObjectQueryReference(typeof(HypermediaCustomerQueryResult), allQuery));
+            //Links.Add(DefaultHypermediaRelations.Queries.All, new HypermediaObjectQueryReference(typeof(HypermediaCustomerQueryResult), allQuery));
 
             // This Link uses a reference to a HypermediaObject without actually building it. It Gives the type and the value which is used do identify the Entity.
             // The key will be used while resolving routes in the Formatter.
             // links to the HypermediaCustomer with Id = 1
-            Links.Add("BestCustomer", new HypermediaObjectKeyReference(typeof(HypermediaCustomer), 1));
+            BestCustomerReference = new HypermediaObjectKeyReference<HypermediaCustomer>(1);
 
             // Workaround in case a external reference is needed which can not be build by the framework
-            Links.Add("GreatSite", new ExternalReference(new Uri("http://www.example.com/")));
+            GreatSiteReference = new ExternalReference(new Uri("http://www.example.com/"));
         }
 
         // Will be called to determine if tis action is available at the moment/current state.

@@ -27,9 +27,9 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Extensions
         /// <param name="entitiesList">Entities List.</param>
         /// <param name="relations">Relations for the Entities.</param>
         /// <param name="entities">The added Entities.</param>
-        public static void AddRange(this List<RelatedEntity> entitiesList, List<string> relations, IEnumerable<HypermediaObject> entities)
+        public static void AddRange<T>(this List<RelatedEntity> entitiesList, List<string> relations, IEnumerable<T> entities) where T: HypermediaObject
         {
-            entitiesList.AddRange(entities.Select(entity => new RelatedEntity(relations, new HypermediaObjectReference(entity))));
+            entitiesList.AddRange(entities.Select(entity => new RelatedEntity(relations, new HypermediaObjectReference<T>(entity))));
         }
 
         /// <summary>
@@ -49,9 +49,9 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Extensions
         /// <param name="entitiesList">Entities List.</param>
         /// <param name="relation">Relation for the Entities.</param>
         /// <param name="entities">The added Entities.</param>
-        public static void AddRange(this List<RelatedEntity> entitiesList, string relation, IEnumerable<HypermediaObject> entities)
+        public static void AddRange<T>(this List<RelatedEntity> entitiesList, string relation, IEnumerable<T> entities) where T : HypermediaObject
         {
-            entitiesList.AddRange(entities.Select(entity => new RelatedEntity(relation, new HypermediaObjectReference(entity))));
+            entitiesList.AddRange(entities.Select(entity => new RelatedEntity(relation, new HypermediaObjectReference<T>(entity))));
         }
 
         /// <summary>
@@ -71,9 +71,9 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Extensions
         /// <param name="entitiesList">Entities List.</param>
         /// <param name="relation">Relation for the Entity.</param>
         /// <param name="entity">The added Entity.</param>
-        public static void Add(this List<RelatedEntity> entitiesList, string relation, HypermediaObject entity)
+        public static void Add<T>(this List<RelatedEntity> entitiesList, string relation, T entity) where T : HypermediaObject
         {
-            entitiesList.Add(new RelatedEntity(relation, new HypermediaObjectReference(entity)));
+            entitiesList.Add(new RelatedEntity(relation, new HypermediaObjectReference<T>(entity)));
         }
 
         /// <summary>
@@ -93,9 +93,9 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Extensions
         /// <param name="entitiesList">Entities List.</param>
         /// <param name="relations">Relations for the Entity.</param>
         /// <param name="entity">The added Entity.</param>
-        public static void Add(this List<RelatedEntity> entitiesList, List<string> relations, HypermediaObject entity)
+        public static void Add<T>(this List<RelatedEntity> entitiesList, List<string> relations, T entity) where T : HypermediaObject
         {
-            entitiesList.Add(new RelatedEntity(relations, new HypermediaObjectReference(entity)));
+            entitiesList.Add(new RelatedEntity(relations, new HypermediaObjectReference<T>(entity)));
         }
 
         /// <summary>

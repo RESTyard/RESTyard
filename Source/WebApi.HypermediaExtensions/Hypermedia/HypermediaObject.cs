@@ -33,7 +33,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia
 
             if (hasSelfLink)
             {
-                Links.Add(DefaultHypermediaRelations.Self, new HypermediaObjectReference(this));
+                SelfReference = new HypermediaObjectReference<HypermediaObject>(this);
             }
         }
 
@@ -44,13 +44,14 @@ namespace WebApi.HypermediaExtensions.Hypermedia
         {
             Init();
             // hypemedia object is a queryresult so it needs a selflink with query
-            Links.Add(DefaultHypermediaRelations.Self, new HypermediaObjectQueryReference(GetType(), query));
+
+           // SelfQueryReference = new HypermediaObjectQueryReference<HypermediaObject>(query);
         }
 
         private void Init()
         {
             Entities = new List<RelatedEntity>();
-            Links = new RelationDictionary();
+            // Links = new RelationDictionary();
         }
 
         /// <summary>
@@ -58,6 +59,12 @@ namespace WebApi.HypermediaExtensions.Hypermedia
         /// </summary>
         [FormatterIgnoreHypermediaProperty]
         public List<RelatedEntity> Entities { get; set; }
+
+        [Link(DefaultHypermediaRelations.Self)]
+        public HypermediaObjectReference<HypermediaObject> SelfReference { get; set; }
+
+//        [Link(DefaultHypermediaRelations.Self)]
+        //public HypermediaObjectQueryReference<HypermediaObject> SelfQueryReference { get; set; }
 
         /// <summary>
         /// List of links to other HypermediaObjects which will be included in the formatted output.

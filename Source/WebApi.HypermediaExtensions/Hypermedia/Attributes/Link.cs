@@ -12,7 +12,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Attributes
             Relations.Add(relation);
         }
 
-        public Link(List<string> relations)
+        public Link( params string[] relations)
         {
             Relations.AddRange(relations);
         }

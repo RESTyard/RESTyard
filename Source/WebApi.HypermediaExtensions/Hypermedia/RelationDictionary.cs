@@ -54,9 +54,9 @@ namespace WebApi.HypermediaExtensions.Hypermedia
         /// </summary>
         /// <param name="relation">The relations to use</param>
         /// <param name="reference">To be added.</param>
-        public void Add(string relation, HypermediaObject reference)
+        public void Add<T>(string relation, T reference) where T: HypermediaObject
         {
-            var relatedEntity = new RelatedEntity(relation, new HypermediaObjectReference(reference));
+            var relatedEntity = new RelatedEntity(relation, new HypermediaObjectReference<T>(reference));
             Add(relatedEntity);
         }
 
@@ -66,9 +66,9 @@ namespace WebApi.HypermediaExtensions.Hypermedia
         /// </summary>
         /// <param name="relations">The relations to use</param>
         /// <param name="reference">To be added.</param>
-        public void Add(List<string> relations, HypermediaObject reference)
+        public void Add<T>(List<string> relations, T reference) where T : HypermediaObject
         {
-            var relatedEntity = new RelatedEntity(relations, new HypermediaObjectReference(reference));
+            var relatedEntity = new RelatedEntity(relations, new HypermediaObjectReference<T>(reference));
             Add(relatedEntity);
         }
     }

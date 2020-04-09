@@ -32,7 +32,7 @@ namespace CarShack.Controllers.Customers
             return Ok(customersRoot);
         }
 
-        // Building Queries using the CreateQuery will link to this route.
+         //Building Queries using the CreateQuery will link to this route.
         [HttpGetHypermediaObject("Query", typeof(HypermediaCustomerQueryResult))]
         public async Task<ActionResult> Query([FromQuery] CustomerQuery query)
         {
@@ -45,7 +45,7 @@ namespace CarShack.Controllers.Customers
             var resultReferences = new List<HypermediaObjectReferenceBase>();
             foreach (var customer in queryResult.Entities)
             {
-                resultReferences.Add(new HypermediaObjectReference(new HypermediaCustomer(customer)));
+                resultReferences.Add(new HypermediaObjectReference<HypermediaCustomer>(new HypermediaCustomer(customer)));
             }
 
             var result = new HypermediaCustomerQueryResult(resultReferences, queryResult.TotalCountOfEnties, query);

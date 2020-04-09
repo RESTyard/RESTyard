@@ -18,9 +18,9 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// <param name="controller"></param>
         /// <param name="hypermediaObject">The created HypermediaObject</param>
         /// <returns></returns>
-        public static ActionResult Created(this Microsoft.AspNetCore.Mvc.Controller controller, HypermediaObject hypermediaObject)
+        public static ActionResult Created<T>(this Microsoft.AspNetCore.Mvc.Controller controller, T hypermediaObject) where T: HypermediaObject
         {
-            return controller.Ok(new HypermediaEntityLocation(new HypermediaObjectReference(hypermediaObject), HttpStatusCode.Created));
+            return controller.Ok(new HypermediaEntityLocation(new HypermediaObjectReference<T>(hypermediaObject), HttpStatusCode.Created));
         }
 
         /// <summary>

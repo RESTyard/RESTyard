@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Bluehands.Hypermedia.MediaTypes;
 using Newtonsoft.Json.Linq;
+using NJsonSchema.Infrastructure;
 using WebApi.HypermediaExtensions.Exceptions;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
@@ -222,24 +223,40 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
         }
 
         private void AddLinks(HypermediaObject hypermediaObject, JObject sirenJson)
-        {
-            var hypermediaLinks = hypermediaObject.Links;
-            var jLinks = new JArray();
+        { 
+            var referenceInfos = hypermediaObject.GetType().GetProperties(BindingFlags.Public)
+                .Where(p => p.GetCustomAttribute<Link>() != null);
 
-            foreach (var hypermediaLink in hypermediaLinks)
+            foreach (var referenceInfo in referenceInfos)
+            {
+                var propertyType = referenceInfo.PropertyType;
+
+                if (propertyType == typeof(Uri))
+                {
+
+                }
+                else if (propertyType == typeof(HypermediaObjectReferenceBase))
+                {
+
+                }
+            }
+
+            var jLinks = new JArray();
+            foreach (var referenceInfo in referenceInfos)
             {
                 var jLink = new JObject();
-
-                var jRel = new JArray { hypermediaLink.Key };
+                var jRel = new JArray { referenceInfo.GetCustomAttribute<Link>().Relations };
                 jLink.Add("rel", jRel);
-
-                var resolvedAdress = ResolveReferenceRoute(hypermediaLink.Value.Reference);
-
-                jLink.Add("href", resolvedAdress);
+                // @todo catch ExternalRefences before resolve route
+                var referenceBase = hypermediaObject.TryGetPropertyValue<HypermediaObjectReferenceBase>(referenceInfo.Name);
+                if (referenceBase != null)
+                {
+                    var resolvedReferenceRoute = ResolveReferenceRoute(referenceBase);
+                    jLink.Add("href", resolvedReferenceRoute);
+                }
 
                 jLinks.Add(jLink);
             }
-
             sirenJson.Add("links", jLinks);
         }
 

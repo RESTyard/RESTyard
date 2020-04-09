@@ -9,10 +9,9 @@ namespace WebApi.HypermediaExtensions.Hypermedia
     /// must be provided which can not be resolved by the framework. It can only be used
     /// in combination with <see cref="HypermediaObjectReference"/>
     /// </summary>
-    [HypermediaObject(Classes = new[] { "External" })]
-    public class ExternalReference : HypermediaObject
+    public class ExternalReference
     {
-        public ExternalReference(Uri externalUri) : base(false)
+        public ExternalReference(Uri externalUri)
         {
             ExternalUri = externalUri;
         }

@@ -12,6 +12,7 @@
         [FormatterIgnoreHypermediaProperty]
         public IHypermediaQuery Query { get; }
 
+
         /// <summary>
         /// Base class for query results.
         /// </summary>
@@ -30,7 +31,7 @@
         {
             foreach (var navigationQuery in navigationQueries.Queries)
             {
-                Links.Add(navigationQuery.Key, new HypermediaObjectQueryReference(GetType(), navigationQuery.Value));
+                //Links.Add(navigationQuery.Key, new HypermediaObjectQueryReference<HypermediaQueryResult>(navigationQuery.Value));
             }
         }
     }

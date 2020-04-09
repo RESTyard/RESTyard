@@ -10,14 +10,20 @@ namespace CarShack.Hypermedia.Cars
         public HypermediaCarsRoot()
         {
             // added as instance
-            Links.Add("NiceCar", new HypermediaObjectReference(new HypermediaCar("VW", 2)));
+            NiceCarReference = new HypermediaObjectReference<HypermediaCar>(new HypermediaCar("VW", 2));
 
             // added as type reference with key object
-            Links.Add("SuperCar", new HypermediaObjectKeyReference(typeof(HypermediaCar), new { brand = "Porsche", key = 5 }));
+            SuperCarReference = new HypermediaObjectKeyReference<HypermediaCar>(new { brand = "Porsche", key = 5 });
 
             // Add object with no corresponding route. This will throw an exception if serialized
             // or a default route if HypermediaExtensionsOptions.ReturnDefaultRouteForUnknownHto is set to true
-            // Links.Add("Truck", new HypermediaObjectReference(new HypermediaTruck("Daimler", 11)));
+            // Links.Add("Truck", new SelfQueryReference(new HypermediaTruck("Daimler", 11)));
         }
+
+        [Link("NiceCar")]
+        public HypermediaObjectReference<HypermediaCar> NiceCarReference { get; set; }
+
+        [Link("SuperCar")]
+        public HypermediaObjectKeyReference<HypermediaCar> SuperCarReference { get; set; }
     }
 }
