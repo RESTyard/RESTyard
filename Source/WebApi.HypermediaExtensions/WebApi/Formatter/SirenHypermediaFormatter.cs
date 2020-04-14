@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using WebApi.HypermediaExtensions.Exceptions;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.WebApi.RouteResolver;
+using WebApi.HypermediaExtensions.WebApi.Siren;
 
 namespace WebApi.HypermediaExtensions.WebApi.Formatter
 {
@@ -51,6 +52,10 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             {
                 throw new HypermediaFormatterException("Formatter expected a HypermediaObject but is not.");
             }
+
+            var modelFactory = new ModelFactory();
+            var siren = modelFactory.Create(hypermediaObject);
+            siren.ToString();
 
             // context influences how routes are resolved
             var routeResolver = CreateRouteResolver(context);
