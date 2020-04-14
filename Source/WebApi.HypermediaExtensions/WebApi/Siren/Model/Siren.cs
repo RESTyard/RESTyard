@@ -12,6 +12,8 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren.Model
         public List<SirenProperty> SirenProperties { get; set; }
 
         public List<SirenLink> SirenLinks { get; set; }
+
+        public List<SirenAction> SirenActions { get; set; }
         
     }
 }

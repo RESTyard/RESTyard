@@ -5,9 +5,6 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren.Model
     public class SirenProperty
     {
 
-        public string AsPropertyName { get; private set; }
-        public PropertyInfo PropertyInfo { get; private set; }
-
         public SirenProperty(PropertyInfo propertyInfo)
         {
             PropertyInfo = propertyInfo;
@@ -18,6 +15,9 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren.Model
             PropertyInfo = propertyInfo;
             AsPropertyName = asPropertyName;
         }
-        
+
+        public string AsPropertyName { get; private set; }
+        public PropertyInfo PropertyInfo { get; private set; }
+
     }
 }

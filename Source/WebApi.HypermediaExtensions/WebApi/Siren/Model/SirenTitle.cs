@@ -2,9 +2,9 @@
 {
     public class SirenTitle
     {
-        public SirenTitle(string description)
+        public SirenTitle(string description = "")
         {
-            Description = description;
+            Description = string.IsNullOrEmpty(description) ? string.Empty: description;
         }
 
         public string Description { get; private set; }

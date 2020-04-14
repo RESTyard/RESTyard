@@ -37,6 +37,12 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren
             return HypermediaProperties.Where(hp => !hp.LeadingHypermediaAttribute.HasValue || hp.LeadingHypermediaAttribute.Value is HypermediaPropertyAttribute).ToList();
         }
 
+        public List<HypermediaProperty> GetActions()
+        {
+            return HypermediaProperties.Where(hp =>
+                hp.LeadingHypermediaAttribute.HasValue & hp.LeadingHypermediaAttribute.Value is HypermediaActionAttribute).ToList();
+        }
+
         private List<HypermediaProperty> ExtractHypermediaProperties()
         {
             return HypermediaObjectType.GetProperties().Select(p =>
