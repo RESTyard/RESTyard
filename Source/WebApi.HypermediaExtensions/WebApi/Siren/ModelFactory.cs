@@ -20,11 +20,11 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren
         {
             var reflection = new HypermediaObjectReflection(hypermediaObject);
             return new Siren() { 
-                SirenTitle = this.CreateSirenTitle(reflection.GetHypermediaObjectAttribute()),
-                SirenClasses = this.CreateSirenClasses(reflection.GetHypermediaObjectAttribute(), reflection.HypermediaObjectType),
-                SirenProperties = this.CreateSirenProperties(reflection.GetProperties()),
-                SirenLinks = this.CreateSirenLinks(reflection.GetLinks()),
-                SirenActions = this.CreateSirenActions(reflection.GetActions())
+                SirenTitle = this.CreateSirenTitle(reflection.HypermediaObjectAttribute),
+                SirenClasses = this.CreateSirenClasses(reflection.HypermediaObjectAttribute, reflection.HypermediaObjectType),
+                SirenProperties = this.CreateSirenProperties(reflection.Properties),
+                SirenLinks = this.CreateSirenLinks(reflection.Links),
+                SirenActions = this.CreateSirenActions(reflection.Actions)
             };
         }
 
@@ -47,7 +47,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren
             return sirenClasses;
         }
 
-        private List<SirenProperty> CreateSirenProperties(IEnumerable<HypermediaProperty> hypermediaProperty)
+        private List<SirenProperty> CreateSirenProperties(IEnumerable<ReflectedHypermediaProperty> hypermediaProperty)
         {
             return hypermediaProperty.Select(hp => 
                 !hp.LeadingHypermediaAttribute.HasValue 
@@ -56,18 +56,18 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren
                 .ToList();
         }
 
-        private List<SirenLink> CreateSirenLinks(IEnumerable<HypermediaProperty> hypermediaProperty)
+        private List<SirenLink> CreateSirenLinks(IEnumerable<ReflectedHypermediaProperty> hypermediaProperty)
         {
             return hypermediaProperty.Select(hp => 
                 new SirenLink(
                     (hp.LeadingHypermediaAttribute.Value as Link)?.Relations.Select(r => new SirenRelation(r)).ToList(),
                     hp.PropertyInfo, 
                     hp.PropertyInfo.GetType().IsAssignableFrom(typeof(HypermediaObjectReferenceBase)),
-                    new SirenTitle())) // attribute needs title too
+                    null)) // attribute needs title too
                 .ToList();
         }
 
-        private List<SirenAction> CreateSirenActions(IEnumerable<HypermediaProperty> hypermediaProperty)
+        private List<SirenAction> CreateSirenActions(IEnumerable<ReflectedHypermediaProperty> hypermediaProperty)
         {
             return hypermediaProperty.Select(hp =>
             {

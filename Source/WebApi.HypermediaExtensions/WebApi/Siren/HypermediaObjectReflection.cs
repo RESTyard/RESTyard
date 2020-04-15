@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
 using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 using WebApi.HypermediaExtensions.Util;
@@ -13,37 +12,54 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren
     {
         public Type HypermediaObjectType { get; }
 
-        public List<HypermediaProperty> HypermediaProperties { get; set; }
+        public HypermediaObjectAttribute HypermediaObjectAttribute { get; private set; }
+
+        public List<ReflectedHypermediaProperty> Links { get; private set; }
+
+        public List<ReflectedHypermediaProperty> Properties { get; private set; }
+
+        public List<ReflectedHypermediaProperty> Actions { get; private set; }
+
+        public List<ReflectedHypermediaProperty> Entities { get; private set; }
 
         public HypermediaObjectReflection(object hypermediaObjectType)
         {
             HypermediaObjectType = hypermediaObjectType.GetType();
-            HypermediaProperties = ExtractHypermediaProperties();
+            HypermediaObjectAttribute = GetHypermediaObjectAttribute();
+
+            var hypermediaProperties = ExtractHypermediaProperties();
+
+            Links = GetLinks(hypermediaProperties);
+            Properties = GetProperties(hypermediaProperties);
+            Actions = GetActions(hypermediaProperties);
         }
 
-        public HypermediaObjectAttribute GetHypermediaObjectAttribute()
+        private HypermediaObjectAttribute GetHypermediaObjectAttribute()
         {
             return HypermediaObjectType.GetTypeInfo().GetCustomAttribute<HypermediaObjectAttribute>();
         }
 
-        public List<HypermediaProperty> GetLinks()
+        private List<ReflectedHypermediaProperty> GetLinks(List<ReflectedHypermediaProperty> hypermediaProperties)
         {
-            return HypermediaProperties.Where(hp =>
-                hp.LeadingHypermediaAttribute.HasValue & hp.LeadingHypermediaAttribute.Value is Link).ToList();
+            var links = hypermediaProperties.Where(hp =>
+                hp.LeadingHypermediaAttribute.HasValue && hp.LeadingHypermediaAttribute.Value is Link).ToList();
+            links.Select(l =>
+                (l.LeadingHypermediaAttribute.Value as Link).BaseTypes.Contains(l.PropertyInfo.PropertyType));
+            return links;
         }
 
-        public List<HypermediaProperty> GetProperties()
+        private List<ReflectedHypermediaProperty> GetProperties(List<ReflectedHypermediaProperty> hypermediaProperties)
         {
-            return HypermediaProperties.Where(hp => !hp.LeadingHypermediaAttribute.HasValue || hp.LeadingHypermediaAttribute.Value is HypermediaPropertyAttribute).ToList();
+            return hypermediaProperties.Where(hp => !hp.LeadingHypermediaAttribute.HasValue || hp.LeadingHypermediaAttribute.Value is HypermediaPropertyAttribute).ToList();
         }
 
-        public List<HypermediaProperty> GetActions()
+        private List<ReflectedHypermediaProperty> GetActions(List<ReflectedHypermediaProperty> hypermediaProperties)
         {
-            return HypermediaProperties.Where(hp =>
-                hp.LeadingHypermediaAttribute.HasValue & hp.LeadingHypermediaAttribute.Value is HypermediaActionAttribute).ToList();
+            return hypermediaProperties.Where(hp =>
+                hp.LeadingHypermediaAttribute.HasValue && hp.LeadingHypermediaAttribute.Value is HypermediaActionAttribute).ToList();
         }
 
-        private List<HypermediaProperty> ExtractHypermediaProperties()
+        private List<ReflectedHypermediaProperty> ExtractHypermediaProperties()
         {
             return HypermediaObjectType.GetProperties().Select(p =>
             {
@@ -51,27 +67,31 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren
             }).ToList();
         }
 
-        private static HypermediaProperty ExtractHypermediaProperty(PropertyInfo p)
+        private static ReflectedHypermediaProperty ExtractHypermediaProperty(PropertyInfo p)
         {
             var customAttributes = p.GetCustomAttributes().ToList();
-            if (!customAttributes.Any()) return new HypermediaProperty(p);
+            if (!customAttributes.Any()) return new ReflectedHypermediaProperty(p);
             var leadingHypermediaAttribute = customAttributes.SingleOrDefault(a => a is LeadingHypermediaAttribute);
-            return new HypermediaProperty(p, leadingHypermediaAttribute);
+            return new ReflectedHypermediaProperty(p, leadingHypermediaAttribute);
         }
     }
 
-    public class HypermediaProperty
+    public class ReflectedHypermediaProperty
     {
-        public HypermediaProperty(PropertyInfo propertyInfo)
+        public ReflectedHypermediaProperty(PropertyInfo propertyInfo)
         {
             PropertyInfo = propertyInfo;
+            IsOrdinaryProperty = true;
         }
 
-        public HypermediaProperty(PropertyInfo propertyInfo, Attribute leadingHypermediaAttribute)
+        public ReflectedHypermediaProperty(PropertyInfo propertyInfo, Attribute leadingHypermediaAttribute)
         {
             PropertyInfo = propertyInfo;
             LeadingHypermediaAttribute = leadingHypermediaAttribute;
+            IsOrdinaryProperty = false;
         }
+
+        public bool IsOrdinaryProperty { get; private set; }
         public PropertyInfo PropertyInfo { get; set; }
         public Optional<Attribute> LeadingHypermediaAttribute { get; set; }
 

@@ -11,7 +11,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Links
     {
         private readonly T reference;
 
-        public HypermediaObjectReference(T hypermediaObject) : base (hypermediaObject.GetType())
+        public HypermediaObjectReference(T hypermediaObject) : base (typeof(T))
         {
             this.reference = hypermediaObject;
         }
