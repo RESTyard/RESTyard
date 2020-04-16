@@ -17,10 +17,10 @@ namespace CarShack.Hypermedia.Customers
         // Add actions:
         // Each ActionType must be unique and a corresponding route must exist so the formatter can look it up.
         // See the CustomersRootController.
-        [HypermediaAction(Name = "CreateCustomer", Title = "Request creation of a new Customer.")]
+        [WebApi.HypermediaExtensions.Hypermedia.Attributes.Action(Name = "CreateCustomer", Title = "Request creation of a new Customer.")]
         public HypermediaFunction<CreateCustomerParameters, Task<Customer>> CreateCustomerAction { get; private set; }
 
-        [HypermediaAction(Name = "CreateQuery", Title = "Query the Customers collection.")]
+        [WebApi.HypermediaExtensions.Hypermedia.Attributes.Action(Name = "CreateQuery", Title = "Query the Customers collection.")]
         public HypermediaAction<CustomerQuery> CreateQueryAction { get; private set; }
 
         [Link("BestCustomer")]

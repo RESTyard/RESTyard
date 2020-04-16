@@ -42,10 +42,10 @@ namespace CarShack.Hypermedia.Cars
         public string Name { get; set; }
 
         // object properties can be attributed
-        [HypermediaProperty(Name = "Population")]
+        [Property(Name = "Population")]
         public int EstimatedPopulation { get; set; }
 
-        [FormatterIgnoreHypermediaProperty]
+        [FormatterIgnore]
         public string LanguageCode { get; set; }
     }
 }

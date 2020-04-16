@@ -25,6 +25,7 @@ namespace CarShack.Hypermedia.EntryPoint
         [Link("HypermediaObjectKeyReference")]
         public HypermediaObjectReferenceBase HypermediaObjectKeyReference { get; set; } = new HypermediaObjectKeyReference<HypermediaCarsRoot>();
 
+        [Entity()]
         [Link("HypermediaObjectKeyReference")] 
         public HypermediaObjectReferenceBase BaseReference { get; set; } = new HypermediaObjectReference<HypermediaCarsRoot>(new HypermediaCarsRoot());
 

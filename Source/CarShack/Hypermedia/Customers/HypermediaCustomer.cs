@@ -14,21 +14,21 @@ namespace CarShack.Hypermedia.Customers
         // Add actions:
         // Each ActionType must be unique and a corresponding route must exist so the formatter can look it up.
         // See the CustomerController.
-        [HypermediaAction(Name = "CustomerMove", Title = "A Customer moved to a new location.")]
+        [Action(Name = "CustomerMove", Title = "A Customer moved to a new location.")]
         public HypermediaActionCustomerMoveAction MoveAction { get; private set; }
 
-        [HypermediaAction(Title = "Marks a Customer as a favorite buyer.")]
+        [Action(Title = "Marks a Customer as a favorite buyer.")]
         public HypermediaActionCustomerMarkAsFavorite MarkAsFavoriteAction { get; private set; }
 
-        [HypermediaAction(Title = "Buy a car.")]
+        [Action(Title = "Buy a car.")]
         public HypermediaActionCustomerBuysCar BuyCarAction { get; private set; } = new HypermediaActionCustomerBuysCar();
 
         // Hides the Property so it will not be pressent in the Hypermedia.
-        [FormatterIgnoreHypermediaProperty]
+        [FormatterIgnore]
         public int Id { get; set; }
 
         // Assigns an alternative name, so this stays constant even if property is renamed
-        [HypermediaProperty(Name = "FullName")]
+        [Property(Name = "FullName")]
         public string Name { get; set; }
         
         public int Age { get; set; }

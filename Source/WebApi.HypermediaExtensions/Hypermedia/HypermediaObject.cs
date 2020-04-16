@@ -11,16 +11,16 @@ namespace WebApi.HypermediaExtensions.Hypermedia
     /// Base class for all HypermediaObjects. Can be attributed with a <see cref="HypermediaObjectAttribute" /> to provide classes and a title.
     /// 
     /// Public properties: will be included in the formatted Hypermedia. The value will be determined by calling ToString().
-    /// A property can be anottated by <see cref="HypermediaPropertyAttribute" /> to give it another name in the output.
-    /// If a Property shall not be included add <see cref="FormatterIgnoreHypermediaPropertyAttribute" />.
+    /// A property can be anottated by <see cref="Property" /> to give it another name in the output.
+    /// If a Property shall not be included add <see cref="FormatterIgnore" />.
     /// 
     /// Actions: Properties which are HypermediaActions will be formatted as "Actions".
     /// Derive from <see cref="HypermediaAction"/> or use a generic <see cref="HypermediaAction{T}" />.
     /// The resulting Type must be unique and a matching attributed route must be provided.
     /// 
     /// Formatters may choose not to serialize actions which return CanExecute() == false.
-    /// Can be annotated by <see cref="HypermediaActionAttribute" /> to give it a fixed name and title for formatters
-    /// If you do not wish a serialization use <see cref="FormatterIgnoreHypermediaPropertyAttribute" />
+    /// Can be annotated by <see cref="Action" /> to give it a fixed name and title for formatters
+    /// If you do not wish a serialization use <see cref="FormatterIgnore" />
     /// </summary>
     public abstract class HypermediaObject
     {
@@ -57,7 +57,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia
         /// <summary>
         /// List of embedded or linked entities which will be included in the formatted output.
         /// </summary>
-        [FormatterIgnoreHypermediaProperty]
+        [FormatterIgnore]
         public List<RelatedEntity> Entities { get; set; }
 
         [Link(DefaultHypermediaRelations.Self)]

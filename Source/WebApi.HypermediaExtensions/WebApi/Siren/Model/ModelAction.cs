@@ -3,16 +3,16 @@ using System.Reflection;
 
 namespace WebApi.HypermediaExtensions.WebApi.Siren.Model
 {
-    public class SirenAction
+    public class ModelAction
     {
 
-        public SirenAction(PropertyInfo propertyInfo)
+        public ModelAction(PropertyInfo propertyInfo)
         {
             PropertyInfo = propertyInfo;
             AsPropertyName = propertyInfo.Name;
         }
 
-        public SirenAction(PropertyInfo propertyInfo, SirenTitle title = null, string asPropertyName = "")
+        public ModelAction(PropertyInfo propertyInfo, ModelTitle title = null, string asPropertyName = "")
         {
             PropertyInfo = propertyInfo;
             Title = title;
@@ -21,7 +21,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren.Model
 
         public string AsPropertyName { get; private set; }
 
-        public SirenTitle Title { get; private set; }   
+        public ModelTitle Title { get; private set; }   
 
         public PropertyInfo PropertyInfo { get; private set; }
     }

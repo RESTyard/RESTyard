@@ -2,7 +2,8 @@
 
 namespace WebApi.HypermediaExtensions.Hypermedia.Attributes
 {
-    public class LeadingHypermediaAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Property)]
+    public sealed class Entity : Primary
     {
         
     }

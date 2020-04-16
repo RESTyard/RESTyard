@@ -1,8 +1,8 @@
 ﻿namespace WebApi.HypermediaExtensions.WebApi.Siren.Model
 {
-    public class SirenClass
+    public class ModelClass
     {
-        public SirenClass(string typeName)
+        public ModelClass(string typeName)
         {
             TypeName = typeName;
         }

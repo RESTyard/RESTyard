@@ -5,7 +5,7 @@
     <AssemblyTitle>Web Api Hypermedia Extensions</AssemblyTitle>
     <Version>1.4.1$(VersionSuffix)</Version>
     <Authors>Mathias Reichardt</Authors>
-    <TargetFramework>netstandard1.6</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>WebApi.HypermediaExtensions</AssemblyName>
@@ -32,6 +32,7 @@
   <ItemGroup>
     <PackageReference Include="Bluehands.Hypermedia.MediaTypes" Version="0.1.0" />
     <PackageReference Include="Bluehands.Hypermedia.Relations" Version="0.1.0" />
+    <PackageReference Include="FunicularSwitch" Version="1.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.7" />
     <PackageReference Include="NJsonSchema" Version="9.10.50" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />

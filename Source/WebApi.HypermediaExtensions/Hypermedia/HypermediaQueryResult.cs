@@ -9,7 +9,7 @@
     /// </summary>
     public abstract class HypermediaQueryResult : HypermediaObject 
     {
-        [FormatterIgnoreHypermediaProperty]
+        [FormatterIgnore]
         public IHypermediaQuery Query { get; }
 
 

@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
 using WebApi.HypermediaExtensions.Hypermedia.Attributes;
+using Action = System.Action;
 
 namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
 {
@@ -114,12 +115,12 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
 
         public class ActionsHypermediaObject : HypermediaObject
         {
-            [FormatterIgnoreHypermediaProperty]
+            [FormatterIgnore]
             public HypermediaActionNoArgument ActionToIgnore { get; private set; }         // should not be in siren
 
             public HypermediaActionNotExecutable ActionNotExecutable { get; private set; } // should not be in siren
 
-            [HypermediaAction(Name = "RenamedAction", Title = "A Title")]
+            [HypermediaExtensions.Hypermedia.Attributes.Action(Name = "RenamedAction", Title = "A Title")]
             public HypermediaActionNoArgument ActionToRename { get; private set; }
 
             public HypermediaActionNoArgument ActionNoArgument { get; private set; }
@@ -130,22 +131,22 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
 
             public HypermediaFunctionNoArgument FunctionNoArgument { get; private set; }
 
-            [FormatterIgnoreHypermediaProperty]
+            [FormatterIgnore]
             public int ActionToRenameCallCount { get; set; }
 
-            [FormatterIgnoreHypermediaProperty]
+            [FormatterIgnore]
             public int ActionToIgnoreCallCount { get; set; }
 
-            [FormatterIgnoreHypermediaProperty]
+            [FormatterIgnore]
             public int ActionNotExecutableCallCount { get; set; }
 
-            [FormatterIgnoreHypermediaProperty]
+            [FormatterIgnore]
             public int ActionNoArgumentCallCount { get; set; }
 
-            [FormatterIgnoreHypermediaProperty]
+            [FormatterIgnore]
             public int ActionWithArgumentCallCount { get; set; }
 
-            [FormatterIgnoreHypermediaProperty]
+            [FormatterIgnore]
             public int ActionWithTypedArgumentCallCount { get; set; }
 
             public ActionsHypermediaObject()

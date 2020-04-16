@@ -17,10 +17,10 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
 
     public class PropertyDuplicateHypermediaObject : HypermediaObject
     {
-        [HypermediaProperty(Name = "DuplicateRename")]
+        [Property(Name = "DuplicateRename")]
         public bool Property1 { get; set; }
 
-        [HypermediaProperty(Name = "DuplicateRename")]
+        [Property(Name = "DuplicateRename")]
         public bool Property2 { get; set; }
     }
 
@@ -31,13 +31,13 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
 
     public class AttributedPropertyHypermediaObject : HypermediaObject
     {
-        [HypermediaProperty(Name = "Property1Renamed")]
+        [Property(Name = "Property1Renamed")]
         public bool Property1 { get; set; }
 
-        [HypermediaProperty(Name = "Property2Renamed")]
+        [Property(Name = "Property2Renamed")]
         public bool Property2 { get; set; }
 
-        [FormatterIgnoreHypermediaProperty]
+        [FormatterIgnore]
         public bool IgnoredProperty { get; set; }
 
         public bool NotRenamed { get; set; }

@@ -4,7 +4,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Attributes
 {
     // default propperty formatting should not contain annotated properties
     [AttributeUsage(AttributeTargets.Property)]
-    public sealed class FormatterIgnoreHypermediaPropertyAttribute : LeadingHypermediaAttribute
+    public sealed class FormatterIgnore : Primary
     {
     }
 }

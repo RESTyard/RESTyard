@@ -3,9 +3,9 @@ using System.Reflection;
 
 namespace WebApi.HypermediaExtensions.WebApi.Siren.Model
 {
-    public class SirenLink
+    public class ModelLink
     {
-        public SirenLink(List<SirenRelation> relations, PropertyInfo propertyInfo, bool isExternal, SirenTitle title)
+        public ModelLink(List<ModelRelation> relations, PropertyInfo propertyInfo, bool isExternal, ModelTitle title)
         {
             Relations = relations;
             PropertyInfo = propertyInfo;
@@ -13,9 +13,9 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren.Model
             Title = title;
         }
 
-        public SirenTitle Title { get; private set; }
+        public ModelTitle Title { get; private set; }
 
-        public List<SirenRelation> Relations { get; private set; }
+        public List<ModelRelation> Relations { get; private set; }
 
         public PropertyInfo PropertyInfo { get; private set; }
 

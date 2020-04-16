@@ -1,8 +1,8 @@
 ﻿namespace WebApi.HypermediaExtensions.WebApi.Siren.Model
 {
-    public class SirenTitle
+    public class ModelTitle
     {
-        public SirenTitle(string description = "")
+        public ModelTitle(string description = "")
         {
             Description = string.IsNullOrEmpty(description) ? string.Empty: description;
         }

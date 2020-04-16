@@ -1,8 +1,8 @@
 ﻿namespace WebApi.HypermediaExtensions.WebApi.Siren.Model
 {
-    public class SirenRelation
+    public class ModelRelation
     {
-        public SirenRelation(string target)
+        public ModelRelation(string target)
         {
             Target = target;
         }
