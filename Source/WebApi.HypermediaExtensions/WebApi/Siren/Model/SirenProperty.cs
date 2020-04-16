@@ -8,15 +8,15 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren.Model
         public SirenProperty(PropertyInfo propertyInfo)
         {
             PropertyInfo = propertyInfo;
-            AsPropertyName = propertyInfo.Name;
+            SerializationName = propertyInfo.Name;
         }
-        public SirenProperty(PropertyInfo propertyInfo, string asPropertyName)
+        public SirenProperty(PropertyInfo propertyInfo, string serializationName)
         {
             PropertyInfo = propertyInfo;
-            AsPropertyName = asPropertyName;
+            SerializationName = serializationName;
         }
 
-        public string AsPropertyName { get; private set; }
+        public string SerializationName { get; private set; }
         public PropertyInfo PropertyInfo { get; private set; }
 
     }

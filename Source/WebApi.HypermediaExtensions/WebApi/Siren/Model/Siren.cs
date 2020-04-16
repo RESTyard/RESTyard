@@ -7,6 +7,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren.Model
 
         public SirenTitle SirenTitle { get; set; }
 
+        // todo add base classes too
         public List<SirenClass> SirenClasses { get; set; }
 
         public List<SirenProperty> SirenProperties { get; set; }

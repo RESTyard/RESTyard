@@ -43,8 +43,6 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren
         {
             var links = hypermediaProperties.Where(hp =>
                 hp.LeadingHypermediaAttribute.HasValue && hp.LeadingHypermediaAttribute.Value is Link).ToList();
-            links.Select(l =>
-                (l.LeadingHypermediaAttribute.Value as Link).BaseTypes.Contains(l.PropertyInfo.PropertyType));
             return links;
         }
 
@@ -69,6 +67,8 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren
 
         private static ReflectedHypermediaProperty ExtractHypermediaProperty(PropertyInfo p)
         {
+            // TODO avoid duplicate leading 
+
             var customAttributes = p.GetCustomAttributes().ToList();
             if (!customAttributes.Any()) return new ReflectedHypermediaProperty(p);
             var leadingHypermediaAttribute = customAttributes.SingleOrDefault(a => a is LeadingHypermediaAttribute);
