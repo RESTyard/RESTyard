@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using WebApi.HypermediaExtensions.Hypermedia.Attributes;
-using WebApi.HypermediaExtensions.Hypermedia.Links;
-using WebApi.HypermediaExtensions.Util;
-using WebApi.HypermediaExtensions.WebApi.Siren.Reflection;
-using WebApi.HypermediaExtensions.WebApi.Siren.Model;
-using Action = WebApi.HypermediaExtensions.Hypermedia.Attributes.Action;
+﻿using WebApi.HypermediaExtensions.WebApi.Serializer.Model;
+using WebApi.HypermediaExtensions.WebApi.Serializer.Reflection;
 
-namespace WebApi.HypermediaExtensions.WebApi.Siren
+namespace WebApi.HypermediaExtensions.WebApi.Serializer
 {
-    using Model;
-
     public class ModelFactory
     {
         public ModelFactory()

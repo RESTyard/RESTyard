@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using WebApi.HypermediaExtensions.Hypermedia.Attributes;
-using FunicularSwitch;
-using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.Util;
 
-namespace WebApi.HypermediaExtensions.WebApi.Siren.Reflection
+namespace WebApi.HypermediaExtensions.WebApi.Serializer.Reflection
 {
     public class ObjectReflection
     {

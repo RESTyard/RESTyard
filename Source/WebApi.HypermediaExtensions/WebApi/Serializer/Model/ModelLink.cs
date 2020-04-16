@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 
-namespace WebApi.HypermediaExtensions.WebApi.Siren.Model
+namespace WebApi.HypermediaExtensions.WebApi.Serializer.Model
 {
     public class ModelLink
     {

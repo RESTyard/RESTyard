@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Reflection;
 using FunicularSwitch;
-using Microsoft.CodeAnalysis;
 
-namespace WebApi.HypermediaExtensions.WebApi.Siren.Reflection
+namespace WebApi.HypermediaExtensions.WebApi.Serializer.Reflection
 {
     public class ReflectedProperty
     {

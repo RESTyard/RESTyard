@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WebApi.HypermediaExtensions.WebApi.Siren.Validator
+namespace WebApi.HypermediaExtensions.WebApi.Serializer.Validator
 {
     public class LinkPropertyValidator : AbstractPropertyValidator, IHypermediaPropertyValidator
     {

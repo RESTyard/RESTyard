@@ -1,4 +1,4 @@
-﻿namespace WebApi.HypermediaExtensions.WebApi.Siren.Reflection
+﻿namespace WebApi.HypermediaExtensions.WebApi.Serializer.Reflection
 {
     public class ObjectReflectionSettings
     {

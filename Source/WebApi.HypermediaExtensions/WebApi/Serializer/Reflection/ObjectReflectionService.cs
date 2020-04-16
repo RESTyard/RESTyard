@@ -8,7 +8,7 @@ using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 using WebApi.HypermediaExtensions.Util;
 using Action = WebApi.HypermediaExtensions.Hypermedia.Attributes.Action;
 
-namespace WebApi.HypermediaExtensions.WebApi.Siren.Reflection
+namespace WebApi.HypermediaExtensions.WebApi.Serializer.Reflection
 {
     public class ObjectReflectionService
     {
@@ -106,7 +106,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren.Reflection
             }
             catch (Exception e)
             {
-                return Result.Error<ReflectedProperty>($"In {hypermediaObjectType.BeautifulName()} in property {propertyInfo.Name} the following error occured: {e}");
+                return Result.Error<ReflectedProperty>($"In '{hypermediaObjectType.BeautifulName()}' at {propertyInfo.Name} the following error occured: {e}");
             }
         }
 
@@ -149,7 +149,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren.Reflection
                 .Where(e => e.Count() > 1)
                 .Select(e => e.Key)
                 .Distinct()
-                .Select(e => $"Duplicate attribute '{e.BeautifulName()}' at property '{propertyInfo.Name}' in class '{hypermediaObjectType.BeautifulName()}'")
+                .Select(e => $"Duplicate attribute '{e.BeautifulName()}' at property {propertyInfo.Name} in class '{hypermediaObjectType.BeautifulName()}'")
                 .ToArray();
             return errors.Any() ? Result.Error<string>(string.Join(Environment.NewLine, errors)) : Result.Ok("");
         }
@@ -160,7 +160,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren.Reflection
             if (primaryHypermediaAttributes.Count > 1)
             {
                 return Result.Error<ReflectedProperty>(
-                    $"Duplicate '{typeof(Primary).BeautifulName()}' attributes '{string.Join(" and ", primaryHypermediaAttributes.Select(a => a.GetType().BeautifulName()))}' at property {propertyInfo.Name} in class {hot.BeautifulName()}");
+                    $"Duplicate '{typeof(Primary).BeautifulName()}' attributes '{string.Join(", ", primaryHypermediaAttributes.Select(a => a.GetType().BeautifulName()))}' at property {propertyInfo.Name} in class '{hot.BeautifulName()}'");
             }
             var primaryHypermediaAttribute = primaryHypermediaAttributes.FirstOrDefault();
             return primaryHypermediaAttribute != null
@@ -172,7 +172,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren.Reflection
         {
             return typeof(HypermediaObject).IsAssignableFrom(hypermediaObjectType)
                 ? Result<Type>.Ok(hypermediaObjectType)
-                : Result.Error<Type>($"The Type {hypermediaObjectType} is not assignable to a {typeof(HypermediaObject).BeautifulName()}.");
+                : Result.Error<Type>($"The Type '{hypermediaObjectType.BeautifulName()}' is not assignable to a {typeof(HypermediaObject).BeautifulName()}.");
         }
 
         public Result<HypermediaObjectAttribute> AssertObjectAttributeIsPresent(Result<Type> hypermediaObjectTypeResult)
@@ -186,13 +186,13 @@ namespace WebApi.HypermediaExtensions.WebApi.Siren.Reflection
                             .GetCustomAttribute<HypermediaObjectAttribute>();
                     return objectAttribute is null
                         ? Result.Error<HypermediaObjectAttribute>
-                            ($"Missing {GetObjectAttributeBeautifulName()} in {hypermediaObjectType.BeautifulName()}. As it is required add it to your class")
+                            ($"Missing '{GetObjectAttributeBeautifulName()}' in '{hypermediaObjectType.BeautifulName()}'. As it is required add it to your class")
                         : Result.Ok(objectAttribute);
                 }
                 catch (Exception e)
                 {
                     return Result.Error<HypermediaObjectAttribute>
-                        ($"Get {GetObjectAttributeBeautifulName()} failed in {hypermediaObjectType.BeautifulName()} with Exception: {e}.");
+                        ($"Get {GetObjectAttributeBeautifulName()} failed in '{hypermediaObjectType.BeautifulName()}' with Exception: {e}.");
                 }
             });
         }

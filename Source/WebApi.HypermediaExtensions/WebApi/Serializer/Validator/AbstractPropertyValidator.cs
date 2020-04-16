@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace WebApi.HypermediaExtensions.WebApi.Siren.Validator
+namespace WebApi.HypermediaExtensions.WebApi.Serializer.Validator
 {
     public abstract class AbstractPropertyValidator
     {

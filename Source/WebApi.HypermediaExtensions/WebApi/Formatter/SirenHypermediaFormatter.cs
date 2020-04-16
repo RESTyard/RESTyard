@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using WebApi.HypermediaExtensions.Exceptions;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.WebApi.RouteResolver;
-using WebApi.HypermediaExtensions.WebApi.Siren;
+using WebApi.HypermediaExtensions.WebApi.Serializer;
 
 namespace WebApi.HypermediaExtensions.WebApi.Formatter
 {
