@@ -23,7 +23,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer.Reflection
         private Result<ObjectReflection> BuildObjectReflection(Result<Type> hypermediaObjectTypeResult, Result<List<ReflectedProperty>> reflectedPropertiesResult)
         {
             return AssertObjectAttributeIsPresent(hypermediaObjectTypeResult)
-                .Aggregate(reflectedPropertiesResult, hypermediaObjectTypeResult)
+                .Aggregate(reflectedPropertiesResult, hypermediaObjectTypeResult, "; ")
                 .Map(results =>
                 {
                     var (hypermediaObjectAttribute, reflectedProperties, hypermediaObjectType) = results;
@@ -87,7 +87,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer.Reflection
                     .GetProperties()
                     .Select(propertyInfo =>
                         GetReflectedProperty(propertyInfo, hypermediaObjectType))
-                    .Aggregate();
+                    .Aggregate("; ");
             });
         }
 
@@ -138,7 +138,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer.Reflection
                 .Aggregate(AssertNoDuplicatesInNonPrimaryAttributes(
                     propertyInfo,
                     hypermediaObjectType,
-                    nonPrimaryHypermediaAttributes))
+                    nonPrimaryHypermediaAttributes), "; ")
                 .Map(e => e.Item1);
         }
 
@@ -149,9 +149,9 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer.Reflection
                 .Where(e => e.Count() > 1)
                 .Select(e => e.Key)
                 .Distinct()
-                .Select(e => $"Duplicate attribute '{e.BeautifulName()}' at property {propertyInfo.Name} in class '{hypermediaObjectType.BeautifulName()}'")
+                .Select(e => $"Duplicate '{typeof(BaseHypermediaAttribute).BeautifulName()}' derived attribute '{e.BeautifulName()}' at property {propertyInfo.Name} in class '{hypermediaObjectType.BeautifulName()}'")
                 .ToArray();
-            return errors.Any() ? Result.Error<string>(string.Join(Environment.NewLine, errors)) : Result.Ok("");
+            return errors.Any() ? Result.Error<string>(string.Join("; ", errors)) : Result.Ok("");
         }
 
         private static Result<ReflectedProperty> AssertOnlyOnePrimaryAttributeIsPresentAndCreate(PropertyInfo propertyInfo, Type hot,
@@ -160,7 +160,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer.Reflection
             if (primaryHypermediaAttributes.Count > 1)
             {
                 return Result.Error<ReflectedProperty>(
-                    $"Duplicate '{typeof(Primary).BeautifulName()}' attributes '{string.Join(", ", primaryHypermediaAttributes.Select(a => a.GetType().BeautifulName()))}' at property {propertyInfo.Name} in class '{hot.BeautifulName()}'");
+                    $"Duplicate '{typeof(Primary).BeautifulName()}' derived attributes '{string.Join(", ", primaryHypermediaAttributes.Select(a => a.GetType().BeautifulName()))}' at property {propertyInfo.Name} in class '{hot.BeautifulName()}'");
             }
             var primaryHypermediaAttribute = primaryHypermediaAttributes.FirstOrDefault();
             return primaryHypermediaAttribute != null
@@ -172,7 +172,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer.Reflection
         {
             return typeof(HypermediaObject).IsAssignableFrom(hypermediaObjectType)
                 ? Result<Type>.Ok(hypermediaObjectType)
-                : Result.Error<Type>($"The Type '{hypermediaObjectType.BeautifulName()}' is not assignable to a {typeof(HypermediaObject).BeautifulName()}.");
+                : Result.Error<Type>($"The Type '{hypermediaObjectType.BeautifulName()}' is not assignable to '{typeof(HypermediaObject).BeautifulName()}'");
         }
 
         public Result<HypermediaObjectAttribute> AssertObjectAttributeIsPresent(Result<Type> hypermediaObjectTypeResult)
@@ -186,19 +186,15 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer.Reflection
                             .GetCustomAttribute<HypermediaObjectAttribute>();
                     return objectAttribute is null
                         ? Result.Error<HypermediaObjectAttribute>
-                            ($"Missing '{GetObjectAttributeBeautifulName()}' in '{hypermediaObjectType.BeautifulName()}'. As it is required add it to your class")
+                            ($"Missing '{typeof(HypermediaObjectAttribute).BeautifulName()}' attribute in class '{hypermediaObjectType.BeautifulName()}'")
                         : Result.Ok(objectAttribute);
                 }
                 catch (Exception e)
                 {
                     return Result.Error<HypermediaObjectAttribute>
-                        ($"Get {GetObjectAttributeBeautifulName()} failed in '{hypermediaObjectType.BeautifulName()}' with Exception: {e}.");
+                        ($"Get '{typeof(HypermediaObjectAttribute).BeautifulName()}' attribute failed in '{hypermediaObjectType.BeautifulName()}' with Exception: {e}.");
                 }
             });
-        }
-        private static string GetObjectAttributeBeautifulName()
-        {
-            return typeof(HypermediaObjectAttribute).BeautifulName();
         }
     }
 }
