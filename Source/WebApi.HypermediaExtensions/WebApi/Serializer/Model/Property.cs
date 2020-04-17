@@ -2,15 +2,15 @@
 
 namespace WebApi.HypermediaExtensions.WebApi.Serializer.Model
 {
-    public class ModelProperty
+    public class Property
     {
 
-        public ModelProperty(PropertyInfo propertyInfo)
+        public Property(PropertyInfo propertyInfo)
         {
             PropertyInfo = propertyInfo;
             SerializationName = propertyInfo.Name;
         }
-        public ModelProperty(PropertyInfo propertyInfo, string serializationName)
+        public Property(PropertyInfo propertyInfo, string serializationName)
         {
             PropertyInfo = propertyInfo;
             SerializationName = serializationName;

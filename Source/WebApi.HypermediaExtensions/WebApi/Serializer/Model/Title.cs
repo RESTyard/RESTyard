@@ -1,8 +1,8 @@
 ﻿namespace WebApi.HypermediaExtensions.WebApi.Serializer.Model
 {
-    public class ModelTitle
+    public class Title
     {
-        public ModelTitle(string description = "")
+        public Title(string description = "")
         {
             Description = string.IsNullOrEmpty(description) ? string.Empty: description;
         }

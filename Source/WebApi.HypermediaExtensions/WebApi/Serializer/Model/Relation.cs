@@ -1,8 +1,8 @@
 ﻿namespace WebApi.HypermediaExtensions.WebApi.Serializer.Model
 {
-    public class ModelRelation
+    public class Relation
     {
-        public ModelRelation(string target)
+        public Relation(string target)
         {
             Target = target;
         }

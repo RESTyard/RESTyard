@@ -1,8 +1,8 @@
 ﻿namespace WebApi.HypermediaExtensions.WebApi.Serializer.Model
 {
-    public class ModelClass
+    public class Class
     {
-        public ModelClass(string typeName)
+        public Class(string typeName)
         {
             TypeName = typeName;
         }
