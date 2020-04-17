@@ -2,9 +2,9 @@
 
 namespace WebApi.HypermediaExtensions.Hypermedia.Attributes
 {
-    // default propperty formatting should not contain annotated properties
     [AttributeUsage(AttributeTargets.Property)]
-    public sealed class HypeIgnore : HypePrimary
+    public sealed class Property : Primary
     {
+        public string Name { get; set; }
     }
 }

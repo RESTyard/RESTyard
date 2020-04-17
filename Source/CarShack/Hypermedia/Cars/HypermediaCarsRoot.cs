@@ -4,7 +4,7 @@ using WebApi.HypermediaExtensions.Hypermedia.Links;
 
 namespace CarShack.Hypermedia.Cars
 {
-    [HypeObject(Title = "The Cars API", Classes = new[] { "CarsRoot" })]
+    [HypermediaObject(Title = "The Cars API", Classes = new[] { "CarsRoot" })]
     public class HypermediaCarsRoot : HypermediaObject
     {
         public HypermediaCarsRoot()
@@ -20,10 +20,10 @@ namespace CarShack.Hypermedia.Cars
             // Links.Add("Truck", new SelfQueryReference(new HypermediaTruck("Daimler", 11)));
         }
 
-        [HypeLink("NiceCar")]
+        [Link("NiceCar")]
         public HypermediaObjectReference<HypermediaCar> NiceCarReference { get; set; }
 
-        [HypeLink("SuperCar")]
+        [Link("SuperCar")]
         public HypermediaObjectKeyReference<HypermediaCar> SuperCarReference { get; set; }
     }
 }

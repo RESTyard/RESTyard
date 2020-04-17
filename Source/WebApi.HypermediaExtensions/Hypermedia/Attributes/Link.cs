@@ -4,15 +4,15 @@ using System.Collections.Generic;
 namespace WebApi.HypermediaExtensions.Hypermedia.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public sealed class HypeLink : Primary
+    public sealed class Link : Primary
     {
         public List<string> Relations { get; } = new List<string>();
-        public HypeLink(string relation)
+        public Link(string relation)
         {
             Relations.Add(relation);
         }
 
-        public HypeLink( params string[] relations)
+        public Link( params string[] relations)
         {
             Relations.AddRange(relations);
         }

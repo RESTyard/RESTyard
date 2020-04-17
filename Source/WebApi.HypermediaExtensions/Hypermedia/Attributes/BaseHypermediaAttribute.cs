@@ -2,7 +2,7 @@
 
 namespace WebApi.HypermediaExtensions.Hypermedia.Attributes
 {
-    public abstract class HypePrimary : HypeBase
+    public abstract class BaseHypermediaAttribute : Attribute
     {
         
     }

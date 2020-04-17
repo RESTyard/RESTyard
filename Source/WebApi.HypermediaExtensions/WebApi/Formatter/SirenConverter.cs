@@ -16,6 +16,7 @@ using WebApi.HypermediaExtensions.Query;
 using WebApi.HypermediaExtensions.Util;
 using WebApi.HypermediaExtensions.Util.Enum;
 using WebApi.HypermediaExtensions.WebApi.RouteResolver;
+using Action = WebApi.HypermediaExtensions.Hypermedia.Attributes.Action;
 
 namespace WebApi.HypermediaExtensions.WebApi.Formatter
 {
@@ -144,9 +145,9 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             jAction.Add("href", routeResolver.ActionToRoute(hypermediaObject, actionBase));
         }
 
-        private static HypeAction GetHypermediaActionAttribute(PropertyInfo hypermediaActionPropertyInfo)
+        private static Action GetHypermediaActionAttribute(PropertyInfo hypermediaActionPropertyInfo)
         {
-            return hypermediaActionPropertyInfo.GetCustomAttribute<HypeAction>();
+            return hypermediaActionPropertyInfo.GetCustomAttribute<Action>();
         }
 
         private void AddActionParameters(HypermediaActionBase hypermediaAction, JObject jAction)
@@ -422,7 +423,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
 
         private static bool PropertyHasIgnoreAttribute(PropertyInfo publicProperty)
         {
-            return publicProperty.CustomAttributes.Any(a => a.AttributeType == typeof(HypeFormatterIgnore));
+            return publicProperty.CustomAttributes.Any(a => a.AttributeType == typeof(FormatterIgnore));
         }
 
         private static void AddClasses(HypermediaObject hypermediaObject, JObject sirenJson, HypermediaObjectAttribute hypermediaObjectAttribute)

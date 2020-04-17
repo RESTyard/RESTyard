@@ -16,7 +16,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia
             ExternalUri = externalUri;
         }
 
-        [HypeIgnore]
+        [FormatterIgnore]
         public Uri ExternalUri { get; set; }
     }
 }
