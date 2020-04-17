@@ -2,7 +2,8 @@
 
 namespace WebApi.HypermediaExtensions.Hypermedia.Attributes
 {
-    public abstract class Primary : BaseHypermediaAttribute
+    [AttributeUsage(AttributeTargets.Property)]
+    public sealed class HypeEntity : Primary
     {
         
     }

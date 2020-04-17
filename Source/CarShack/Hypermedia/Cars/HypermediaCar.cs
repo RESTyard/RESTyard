@@ -5,7 +5,7 @@ using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace CarShack.Hypermedia.Cars
 {
-    [HypermediaObject(Title = "A Car", Classes = new[] { "Car" })]
+    [HypeObject(Title = "A Car", Classes = new[] { "Car" })]
     public class HypermediaCar : HypermediaObject
     {
         // Marks property as part of the objects key so it is can be mapped to route parameters when creating links.
@@ -42,10 +42,10 @@ namespace CarShack.Hypermedia.Cars
         public string Name { get; set; }
 
         // object properties can be attributed
-        [Property(Name = "Population")]
+        [HypeProperty(Name = "Population")]
         public int EstimatedPopulation { get; set; }
 
-        [FormatterIgnore]
+        [HypeIgnore]
         public string LanguageCode { get; set; }
     }
 }

@@ -6,7 +6,7 @@ using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace CarShack.Hypermedia.Customers
 {
-    [HypermediaObject(Title = "A Customer", Classes = new[] { "Customer" })]
+    [HypeObject(Title = "A Customer", Classes = new[] { "Customer" })]
     public class HypermediaCustomer : HypermediaObject
     {
         private readonly Customer customer;
@@ -14,21 +14,21 @@ namespace CarShack.Hypermedia.Customers
         // Add actions:
         // Each ActionType must be unique and a corresponding route must exist so the formatter can look it up.
         // See the CustomerController.
-        [Action(Name = "CustomerMove", Title = "A Customer moved to a new location.")]
+        [HypeAction(Name = "CustomerMove", Title = "A Customer moved to a new location.")]
         public HypermediaActionCustomerMoveAction MoveAction { get; private set; }
 
-        [Action(Title = "Marks a Customer as a favorite buyer.")]
+        [HypeAction(Title = "Marks a Customer as a favorite buyer.")]
         public HypermediaActionCustomerMarkAsFavorite MarkAsFavoriteAction { get; private set; }
 
-        [Action(Title = "Buy a car.")]
+        [HypeAction(Title = "Buy a car.")]
         public HypermediaActionCustomerBuysCar BuyCarAction { get; private set; } = new HypermediaActionCustomerBuysCar();
 
         // Hides the Property so it will not be pressent in the Hypermedia.
-        [FormatterIgnore]
+        [HypeIgnore]
         public int Id { get; set; }
 
         // Assigns an alternative name, so this stays constant even if property is renamed
-        [Property(Name = "FullName")]
+        [HypeProperty(Name = "FullName")]
         public string Name { get; set; }
         
         public int Age { get; set; }

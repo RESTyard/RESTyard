@@ -9,7 +9,7 @@ using WebApi.HypermediaExtensions.Hypermedia.Links;
 
 namespace CarShack.Hypermedia.Customers
 {
-    [HypermediaObject(Title = "The Customers API", Classes = new[] { "CustomersRoot" })]
+    [HypeObject(Title = "The Customers API", Classes = new[] { "CustomersRoot" })]
     public class HypermediaCustomersRoot : HypermediaObject
     {
         private readonly ICustomerRepository customerRepository;
@@ -17,16 +17,16 @@ namespace CarShack.Hypermedia.Customers
         // Add actions:
         // Each ActionType must be unique and a corresponding route must exist so the formatter can look it up.
         // See the CustomersRootController.
-        [WebApi.HypermediaExtensions.Hypermedia.Attributes.Action(Name = "CreateCustomer", Title = "Request creation of a new Customer.")]
+        [WebApi.HypermediaExtensions.Hypermedia.Attributes.HypeAction(Name = "CreateCustomer", Title = "Request creation of a new Customer.")]
         public HypermediaFunction<CreateCustomerParameters, Task<Customer>> CreateCustomerAction { get; private set; }
 
-        [WebApi.HypermediaExtensions.Hypermedia.Attributes.Action(Name = "CreateQuery", Title = "Query the Customers collection.")]
+        [WebApi.HypermediaExtensions.Hypermedia.Attributes.HypeAction(Name = "CreateQuery", Title = "Query the Customers collection.")]
         public HypermediaAction<CustomerQuery> CreateQueryAction { get; private set; }
 
-        [Link("BestCustomer")]
+        [HypeLink("BestCustomer")]
         public HypermediaObjectKeyReference<HypermediaCustomer> BestCustomerReference { get; set; } 
 
-        [Link("GreatSite")] public ExternalReference GreatSiteReference { get; set; }
+        [HypeLink("GreatSite")] public ExternalReference GreatSiteReference { get; set; }
 
         public HypermediaCustomersRoot(ICustomerRepository customerRepository)
         {
