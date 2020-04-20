@@ -11,7 +11,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Links
     {
         private readonly T reference;
 
-        public HypermediaObjectReference(T hypermediaObject) : base (typeof(T))
+        public HypermediaObjectReference(T hypermediaObject) : base (typeof(T)) // todo: look for a way to remove the need to specify T explicit
         {
             this.reference = hypermediaObject;
         }

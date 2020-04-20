@@ -21,8 +21,8 @@ namespace WebApi.HypermediaExtensions.Test.Hypermedia
         {
             var rel1 = new List<string> {"Abc", "Def"};
             var rel2 = new List<string> { "Def", "Abc" };
-            var relatedEntity1 = new RelatedEntity(rel1, new HypermediaObjectReference(new TestHypermediaObject()));
-            var relatedEntity2 = new RelatedEntity(rel2, new HypermediaObjectReference(new TestHypermediaObject()));
+            var relatedEntity1 = new RelatedEntity(rel1, new HypermediaObjectReference<TestHypermediaObject>(new TestHypermediaObject()));
+            var relatedEntity2 = new RelatedEntity(rel2, new HypermediaObjectReference<TestHypermediaObject>(new TestHypermediaObject()));
 
             relationDictionary.Add(relatedEntity1);
             relationDictionary.Add(relatedEntity2);

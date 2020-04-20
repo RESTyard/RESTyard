@@ -38,11 +38,11 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
             var ho = new EmptyHypermediaObject();
             var relation1 = "Embedded";
             var embeddedHo1 = new EmbeddedSubEntity();
-            ho.Entities.Add(relation1, new HypermediaObjectReference(embeddedHo1));
+            ho.Entities.Add(relation1, new HypermediaObjectReference<EmbeddedSubEntity>(embeddedHo1));
 
             var relationsList2 = new List<string> { "RelationA", "RelationB" };
             var embeddedHo2 = new EmbeddedSubEntity {ABool = true, AInt = 3};
-            ho.Entities.Add(new RelatedEntity(relationsList2, new HypermediaObjectReference(embeddedHo2)));
+            ho.Entities.Add(new RelatedEntity(relationsList2, new HypermediaObjectReference<EmbeddedSubEntity>(embeddedHo2)));
 
             var siren = SirenConverter.ConvertToJson(ho);
 
@@ -81,11 +81,11 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
             var ho = new EmptyHypermediaObject();
 
             var relation1 = "Embedded";
-            ho.Entities.Add(relation1, new HypermediaObjectKeyReference(typeof(EmbeddedSubEntity), 6));
+            ho.Entities.Add(relation1, new HypermediaObjectKeyReference<EmbeddedSubEntity>(6));
 
             var relationsList2 = new List<string> { "RelationA", "RelationB" };
             var query = new EmbeddedQueryObject {AInt = 2};
-            ho.Entities.Add(new RelatedEntity(relationsList2, new HypermediaObjectQueryReference(typeof(EmbeddedSubEntity), query, 3)));
+            ho.Entities.Add(new RelatedEntity(relationsList2, new HypermediaObjectQueryReference<EmbeddedSubEntity>(query, 3)));
 
             var siren = SirenConverter.ConvertToJson(ho);
 
