@@ -8,7 +8,7 @@
 
     public enum PropertyReflectionValidationMode
     {
-        TrowOnAnyInconsistency,
+        ThrowOnAnyInconsistency,
         SkipAndWarnOnInconsistencies,
         IgnoreAndWarnInconsistencies,
     }
