@@ -30,7 +30,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer.Reflection
                     var links = GetLinks(reflectedProperties);
                     var properties = GetProperties(reflectedProperties);
                     var actions = GetActions(reflectedProperties);
-                   var entities = GetEntities(reflectedProperties);
+                    var entities = GetEntities(reflectedProperties);
                     return new ObjectReflection(
                         hypermediaObjectType,
                         hypermediaObjectAttribute,
@@ -181,9 +181,9 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer.Reflection
             {
                 try
                 {
-                    var objectAttribute =
-                        hypermediaObjectType.GetTypeInfo()
-                            .GetCustomAttribute<HypermediaObjectAttribute>();
+                    var objectAttribute = hypermediaObjectType
+                        .GetTypeInfo()
+                        .GetCustomAttribute<HypermediaObjectAttribute>();
                     return objectAttribute is null
                         ? Result.Error<HypermediaObjectAttribute>
                             ($"Missing '{typeof(HypermediaObjectAttribute).BeautifulName()}' attribute in class '{hypermediaObjectType.BeautifulName()}'")
