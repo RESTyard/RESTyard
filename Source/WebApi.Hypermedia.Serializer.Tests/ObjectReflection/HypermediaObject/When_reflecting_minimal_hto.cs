@@ -4,7 +4,7 @@ using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 
-namespace WebApi.Hypermedia.Serializer.Tests.ObjectReflection
+namespace WebApi.Hypermedia.Serializer.Tests.ObjectReflection.HypermediaObject
 {
     [TestClass]
     public class When_reflecting_minimal_hto : ObjectReflectionServiceTestBase

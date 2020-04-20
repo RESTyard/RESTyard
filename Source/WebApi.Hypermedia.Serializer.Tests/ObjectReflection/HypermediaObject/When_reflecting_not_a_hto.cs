@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace WebApi.Hypermedia.Serializer.Tests.ObjectReflection
+namespace WebApi.Hypermedia.Serializer.Tests.ObjectReflection.HypermediaObject
 {
     [TestClass]
     public class When_reflecting_not_a_hto : ObjectReflectionServiceTestBase
