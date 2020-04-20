@@ -18,6 +18,12 @@ namespace WebApi.Hypermedia.Serializer.Tests.ObjectReflection.HypermediaObject
             Result.GetValueOrThrow().HypermediaObjectAttribute.NoDefaultSelfLink.Should().BeTrue();
         }
 
+        [TestMethod]
+        public void Then_result_contains_no_link()
+        {
+            Result.GetValueOrThrow().Links.Should().BeEmpty();
+        }
+
         [HypermediaObject(NoDefaultSelfLink = true)]
         private class NoSelfLinkHto : HypermediaExtensions.Hypermedia.HypermediaObject
         {

@@ -39,7 +39,7 @@ namespace WebApi.Hypermedia.Serializer.Tests.ObjectReflection.HypermediaObject
         }
 
         [TestMethod]
-        public void Then_result_contains_only_one_link()
+        public void Then_result_contains_one_link()
         {
             Result.GetValueOrThrow().Links.Count.Should().Be(1);
         }
