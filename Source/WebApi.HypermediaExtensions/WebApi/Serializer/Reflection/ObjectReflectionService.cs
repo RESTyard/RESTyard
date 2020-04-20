@@ -10,7 +10,7 @@ using Action = WebApi.HypermediaExtensions.Hypermedia.Attributes.Action;
 
 namespace WebApi.HypermediaExtensions.WebApi.Serializer.Reflection
 {
-    public class ObjectReflectionService
+    public class ObjectReflectionService : IObjectReflectionService
     {
         public Result<ObjectReflection> Reflect(Type type)
         {
@@ -175,7 +175,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer.Reflection
                 : Result.Error<Type>($"The Type '{hypermediaObjectType.BeautifulName()}' is not assignable to '{typeof(HypermediaObject).BeautifulName()}'");
         }
 
-        public Result<HypermediaObjectAttribute> AssertObjectAttributeIsPresent(Result<Type> hypermediaObjectTypeResult)
+        private Result<HypermediaObjectAttribute> AssertObjectAttributeIsPresent(Result<Type> hypermediaObjectTypeResult)
         {
             return hypermediaObjectTypeResult.Bind(hypermediaObjectType =>
             {
