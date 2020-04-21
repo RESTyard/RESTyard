@@ -1,13 +1,13 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WebApi.HypermediaExtensions.Hypermedia.Attributes;
+using WebApi.HypermediaExtensions.Hypermedia.Links;
 
 namespace WebApi.Hypermedia.Serializer.Tests.ObjectReflection.Links
 {
     [TestClass]
-    public class When_reflecting_hto_with_external_link : ObjectReflectionServiceTestBase
+    public class When_reflecting_hto_with_object_reference_link : ObjectReflectionServiceTestBase
     {
         public override void When()
         {
@@ -30,15 +30,20 @@ namespace WebApi.Hypermedia.Serializer.Tests.ObjectReflection.Links
         public void Then_result_self_link_has_relation()
         {
             var linkAttribute = Result.GetValueOrThrow().Links.First().PrimaryHypermediaAttribute.GetValueOrThrow().As<Link>();
-            linkAttribute.Relations.Single().Should().Be("MyExternal");
+            linkAttribute.Relations.Single().Should().Be("MyRelation");
         }
 
         [HypermediaObject(NoDefaultSelfLink = true)]
         private class TestHto : HypermediaExtensions.Hypermedia.HypermediaObject
         {
-            [Link("MyExternal")]
-            public Uri ExternalLink { get; private set; } = new Uri("www.example.com");
+            [Link("MyRelation")]
+            public HypermediaObjectReference<ReferencedHto> HtoLink { get; private set; }
 
+        }
+
+        [HypermediaObject(NoDefaultSelfLink = true)]
+        private class ReferencedHto : HypermediaExtensions.Hypermedia.HypermediaObject
+        {
         }
     }
 }

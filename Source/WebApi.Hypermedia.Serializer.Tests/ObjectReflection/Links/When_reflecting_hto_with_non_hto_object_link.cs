@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WebApi.HypermediaExtensions.Hypermedia.Attributes;
@@ -7,7 +6,7 @@ using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 namespace WebApi.Hypermedia.Serializer.Tests.ObjectReflection.Links
 {
     [TestClass]
-    public class When_reflecting_hto_with_external_link : ObjectReflectionServiceTestBase
+    public class When_reflecting_hto_with_non_hto_object_link : ObjectReflectionServiceTestBase
     {
         public override void When()
         {
@@ -21,24 +20,40 @@ namespace WebApi.Hypermedia.Serializer.Tests.ObjectReflection.Links
         }
 
         [TestMethod]
-        public void Then_result_contains_one_link()
+        public void Then_result_contains_error()
         {
-            Result.GetValueOrThrow().Links.Count.Should().Be(1);
+            Result.Match(ok => Assert.Fail("Must be an error, only hto or URI can be a link"), error =>
+            {
+                if (string.IsNullOrWhiteSpace(error))
+                {
+                    Assert.Fail("Must contain error message");
+                }
+            });
+        }
+
+        [TestMethod]
+        public void Then_result_contains_no_link()
+        {
+            Result.GetValueOrThrow().Links.Should().BeEmpty();
         }
 
         [TestMethod]
         public void Then_result_self_link_has_relation()
         {
             var linkAttribute = Result.GetValueOrThrow().Links.First().PrimaryHypermediaAttribute.GetValueOrThrow().As<Link>();
-            linkAttribute.Relations.Single().Should().Be("MyExternal");
+            linkAttribute.Relations.Single().Should().Be("MyRelation");
         }
 
         [HypermediaObject(NoDefaultSelfLink = true)]
         private class TestHto : HypermediaExtensions.Hypermedia.HypermediaObject
         {
-            [Link("MyExternal")]
-            public Uri ExternalLink { get; private set; } = new Uri("www.example.com");
+            [Link("MyRelation")]
+            public Referenced NonHtoLink { get; private set; }
 
+        }
+
+        private class Referenced
+        {
         }
     }
 }

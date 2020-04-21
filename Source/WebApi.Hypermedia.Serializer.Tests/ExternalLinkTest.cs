@@ -1,14 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.Hypermedia.Attributes;
-using WebApi.HypermediaExtensions.WebApi.Serializer.Reflection;
 using FluentAssertions;
-using FunicularSwitch;
 using WebApi.HypermediaExtensions.Util.Extensions;
-using WebApi.HypermediaExtensions.WebApi.Serializer.Model;
 
 namespace WebApi.Hypermedia.Serializer.Tests
 {
