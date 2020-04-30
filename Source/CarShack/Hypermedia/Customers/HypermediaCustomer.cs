@@ -23,7 +23,7 @@ namespace CarShack.Hypermedia.Customers
         [Action(Title = "Buy a car.")]
         public HypermediaActionCustomerBuysCar BuyCarAction { get; private set; } = new HypermediaActionCustomerBuysCar();
 
-        // Hides the Property so it will not be pressent in the Hypermedia.
+        // Hides the Property so it will not be present in the Hypermedia.
         [FormatterIgnore]
         public int Id { get; set; }
 

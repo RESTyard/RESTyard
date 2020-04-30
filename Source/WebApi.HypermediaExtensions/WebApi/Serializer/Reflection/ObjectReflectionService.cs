@@ -175,26 +175,43 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer.Reflection
                 : Result.Error<Type>($"The Type '{hypermediaObjectType.BeautifulName()}' is not assignable to '{typeof(HypermediaObject).BeautifulName()}'");
         }
 
-        private Result<HypermediaObjectAttribute> AssertObjectAttributeIsPresent(Result<Type> hypermediaObjectTypeResult)
+        private Result<HypermediaObjectAttribute> AssertObjectAttributeIsPresent(Result<Type> hypermediaObjectTypeResult) => 
+            hypermediaObjectTypeResult.Bind(hypermediaObjectType => hypermediaObjectType.TryGetAttribute<HypermediaObjectAttribute>());
+    }
+
+    public static class ReflectionExtension
+    {
+        public static Result<TAttribute> TryGetAttribute<TAttribute>(this Type hypermediaObjectType) where TAttribute : Attribute
         {
-            return hypermediaObjectTypeResult.Bind(hypermediaObjectType =>
+            try
             {
-                try
-                {
-                    var objectAttribute = hypermediaObjectType
-                        .GetTypeInfo()
-                        .GetCustomAttribute<HypermediaObjectAttribute>();
-                    return objectAttribute is null
-                        ? Result.Error<HypermediaObjectAttribute>
-                            ($"Missing '{typeof(HypermediaObjectAttribute).BeautifulName()}' attribute in class '{hypermediaObjectType.BeautifulName()}'")
-                        : Result.Ok(objectAttribute);
-                }
-                catch (Exception e)
-                {
-                    return Result.Error<HypermediaObjectAttribute>
-                        ($"Get '{typeof(HypermediaObjectAttribute).BeautifulName()}' attribute failed in '{hypermediaObjectType.BeautifulName()}' with Exception: {e}.");
-                }
-            });
+                var objectAttribute = hypermediaObjectType
+                    .GetTypeInfo()
+                    .GetCustomAttribute<TAttribute>();
+                return objectAttribute is null
+                    ? Result.Error<TAttribute>
+                        ($"Missing '{typeof(TAttribute).BeautifulName()}' attribute in class '{hypermediaObjectType.BeautifulName()}'")
+                    : Result.Ok(objectAttribute);
+            }
+            catch (Exception e)
+            {
+                return Result.Error<TAttribute>
+                    ($"Get '{typeof(TAttribute).BeautifulName()}' attribute failed in '{hypermediaObjectType.BeautifulName()}' with Exception: {e}.");
+            }
         }
+
+        public static bool IsHypermediaObject(this Type hmoType) => hmoType.TryGetAttribute<HypermediaObjectAttribute>().IsOk;
+
+        public static bool IsIgnored(this PropertyInfo p) => p.GetCustomAttribute<FormatterIgnore>() != null;
+
+        public static IEnumerable<(TAttribute, PropertyInfo)> GetAttributed<TAttribute>(
+            this IEnumerable<PropertyInfo> propertyInfos) where TAttribute : Attribute => propertyInfos
+            .Choose(p =>
+            {
+                var linkAttribute = p.GetCustomAttribute<TAttribute>();
+                if (linkAttribute != null)
+                    return (linkAttribute, p);
+                return Option<(TAttribute, PropertyInfo)>.None;
+            });
     }
 }

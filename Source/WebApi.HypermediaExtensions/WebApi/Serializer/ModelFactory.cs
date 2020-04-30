@@ -5,6 +5,7 @@ using FunicularSwitch.Extensions;
 using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 using WebApi.HypermediaExtensions.WebApi.Serializer.Model;
 using WebApi.HypermediaExtensions.WebApi.Serializer.Reflection;
+using Bluehands.Hypermedia;
 
 namespace WebApi.HypermediaExtensions.WebApi.Serializer
 {

@@ -37,5 +37,9 @@
     <PackageReference Include="NJsonSchema" Version="9.10.50" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Hypermedia.Model\Hypermedia.Model.csproj" />
+  </ItemGroup>
 
 </Project>

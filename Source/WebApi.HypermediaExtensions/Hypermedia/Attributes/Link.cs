@@ -16,6 +16,5 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Attributes
         {
             Relations.AddRange(relations);
         }
-        
     }
 }
