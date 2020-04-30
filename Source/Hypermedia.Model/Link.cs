@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 
@@ -6,9 +7,9 @@ namespace Bluehands.Hypermedia.Model
 {
     public abstract class Link
     {
-        public static Link KeyReference(string name, EntityKey referencedEntity, ImmutableArray<string> relations) => new KeyReference_(name, referencedEntity, relations);
-        public static Link ObjectReference(string name, EntityKey referencedEntity, ImmutableArray<string> relations) => new ObjectReference_(name, referencedEntity, relations);
-        public static Link ExternalReference(string name, ImmutableArray<string> relations) => new ExternalReference_(name, relations);
+        public static Link KeyReference(string name, EntityKey referencedEntity, IEnumerable<string> relations) => new KeyReference_(name, referencedEntity, relations);
+        public static Link ObjectReference(string name, EntityKey referencedEntity, IEnumerable<string> relations) => new ObjectReference_(name, referencedEntity, relations);
+        public static Link ExternalReference(string name, IEnumerable<string> relations) => new ExternalReference_(name, relations);
 
         public string Name { get; }
         public ImmutableArray<string> Relations { get; }
@@ -17,19 +18,19 @@ namespace Bluehands.Hypermedia.Model
         {
             public EntityKey ReferencedEntity { get; }
 
-            public KeyReference_(string name, EntityKey referencedEntity, ImmutableArray<string> relations) : base(UnionCases.KeyReference, name, relations) => ReferencedEntity = referencedEntity;
+            public KeyReference_(string name, EntityKey referencedEntity, IEnumerable<string> relations) : base(UnionCases.KeyReference, name, relations.ToImmutableArray()) => ReferencedEntity = referencedEntity;
         }
 
         public class ObjectReference_ : Link
         {
             public EntityKey ReferencedEntity { get; }
 
-            public ObjectReference_(string name, EntityKey referencedEntity, ImmutableArray<string> relations) : base(UnionCases.ObjectReference, name, relations) => ReferencedEntity = referencedEntity;
+            public ObjectReference_(string name, EntityKey referencedEntity, IEnumerable<string> relations) : base(UnionCases.ObjectReference, name, relations.ToImmutableArray()) => ReferencedEntity = referencedEntity;
         }
 
         public class ExternalReference_ : Link
         {
-            public ExternalReference_(string name, ImmutableArray<string> relations) : base(UnionCases.ExternalReference, name, relations)
+            public ExternalReference_(string name, IEnumerable<string> relations) : base(UnionCases.ExternalReference, name, relations.ToImmutableArray())
             {
             }
         }

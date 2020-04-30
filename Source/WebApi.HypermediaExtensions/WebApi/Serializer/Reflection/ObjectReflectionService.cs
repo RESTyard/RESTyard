@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using FunicularSwitch;
@@ -129,7 +130,6 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer.Reflection
         private Result<ReflectedProperty> AssertAttributesAreValidAndCreate(PropertyInfo propertyInfo, Type hypermediaObjectType, List<Attribute> primaryHypermediaAttributes,
             List<Attribute> nonPrimaryHypermediaAttributes)
         {
-            
             return AssertOnlyOnePrimaryAttributeIsPresentAndCreate(
                     propertyInfo,
                     hypermediaObjectType,
@@ -212,6 +212,15 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer.Reflection
                 if (linkAttribute != null)
                     return (linkAttribute, p);
                 return Option<(TAttribute, PropertyInfo)>.None;
+            });
+
+        public static IEnumerable<PropertyInfo> GetHypermediaProperties(this IEnumerable<PropertyInfo> propertyInfos) =>
+            propertyInfos.Where(p =>
+            {
+                return !p.GetCustomAttributes().Any(attribute =>
+                    attribute is Link ||
+                    attribute is Entity ||
+                    attribute is Action);
             });
     }
 }

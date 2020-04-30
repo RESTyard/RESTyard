@@ -14,15 +14,18 @@ namespace Bluehands.Hypermedia.Model
         public ImmutableArray<string> Classes { get; }
         public ImmutableArray<Property> Properties { get; }
         public ImmutableArray<Link> Links { get; }
+        public ImmutableArray<SubEntity> Entities { get; }
 
 
-        public Entity(string name, string title, string ns, IEnumerable<string> classes, IEnumerable<Property> properties, IEnumerable<Link> links)
+        public Entity(string name, string title, string ns, IEnumerable<string> classes,
+            IEnumerable<Property> properties, IEnumerable<Link> links, IEnumerable<SubEntity> entities)
         {
             Key = new EntityKey(name, ns);
             Title = title;
             Classes = classes.ToImmutableArray();
             Properties = properties.ToImmutableArray();
             Links = links.ToImmutableArray();
+            Entities = entities.ToImmutableArray();
         }
     }
 
@@ -84,10 +87,11 @@ namespace Bluehands.Hypermedia.Model
             return new Entity(
                 name: Name.GetValueOrDefault(Classes[0]),
                 title: Title.GetValueOrDefault(),
-                Namespace.GetValueOrDefault(),
-                Classes,
-                ImmutableArray<Property>.Empty,
-                ImmutableArray<Link>.Empty);
+                ns: Namespace.GetValueOrDefault(),
+                classes: Classes,
+                properties: ImmutableArray<Property>.Empty,
+                links: ImmutableArray<Link>.Empty,
+                entities: ImmutableArray<SubEntity>.Empty);
         }
     }
 }
