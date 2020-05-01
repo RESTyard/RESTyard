@@ -29,6 +29,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi.Hypermedia.Serialize
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hypermedia.Model", "Hypermedia.Model\Hypermedia.Model.csproj", "{8436A6BD-D764-4B95-89D7-5B46E4F44F47}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApi.Hypermedia.ModelFactory.Test", "WebApi.Hypermedia.ModelFactory.Test\WebApi.Hypermedia.ModelFactory.Test.csproj", "{C9547693-9615-48B3-B625-0E88B2631F5F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +73,10 @@ Global
 		{8436A6BD-D764-4B95-89D7-5B46E4F44F47}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8436A6BD-D764-4B95-89D7-5B46E4F44F47}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8436A6BD-D764-4B95-89D7-5B46E4F44F47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9547693-9615-48B3-B625-0E88B2631F5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9547693-9615-48B3-B625-0E88B2631F5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9547693-9615-48B3-B625-0E88B2631F5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9547693-9615-48B3-B625-0E88B2631F5F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
