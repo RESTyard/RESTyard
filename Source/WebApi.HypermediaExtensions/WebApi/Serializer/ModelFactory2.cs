@@ -56,9 +56,9 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer
                 .GetAttributed<Link>()
                 .Select(l =>
                 {
-                    var (linkAttribute, linkProperty) = l;
-                    var propertyType = linkProperty.GetType();
-                    var propertyName = linkProperty.Name;
+                    var (linkAttribute, linkPropertyInfo) = l;
+                    var propertyType = linkPropertyInfo.PropertyType;
+                    var propertyName = linkPropertyInfo.Name;
 
                     Result<Bluehands.Hypermedia.Model.Link> Error(string message) =>
                         Result.Error<Bluehands.Hypermedia.Model.Link>(message);
