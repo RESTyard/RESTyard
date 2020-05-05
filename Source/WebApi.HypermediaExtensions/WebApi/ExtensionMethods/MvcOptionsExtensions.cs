@@ -93,6 +93,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
             var sirenHypermediaConverterFactory = new SirenHypermediaConverterFactory(queryStringBuilder, hypermediaConverterConfiguration?.SirenConverterConfiguration);
             var sirenHypermediaFormatter = new SirenHypermediaFormatter(routeResolverFactory, routeKeyFactory, sirenHypermediaConverterFactory, hypermediaUrlConfig);
 
+            options.OutputFormatters.Insert(0, new ProblemJsonFormatter());
             options.OutputFormatters.Insert(0, hypermediaQueryLocationFormatter);
             options.OutputFormatters.Insert(0, hypermediaEntityLocationFormatter);
             options.OutputFormatters.Insert(0, sirenHypermediaFormatter);
