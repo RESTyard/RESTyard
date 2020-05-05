@@ -29,6 +29,12 @@ namespace Bluehands.Hypermedia.Model
         }
     }
 
+    public class Action
+    {
+        public string Name { get; }
+        public string Title { get; }
+    }
+
     public class EntityKey
     {
         public string Name { get; }

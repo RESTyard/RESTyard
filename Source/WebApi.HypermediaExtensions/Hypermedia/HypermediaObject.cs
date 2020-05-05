@@ -31,10 +31,10 @@ namespace WebApi.HypermediaExtensions.Hypermedia
         {
             Init();
 
-            if (hasSelfLink)
-            {
-                SelfReference = new HypermediaObjectReference<HypermediaObject>(this);
-            }
+            //if (hasSelfLink)
+            //{
+            //    SelfReference = new HypermediaObjectReference<HypermediaObject>(this);
+            //}
         }
 
         /// <summary>
@@ -60,8 +60,8 @@ namespace WebApi.HypermediaExtensions.Hypermedia
         [FormatterIgnore]
         public List<RelatedEntity> Entities { get; set; }
 
-        [Link(DefaultHypermediaRelations.Self)]
-        public HypermediaObjectReference<HypermediaObject> SelfReference { get; set; }
+        //[Link(DefaultHypermediaRelations.Self)]
+        //public HypermediaObjectReference<HypermediaObject> SelfReference { get; set; }
 
 //        [Link(DefaultHypermediaRelations.Self)]
         //public HypermediaObjectQueryReference<HypermediaObject> SelfQueryReference { get; set; }
