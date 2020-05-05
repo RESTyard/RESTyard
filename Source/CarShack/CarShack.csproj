@@ -8,7 +8,6 @@
     <PackageId>CarShack</PackageId>
     <RuntimeIdentifiers>win7-x64;win8-x64;win81-x64;win10-x64</RuntimeIdentifiers>
     <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
-    <!-- Deprecated <PackageTargetFallback>$(PackageTargetFallback);dotnet5.6;portable-net45+win8</PackageTargetFallback>-->
   </PropertyGroup>
 
   <ItemGroup>

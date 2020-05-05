@@ -1,16 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!--<Description>Web Api extensions to create REST Web services using Siren as Hypermedia format</Description>
-    <AssemblyTitle>Web Api Hypermedia Extensions</AssemblyTitle>-->
-
     <!--General settings-->
     <Version>1.4.1$(VersionSuffix)</Version>
     <TargetFramework>netstandard1.6</TargetFramework>
     <NoWarn>$(NoWarn);1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-    <!--<AssemblyName>WebApi.HypermediaExtensions</AssemblyName>-->
 
     <!-- Descriptions and information-->
     <Titel>Web Api Hypermedia Extensions</Titel>
@@ -21,11 +17,9 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
-    <!--Deprecated <PackageLicenseUrl>https://github.com/bluehands/WebApiHypermediaExtensions/blob/master/LICENSE.md</PackageLicenseUrl>-->
     <RepositoryType>Git</RepositoryType>
     <RepositoryUrl>https://github.com/bluehands/WebApiHypermediaExtensions.git</RepositoryUrl>
     <RepositoryBranch>$(BranchName)</RepositoryBranch>
-    <!--<PackageIcon>content\FunicularSwitch.png</PackageIcon>-->
 
     <!-- Package specific settings -->
     <PackageId>WebApiHypermediaExtensionsCore</PackageId>
@@ -34,13 +28,6 @@
     <IsPackable>true</IsPackable>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <!--<ContentTargetFolders>content</ContentTargetFolders>-->
-    <!--<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <AssemblyVersion>1.4.0.0</AssemblyVersion>
-    <FileVersion>1.4.0.0</FileVersion>-->
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -56,6 +43,10 @@
     <PackageReference Include="Bluehands.Hypermedia.Relations" Version="0.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.7" />
     <PackageReference Include="NJsonSchema" Version="9.10.50" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 
 </Project>
