@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk/2.1.300">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <!--General settings-->
@@ -24,8 +24,7 @@
     <PackageVersion>$(Version)</PackageVersion>
     <PackageReleaseNotes>Version $(Version)</PackageReleaseNotes>
     <IsPackable>true</IsPackable>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -45,6 +44,13 @@
   
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <!--Allow access for the test assembly-->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>WebApi.HypermediaExtensions.Test</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>
