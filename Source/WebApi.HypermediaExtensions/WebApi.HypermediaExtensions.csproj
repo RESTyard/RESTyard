@@ -41,10 +41,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.7" />
     <PackageReference Include="NJsonSchema" Version="9.10.50" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
 
   <!--Allow access for the test assembly-->
   <ItemGroup>
