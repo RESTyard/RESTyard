@@ -2,7 +2,12 @@
 
   <PropertyGroup>
     <!--General settings-->
-    <Version>1.4.1$(VersionSuffix)</Version>
+
+    <VersionSuffixLocal Condition="$(IsNuGetPreRelease)">
+      $(VersionSuffix)
+    </VersionSuffixLocal>
+    
+    <Version>1.4.1$(VersionSuffixLocal)</Version>
     <TargetFramework>netstandard1.6</TargetFramework>
     <NoWarn>$(NoWarn);1591</NoWarn>
     
