@@ -468,6 +468,16 @@ Tested for:
 
 ## Release Notes
 
+### WebApiHypermediaExtensions v1.4.1
+
+- Add option to generate lowercase URLs
+- FIX bug where ParameterBinder was not triggered
+- Type parameter route matching is now case insensitive
+- Replace [controler] and [action] token in routes so deconstructing routes works using the template matcher.
+- Better exception messages
+- Fix nullreference exception when generating routes for controller without RouteAttribute
+- Responses for ProblemJson now have media type: 'application/problem+json'
+
 ### WebApiHypermediaExtensions v1.4.0
 
 #### Features:
