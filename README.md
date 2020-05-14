@@ -477,6 +477,7 @@ Tested for:
 - Better exception messages
 - Fix nullreference exception when generating routes for controller without RouteAttribute
 - Responses for ProblemJson now have media type: 'application/problem+json'
+- Add SourceLink to GitHub
 
 ### WebApiHypermediaExtensions v1.4.0
 
