@@ -3,7 +3,9 @@
   <PropertyGroup>
     <!--General settings-->
 
-    <VersionSuffixLocal Condition="$(IsNuGetPreRelease)">
+    <VersionSuffixLocal></VersionSuffixLocal>
+     <!--When variable is set we are building a prerelease package--> 
+    <VersionSuffixLocal Condition="'$(IsPreRelease)'!='' AND  '$(IsPreRelease)'">
       $(VersionSuffix)
     </VersionSuffixLocal>
     
