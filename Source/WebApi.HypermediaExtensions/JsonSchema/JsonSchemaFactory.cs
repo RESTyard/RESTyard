@@ -32,7 +32,7 @@ namespace WebApi.HypermediaExtensions.JsonSchema
             var schemaData = schema.ToJson();
 
 #if NETSTANDARD1_6
-            return JsonSerializer.DeserializeObject(schemaData);
+            return JsonConvert.DeserializeObject(schemaData);
 #else
             return JsonDocument.Parse(schemaData);
 #endif
