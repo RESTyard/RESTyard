@@ -10,7 +10,8 @@
     </VersionSuffixLocal>
     
     <Version>1.4.1$(VersionSuffixLocal)</Version>
-    <TargetFramework>netstandard1.6</TargetFramework>
+    <!--<TargetFrameworks>netcoreapp3.1;netstandard1.6</TargetFrameworks>-->
+    <TargetFrameworks>netstandard1.6;netcoreapp3.1</TargetFrameworks>
     <NoWarn>$(NoWarn);1591</NoWarn>
     
     <!-- Descriptions and information-->
@@ -34,20 +35,47 @@
 
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin\Release\netstandard1.6\WebApi.HypermediaExtensions.xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>bin\Debug\netstandard1.6\WebApi.HypermediaExtensions.xml</DocumentationFile>
-  </PropertyGroup>
-  
+  <!-- shared references, compilation flags and build options -->
   <ItemGroup>
     <PackageReference Include="Bluehands.Hypermedia.MediaTypes" Version="0.1.0" />
     <PackageReference Include="Bluehands.Hypermedia.Relations" Version="0.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="1.1.8" />
     <PackageReference Include="NJsonSchema" Version="9.10.50" />
+    </ItemGroup>
+
+  <!-- .NET Standard 2.1 references, compilation flags and build options -->
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1'">
+    <DefineConstants>NETCOREAPP_3_1</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1'">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="1.1.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="1.1.8" />
   </ItemGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU' AND '$(TargetFramework)' == 'netcoreapp3.1'">
+    <DocumentationFile>bin\Release\netstandard1.6\WebApi.HypermediaExtensions.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU' AND '$(TargetFramework)' == 'netcoreapp3.1'">
+    <DocumentationFile>bin\Debug\netstandard1.6\WebApi.HypermediaExtensions.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <!-- .NET Standard 1.6 references, compilation flags and build options -->
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.6'">
+    <DefineConstants>NETSTANDARD1_6</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6'">
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.8" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU' AND '$(TargetFramework)' == 'netstandard1.6'">
+    <DocumentationFile>bin\Release\netstandard1.6\WebApi.HypermediaExtensions.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU' AND '$(TargetFramework)' == 'netstandard1.6'">
+    <DocumentationFile>bin\Debug\netstandard1.6\WebApi.HypermediaExtensions.xml</DocumentationFile>
+  </PropertyGroup>
+  
+
 
   <!--Allow access for the test assembly-->
   <ItemGroup>
