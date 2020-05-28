@@ -4,17 +4,16 @@
     <!--General settings-->
 
     <VersionSuffixLocal></VersionSuffixLocal>
-     <!--When variable is set we are building a prerelease package--> 
+    <!--When variable is set we are building a prerelease package-->
     <VersionSuffixLocal Condition="'$(IsPreRelease)'!='' AND  '$(IsPreRelease)'">
       $(VersionSuffix)
     </VersionSuffixLocal>
-    
+
     <Version>1.4.1$(VersionSuffixLocal)</Version>
-    <!--<TargetFrameworks>netcoreapp3.1;netstandard1.6</TargetFrameworks>-->
     <TargetFrameworks>netstandard1.6;netcoreapp3.1</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
-    
+
     <!-- Descriptions and information-->
     <Titel>Web Api Hypermedia Extensions</Titel>
     <PackageDescription>Web Api extensions to create REST Web services using Siren as Hypermedia format</PackageDescription>
@@ -42,18 +41,18 @@
     <PackageReference Include="Bluehands.Hypermedia.Relations" Version="0.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="1.1.8" />
     <PackageReference Include="NJsonSchema" Version="9.10.50" />
-    </ItemGroup>
+  </ItemGroup>
 
   <!-- .NET Standard 2.1 references, compilation flags and build options -->
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1'">
-    <DefineConstants>NETCOREAPP_3_1</DefineConstants>
+    <DefineConstants>NETCOREAPP3_1</DefineConstants>
   </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1'">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="1.1.8" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="1.1.8" />
   </ItemGroup>
-  
+
   <!-- .NET Standard 1.6 references, compilation flags and build options -->
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.6'">
     <DefineConstants>NETSTANDARD1_6</DefineConstants>

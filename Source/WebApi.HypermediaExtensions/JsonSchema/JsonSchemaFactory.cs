@@ -4,11 +4,17 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+
 using NJsonSchema;
 using NJsonSchema.Generation;
 using WebApi.HypermediaExtensions.Util;
 using WebApi.HypermediaExtensions.WebApi.RouteResolver;
+
+#if NETSTANDARD1_6
+  using Newtonsoft.Json;
+#elif NETCOREAPP3_1
+  using System.Text.Json;
+#endif
 
 namespace WebApi.HypermediaExtensions.JsonSchema
 {
@@ -24,7 +30,12 @@ namespace WebApi.HypermediaExtensions.JsonSchema
         {
             var schema = await GenerateSchemaAsync(type).ConfigureAwait(false);
             var schemaData = schema.ToJson();
-            return JsonConvert.DeserializeObject(schemaData);
+
+#if NETSTANDARD1_6
+            return JsonSerializer.DeserializeObject(schemaData);
+#else
+            return JsonDocument.Parse(schemaData);
+#endif
         }
 
         public static async Task<JsonSchema4> GenerateSchemaAsync(Type type)
@@ -46,7 +57,7 @@ namespace WebApi.HypermediaExtensions.JsonSchema
                 }
 
                 var isRequired = propertyGroup.Any(p => p.Property.GetCustomAttribute<RequiredAttribute>() != null);
-                var property = new JsonProperty { Type = JsonObjectType.String, Format = JsonFormatStrings.Uri };
+                var property = new NJsonSchema.JsonProperty { Type = JsonObjectType.String, Format = JsonFormatStrings.Uri };
                 //schema factory sets minlegth of required uri properties, so do it here as well
                 if (isRequired)
                     property.MinLength = 1;
@@ -62,7 +73,7 @@ namespace WebApi.HypermediaExtensions.JsonSchema
             schema.RequiredProperties.Remove(propertyName);
         }
 
-        static void AddProperty(JsonSchema4 schema, string propertyName, JsonProperty property, bool isRequired)
+        static void AddProperty(JsonSchema4 schema, string propertyName, NJsonSchema.JsonProperty property, bool isRequired)
         {
             schema.Properties.Add(propertyName, property);
             if (isRequired)
