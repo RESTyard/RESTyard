@@ -9,8 +9,8 @@
       $(VersionSuffix)
     </VersionSuffixLocal>
 
-    <Version>1.4.1$(VersionSuffixLocal)</Version>
-    <TargetFrameworks>netstandard1.6;netcoreapp3.1</TargetFrameworks>
+    <Version>1.4.2$(VersionSuffixLocal)</Version>
+    <TargetFrameworks>netstandard1.6;netcoreapp3.0</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
 
@@ -43,14 +43,13 @@
     <PackageReference Include="NJsonSchema" Version="9.10.50" />
   </ItemGroup>
 
-  <!-- .NET Standard 2.1 references, compilation flags and build options -->
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1'">
-    <DefineConstants>NETCOREAPP3_1</DefineConstants>
+  <!-- netcoreapp3.0 references, compilation flags and build options -->
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0'">
+    <DefineConstants>NETCOREAPP3_0</DefineConstants>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1'">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0'">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="1.1.8" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="1.1.8" />
   </ItemGroup>
 
   <!-- .NET Standard 1.6 references, compilation flags and build options -->

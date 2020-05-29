@@ -12,7 +12,7 @@ using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 #if NETSTANDARD1_6
   using Newtonsoft.Json;
-#elif NETCOREAPP3_1
+#elif NETCOREAPP3_0
   using System.Text.Json;
 #endif
 
@@ -33,7 +33,7 @@ namespace WebApi.HypermediaExtensions.JsonSchema
 
 #if NETSTANDARD1_6
             return JsonConvert.DeserializeObject(schemaData);
-#else
+#elif NETCOREAPP3_0
             return JsonDocument.Parse(schemaData);
 #endif
         }

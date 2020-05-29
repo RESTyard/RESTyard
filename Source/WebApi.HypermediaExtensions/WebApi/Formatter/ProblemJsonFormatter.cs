@@ -1,11 +1,11 @@
 ﻿namespace WebApi.HypermediaExtensions.WebApi.Formatter
 {
     using Bluehands.Hypermedia.MediaTypes;
-    
+    using Microsoft.AspNetCore.Mvc.Formatters;
+
 #if NETSTANDARD1_6
     using System.Buffers;
     using Newtonsoft.Json;
-    using Microsoft.AspNetCore.Mvc.Formatters;
     
     public class ProblemJsonFormatter : JsonOutputFormatter
     {
@@ -16,10 +16,10 @@
         }
     }
 
-#else
+#elif NETCOREAPP3_0
 
     using System.Text.Json;
-    using Microsoft.AspNetCore.Mvc.Formatters;
+    
     public class ProblemJsonFormatter : SystemTextJsonOutputFormatter
     {
         public ProblemJsonFormatter() : base(new JsonSerializerOptions())
