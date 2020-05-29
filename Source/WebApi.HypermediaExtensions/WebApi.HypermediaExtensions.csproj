@@ -39,7 +39,6 @@
   <ItemGroup>
     <PackageReference Include="Bluehands.Hypermedia.MediaTypes" Version="0.1.0" />
     <PackageReference Include="Bluehands.Hypermedia.Relations" Version="0.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="1.1.8" />
     <PackageReference Include="NJsonSchema" Version="9.10.50" />
   </ItemGroup>
 
