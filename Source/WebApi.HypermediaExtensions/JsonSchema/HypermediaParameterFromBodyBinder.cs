@@ -69,26 +69,27 @@ namespace WebApi.HypermediaExtensions.JsonSchema
             serializer = new JsonDeserializer(modelType, getRouteTemplatesForType);
         }
 
-        public Task BindModelAsync(ModelBindingContext bindingContext)
+        public async Task BindModelAsync(ModelBindingContext bindingContext)
         {
             var modelTypeName = modelType.BeautifulName();
             if (bindingContext.ModelType != modelType)
             {
                 bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"ModelBinder does not match model type '{modelTypeName}' != '{bindingContext.ModelType}'");
-                return Task.FromResult(false);
+                return;
             }
 
             if (bindingContext.ActionContext.HttpContext.Request.Method != HttpMethods.Post)
             {
                 bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Invalid http method {bindingContext.ActionContext.HttpContext.Request.Method} exptected Post");
-                return Task.FromResult(false);
+                return;
             }
 
             var bodyStream = bindingContext.ActionContext.HttpContext.Request.Body;
             object rawDeserialized;
             
             using (var sr = new StreamReader(bodyStream))
-            using (var jsonTextReader = new JsonTextReader(sr))
+            using (var stringReader = new StringReader(await sr.ReadToEndAsync()))
+            using (var jsonTextReader = new JsonTextReader(stringReader))
             {
                 try
                 {
@@ -97,7 +98,7 @@ namespace WebApi.HypermediaExtensions.JsonSchema
                 catch (Exception e)
                 {
                     bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Invalid Json: {e}.");
-                    return Task.FromResult(false);
+                    return;
                 }
             }
 
@@ -107,7 +108,7 @@ namespace WebApi.HypermediaExtensions.JsonSchema
                 if (!TryUnwrapArray(wrapperArray, modelTypeName, out jObject))
                 {
                     bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Invalid Json. Expected an object or and array containing one element with one object property '{modelTypeName}'");
-                    return Task.FromResult(false);
+                    return;
                 }
             }
             else
@@ -118,12 +119,12 @@ namespace WebApi.HypermediaExtensions.JsonSchema
             try
             {
                 bindingContext.Result = ModelBindingResult.Success(serializer.Deserialize(jObject));
-                return Task.FromResult(true);
+                return;
             }
             catch (Exception e)
             {
                 bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Deserialization failed: {e}");
-                return Task.FromResult(false);
+                return;
             }
         }
 

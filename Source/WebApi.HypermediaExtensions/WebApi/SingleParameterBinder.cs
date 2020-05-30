@@ -24,12 +24,12 @@ namespace WebApi.HypermediaExtensions.WebApi
 
         private class SingleParameterBinderInternal<T> : IModelBinder
         {
-            public Task BindModelAsync(ModelBindingContext bindingContext)
+            public async Task BindModelAsync(ModelBindingContext bindingContext)
             {
                 if (bindingContext.ModelType != typeof(T))
                 {
                     bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"ModelBinder does not match model type '{typeof(T)}' != '{bindingContext.ModelType}'");
-                    return Task.FromResult(false);
+                    return;
                 }
 
                 var bodyStream = bindingContext.ActionContext.HttpContext.Request.Body;
@@ -37,7 +37,8 @@ namespace WebApi.HypermediaExtensions.WebApi
 
                 var serializer = new JsonSerializer();
                 using (var sr = new StreamReader(bodyStream))
-                using (var jsonTextReader = new JsonTextReader(sr))
+                using (var stringReader = new StringReader(await sr.ReadToEndAsync()))
+                using (var jsonTextReader = new JsonTextReader(stringReader))
                 {
                     try
                     {
@@ -46,20 +47,20 @@ namespace WebApi.HypermediaExtensions.WebApi
                     catch (Exception)
                     {
                         bindingContext.ModelState.AddModelError(bindingContext.ModelName, "Invalid Json.");
-                        return Task.FromResult(false);
+                        return;
                     }
                 }
 
                 if (!(rawDeserialized is JArray wrapperArray))
                 {
                     bindingContext.ModelState.AddModelError(bindingContext.ModelName, "Action field not wrapped in an Array.");
-                    return Task.FromResult(false);
+                    return;
                 }
 
                 if (wrapperArray.Count != 1)
                 {
                     bindingContext.ModelState.AddModelError(bindingContext.ModelName, "Action field must contain one element.");
-                    return Task.FromResult(false);
+                    return;
                 }
 
 
@@ -67,7 +68,7 @@ namespace WebApi.HypermediaExtensions.WebApi
                 if (parameterObject == null)
                 {
                     bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Could not find property called '{typeof(T).Name}'");
-                    return Task.FromResult(false);
+                    return;
                 }
 
                 T result;
@@ -78,11 +79,11 @@ namespace WebApi.HypermediaExtensions.WebApi
                 catch (JsonReaderException)
                 {
                     bindingContext.ModelState.AddModelError(bindingContext.ModelName, "Could not convert parameter object.");
-                    return Task.FromResult(false);
+                    return;
                 }
 
                 bindingContext.Result = ModelBindingResult.Success(result);
-                return Task.FromResult(true);
+                return;
             }
         }
     }
