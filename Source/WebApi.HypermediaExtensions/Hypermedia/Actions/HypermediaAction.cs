@@ -90,6 +90,11 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Actions
             return false;
         }
 
+        public override object GetPrefilledParameter()
+        {
+            return null;
+        }
+
         public override Type ParameterType()
         {
             return null;
