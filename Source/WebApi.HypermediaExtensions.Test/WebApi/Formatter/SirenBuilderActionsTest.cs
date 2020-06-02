@@ -171,12 +171,22 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
         public HypermediaActionNotExecutable(Func<bool> canExecute, Action command) : base(canExecute, command)
         {
         }
+
+        public override object GetPrefilledParameter()
+        {
+            return null;
+        }
     }
 
     public class HypermediaActionNoArgument : HypermediaAction
     {
         public HypermediaActionNoArgument(Func<bool> canExecute, Action command) : base(canExecute, command)
         {
+        }
+
+        public override object GetPrefilledParameter()
+        {
+            return null;
         }
     }
 
