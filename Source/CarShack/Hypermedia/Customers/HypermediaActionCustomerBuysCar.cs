@@ -8,7 +8,7 @@ namespace CarShack.Hypermedia.Customers
 {
     public class HypermediaActionCustomerBuysCar : HypermediaAction<HypermediaActionCustomerBuysCar.Parameter>
     {
-        public HypermediaActionCustomerBuysCar() : base(() => true)
+        public HypermediaActionCustomerBuysCar() : base(() => true, null)
         {
         }
 

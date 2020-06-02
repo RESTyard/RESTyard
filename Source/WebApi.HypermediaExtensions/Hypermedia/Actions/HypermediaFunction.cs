@@ -8,14 +8,25 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Actions
     /// </summary>
     /// <typeparam name="TParameter">Parameter object passed to the Action.</typeparam>
     /// <typeparam name="TReturn">Return object.</typeparam>
-    public class HypermediaFunction<TParameter, TReturn> : HypermediaActionBase where TParameter : IHypermediaActionParameter
+    public class HypermediaFunction<TParameter, TReturn> : HypermediaActionBase where TParameter : class, IHypermediaActionParameter
     {
         private readonly Func<TParameter, TReturn>  command;
 
+        /// <summary>
+        /// The action may provide pre filled values which are passed to the client so action parameters can be filled with provided values.
+        /// </summary>
+        public TParameter PrefilledValues { protected set; get; }
+
         // todo in future make both calls async, CanExecute and DoExecute can take long. Should be awaitable
-        public HypermediaFunction(Func<bool> canExecute, Func<TParameter, TReturn> command = null) : base (canExecute)
+        public HypermediaFunction(Func<bool> canExecute, Func<TParameter, TReturn> command = null, TParameter prefilledValues = null) : base (canExecute)
         {
             this.command = command;
+            this.PrefilledValues = prefilledValues;
+        }
+
+        public HypermediaFunction(TParameter prefilledValues) : base(()=> true)
+        {
+            this.PrefilledValues = prefilledValues;
         }
 
         public TReturn Execute(TParameter parameter)
@@ -38,6 +49,11 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Actions
             return true;
         }
 
+        public override object GetPrefilledParameter()
+        {
+            return this.PrefilledValues;
+        }
+
         public override Type ParameterType()
         {
             return typeof(TParameter);
@@ -45,7 +61,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Actions
     }
 
     /// <summary>
-    /// A hypemediaFunction which has no parameters.
+    /// A HypemediaFunction which has no parameters.
     /// </summary>
     /// <typeparam name="TReturn">The return type</typeparam>
     public class HypermediaFunction<TReturn> : HypermediaActionBase
@@ -75,6 +91,11 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Actions
         public override bool HasParameter()
         {
             return false;
+        }
+
+        public override object GetPrefilledParameter()
+        {
+            return null;
         }
 
         public override Type ParameterType()

@@ -7,13 +7,24 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Actions
     /// A HypermediaAction. For each concrete type a corresponding attributed route must exist.
     /// </summary>
     /// <typeparam name="TParameter">Parameter object passed to the Action.</typeparam>
-    public class HypermediaAction<TParameter> : HypermediaActionBase where TParameter : IHypermediaActionParameter
+    public class HypermediaAction<TParameter> : HypermediaActionBase where TParameter : class, IHypermediaActionParameter
     {
         private readonly Action<TParameter> command;
 
-        public HypermediaAction(Func<bool> canExecute, Action<TParameter> command = null) : base(canExecute)
+        /// <summary>
+        /// The action may provide pre filled values which are passed to the client so action parameters can be filled with provided values.
+        /// </summary>
+        public TParameter PrefilledValues { protected set;  get; }
+
+        public HypermediaAction(Func<bool> canExecute, Action<TParameter> command = null, TParameter prefilledValues = null) : base(canExecute)
         {
             this.command = command;
+            this.PrefilledValues = prefilledValues;
+        }
+
+        public HypermediaAction(TParameter prefilledValues = null) : base(()=>true)
+        {
+            this.PrefilledValues = prefilledValues;
         }
 
         public void Execute(TParameter parameter)
@@ -34,6 +45,11 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Actions
         public override bool HasParameter()
         {
             return true;
+        }
+
+        public override object GetPrefilledParameter()
+        {
+            return this.PrefilledValues;
         }
 
         public override Type ParameterType()

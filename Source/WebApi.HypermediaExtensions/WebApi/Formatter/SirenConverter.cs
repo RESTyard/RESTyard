@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Bluehands.Hypermedia.MediaTypes;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using WebApi.HypermediaExtensions.Exceptions;
 using WebApi.HypermediaExtensions.Hypermedia;
@@ -156,25 +157,40 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             }
 
             jAction.Add("type", DefaultMediaTypes.ApplicationJson);
-            AddActionFields(jAction, hypermediaAction.ParameterType());
+            AddActionFields(jAction, hypermediaAction);
         }
 
-        private void AddActionFields(JObject jAction, Type actionParameterType)
+        private void AddActionFields(JObject jAction, HypermediaActionBase hypermediaAction)
         {
+            var parameterType = hypermediaAction.ParameterType();
+
             var jfield = new JObject
             {
-                {"name", actionParameterType.BeautifulName() },
+                {"name", parameterType.BeautifulName() },
                 {"type", DefaultMediaTypes.ApplicationJson}
             };
 
-            if (!routeResolver.TryGetRouteByType(actionParameterType, out var classRoute))
+            if (!routeResolver.TryGetRouteByType(parameterType, out var classRoute))
             {
-                classRoute = routeResolver.RouteUrl(RouteNames.ActionParameterTypes, new { parameterTypeName = actionParameterType.BeautifulName() });
+                classRoute = routeResolver.RouteUrl(RouteNames.ActionParameterTypes, new { parameterTypeName = parameterType.BeautifulName() });
             }
 
             jfield.Add("class", new JArray { classRoute });
 
+            AddPrefilledValue(jfield, hypermediaAction);
+
             jAction.Add("fields", new JArray { jfield });
+        }
+
+        private void AddPrefilledValue(JObject jfield, HypermediaActionBase hypermediaAction)
+        {
+            var prefilledParameter = hypermediaAction.GetPrefilledParameter();
+            if (prefilledParameter == null)
+            {
+                return;
+            }
+            
+            jfield.Add("value", JToken.FromObject(prefilledParameter));
         }
 
         private static bool IsHypermediaAction(PropertyInfo property)

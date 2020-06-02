@@ -27,8 +27,8 @@ namespace CarShack.Hypermedia.Customers
         {
             this.customerRepository = customerRepository;
 
-            CreateCustomerAction = new HypermediaFunction<CreateCustomerParameters, Task<Customer>>(CanCreateCustomer, DoCreateCustomer);
-            CreateQueryAction = new HypermediaAction<CustomerQuery>(CanNewQuery);
+            CreateCustomerAction = new HypermediaFunction<CreateCustomerParameters, Task<Customer>>(CanCreateCustomer, DoCreateCustomer, new CreateCustomerParameters{Name = "John Doe"});
+            CreateQueryAction = new HypermediaAction<CustomerQuery>(CanNewQuery, null);
 
             // Add Links:
             var allQuery = new CustomerQuery();

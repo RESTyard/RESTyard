@@ -468,9 +468,14 @@ Tested for:
 
 ## Release Notes
 
+### WebApiHypermediaExtensions v1.5.0
+
+- Actions now can be created with a prefilled parameter object. Its will be passed as `value` in the `action`  fields`
+
 ### WebApiHypermediaExtensions v1.4.2
 
 - Add `netcoreapp3.0` as target to support ASP.net Core 3.x
+  Example: ´CreateCustomerAction = new HypermediaFunction<CreateCustomerParameters, Task<Customer>>(CanCreateCustomer, DoCreateCustomer, new CreateCustomerParameters{Name = "John Doe"});´
 
 
 ### WebApiHypermediaExtensions v1.4.1

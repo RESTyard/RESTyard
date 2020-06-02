@@ -17,6 +17,8 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Actions
         }
 
         public abstract bool HasParameter();
+        
+        public abstract object GetPrefilledParameter();
 
         public abstract Type ParameterType();
     }
