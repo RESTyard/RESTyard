@@ -7,10 +7,11 @@ using Bluehands.Hypermedia.Model;
 using FunicularSwitch;
 using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 using WebApi.HypermediaExtensions.Hypermedia.Links;
+using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 using WebApi.HypermediaExtensions.WebApi.Serializer.Reflection;
 using Entity = WebApi.HypermediaExtensions.Hypermedia.Attributes.Entity;
 using Link = WebApi.HypermediaExtensions.Hypermedia.Attributes.Link;
-using Property = Bluehands.Hypermedia.Model.Property;
+using Property = WebApi.HypermediaExtensions.Hypermedia.Attributes.Property;
 
 namespace WebApi.HypermediaExtensions.WebApi.Serializer
 {
@@ -34,9 +35,12 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer
                     return FindLinks(propertyInfos: propertyInfos).Aggregate(
                             FindProperties(propertyInfos: propertyInfos),
                             FindEntities(propertyInfos))
-                        .Map(map: t =>
+                        .Map(t =>
                         {
-                            var (links, properties, entities) = t;
+                            var (links, propertyTuples, entities) = t;
+
+                            var properties = propertyTuples.Select(tp => tp.property);
+                            var keyProperties = propertyTuples.SelectMany(tp => tp.keyProperty);
 
                             return new Bluehands.Hypermedia.Model.Entity(
                                 name: name,
@@ -44,8 +48,9 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer
                                 ns: ns,
                                 classes: classes,
                                 properties: properties,
+                                keyProperties: keyProperties,
                                 links: links,
-                                entities);
+                                entities: entities);
                         });
 
                 });
@@ -129,13 +134,13 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer
                         : SubEntity.Link(propertyName, entityKey, relations);
                 }).Aggregate();
 
-        static Result<List<Property>> FindProperties(ImmutableArray<PropertyInfo> propertyInfos) =>
+        static Result<List<(Bluehands.Hypermedia.Model.Property property, Option<KeyProperty> keyProperty)>> FindProperties(ImmutableArray<PropertyInfo> propertyInfos) =>
             propertyInfos
                 .GetHypermediaProperties()
                 .Select(p =>
                 {
-                    Result<Property> Error(string message) =>
-                        Result.Error<Property>(message);
+                    Result<(Bluehands.Hypermedia.Model.Property, Option<KeyProperty>)> Error(string message) =>
+                        Result.Error<(Bluehands.Hypermedia.Model.Property, Option<KeyProperty>)>(message);
 
                     var propertyType = p.GetType();
                     var propertyName = p.Name;
@@ -143,10 +148,17 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer
                     if (propertyType.IsHypermediaObject())
                         return Error($"Property '{propertyName}' can not be HypermediaObject itself. Please consider marking it with Link or Entity attribute to supply relations");
 
+                    var propertyAttribute = p.GetCustomAttribute<Property>();
+
                     //TODO: further validations: deny IEnumerable<Hmo>, nested HMO properties, ...
 
-                    return new Property(propertyName, TypeDescriptor.CSharp(propertyType.Name, propertyType.FullName));
+                    var property = new Bluehands.Hypermedia.Model.Property(propertyName, propertyAttribute?.Name ?? propertyName, TypeDescriptor.CSharp(propertyType.Name, propertyType.FullName));
+                    var keyAttribute = p.GetCustomAttribute<KeyAttribute>();
+                    var keyProperty = keyAttribute != null
+                        ? new KeyProperty(property, keyAttribute.TemplateParameterName)
+                        : Option.None<KeyProperty>();
 
+                    return (property, keyProperty);
                 }).Aggregate();
     }
 

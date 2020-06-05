@@ -12,27 +12,23 @@ namespace Bluehands.Hypermedia.Model
         public EntityKey Key { get; }
         public string Title { get; }
         public ImmutableArray<string> Classes { get; }
+        public ImmutableArray<KeyProperty> KeyProperties { get; }
         public ImmutableArray<Property> Properties { get; }
         public ImmutableArray<Link> Links { get; }
         public ImmutableArray<SubEntity> Entities { get; }
 
 
         public Entity(string name, string title, string ns, IEnumerable<string> classes,
-            IEnumerable<Property> properties, IEnumerable<Link> links, IEnumerable<SubEntity> entities)
+            IEnumerable<Property> properties, IEnumerable<KeyProperty> keyProperties, IEnumerable<Link> links, IEnumerable<SubEntity> entities)
         {
             Key = new EntityKey(name, ns);
             Title = title;
             Classes = classes.ToImmutableArray();
             Properties = properties.ToImmutableArray();
+            KeyProperties = keyProperties.ToImmutableArray();
             Links = links.ToImmutableArray();
             Entities = entities.ToImmutableArray();
         }
-    }
-
-    public class Action
-    {
-        public string Name { get; }
-        public string Title { get; }
     }
 
     public class EntityKey
@@ -65,39 +61,21 @@ namespace Bluehands.Hypermedia.Model
         }
     }
 
-    public class EntityBuilder
+    public class Action
     {
-        public ImmutableArray<string> Classes { get; }
-        public Option<string> Name { get; }
-        public Option<string> Namespace { get; }
-        public Option<string> Title { get; }
+        public string Name { get; }
+        public string ActionName { get; }
+        public string Title { get; }
+        public Option<TypeDescriptor> ParameterType { get; }
+        public Option<TypeDescriptor> ReturnType { get; }
 
-        public EntityBuilder(ImmutableArray<string> classes, Option<string> name, Option<string> @namespace, Option<string> title)
+        public Action(string name, string actionName, string title, Option<TypeDescriptor> parameterType, Option<TypeDescriptor> returnType)
         {
-            Classes = classes;
             Name = name;
-            Namespace = @namespace;
+            ActionName = actionName;
             Title = title;
-        }
-
-        public static EntityBuilder Create(string name) => new EntityBuilder(ImmutableArray<string>.Empty, name, Option<string>.None, Option<string>.None);
-
-        public EntityBuilder WithName(string name) => new EntityBuilder(Classes, name, Namespace, Title);
-
-        public EntityBuilder WithTitle(string title) => new EntityBuilder(Classes, Name, Namespace, title);
-
-        public EntityBuilder WithNamespace(string @namespace) => new EntityBuilder(Classes, Name, @namespace, Title);
-
-        public Entity Build()
-        {
-            return new Entity(
-                name: Name.GetValueOrDefault(Classes[0]),
-                title: Title.GetValueOrDefault(),
-                ns: Namespace.GetValueOrDefault(),
-                classes: Classes,
-                properties: ImmutableArray<Property>.Empty,
-                links: ImmutableArray<Link>.Empty,
-                entities: ImmutableArray<SubEntity>.Empty);
+            ParameterType = parameterType;
+            ReturnType = returnType;
         }
     }
 }
