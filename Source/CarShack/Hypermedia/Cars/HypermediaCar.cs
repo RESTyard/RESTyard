@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 using WebApi.HypermediaExtensions.WebApi.RouteResolver;
@@ -46,6 +47,7 @@ namespace CarShack.Hypermedia.Cars
         public int EstimatedPopulation { get; set; }
 
         [FormatterIgnore]
+        [JsonIgnore]
         public string LanguageCode { get; set; }
     }
 }

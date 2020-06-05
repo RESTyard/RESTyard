@@ -36,5 +36,4 @@ namespace WebApi.Hypermedia.Serializer.Tests
     {
         public Uri Test { get; set; } = new Uri("https://weblogs.asp.net/marianor/using-expression-trees-to-get-property-getter-and-setters");
     }
-    
 }

@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
-using FunicularSwitch;
 
 namespace Bluehands.Hypermedia.Model
 {
@@ -29,6 +29,14 @@ namespace Bluehands.Hypermedia.Model
             Links = links.ToImmutableArray();
             Entities = entities.ToImmutableArray();
         }
+
+        public override string ToString() => $"{Name} - {Title}";
+    }
+
+    public static class EntityKeyExtension
+    {
+        public static EntityKey ToEntityKey(this Type type) => new EntityKey(type.Name, type.Namespace);
+        
     }
 
     public class EntityKey
@@ -59,23 +67,7 @@ namespace Bluehands.Hypermedia.Model
                 return ((Name != null ? Name.GetHashCode() : 0) * 397) ^ (Namespace != null ? Namespace.GetHashCode() : 0);
             }
         }
-    }
 
-    public class Action
-    {
-        public string Name { get; }
-        public string ActionName { get; }
-        public string Title { get; }
-        public Option<TypeDescriptor> ParameterType { get; }
-        public Option<TypeDescriptor> ReturnType { get; }
-
-        public Action(string name, string actionName, string title, Option<TypeDescriptor> parameterType, Option<TypeDescriptor> returnType)
-        {
-            Name = name;
-            ActionName = actionName;
-            Title = title;
-            ParameterType = parameterType;
-            ReturnType = returnType;
-        }
+        public override string ToString() => $"{(Namespace != null ? $"{Namespace}." : "")}{Name}";
     }
 }

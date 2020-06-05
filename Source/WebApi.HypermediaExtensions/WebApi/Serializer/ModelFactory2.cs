@@ -17,6 +17,18 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer
 {
     public static class ModelFactory2
     {
+        public static Result<ImmutableDictionary<EntityKey, Bluehands.Hypermedia.Model.Entity>> Build(Assembly assembly) =>
+            assembly
+                .GetTypes()
+                .Choose(t =>
+                {
+                    var hmoAttribute = t.GetCustomAttribute<HypermediaObjectAttribute>();
+                    return hmoAttribute != null ? t : Option<Type>.None;
+                })
+                .Select(t => Build(t).Map(e => (key: t.ToEntityKey(), entity: e)))
+                .Aggregate()
+                .Map(entities => entities.ToImmutableDictionary(e => e.key, e => e.entity));
+
         public static Result<Bluehands.Hypermedia.Model.Entity> Build(Type hmoType)
         {
             return hmoType.TryGetAttribute<HypermediaObjectAttribute>()
@@ -53,7 +65,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer
                                 entities: entities);
                         });
 
-                });
+                }).Match(ok => ok, error => Result.Error<Bluehands.Hypermedia.Model.Entity>($"Failed to created model for type {hmoType.Name}: {error}"));
         }
 
         static Result<List<Bluehands.Hypermedia.Model.Link>> FindLinks(ImmutableArray<PropertyInfo> propertyInfos) =>
@@ -69,7 +81,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer
                         Result.Error<Bluehands.Hypermedia.Model.Link>(message);
 
                     Result<Bluehands.Hypermedia.Model.Link> WrongPropertyType() =>
-                        Error($"Unexpected link property type: {propertyType.Name}. Supported link types are: {nameof(Uri)}, HypermediaObjectReference<T>, HypermediaObjectKeyReference<T>");
+                        Error($"Link property '{propertyName}' has unexpected type '{propertyType.Name}'. Supported link types are: {nameof(Uri)}, HypermediaObjectReference<T>, HypermediaObjectKeyReference<T>");
 
                     var relations = linkAttribute.Relations.ToImmutableArray();
                     if (propertyType == typeof(Uri))
@@ -102,14 +114,14 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer
                 .Select(l =>
                 {
                     var (entityAttribute, entityProperty) = l;
-                    var propertyType = entityProperty.GetType();
+                    var propertyType = entityProperty.PropertyType;
                     var propertyName = entityProperty.Name;
 
                     Result<SubEntity> Error(string message) =>
                         Result.Error<SubEntity>(message);
 
                     Result<SubEntity> WrongPropertyType() =>
-                        Error($"Unexpected sub entity property type '{propertyType.Name}'. Supported sub entity types are: HypermediaObjectReference<T>, HypermediaObjectKeyReference<T>");
+                        Error($"Sub entity property '{propertyName}' has unexpected type '{propertyType.Name}'. Supported sub entity types are: HypermediaObjectReference<T>, HypermediaObjectKeyReference<T>");
 
                     var relations = entityAttribute.Relations.ToImmutableArray();
 

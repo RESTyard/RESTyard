@@ -22,12 +22,12 @@ namespace CarShack.Hypermedia.EntryPoint
         [Link(HypermediaLinks.EntryPoint.CarsRoot)]
         public HypermediaObjectReference<HypermediaCarsRoot> CarsRootReference { get; set; }
 
-        [Link("HypermediaObjectKeyReference")]
-        public HypermediaObjectReferenceBase HypermediaObjectKeyReference { get; set; } = new HypermediaObjectKeyReference<HypermediaCarsRoot>();
+        //[Link("HypermediaObjectKeyReference")]
+        //public HypermediaObjectReferenceBase HypermediaObjectKeyReference { get; set; } = new HypermediaObjectKeyReference<HypermediaCarsRoot>();
 
-        [Entity()]
-        [Link("HypermediaObjectKeyReference")] 
-        public HypermediaObjectReferenceBase BaseReference { get; set; } = new HypermediaObjectReference<HypermediaCarsRoot>(new HypermediaCarsRoot());
+        //[Entity()]
+        //[Link("HypermediaObjectKeyReference")]
+        //public HypermediaObjectReferenceBase BaseReference { get; set; } = new HypermediaObjectReference<HypermediaCarsRoot>(new HypermediaCarsRoot());
 
     }
 }

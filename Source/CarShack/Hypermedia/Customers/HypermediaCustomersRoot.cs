@@ -26,7 +26,7 @@ namespace CarShack.Hypermedia.Customers
         [Link("BestCustomer")]
         public HypermediaObjectKeyReference<HypermediaCustomer> BestCustomerReference { get; set; } 
 
-        [Link("GreatSite")] public ExternalReference GreatSiteReference { get; set; }
+        [Link("GreatSite")] public Uri GreatSiteReference { get; set; }
 
         public HypermediaCustomersRoot(ICustomerRepository customerRepository)
         {
@@ -45,7 +45,7 @@ namespace CarShack.Hypermedia.Customers
             BestCustomerReference = new HypermediaObjectKeyReference<HypermediaCustomer>(1);
 
             // Workaround in case a external reference is needed which can not be build by the framework
-            GreatSiteReference = new ExternalReference(new Uri("http://www.example.com/"));
+            GreatSiteReference = new Uri("http://www.example.com/");
         }
 
         // Will be called to determine if tis action is available at the moment/current state.

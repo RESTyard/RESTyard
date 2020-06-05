@@ -52,12 +52,12 @@ namespace WebApi.HypermediaExtensions.JsonSchema
                 return null;
             }
 
-            foreach (var schemaProperyGroup in keyFromUriProperties)
+            foreach (var schemaPropertyGroup in keyFromUriProperties)
             {
-                var uriPropertyName = schemaProperyGroup.SchemaPropertyName;
+                var uriPropertyName = schemaPropertyGroup.SchemaPropertyName;
                 if (!raw.TryGetValue(uriPropertyName, out var uriToken))
                 {
-                    if (!schemaProperyGroup.IsRequired)
+                    if (!schemaPropertyGroup.IsRequired)
                         continue;
                     throw new ArgumentException($"Required uri property {uriPropertyName} is missing");
                 }
@@ -69,23 +69,23 @@ namespace WebApi.HypermediaExtensions.JsonSchema
                 }
 
                 RouteValueDictionary values = null;
-                if (!schemaProperyGroup.TemplateMatchers.Any(t => t.TryGetValuesFromRequest(request.LocalPath, out values)))
+                if (!schemaPropertyGroup.TemplateMatchers.Any(t => t.TryGetValuesFromRequest(request.LocalPath, out values)))
                 {
                     //trim first path part if application is hosted with a base path part (only one supported...). Passing the base path from configuration would be the better approach.
                     var basePathTrimmed = TrimFirstPathPart(request.LocalPath);
-                    if (!schemaProperyGroup.TemplateMatchers.Any(t => t.TryGetValuesFromRequest(basePathTrimmed, out values)))
+                    if (!schemaPropertyGroup.TemplateMatchers.Any(t => t.TryGetValuesFromRequest(basePathTrimmed, out values)))
                     {
                         if (request.LocalPath.Contains("[Area]") || request.LocalPath.Contains("[area]"))
                         {
                             throw new ArgumentException($"Local path '{request.LocalPath}' contains unsupported tokens. The tokens '[Area]' and '[area]' are not supported. Please replace them with fixed values.");
                         }
 
-                        throw new ArgumentException($"Local path '{request.LocalPath}' does not match any expected route template '{string.Join(",", schemaProperyGroup.TemplateMatchers.Select(r => r.Template.TemplateText))}'");
+                        throw new ArgumentException($"Local path '{request.LocalPath}' does not match any expected route template '{string.Join(",", schemaPropertyGroup.TemplateMatchers.Select(r => r.Template.TemplateText))}'");
                     }
                 }
 
                 raw.Remove(uriPropertyName);
-                foreach (var keyFromUriProperty in schemaProperyGroup.Properties)
+                foreach (var keyFromUriProperty in schemaPropertyGroup.Properties)
                 {
                     var parameterValue = (string)values[keyFromUriProperty.ResolvedRouteTemplateParameterName];
                     raw.Add(new JProperty(keyFromUriProperty.Property.Name,
