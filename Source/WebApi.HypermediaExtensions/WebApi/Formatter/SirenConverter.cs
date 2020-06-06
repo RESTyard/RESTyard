@@ -310,6 +310,13 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
                 var enumAsString = EnumHelper.GetEnumMemberValue(propertyType, value);
                 return new JValue(enumAsString);
             }
+            // enum can be wrapped in a nullable
+            if (IsNullableEnum(propertyType, out var enumType))
+            {
+                var enumAsString = EnumHelper.GetEnumMemberValue(enumType, value);
+                return new JValue(enumAsString);
+            }
+
 
             if (propertyTypeInfo.IsValueType)
             {
@@ -345,6 +352,20 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
 
             throw new HypermediaFormatterException($"Can not serialize type: {propertyType.BeautifulName()} value: {value}");
         }
+
+        private static bool IsNullableEnum(Type nullableType, out Type enumType)
+        {
+            var underlyingType = Nullable.GetUnderlyingType(nullableType);
+            if (underlyingType != null && underlyingType.GetTypeInfo().IsEnum)
+            {
+                enumType = underlyingType;
+                return true;
+            }
+
+            enumType = null;
+            return false;
+        }
+
 
         static bool IsContainerTypeForString(Type propertyType)
         {

@@ -29,7 +29,7 @@ namespace WebApi.HypermediaExtensions.Util.Enum
 
             try
             {
-                return EnumHelper.GetEnumByAttributeValue<T>((string) value);
+                return EnumHelper.GetEnumByAttributeValue<T>((string)value);
             }
             catch (ArgumentException e)
             {
@@ -44,7 +44,7 @@ namespace WebApi.HypermediaExtensions.Util.Enum
                 throw new AttributedEnumTypeConverterException("Tried to convert an enum to other type than string.");
             }
 
-            var enumValue = (T) System.Enum.Parse(typeof(T), value.ToString());
+            var enumValue = (T)System.Enum.Parse(typeof(T), value.ToString());
 
             try
             {

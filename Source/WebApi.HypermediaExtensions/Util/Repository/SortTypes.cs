@@ -9,14 +9,17 @@ namespace WebApi.HypermediaExtensions.Util.Repository
     {
 
         // No sorting.
-        [EnumMember(Value = "None")] None,
+        [EnumMember(Value = "None")]
+        None,
 
 
         // Ascending sort.
-        [EnumMember(Value = "Ascending")] Ascending,
+        [EnumMember(Value = "Ascending")]
+        Ascending,
 
 
         // Descending sort.
-        [EnumMember(Value = "Descending")] Descending
+        [EnumMember(Value = "Descending")]
+        Descending
     }
 }

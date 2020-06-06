@@ -53,6 +53,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
         public double ADouble { get; set; }
 
         public TestEnum AnEnum { get; set; }
+        public TestEnum? ANullableEnum { get; set; }
         public TestEnumWithNames AnEnumWithNames { get; set; }
 
         public DateTime ADateTime { get; set; }

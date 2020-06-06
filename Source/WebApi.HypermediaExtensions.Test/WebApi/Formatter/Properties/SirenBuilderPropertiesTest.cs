@@ -174,6 +174,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
                 ADouble = 4.1,
 
                 AnEnum = TestEnum.Value1,
+                ANullableEnum = TestEnum.Value1,
                 AnEnumWithNames = TestEnumWithNames.Value2,
 
                 ADateTime = new DateTime(2000, 11, 22, 18, 5, 32, 999),
