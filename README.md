@@ -471,6 +471,7 @@ Tested for:
 ### WebApiHypermediaExtensions v1.5.0
 
 - Actions now can be created with a prefilled parameter object. Its will be passed as `value` in the `action`  fields`
+- Fix: nullable enums are now also serialized as string (like enums)
 
 ### WebApiHypermediaExtensions v1.4.2
 
