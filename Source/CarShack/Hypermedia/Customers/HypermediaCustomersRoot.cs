@@ -6,6 +6,8 @@ using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
 using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 using WebApi.HypermediaExtensions.Hypermedia.Links;
+using WebApi.HypermediaExtensions.Util.Enum;
+using WebApi.HypermediaExtensions.Util.Repository;
 
 namespace CarShack.Hypermedia.Customers
 {
@@ -27,8 +29,25 @@ namespace CarShack.Hypermedia.Customers
         {
             this.customerRepository = customerRepository;
 
-            CreateCustomerAction = new HypermediaFunction<CreateCustomerParameters, Task<Customer>>(CanCreateCustomer, DoCreateCustomer, new CreateCustomerParameters{Name = "John Doe"});
-            CreateQueryAction = new HypermediaAction<CustomerQuery>(CanNewQuery, null);
+            CreateCustomerAction = new HypermediaFunction<CreateCustomerParameters, Task<Customer>>(CanCreateCustomer, DoCreateCustomer/*, new CreateCustomerParameters{Name = "John Doe"}*/);
+            CreateQueryAction = new HypermediaAction<CustomerQuery>(new CustomerQuery
+            {
+                Filter = new CustomerFilter()
+                {
+                    MinAge = 12
+                },
+                Pagination = new Pagination()
+                {
+                    PageOffset = 0,
+                    PageSize = 10
+                },
+                SortBy = new SortParameter<CustomerSortProperties>
+                {
+                    PropertyName = CustomerSortProperties.Age,
+                    SortType = SortTypes.Ascending
+                }
+
+            });
 
             // Add Links:
             var allQuery = new CustomerQuery();

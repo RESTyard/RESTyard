@@ -190,7 +190,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
                 return;
             }
             
-            jfield.Add("value", JToken.FromObject(prefilledParameter));
+            jfield.Add("value", SerializeObjectProperties(prefilledParameter));
         }
 
         private static bool IsHypermediaAction(PropertyInfo property)
