@@ -4,7 +4,9 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using Bluehands.Hypermedia.Model;
+using Bluehands.Hypermedia.Relations;
 using FunicularSwitch;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 using WebApi.HypermediaExtensions.Hypermedia.Links;
 using WebApi.HypermediaExtensions.WebApi.RouteResolver;
@@ -17,7 +19,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer
 {
     public static class ModelFactory2
     {
-        public static Result<ImmutableDictionary<EntityKey, Bluehands.Hypermedia.Model.Entity>> Build(Assembly assembly) =>
+        public static Result<ImmutableDictionary<EntityKey, Bluehands.Hypermedia.Model.Entity>> Build(Assembly assembly, ModelBuilderOptions modelBuilderOptions) =>
             assembly
                 .GetTypes()
                 .Choose(t =>
@@ -25,39 +27,43 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer
                     var hmoAttribute = t.GetCustomAttribute<HypermediaObjectAttribute>();
                     return hmoAttribute != null ? t : Option<Type>.None;
                 })
-                .Select(t => Build(t).Map(e => (key: t.ToEntityKey(), entity: e)))
+                .Select(t => Build(t, modelBuilderOptions).Map(e => (key: t.ToEntityKey(), entity: e)))
                 .Aggregate()
                 .Map(entities => entities.ToImmutableDictionary(e => e.key, e => e.entity));
 
-        public static Result<Bluehands.Hypermedia.Model.Entity> Build(Type hmoType)
+        public static Result<Bluehands.Hypermedia.Model.Entity> Build(Type hmoType, ModelBuilderOptions modelBuilderOptions)
         {
-            return hmoType.TryGetAttribute<HypermediaObjectAttribute>()
-                .Bind(bind: hmoAttribute =>
+            return hmoType
+                .TryGetAttribute<HypermediaObjectAttribute>()
+                .Bind(bind: hmoAttribute => 
                 {
                     var classes = hmoAttribute.Classes;
                     var title = hmoAttribute.Title;
-                    var name = hmoType.Name;
-                    var ns = hmoType.Namespace;
+                    var hmoTypeName = hmoType.Name;
+                    var hmoTypeNamespace = hmoType.Namespace;
 
                     var propertyInfos = hmoType
                         .GetProperties()
                         .Where(p => !p.IsIgnored())
                         .ToImmutableArray();
 
-                    return FindLinks(propertyInfos: propertyInfos).Aggregate(
+                    return FindLinks(propertyInfos: propertyInfos)
+                        .Map(links => modelBuilderOptions.CreateDefaultSelfLink ? EnsureSelfLink(links, hmoTypeName, hmoTypeNamespace) : links)
+                        .Aggregate(
                             FindProperties(propertyInfos: propertyInfos),
                             FindEntities(propertyInfos))
                         .Map(t =>
                         {
                             var (links, propertyTuples, entities) = t;
-
+                            
+                            
                             var properties = propertyTuples.Select(tp => tp.property);
                             var keyProperties = propertyTuples.SelectMany(tp => tp.keyProperty);
 
                             return new Bluehands.Hypermedia.Model.Entity(
-                                name: name,
+                                name: hmoTypeName,
                                 title: title,
-                                ns: ns,
+                                ns: hmoTypeNamespace,
                                 classes: classes,
                                 properties: properties,
                                 keyProperties: keyProperties,
@@ -65,11 +71,14 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer
                                 entities: entities);
                         });
 
-                }).Match(ok => ok, error => Result.Error<Bluehands.Hypermedia.Model.Entity>($"Failed to created model for type {hmoType.Name}: {error}"));
+                })
+                .Match(ok => ok,
+                       error => Result.Error<Bluehands.Hypermedia.Model.Entity>($"Failed to created model for type {hmoType.Name}: {error}"));
         }
 
-        static Result<List<Bluehands.Hypermedia.Model.Link>> FindLinks(ImmutableArray<PropertyInfo> propertyInfos) =>
-            propertyInfos
+        static Result<List<Bluehands.Hypermedia.Model.Link>> FindLinks(ImmutableArray<PropertyInfo> propertyInfos)
+        {
+            return propertyInfos
                 .GetAttributed<Link>()
                 .Select(l =>
                 {
@@ -107,6 +116,18 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer
                         ? Bluehands.Hypermedia.Model.Link.ObjectReference(propertyName, entityKey, relations)
                         : Bluehands.Hypermedia.Model.Link.KeyReference(propertyName, entityKey, relations);
                 }).Aggregate();
+        }
+
+        private static List<Bluehands.Hypermedia.Model.Link> EnsureSelfLink(List<Bluehands.Hypermedia.Model.Link> links, string hmoTypeName, string hmoTypeNamespace)
+        {
+            if (links.Any(l => l.Relations.Select(r => r.ToLowerInvariant()).Contains(DefaultHypermediaRelations.Self)))
+            {
+                return links;
+            }
+
+            links.Add(new Bluehands.Hypermedia.Model.Link.KeyReference_("foo", new EntityKey(hmoTypeName, hmoTypeNamespace), new List<string>{ DefaultHypermediaRelations.Self }));
+            return links;
+        }
 
         static Result<List<SubEntity>> FindEntities(ImmutableArray<PropertyInfo> propertyInfos) =>
             propertyInfos
@@ -117,8 +138,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer
                     var propertyType = entityProperty.PropertyType;
                     var propertyName = entityProperty.Name;
 
-                    Result<SubEntity> Error(string message) =>
-                        Result.Error<SubEntity>(message);
+                    Result<SubEntity> Error(string message) => Result.Error<SubEntity>(message);
 
                     Result<SubEntity> WrongPropertyType() =>
                         Error($"Sub entity property '{propertyName}' has unexpected type '{propertyType.Name}'. Supported sub entity types are: HypermediaObjectReference<T>, HypermediaObjectKeyReference<T>");

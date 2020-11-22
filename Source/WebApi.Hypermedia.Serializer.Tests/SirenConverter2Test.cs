@@ -25,9 +25,9 @@ namespace WebApi.Hypermedia.Serializer.Tests
         [TestMethod]
         public void Then_it_looks_nice()
         {
-            var model = ModelFactory2.Build(typeof(HypermediaCar).Assembly);
+            var model = ModelFactory2.Build(typeof(HypermediaCar).Assembly, new ModelBuilderOptions());
             
-            var carModel = ModelFactory2.Build(typeof(HypermediaCar));
+            var carModel = ModelFactory2.Build(typeof(HypermediaCar), new ModelBuilderOptions());
             var car = new HypermediaCar("VW", 42);
             var siren = SirenConverter2.Serialize(car, model.GetValueOrThrow()).ToString(Formatting.Indented);
             var sirenOld = SerializeClassic(car);

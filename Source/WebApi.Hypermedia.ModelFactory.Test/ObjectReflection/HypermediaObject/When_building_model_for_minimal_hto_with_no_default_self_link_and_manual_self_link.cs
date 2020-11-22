@@ -10,7 +10,7 @@ namespace WebApi.Hypermedia.ModelFactory.Test.ObjectReflection.HypermediaObject
     {
         public override void When()
         {
-            this.Result = ModelFactory2.Build(typeof(TestHto));
+            this.Result = ModelFactory2.Build(typeof(TestHto), new ModelBuilderOptions());
         }
 
         [TestMethod]
