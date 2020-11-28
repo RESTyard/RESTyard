@@ -35,7 +35,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer
         {
             return hmoType
                 .TryGetAttribute<HypermediaObjectAttribute>()
-                .Bind(bind: hmoAttribute => 
+                .Bind(bind: hmoAttribute =>
                 {
                     var classes = hmoAttribute.Classes;
                     var title = hmoAttribute.Title;
@@ -48,15 +48,15 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer
                         .ToImmutableArray();
 
                     return FindLinks(propertyInfos: propertyInfos)
-                        .Map(links => modelBuilderOptions.CreateDefaultSelfLink ? EnsureSelfLink(links, hmoTypeName, hmoTypeNamespace) : links)
+                        .Map(links => NoSelfLinkGeneration(modelBuilderOptions, hmoAttribute) ? links : EnsureSelfLink(links,  hmoTypeName, hmoTypeNamespace))
                         .Aggregate(
                             FindProperties(propertyInfos: propertyInfos),
                             FindEntities(propertyInfos))
                         .Map(t =>
                         {
                             var (links, propertyTuples, entities) = t;
-                            
-                            
+
+
                             var properties = propertyTuples.Select(tp => tp.property);
                             var keyProperties = propertyTuples.SelectMany(tp => tp.keyProperty);
 
@@ -74,6 +74,11 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer
                 })
                 .Match(ok => ok,
                        error => Result.Error<Bluehands.Hypermedia.Model.Entity>($"Failed to created model for type {hmoType.Name}: {error}"));
+        }
+
+        private static bool NoSelfLinkGeneration(ModelBuilderOptions modelBuilderOptions, HypermediaObjectAttribute hmoAttribute)
+        {
+            return !modelBuilderOptions.CreateDefaultSelfLink || hmoAttribute.NoDefaultSelfLink;
         }
 
         static Result<List<Bluehands.Hypermedia.Model.Link>> FindLinks(ImmutableArray<PropertyInfo> propertyInfos)
@@ -125,7 +130,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Serializer
                 return links;
             }
 
-            links.Add(new Bluehands.Hypermedia.Model.Link.KeyReference_("foo", new EntityKey(hmoTypeName, hmoTypeNamespace), new List<string>{ DefaultHypermediaRelations.Self }));
+            links.Add(new Bluehands.Hypermedia.Model.Link.KeyReference_("GeneratedSelfLink", new EntityKey(hmoTypeName, hmoTypeNamespace), new List<string> { DefaultHypermediaRelations.Self }));
             return links;
         }
 
