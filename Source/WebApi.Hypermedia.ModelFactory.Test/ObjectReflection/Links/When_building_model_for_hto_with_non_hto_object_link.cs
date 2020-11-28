@@ -16,12 +16,6 @@ namespace WebApi.Hypermedia.ModelFactory.Test.ObjectReflection.Links
         }
 
         [TestMethod]
-        public void Then_hto_can_be_reflected()
-        {
-            Result.GetValueOrThrow();
-        }
-
-        [TestMethod]
         public void Then_result_contains_error()
         {
             Result.Match(ok => Assert.Fail("Must be an error, only hto or URI can be a link"), error =>
@@ -31,24 +25,6 @@ namespace WebApi.Hypermedia.ModelFactory.Test.ObjectReflection.Links
                     Assert.Fail("Must contain error message");
                 }
             });
-        }
-
-        [TestMethod]
-        public void Then_result_contains_no_link()
-        {
-            Result.GetValueOrThrow().Links.Should().BeEmpty();
-        }
-
-        [TestMethod]
-        public void Then_result_link_has_self_relation()
-        {
-            Result.GetValueOrThrow().Links.First().Relations.Contains(DefaultHypermediaRelations.Self);
-        }
-
-        [TestMethod]
-        public void Then_result_link_has_one_relation()
-        {
-            Result.GetValueOrThrow().Links.Length.Should().Be(1);
         }
 
         [HypermediaObject(NoDefaultSelfLink = true)]
