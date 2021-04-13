@@ -64,7 +64,8 @@ namespace CarShack
             builder.AddMvcOptions(o => { o.Filters.Add(new GlobalExceptionFilter(null)); });
 
             // Initializes and adds the Hypermedia Extensions
-            builder.AddHypermediaExtensions(services,
+            builder.AddHypermediaExtensions(
+                services,
                 new HypermediaExtensionsOptions
                 {
                     ReturnDefaultRouteForUnknownHto = true

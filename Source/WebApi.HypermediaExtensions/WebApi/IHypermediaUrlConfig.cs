@@ -7,11 +7,11 @@ namespace WebApi.HypermediaExtensions.WebApi
         /// <summary>
         /// The Scheme which will be used when generating Hypermedia.
         /// </summary>
-        string Scheme { get; set; }
+        string Scheme { get; }
 
         /// <summary>
         /// The Host which will be used when generating Hypermedia.
         /// </summary>
-        HostString Host { get; set; }
+        HostString Host { get; }
     }
 }

@@ -50,10 +50,10 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
 
             RouteResolver = RouteResolverFactory.CreateRouteResolver(UrlHelper, RouteKeyFactory, TestUrlConfig);
             SirenConverter = CreateSirenConverter();
-            SirenConverterNoNullProperties = CreateSirenConverter(new SirenConverterConfiguration { WriteNullProperties = false });
+            SirenConverterNoNullProperties = CreateSirenConverter(new HypermediaConverterConfiguration{ WriteNullProperties = false });
         }
 
-        protected SirenConverter CreateSirenConverter(ISirenConverterConfiguration configuration = null)
+        protected SirenConverter CreateSirenConverter(HypermediaConverterConfiguration configuration = null)
         {
             return new SirenConverter(RouteResolver, QueryStringBuilder, configuration);
         }

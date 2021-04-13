@@ -116,8 +116,6 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
             this MvcOptions options,
             IRouteRegister alternateRouteRegister = null,
             IQueryStringBuilder alternateQueryStringBuilder = null,
-            IHypermediaUrlConfig hypermediaUrlConfig = null,
-            IHypermediaConverterConfiguration hypermediaConverterConfiguration = null,
             HypermediaExtensionsOptions hypermediaOptions = null,
             params Assembly[] controllerAndHypermediaAssemblies)
         {
@@ -128,11 +126,11 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
             var routeKeyFactory = new RouteKeyFactory(routeRegister);
 
             var queryStringBuilder = alternateQueryStringBuilder ?? new QueryStringBuilder();
-            var hypermediaQueryLocationFormatter = new HypermediaQueryLocationFormatter(routeResolverFactory, routeKeyFactory, queryStringBuilder, hypermediaUrlConfig);
-            var hypermediaEntityLocationFormatter = new HypermediaEntityLocationFormatter(routeResolverFactory, routeKeyFactory, hypermediaUrlConfig);
+            var hypermediaQueryLocationFormatter = new HypermediaQueryLocationFormatter(routeResolverFactory, routeKeyFactory, queryStringBuilder, hypermediaOptions.HypermediaUrlConfig);
+            var hypermediaEntityLocationFormatter = new HypermediaEntityLocationFormatter(routeResolverFactory, routeKeyFactory, hypermediaOptions.HypermediaUrlConfig);
 
-            var sirenHypermediaConverterFactory = new SirenHypermediaConverterFactory(queryStringBuilder, hypermediaConverterConfiguration?.SirenConverterConfiguration);
-            var sirenHypermediaFormatter = new SirenHypermediaFormatter(routeResolverFactory, routeKeyFactory, sirenHypermediaConverterFactory, hypermediaUrlConfig);
+            var sirenHypermediaConverterFactory = new SirenHypermediaConverterFactory(queryStringBuilder, hypermediaOptions.HypermediaConverterConfiguration);
+            var sirenHypermediaFormatter = new SirenHypermediaFormatter(routeResolverFactory, routeKeyFactory, sirenHypermediaConverterFactory, hypermediaOptions.HypermediaUrlConfig);
 
             options.OutputFormatters.Insert(0, new ProblemJsonFormatter());
             options.OutputFormatters.Insert(0, hypermediaQueryLocationFormatter);

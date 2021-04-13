@@ -1,10 +1,11 @@
-﻿using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.Hypermedia.Actions;
-using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
-using WebApi.HypermediaExtensions.WebApi.RouteResolver;
-
-namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
+﻿namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
 {
+    using global::WebApi.HypermediaExtensions.Hypermedia;
+    using global::WebApi.HypermediaExtensions.Hypermedia.Actions;
+    using global::WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
+    using global::WebApi.HypermediaExtensions.WebApi.Formatter;
+    using global::WebApi.HypermediaExtensions.WebApi.RouteResolver;
+
     /// <summary>
     /// General options for the extensions
     /// </summary>
@@ -37,5 +38,24 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// Enables usage of <see cref="KeyFromUriAttribute"/> for properties of those parameter types.
         /// </summary>
         public bool ImplicitHypermediaActionParameterBinders { get; set; } = true;
+
+        /// <summary>
+        /// Configuration for Url generation
+        /// </summary>
+        public HypermediaUrlConfig HypermediaUrlConfig { get; set; } = new HypermediaUrlConfig();
+
+
+        /// <summary>
+        /// Configuration for hypermedia document generation
+        /// </summary>
+        public HypermediaConverterConfiguration HypermediaConverterConfiguration { get; set; } = new HypermediaConverterConfiguration();
+    }
+
+    public class HypermediaConverterConfiguration
+    {
+        /// <summary>
+        /// If true null will be written to generated hypermedia document
+        /// </summary>
+        public bool WriteNullProperties { get; set; } = true;
     }
 }

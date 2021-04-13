@@ -16,7 +16,7 @@ namespace WebApi.HypermediaExtensions.WebApi.AttributedRoutes
             this.hypermediaOptions = hypermediaOptions;
         }
 
-        public IHypermediaRouteResolver CreateRouteResolver(IUrlHelper urlHelper, IRouteKeyFactory routeKeyFactory, HypermediaUrlConfig hypermediaUrlConfig = null)
+        public IHypermediaRouteResolver CreateRouteResolver(IUrlHelper urlHelper, IRouteKeyFactory routeKeyFactory, IHypermediaUrlConfig hypermediaUrlConfig = null)
         {
             return new RegisterRouteResolver(urlHelper, routeKeyFactory, routeRegister, hypermediaOptions, hypermediaUrlConfig);
         }

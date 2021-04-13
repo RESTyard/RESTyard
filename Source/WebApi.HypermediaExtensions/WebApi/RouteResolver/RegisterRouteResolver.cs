@@ -16,7 +16,8 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
     public class RegisterRouteResolver : IHypermediaRouteResolver
     {
         protected IRouteRegister RouteRegister;
-        private readonly HypermediaUrlConfig hypermediaUrlConfig;
+
+        private readonly IHypermediaUrlConfig hypermediaUrlConfig;
 
         private readonly IUrlHelper urlHelper;
 
@@ -24,7 +25,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
         private readonly bool returnDefaultRouteForUnknownHto;
         private readonly string defaultRouteSegmentForUnknownHto;
 
-        public RegisterRouteResolver(IUrlHelper urlHelper, IRouteKeyFactory routeKeyFactory, IRouteRegister routeRegister, HypermediaExtensionsOptions hypermediaOptions, HypermediaUrlConfig hypermediaUrlConfig = null)
+        public RegisterRouteResolver(IUrlHelper urlHelper, IRouteKeyFactory routeKeyFactory, IRouteRegister routeRegister, HypermediaExtensionsOptions hypermediaOptions, IHypermediaUrlConfig hypermediaUrlConfig = null)
         {
             this.RouteRegister = routeRegister;
             this.urlHelper = urlHelper;

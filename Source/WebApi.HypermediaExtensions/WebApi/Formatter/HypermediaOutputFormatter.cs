@@ -22,7 +22,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
 
         protected virtual IHypermediaRouteResolver CreateRouteResolver(OutputFormatterWriteContext context)
         {
-            var hypermediaUrlConfig = new HypermediaUrlConfig(DefaultHypermediaUrlConfig, context.HttpContext.Request);
+            var hypermediaUrlConfig = new HypermediaUrlConfigBuilder(DefaultHypermediaUrlConfig, context.HttpContext.Request);
             var urlHelper = FormatterHelper.GetUrlHelperForCurrentContext(context);
             var routeResolver = RouteResolverFactory.CreateRouteResolver(urlHelper, RouteKeyFactory, hypermediaUrlConfig);
             return routeResolver;

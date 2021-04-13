@@ -1,38 +1,41 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using Bluehands.Hypermedia.MediaTypes;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using WebApi.HypermediaExtensions.Exceptions;
-using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.Hypermedia.Actions;
-using WebApi.HypermediaExtensions.Hypermedia.Attributes;
-using WebApi.HypermediaExtensions.Hypermedia.Links;
-using WebApi.HypermediaExtensions.Query;
-using WebApi.HypermediaExtensions.Util;
-using WebApi.HypermediaExtensions.Util.Enum;
-using WebApi.HypermediaExtensions.WebApi.RouteResolver;
-
 namespace WebApi.HypermediaExtensions.WebApi.Formatter
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
+    using System.Reflection;
+
+    using Bluehands.Hypermedia.MediaTypes;
+
+    using global::WebApi.HypermediaExtensions.Exceptions;
+    using global::WebApi.HypermediaExtensions.Hypermedia;
+    using global::WebApi.HypermediaExtensions.Hypermedia.Actions;
+    using global::WebApi.HypermediaExtensions.Hypermedia.Attributes;
+    using global::WebApi.HypermediaExtensions.Hypermedia.Links;
+    using global::WebApi.HypermediaExtensions.Query;
+    using global::WebApi.HypermediaExtensions.Util;
+    using global::WebApi.HypermediaExtensions.Util.Enum;
+    using global::WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
+    using global::WebApi.HypermediaExtensions.WebApi.RouteResolver;
+
+    using Newtonsoft.Json.Linq;
+
     public class SirenConverter : IHypermediaJsonConverter, IHypermediaConverter
     {
-        private static readonly ISirenConverterConfiguration defaultConfiguration = new SirenConverterConfiguration();
+        private static readonly HypermediaConverterConfiguration DefaultConfiguration = new HypermediaConverterConfiguration();
 
         private readonly IQueryStringBuilder queryStringBuilder;
         private readonly IHypermediaRouteResolver routeResolver;
-        private readonly ISirenConverterConfiguration configuration;
+        private readonly HypermediaConverterConfiguration configuration;
 
-        public SirenConverter(IHypermediaRouteResolver routeResolver, IQueryStringBuilder queryStringBuilder, ISirenConverterConfiguration configuration = null)
+        public SirenConverter(IHypermediaRouteResolver routeResolver, IQueryStringBuilder queryStringBuilder, HypermediaConverterConfiguration configuration = null)
         {
             this.queryStringBuilder = queryStringBuilder;
             this.routeResolver = routeResolver;
 
-            this.configuration = configuration ?? defaultConfiguration;
+            this.configuration = configuration ?? DefaultConfiguration;
         }
 
         public string ConvertToString(HypermediaObject hypermediaObject)
@@ -291,7 +294,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             var value = publicProperty.GetValue(hypermediaObject);
 
             var jvalue = ValueToJToken(value, propertyType, propertyTypeInfo);
-            if (jvalue != null || configuration.WriteNullProperties)
+            if (jvalue != null || this.configuration.WriteNullProperties)
             {
                 jProperties.Add(propertyName, jvalue);
             }
