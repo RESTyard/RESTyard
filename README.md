@@ -28,21 +28,25 @@ To use the Extensions just call `AddHypermediaExtensions()` when adding MCV in `
 ``` csharp
 public void ConfigureServices(IServiceCollection services)
 {
-    var builder = services.AddMvc(options =>
+    var builder = services.AddMvcCore(options =>
     {
         ...
-        // Initializes and adds the Hypermedia Extensions
-        options.AddHypermediaExtensions();
     });
+            
+    ...
 
-    // Required by Hypermedia Extensions
-    services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+    // Initializes and adds the Hypermedia Extensions
+    builder.AddHypermediaExtensions(services,
+        new HypermediaExtensionsOptions
+        {
+            ReturnDefaultRouteForUnknownHto = true // useful during development
+        });
+
     ...
 }
 ```
-Also the Extension needs a `IActionContextAccessor` service to work.
 
-To configure the generated URLs in the Hypermedia documents pass a `HypermediaUrlConfig` to `AddHypermediaExtensions()`. In this way absolute URLs can be generated which have a different scheme or another host e.g. a load balancer.
+To configure the generated URLs in the Hypermedia documents pass a `HypermediaUrlConfig` to `AddHypermediaExtensionsInternal()`. In this way absolute URLs can be generated which have a different scheme or another host e.g. a load balancer.
 
 ## HypermediaObject
 This is the base class for all entities (in Siren format) which shall be returned from the server. Derived types from HypermediaObjects can be thought of as kind of a DTO (Data Transfer Object). A fitting name would be HTO, Hypermedia Transfer Object. They accumulate all information which should be present in the formatted Hypermedia document and will be formatted as Siren Hypermedia by the included formatter.
@@ -467,6 +471,10 @@ Tested for:
 - Nullable
 
 ## Release Notes
+
+### WebApiHypermediaExtensions v1.6.0
+
+- Fix: Fix options were not passed down on init, so they were not active.
 
 ### WebApiHypermediaExtensions v1.5.0
 

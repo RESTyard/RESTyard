@@ -65,7 +65,7 @@ namespace CarShack
 
             // Initializes and adds the Hypermedia Extensions
             builder.AddHypermediaExtensions(services,
-                hypermediaOptions: new HypermediaExtensionsOptions
+                new HypermediaExtensionsOptions
                 {
                     ReturnDefaultRouteForUnknownHto = true
                 });

@@ -1,9 +1,6 @@
 # TODO
 List of things to come...
 
-## Framework
-
-- rename private infrastructure function and make it public so core components can be changed again `WebApi.HypermediaExtensions.WebApi.ExtensionMethods.MvcOptionsExtensions.AddHypermediaExtensions`
 
 ## Actions should return a defined resource
 Develop a HTO which should be returned when executing an Action. This HTO represents the Action resource which should be accessible by a client.
