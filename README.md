@@ -475,6 +475,8 @@ Tested for:
 ### WebApiHypermediaExtensions v1.6.0
 
 - Fix: Fix options were not passed down on init, so they were not active.
+- Move UrlConfiguration and converter configuration to options so it can be configured and is not hidden.
+  This enables more configurations when using AddHypermediaExtensions()
 
 ### WebApiHypermediaExtensions v1.5.0
 
