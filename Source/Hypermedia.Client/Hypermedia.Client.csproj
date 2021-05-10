@@ -1,30 +1,39 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.4.0</Version>
+    <!--General settings-->
+
+    <VersionSuffixLocal></VersionSuffixLocal>
+    <!--When variable is set we are building a prerelease package-->
+    <VersionSuffixLocal Condition="'$(IsPreRelease)'!='' AND  '$(IsPreRelease)'">
+      $(VersionSuffix)
+    </VersionSuffixLocal>
+
+    <Version>1.4.1$(VersionSuffixLocal)</Version>
     <TargetFramework>netstandard1.6</TargetFramework>
-    <AssemblyName>Bluehands.Hypermedia.Client</AssemblyName>
-    <PackageId>Bluehands.Hypermedia.Client</PackageId>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <Authors>Mathias Reichardt</Authors>
-    <PackageLicenseUrl>https://github.com/bluehands/WebApiHypermediaExtensions/blob/master/LICENSE.md</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
-    <Description>Type safe generic REST client which uses the Siren hypermedia format.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+
+    <!-- Descriptions and information-->
+    <Titel>Generic Hypermedia Client</Titel>
+    <PackageDescription>Type safe generic REST client which uses the Siren hypermedia format.</PackageDescription>
     <PackageTags>Client;REST;Siren;Hypermedia;</PackageTags>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <AssemblyVersion>1.4.0.0</AssemblyVersion>
-    <FileVersion>1.4.0.0</FileVersion>
+    <Authors>Mathias Reichardt</Authors>
+    <Copyright>Copyright 2001-2021 Mathias Reichardt</Copyright>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
+    <RepositoryType>Git</RepositoryType>
+    <RepositoryUrl>https://github.com/bluehands/WebApiHypermediaExtensions.git</RepositoryUrl>
+    <RepositoryBranch>$(BranchName)</RepositoryBranch>
+
+    <!-- Package specific settings -->
+    <PackageId>Bluehands.Hypermedia.Client</PackageId>
+    <PackageVersion>$(Version)</PackageVersion>
+    <PackageReleaseNotes>Version $(Version)</PackageReleaseNotes>
+    <IsPackable>true</IsPackable>
     <RootNamespace>Bluehands.Hypermedia.Client</RootNamespace>
-  </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard1.6|AnyCPU'">
-    <DocumentationFile>bin\Debug\netstandard1.6\Hypermedia.Client.xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin\Release\netstandard1.6\Hypermedia.Client.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
