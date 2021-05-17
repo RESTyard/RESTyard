@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Bluehands.Hypermedia.Client.Authentication;
 using Bluehands.Hypermedia.Client.Exceptions;
@@ -18,7 +20,10 @@ namespace Bluehands.Hypermedia.Client.Resolver
 {
     public class HttpHypermediaResolver : IHypermediaResolver, IDisposable
     {
+        public const string EtagHeaderKey = "ETag";
+
         private readonly IParameterSerializer parameterSerializer;
+        private readonly ILinkHcoCache<string> linkHcoCache;
         private IHypermediaReader hypermediaReader;
         private HttpClient httpClient;
 
@@ -26,10 +31,13 @@ namespace Bluehands.Hypermedia.Client.Resolver
 
         private Action<HttpRequestHeaders> AddCustomDefaultHeadersAction { get; set; }
 
-        public HttpHypermediaResolver(IParameterSerializer parameterSerializer)
+        public HttpHypermediaResolver(
+            IParameterSerializer parameterSerializer, 
+            ILinkHcoCache<string> linkHcoCache = null)
         {
             // todo maybe pass HttpClient as dependency so it can be modified by the user
             this.parameterSerializer = parameterSerializer;
+            this.linkHcoCache = linkHcoCache;
             InitializeHttpClient();
         }
 
@@ -40,24 +48,44 @@ namespace Bluehands.Hypermedia.Client.Resolver
 
         public async Task<ResolverResult<T>> ResolveLinkAsync<T>(Uri uriToResolve) where T : HypermediaClientObject
         {
-            var result = await httpClient.GetAsync(uriToResolve);
-            EnsureRequestIsSuccessful(result);
-
-            var hypermediaObjectSiren = await result.Content.ReadAsStringAsync(); //TODO READ AS STREAM for pref
-
-            if (hypermediaReader == null)
+            HttpResponseMessage response;
+            if (this.linkHcoCache != null && this.linkHcoCache.TryGetValue(uriToResolve, out var cacheEntry))
             {
-                throw new Exception($"Please setup the hypermediaReader before using the resolver. see {nameof(InitializeHypermediaReader)}");
+                var request = new HttpRequestMessage()
+                {
+                    RequestUri = uriToResolve,
+                    Method = HttpMethod.Get,
+                    Headers =
+                    {
+                        {EtagHeaderKey, cacheEntry.Identifier}
+                    },
+                };
+                response = await this.httpClient.SendAsync(request, CancellationToken.None);
+                if (response.StatusCode == HttpStatusCode.NotModified)
+                {
+                    return new ResolverResult<T>()
+                    {
+                        Success = true,
+                        ResultObject = (T) cacheEntry.HypermediaClientObject,
+                    };
+                }
+                else
+                {
+                    this.linkHcoCache.Remove(uriToResolve);
+                }
             }
-
-            if (!(hypermediaReader.Read(hypermediaObjectSiren) is T desiredResultObject))
+            else
             {
-                throw new Exception($"Could not retrieve result as {typeof(T).Name} ");
+                response = await httpClient.GetAsync(uriToResolve);
             }
+            
+            var resolverResult = await HandleLinkResponse<T>(response);
 
-            var resolverResult = new ResolverResult<T>();
-            resolverResult.ResultObject = desiredResultObject;
-            resolverResult.Success = true;
+            if (this.linkHcoCache != null && response.Headers.TryGetValues(EtagHeaderKey, out var values))
+            {
+                var etag = values.First();
+                this.linkHcoCache.Set(uriToResolve, new CacheEntry<string>(resolverResult.ResultObject, etag));
+            }
 
             return resolverResult;
         }
@@ -65,7 +93,7 @@ namespace Bluehands.Hypermedia.Client.Resolver
         public async Task<HypermediaCommandResult> ResolveActionAsync(Uri uri, string method)
         {
             var responseMessage = await SendCommand(uri, method);
-            var actionResult = HandleResponse(responseMessage);
+            var actionResult = HandleActionResponse(responseMessage);
             return actionResult;
         }
 
@@ -74,7 +102,7 @@ namespace Bluehands.Hypermedia.Client.Resolver
             var serializedParameters = ProcessParameters(parameterDescriptions, parameterObject);
 
             var responseMessage = await SendCommand(uri, method, serializedParameters);
-            var actionResult = HandleResponse(responseMessage);
+            var actionResult = HandleActionResponse(responseMessage);
             return actionResult;
         }
 
@@ -162,12 +190,39 @@ namespace Bluehands.Hypermedia.Client.Resolver
             return parameterDescription;
         }
 
-        private static HypermediaCommandResult HandleResponse(HttpResponseMessage responseMessage)
+        private async Task<ResolverResult<T>> HandleLinkResponse<T>(HttpResponseMessage responseMessage) where T : HypermediaClientObject
         {
             EnsureRequestIsSuccessful(responseMessage);
 
-            var actionResult = new HypermediaCommandResult();
-            actionResult.Success = true;
+            var hypermediaObjectSiren = await responseMessage.Content.ReadAsStringAsync(); //TODO READ AS STREAM for pref
+
+            if (hypermediaReader == null)
+            {
+                throw new Exception(
+                    $"Please setup the hypermediaReader before using the resolver. see {nameof(InitializeHypermediaReader)}");
+            }
+
+            if (!(hypermediaReader.Read(hypermediaObjectSiren) is T desiredResultObject))
+            {
+                throw new Exception($"Could not retrieve result as {typeof(T).Name} ");
+            }
+
+            var resolverResult = new ResolverResult<T>()
+            {
+                ResultObject = desiredResultObject, 
+                Success = true,
+            };
+            return resolverResult;
+        }
+
+        private static HypermediaCommandResult HandleActionResponse(HttpResponseMessage responseMessage)
+        {
+            EnsureRequestIsSuccessful(responseMessage);
+
+            var actionResult = new HypermediaCommandResult()
+            {
+                Success = true
+            };
             return actionResult;
         }
 
@@ -175,17 +230,21 @@ namespace Bluehands.Hypermedia.Client.Resolver
         {
             EnsureRequestIsSuccessful(responseMessage);
 
-            var actionResult = new HypermediaFunctionResult<T>();
-            actionResult.Success = true;
-
             var location = responseMessage.Headers.Location;
             if (location == null)
             {
                 throw new Exception("hypermedia function did not return a result resource location.");
             }
 
-            actionResult.ResultLocation.Uri = location;
-            actionResult.ResultLocation.Resolver = this;
+            var actionResult = new HypermediaFunctionResult<T>
+            {
+                Success = true, 
+                ResultLocation =
+                {
+                    Uri = location, 
+                    Resolver = this
+                },
+            };
 
             return actionResult;
         }
@@ -243,7 +302,7 @@ namespace Bluehands.Hypermedia.Client.Resolver
             return UsernamePasswordCredentials != null;
         }
 
-        private HttpMethod GetHttpMethod(string method)
+        private static HttpMethod GetHttpMethod(string method)
         {
             switch (method)
             {
@@ -264,7 +323,12 @@ namespace Bluehands.Hypermedia.Client.Resolver
         {
             UsernamePasswordCredentials = usernamePasswordCredentials;
             InitializeHttpClient();
-            // todo if using a cache clear it, new user migth not be able to access cached content
+            ClearCache();
+        }
+
+        private void ClearCache()
+        {
+            this.linkHcoCache?.Clear();
         }
 
         public void SetCustomDefaultHeaders(Action<HttpRequestHeaders> addCustomDefaultHeadersAction)
