@@ -1,0 +1,59 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json.Linq;
+
+namespace Bluehands.Hypermedia.Client.Reader
+{
+    public class NewtonsoftJsonSirenStringParser : ISirenStringParser
+    {
+        public IToken Parse(string contentString)
+        {
+            var jObject = JObject.Parse(contentString);
+            return JTokenWrapper.Wrap(jObject);
+        }
+
+        private class JTokenWrapper : IToken
+        {
+            private readonly JToken jToken;
+
+            public JTokenWrapper(JToken jToken)
+            {
+                this.jToken = jToken;
+            }
+
+            public static IToken Wrap(JToken jToken)
+            {
+                return new JTokenWrapper(jToken);
+            }
+
+            public IEnumerator<IToken> GetEnumerator()
+            {
+                return this.jToken.Select(Wrap).GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
+            public string AsString()
+            {
+                return this.jToken.Value<string>();
+            }
+
+            public IEnumerable<string> AsStrings()
+            {
+                return this.jToken.Values<string>();
+            }
+
+            public object ToObject(Type type)
+            {
+                return this.jToken.ToObject(type);
+            }
+
+            public IToken this[string key] => new JTokenWrapper(this.jToken[key]);
+        }
+    }
+}

@@ -10,13 +10,13 @@ namespace Bluehands.Hypermedia.Client
 {
     public class HypermediaObjectRegister : IHypermediaObjectRegister
     {
-        private readonly Dictionary<List<string>, Type> hypermediaObjectTypeDictionary = new Dictionary<List<string>, Type>(new StringCollectionComparer());
+        private readonly Dictionary<ICollection<string>, Type> hypermediaObjectTypeDictionary = new Dictionary<ICollection<string>, Type>(new StringCollectionComparer());
 
         public void Register(Type hypermediaObjectType)
         {
             if (!typeof(HypermediaClientObject).GetTypeInfo().IsAssignableFrom(hypermediaObjectType))
             {
-                throw new Exception($"Can only register {typeof(HypermediaClientObject).Name}");
+                throw new Exception($"Can only register {nameof(HypermediaClientObject)}");
             }
 
             var attribute = hypermediaObjectType.GetTypeInfo().GetCustomAttribute<HypermediaClientObjectAttribute>();
@@ -31,14 +31,14 @@ namespace Bluehands.Hypermedia.Client
             
         }
 
-        public HypermediaClientObject CreateFromClasses(List<string> classes)
+        public HypermediaClientObject CreateFromClasses(ICollection<string> classes)
         {
-            var hypermediaObjectType = this.GethypermediaType(classes);
+            var hypermediaObjectType = this.GetHypermediaType(classes);
 
             return (HypermediaClientObject)Activator.CreateInstance(hypermediaObjectType);
         }
 
-        public Type GethypermediaType(List<string> classes)
+        public Type GetHypermediaType(ICollection<string> classes)
         {
             Type hypermediaObjectType;
             if (!this.hypermediaObjectTypeDictionary.TryGetValue(classes, out hypermediaObjectType))
@@ -53,8 +53,8 @@ namespace Bluehands.Hypermedia.Client
     {
         void Register(Type hypermediaObjectType);
 
-        Type GethypermediaType(List<string> classes);
+        Type GetHypermediaType(ICollection<string> classes);
 
-        HypermediaClientObject CreateFromClasses(List<string> classes);
+        HypermediaClientObject CreateFromClasses(ICollection<string> classes);
     }
 }
