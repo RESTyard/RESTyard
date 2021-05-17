@@ -35,7 +35,7 @@ namespace Bluehands.Hypermedia.Client.Test
             resolver.SetCredentials(new UsernamePasswordCredentials("User", "Password"));
             resolver.SetCustomDefaultHeaders(headers => headers.AcceptLanguage.Add(new StringWithQualityHeaderValue("en", 1.0)));
 
-            var hypermediaReader = new SirenHypermediaReader(this.HypermediaObjectRegister, resolver);
+            var hypermediaReader = new SirenHypermediaReader(this.HypermediaObjectRegister, resolver, new NewtonsoftJsonSirenStringParser());
             this.SirenClient = new HypermediaClient<EntryPointHco>(ApiEntryPoint, resolver, hypermediaReader);
         }
 

@@ -18,14 +18,14 @@ namespace Bluehands.Hypermedia.Client.Reader
         {
             private readonly JToken jToken;
 
-            public JTokenWrapper(JToken jToken)
+            private JTokenWrapper(JToken jToken)
             {
                 this.jToken = jToken;
             }
 
             public static IToken Wrap(JToken jToken)
             {
-                return new JTokenWrapper(jToken);
+                return jToken != null ? new JTokenWrapper(jToken) : null;
             }
 
             public IEnumerator<IToken> GetEnumerator()
@@ -53,7 +53,7 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return this.jToken.ToObject(type);
             }
 
-            public IToken this[string key] => new JTokenWrapper(this.jToken[key]);
+            public IToken this[string key] => Wrap(this.jToken[key]);
         }
     }
 }
