@@ -24,26 +24,29 @@ namespace Bluehands.Hypermedia.Client.Reader
     {
         private readonly IHypermediaObjectRegister hypermediaObjectRegister;
         private readonly IHypermediaCommandFactory hypermediaCommandFactory;
-        private readonly IHypermediaResolver resolver;
-        private readonly ISirenStringParser sirenStringParser;
+        private IHypermediaResolver resolver;
+        private readonly IStringParser stringParser;
         private readonly StringCollectionComparer stringCollectionComparer = new StringCollectionComparer();
 
         public SirenHypermediaReader(
-            IHypermediaObjectRegister hypermediaObjectRegister, 
-            IHypermediaResolver resolver,
-            ISirenStringParser sirenStringParser)
+            IHypermediaObjectRegister hypermediaObjectRegister,
+            IStringParser stringParser)
         {
             this.hypermediaObjectRegister = hypermediaObjectRegister;
             this.hypermediaCommandFactory = RegisterHypermediaCommandFactory.Create();
+            this.stringParser = stringParser;
+        }
+
+        public void InitializeHypermediaResolver(IHypermediaResolver resolver)
+        {
             this.resolver = resolver;
-            this.sirenStringParser = sirenStringParser;
         }
 
         public HypermediaClientObject Read(string contentString)
         {
             // TODO inject deserializer
             // todo catch exception: invalid format
-            var rootObject = this.sirenStringParser.Parse(contentString);
+            var rootObject = this.stringParser.Parse(contentString);
             var result = this.ReadHypermediaObject(rootObject);
             return result;
         }
@@ -163,7 +166,7 @@ namespace Bluehands.Hypermedia.Client.Reader
             commandInstance.Name = commandName;
             commandInstance.CanExecute = true;
 
-            var title = action["title"]?.AsString();
+            var title = action["title"]?.ValueAsString();
             if (title == null)
             {
                 title = string.Empty;
@@ -171,14 +174,14 @@ namespace Bluehands.Hypermedia.Client.Reader
             commandInstance.Title = title;
 
 
-            var uri = action["href"]?.AsString();
+            var uri = action["href"]?.ValueAsString();
             if (uri == null)
             {
                 throw new Exception($"Siren action without href: '{commandName}'");
             }
             commandInstance.Uri = new Uri(uri);
 
-            var method = action["method"]?.AsString();
+            var method = action["method"]?.ValueAsString();
             if (method == null)
             {
                 method = "GET";
@@ -204,9 +207,9 @@ namespace Bluehands.Hypermedia.Client.Reader
             {
                 var parameterDescription = new ParameterDescription
                 {
-                    Name = field["name"].AsString(),
-                    Type = field["type"].AsString(),
-                    Classes = field["class"]?.AsStrings().ToList(),
+                    Name = field["name"].ValueAsString(),
+                    Type = field["type"].ValueAsString(),
+                    Classes = field["class"]?.ChildrenAsStrings().ToList(),
                 };
                 // todo optional but not save, or check annotation on class
 
@@ -222,7 +225,7 @@ namespace Bluehands.Hypermedia.Client.Reader
 
         private bool IsDesiredAction(IToken action, string commandName)
         {
-            var name = action["name"]?.AsString();
+            var name = action["name"]?.ValueAsString();
             if (name == null)
             {
                 return false;
@@ -297,7 +300,7 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return false;
             }
 
-            return this.stringCollectionComparer.Equals(actualClasses.AsStrings().ToArray(), expectedClasses);
+            return this.stringCollectionComparer.Equals(actualClasses.ChildrenAsStrings().ToArray(), expectedClasses);
         }
 
         private bool EntityRelationsMatch(IToken entity, ICollection<string> expectedRelations)
@@ -313,7 +316,7 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return false;
             }
 
-            return this.stringCollectionComparer.Equals(actualRelations.AsStrings().ToArray(), expectedRelations);
+            return this.stringCollectionComparer.Equals(actualRelations.ChildrenAsStrings().ToArray(), expectedRelations);
         }
 
 
@@ -339,7 +342,7 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return;
             }
 
-            var link = links.FirstOrDefault(l => this.stringCollectionComparer.Equals(l["rel"].AsStrings().ToList(), linkAttribute.Relations));
+            var link = links.FirstOrDefault(l => this.stringCollectionComparer.Equals(l["rel"].ChildrenAsStrings().ToList(), linkAttribute.Relations));
             if (link == null)
             {
                 if (IsMandatoryHypermediaLink(propertyInfo))
@@ -349,8 +352,8 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return;
             }
             
-            hypermediaLink.Uri = new Uri(link["href"].AsString());
-            hypermediaLink.Relations = link["rel"].AsStrings().ToList();
+            hypermediaLink.Uri = new Uri(link["href"].ValueAsString());
+            hypermediaLink.Relations = link["rel"].ChildrenAsStrings().ToList();
         }
 
         // todo attribute with different property name
@@ -435,7 +438,7 @@ namespace Bluehands.Hypermedia.Client.Reader
 
         private void ReadRelations(HypermediaClientObject hypermediaObjectInstance, IToken rootObject)
         {
-            var relations = rootObject["rel"]?.AsStrings();
+            var relations = rootObject["rel"]?.ChildrenAsStrings();
             if (relations == null)
             {
                 return;
@@ -452,14 +455,14 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return;
             }
 
-            hypermediaObjectInstance.Title = title.AsString();
+            hypermediaObjectInstance.Title = title.ValueAsString();
         }      
 
         private static ICollection<string> ReadClasses(IToken rootObject)
         {
             // todo catch exception
             // rel migth be missing so provide better error message
-            return rootObject["class"].AsStrings().ToList();
+            return rootObject["class"].ChildrenAsStrings().ToList();
         }
     }
 }

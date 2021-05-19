@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Bluehands.Hypermedia.Client.Reader
 {
-    public class NewtonsoftJsonSirenStringParser : ISirenStringParser
+    public class NewtonsoftJsonStringParser : IStringParser
     {
         public IToken Parse(string contentString)
         {
@@ -38,12 +38,12 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return GetEnumerator();
             }
 
-            public string AsString()
+            public string ValueAsString()
             {
                 return this.jToken.Value<string>();
             }
 
-            public IEnumerable<string> AsStrings()
+            public IEnumerable<string> ChildrenAsStrings()
             {
                 return this.jToken.Values<string>();
             }

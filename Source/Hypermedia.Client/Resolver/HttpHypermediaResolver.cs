@@ -33,7 +33,7 @@ namespace Bluehands.Hypermedia.Client.Resolver
 
         public HttpHypermediaResolver(
             IParameterSerializer parameterSerializer, 
-            ILinkHcoCache<string> linkHcoCache = null)
+            ILinkHcoCache<string> linkHcoCache)
         {
             // todo maybe pass HttpClient as dependency so it can be modified by the user
             this.parameterSerializer = parameterSerializer;
@@ -49,7 +49,7 @@ namespace Bluehands.Hypermedia.Client.Resolver
         public async Task<ResolverResult<T>> ResolveLinkAsync<T>(Uri uriToResolve) where T : HypermediaClientObject
         {
             HttpResponseMessage response;
-            if (this.linkHcoCache != null && this.linkHcoCache.TryGetValue(uriToResolve, out var cacheEntry))
+            if (this.linkHcoCache.TryGetValue(uriToResolve, out var cacheEntry))
             {
                 var request = new HttpRequestMessage()
                 {
@@ -81,7 +81,7 @@ namespace Bluehands.Hypermedia.Client.Resolver
             
             var resolverResult = await HandleLinkResponse<T>(response);
 
-            if (this.linkHcoCache != null && response.Headers.TryGetValues(EtagHeaderKey, out var values))
+            if (response.Headers.TryGetValues(EtagHeaderKey, out var values))
             {
                 var etag = values.First();
                 this.linkHcoCache.Set(uriToResolve, new CacheEntry<string>(resolverResult.ResultObject, etag));

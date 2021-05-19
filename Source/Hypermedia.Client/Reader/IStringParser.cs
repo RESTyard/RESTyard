@@ -4,16 +4,16 @@ using System.Collections.Generic;
 
 namespace Bluehands.Hypermedia.Client.Reader
 {
-    public interface ISirenStringParser
+    public interface IStringParser
     {
         IToken Parse(string contentString);
     }
 
     public interface IToken : IEnumerable<IToken>
     {
-        string AsString();
+        string ValueAsString();
 
-        IEnumerable<string> AsStrings();
+        IEnumerable<string> ChildrenAsStrings();
 
         object ToObject(Type type);
 

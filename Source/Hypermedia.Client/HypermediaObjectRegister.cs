@@ -12,13 +12,17 @@ namespace Bluehands.Hypermedia.Client
     {
         private readonly Dictionary<ICollection<string>, Type> hypermediaObjectTypeDictionary = new Dictionary<ICollection<string>, Type>(new StringCollectionComparer());
 
+        public void Register<THco>() where THco : HypermediaClientObject
+        {
+            Register(typeof(THco));
+        }
+
         public void Register(Type hypermediaObjectType)
         {
             if (!typeof(HypermediaClientObject).GetTypeInfo().IsAssignableFrom(hypermediaObjectType))
             {
                 throw new Exception($"Can only register {nameof(HypermediaClientObject)}");
             }
-
             var attribute = hypermediaObjectType.GetTypeInfo().GetCustomAttribute<HypermediaClientObjectAttribute>();
             if (attribute == null)
             {
@@ -51,6 +55,8 @@ namespace Bluehands.Hypermedia.Client
 
     public interface IHypermediaObjectRegister
     {
+        void Register<THco>() where THco : HypermediaClientObject;
+        
         void Register(Type hypermediaObjectType);
 
         Type GetHypermediaType(ICollection<string> classes);
