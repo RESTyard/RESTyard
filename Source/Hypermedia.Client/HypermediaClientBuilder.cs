@@ -19,13 +19,24 @@ namespace Bluehands.Hypermedia.Client
 
         }
 
+        private static T Get<T>(Func<T> getFunc, params string[] possibleMethodNames)
+        {
+            if (getFunc == null)
+            {
+                throw new InvalidOperationException(
+                    $"Please call any of {string.Join(",", possibleMethodNames)} before creating the HypermediaClient");
+            }
+
+            return getFunc();
+        }
+
         public HypermediaClient<TEntryPoint> CreateHypermediaClient<TEntryPoint>(Uri uriApiEntryPoint) where TEntryPoint : HypermediaClientObject
         {
-            var objectRegister = this.createHypermediaObjectRegister();
-            var serializer = this.createParameterSerializer();
-            var stringParser = this.createStringParser();
-            var resolver = this.createHypermediaResolver(serializer);
-            var reader = this.createHypermediaReader(objectRegister, stringParser);
+            var objectRegister = Get(this.createHypermediaObjectRegister, nameof(ConfigureObjectRegister));
+            var serializer = Get(this.createParameterSerializer, nameof(WithDefaultParameterSerializer), nameof(WithSingleJsonParameterSerializer), nameof(WithCustomParameterSerializer));
+            var stringParser = Get(this.createStringParser, nameof(WithNewtonsoftJsonParser), nameof(WithSystemTextJsonParser), nameof(WithCustomStringParser));
+            var resolver = Get(() => this.createHypermediaResolver(serializer), nameof(WithHttpResolver), nameof(WithCustomHypermediaResolver));
+            var reader = Get(() => this.createHypermediaReader(objectRegister, stringParser), nameof(WithSirenHypermediaReader), nameof(WithCustomHypermediaReader));
             resolver.InitializeHypermediaReader(reader);
             reader.InitializeHypermediaResolver(resolver);
             var client = new HypermediaClient<TEntryPoint>(uriApiEntryPoint, resolver, reader);
@@ -61,7 +72,7 @@ namespace Bluehands.Hypermedia.Client
             return this;
         }
 
-        public HypermediaClientBuilder WithCustomResolver(IHypermediaResolver resolver)
+        public HypermediaClientBuilder WithCustomHypermediaResolver(IHypermediaResolver resolver)
         {
             this.createHypermediaResolver = _ => resolver;
             return this;
@@ -95,9 +106,15 @@ namespace Bluehands.Hypermedia.Client
             return this;
         }
 
-        public HypermediaClientBuilder WithNewtonsoftJsonReader()
+        public HypermediaClientBuilder WithNewtonsoftJsonParser()
         {
             this.createStringParser = () => new NewtonsoftJsonStringParser();
+            return this;
+        }
+
+        public HypermediaClientBuilder WithSystemTextJsonParser()
+        {
+            this.createStringParser = () => new SystemTextJsonStringParser();
             return this;
         }
 
