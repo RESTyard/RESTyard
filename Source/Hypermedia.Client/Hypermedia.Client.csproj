@@ -10,7 +10,7 @@
     </VersionSuffixLocal>
 
     <Version>1.4.1$(VersionSuffixLocal)</Version>
-    <TargetFramework>netstandard1.6</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
 
