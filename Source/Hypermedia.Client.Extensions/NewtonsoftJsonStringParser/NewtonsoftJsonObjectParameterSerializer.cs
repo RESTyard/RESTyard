@@ -1,13 +1,14 @@
+using Bluehands.Hypermedia.Client.ParameterSerializer;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Bluehands.Hypermedia.Client.ParameterSerializer
+namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
 {
-    public class JsonObjectParameterSerializer : IParameterSerializer
+    public class NewtonsoftJsonObjectParameterSerializer : IParameterSerializer
     {
         private readonly Formatting formatting;
 
-        public JsonObjectParameterSerializer(Formatting formatting = Formatting.None)
+        public NewtonsoftJsonObjectParameterSerializer(Formatting formatting = Formatting.None)
         {
             this.formatting = formatting;
         }

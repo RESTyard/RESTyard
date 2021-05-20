@@ -4,9 +4,9 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Bluehands.Hypermedia.Client.Authentication;
 using Bluehands.Hypermedia.Client.Extensions;
-using Bluehands.Hypermedia.Client.ParameterSerializer;
-using Bluehands.Hypermedia.Client.Reader;
-using Bluehands.Hypermedia.Client.Resolver;
+using Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson;
+using Bluehands.Hypermedia.Client.Extensions.SystemNetHttp;
+using Bluehands.Hypermedia.Client.Extensions.SystemTextJsonStringParser;
 using Bluehands.Hypermedia.Client.Test.Hypermedia;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -31,13 +31,14 @@ namespace Bluehands.Hypermedia.Client.Test
             this.SirenClient = new HypermediaClientBuilder()
                 .ConfigureObjectRegister(ConfigureHypermediaObjectRegister)
                 .WithSingleJsonParameterSerializer()
-                .WithHttpResolver(resolver =>
+                .WithHttpHypermediaResolver(resolver =>
                 {
                     resolver.SetCredentials(new UsernamePasswordCredentials("User", "Password"));
                     resolver.SetCustomDefaultHeaders(headers =>
                         headers.AcceptLanguage.Add(new StringWithQualityHeaderValue("en", 1.0)));
                 })
-                .WithNewtonsoftJsonReader()
+                .WithSystemTextJsonStringParser()
+                .WithNewtonsoftJsonProblemReader()
                 .WithSirenHypermediaReader()
                 .CreateHypermediaClient<EntryPointHco>(ApiEntryPoint);
         }

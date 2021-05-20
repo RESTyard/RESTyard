@@ -3,8 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using Bluehands.Hypermedia.Client.Reader;
 
-namespace Bluehands.Hypermedia.Client.Reader
+namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJsonStringParser
 {
     public class SystemTextJsonStringParser : IStringParser
     {

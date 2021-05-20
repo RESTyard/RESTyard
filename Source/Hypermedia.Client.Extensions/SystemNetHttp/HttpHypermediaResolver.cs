@@ -13,16 +13,17 @@ using Bluehands.Hypermedia.Client.Hypermedia;
 using Bluehands.Hypermedia.Client.Hypermedia.Commands;
 using Bluehands.Hypermedia.Client.ParameterSerializer;
 using Bluehands.Hypermedia.Client.Reader;
-using Bluehands.Hypermedia.Client.Reader.ProblemJson;
+using Bluehands.Hypermedia.Client.Resolver;
 using Bluehands.Hypermedia.MediaTypes;
 
-namespace Bluehands.Hypermedia.Client.Resolver
+namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 {
     public class HttpHypermediaResolver : IHypermediaResolver, IDisposable
     {
         public const string EtagHeaderKey = "ETag";
 
         private readonly IParameterSerializer parameterSerializer;
+        private readonly IProblemStringReader problemReader;
         private readonly ILinkHcoCache<string> linkHcoCache;
         private IHypermediaReader hypermediaReader;
         private HttpClient httpClient;
@@ -32,11 +33,13 @@ namespace Bluehands.Hypermedia.Client.Resolver
         private Action<HttpRequestHeaders> AddCustomDefaultHeadersAction { get; set; }
 
         public HttpHypermediaResolver(
-            IParameterSerializer parameterSerializer, 
+            IParameterSerializer parameterSerializer,
+            IProblemStringReader problemReader,
             ILinkHcoCache<string> linkHcoCache)
         {
             // todo maybe pass HttpClient as dependency so it can be modified by the user
             this.parameterSerializer = parameterSerializer;
+            this.problemReader = problemReader;
             this.linkHcoCache = linkHcoCache;
             InitializeHttpClient();
         }
@@ -122,7 +125,7 @@ namespace Bluehands.Hypermedia.Client.Resolver
             return actionResult;
         }
 
-        private static void EnsureRequestIsSuccessful(HttpResponseMessage result)
+        private async Task EnsureRequestIsSuccessful(HttpResponseMessage result)
         {
             if (result.IsSuccessStatusCode)
             {
@@ -131,10 +134,13 @@ namespace Bluehands.Hypermedia.Client.Resolver
 
             var innerException = GetInnerException(result);
 
-            var hasProblemDescription = ProblemJsonReader.TryReadProblemJson(result, out var problemDescription);
-            if (hasProblemDescription)
+            if (result.Content != null)
             {
-                throw new HypermediaProblemException(problemDescription, innerException);
+                var contentAsString = await result.Content.ReadAsStringAsync();
+                if (this.problemReader.TryReadProblemString(contentAsString, out var problemDescription))
+                {
+                    throw new HypermediaProblemException(problemDescription, innerException);
+                }
             }
 
             var message = innerException.Message ?? string.Empty;
@@ -215,7 +221,7 @@ namespace Bluehands.Hypermedia.Client.Resolver
             return resolverResult;
         }
 
-        private static HypermediaCommandResult HandleActionResponse(HttpResponseMessage responseMessage)
+        private HypermediaCommandResult HandleActionResponse(HttpResponseMessage responseMessage)
         {
             EnsureRequestIsSuccessful(responseMessage);
 

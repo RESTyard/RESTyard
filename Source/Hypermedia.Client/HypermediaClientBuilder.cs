@@ -11,7 +11,8 @@ namespace Bluehands.Hypermedia.Client
         private Func<IHypermediaObjectRegister> createHypermediaObjectRegister;
         private Func<IParameterSerializer> createParameterSerializer;
         private Func<IStringParser> createStringParser;
-        private Func<IParameterSerializer, IHypermediaResolver> createHypermediaResolver;
+        private Func<IProblemStringReader> createProblemStringReader;
+        private Func<IParameterSerializer, IProblemStringReader, IHypermediaResolver> createHypermediaResolver;
         private Func<IHypermediaObjectRegister, IStringParser, IHypermediaReader> createHypermediaReader;
 
         public HypermediaClientBuilder()
@@ -24,7 +25,7 @@ namespace Bluehands.Hypermedia.Client
             if (getFunc == null)
             {
                 throw new InvalidOperationException(
-                    $"Please call any of {string.Join(",", possibleMethodNames)} before creating the HypermediaClient");
+                    $"Please call any of {string.Join(",", possibleMethodNames)}, or a suitable extension method from one of the Hypermedia.Client.Extensions packages, before creating the HypermediaClient");
             }
 
             return getFunc();
@@ -33,9 +34,10 @@ namespace Bluehands.Hypermedia.Client
         public HypermediaClient<TEntryPoint> CreateHypermediaClient<TEntryPoint>(Uri uriApiEntryPoint) where TEntryPoint : HypermediaClientObject
         {
             var objectRegister = Get(this.createHypermediaObjectRegister, nameof(ConfigureObjectRegister));
-            var serializer = Get(this.createParameterSerializer, nameof(WithDefaultParameterSerializer), nameof(WithSingleJsonParameterSerializer), nameof(WithCustomParameterSerializer));
-            var stringParser = Get(this.createStringParser, nameof(WithNewtonsoftJsonParser), nameof(WithSystemTextJsonParser), nameof(WithCustomStringParser));
-            var resolver = Get(() => this.createHypermediaResolver(serializer), nameof(WithHttpResolver), nameof(WithCustomHypermediaResolver));
+            var serializer = Get(this.createParameterSerializer, nameof(WithCustomParameterSerializer));
+            var stringParser = Get(this.createStringParser, nameof(WithCustomStringParser));
+            var problemReader = Get(this.createProblemStringReader, nameof(WithCustomProblemStringReader));
+            var resolver = Get(() => this.createHypermediaResolver(serializer, problemReader), nameof(WithCustomHypermediaResolver));
             var reader = Get(() => this.createHypermediaReader(objectRegister, stringParser), nameof(WithSirenHypermediaReader), nameof(WithCustomHypermediaReader));
             resolver.InitializeHypermediaReader(reader);
             reader.InitializeHypermediaResolver(resolver);
@@ -54,73 +56,33 @@ namespace Bluehands.Hypermedia.Client
             return this;
         }
 
-        public HypermediaClientBuilder WithCustomParameterSerializer(IParameterSerializer parameterSerializer)
+        public HypermediaClientBuilder WithCustomParameterSerializer(Func<IParameterSerializer> createParameterSerializer)
         {
-            this.createParameterSerializer = () => parameterSerializer;
+            this.createParameterSerializer = createParameterSerializer;
             return this;
         }
 
-        public HypermediaClientBuilder WithDefaultParameterSerializer()
+        public HypermediaClientBuilder WithCustomHypermediaResolver(Func<IParameterSerializer, IProblemStringReader, IHypermediaResolver> createResolver)
         {
-            this.createParameterSerializer = () => new JsonObjectParameterSerializer();
+            this.createHypermediaResolver = createResolver;
             return this;
         }
 
-        public HypermediaClientBuilder WithSingleJsonParameterSerializer()
+        public HypermediaClientBuilder WithCustomStringParser(Func<IStringParser> createStringParser)
         {
-            this.createParameterSerializer = () => new SingleJsonObjectParameterSerializer();
+            this.createStringParser = createStringParser;
             return this;
         }
 
-        public HypermediaClientBuilder WithCustomHypermediaResolver(IHypermediaResolver resolver)
+        public HypermediaClientBuilder WithCustomProblemStringReader(Func<IProblemStringReader> createProblemStringReader)
         {
-            this.createHypermediaResolver = _ => resolver;
+            this.createProblemStringReader = createProblemStringReader;
             return this;
         }
 
-        public HypermediaClientBuilder WithHttpResolver(Action<HttpHypermediaResolver> configure)
+        public HypermediaClientBuilder WithCustomHypermediaReader(Func<IHypermediaObjectRegister, IStringParser, IHypermediaReader> createHypermediaReader)
         {
-            this.createHypermediaResolver = serializer =>
-            {
-                var resolver = new HttpHypermediaResolver(serializer, NoLinkCache<string>.Instance);
-                configure(resolver);
-                return resolver;
-            };
-            return this;
-        }
-
-        public HypermediaClientBuilder WithHttpResolver(ILinkHcoCache<string> linkHcoCache, Action<HttpHypermediaResolver> configure)
-        {
-            this.createHypermediaResolver = serializer =>
-            {
-                var resolver = new HttpHypermediaResolver(serializer, linkHcoCache);
-                configure(resolver);
-                return resolver;
-            };
-            return this;
-        }
-
-        public HypermediaClientBuilder WithCustomStringParser(IStringParser parser)
-        {
-            this.createStringParser = () => parser;
-            return this;
-        }
-
-        public HypermediaClientBuilder WithNewtonsoftJsonParser()
-        {
-            this.createStringParser = () => new NewtonsoftJsonStringParser();
-            return this;
-        }
-
-        public HypermediaClientBuilder WithSystemTextJsonParser()
-        {
-            this.createStringParser = () => new SystemTextJsonStringParser();
-            return this;
-        }
-
-        public HypermediaClientBuilder WithCustomHypermediaReader(IHypermediaReader reader)
-        {
-            this.createHypermediaReader = (_, __) => reader;
+            this.createHypermediaReader = createHypermediaReader;
             return this;
         }
 

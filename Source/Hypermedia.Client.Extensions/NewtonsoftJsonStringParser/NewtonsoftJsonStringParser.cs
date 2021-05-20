@@ -2,9 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Bluehands.Hypermedia.Client.Reader;
 using Newtonsoft.Json.Linq;
 
-namespace Bluehands.Hypermedia.Client.Reader
+namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
 {
     public class NewtonsoftJsonStringParser : IStringParser
     {
