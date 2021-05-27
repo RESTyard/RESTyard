@@ -34,6 +34,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SystemTextJsonStringParser"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SystemNetHttp", "Hypermedia.Client.Extensions\SystemNetHttp\SystemNetHttp.csproj", "{B3001627-20BB-4E03-B80A-532B07D7D859}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Extensions.Test", "Hypermedia.Client.Extensions\Extensions.Test\Extensions.Test.csproj", "{4FA6CC8F-C0BA-46C2-B5F6-D2B46E5F8DEF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,6 +82,10 @@ Global
 		{B3001627-20BB-4E03-B80A-532B07D7D859}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3001627-20BB-4E03-B80A-532B07D7D859}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B3001627-20BB-4E03-B80A-532B07D7D859}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FA6CC8F-C0BA-46C2-B5F6-D2B46E5F8DEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FA6CC8F-C0BA-46C2-B5F6-D2B46E5F8DEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FA6CC8F-C0BA-46C2-B5F6-D2B46E5F8DEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FA6CC8F-C0BA-46C2-B5F6-D2B46E5F8DEF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -88,6 +94,7 @@ Global
 		{5F5E8A59-5F4F-4527-A811-E527271CF258} = {E147EF98-0984-43D1-BD4F-F23FE79E22FA}
 		{5BE57CD6-D776-4808-84D7-DA86EF511D84} = {E147EF98-0984-43D1-BD4F-F23FE79E22FA}
 		{B3001627-20BB-4E03-B80A-532B07D7D859} = {E147EF98-0984-43D1-BD4F-F23FE79E22FA}
+		{4FA6CC8F-C0BA-46C2-B5F6-D2B46E5F8DEF} = {E147EF98-0984-43D1-BD4F-F23FE79E22FA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D610FDC6-5F2C-4F0C-9727-BDEBAC07EE58}

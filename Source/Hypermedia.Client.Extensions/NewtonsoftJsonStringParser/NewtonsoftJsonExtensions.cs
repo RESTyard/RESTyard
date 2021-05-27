@@ -1,6 +1,7 @@
 ﻿using System;
 using Bluehands.Hypermedia.Client;
 using Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson;
+using Newtonsoft.Json;
 
 namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
 {
@@ -11,14 +12,14 @@ namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
             return builder.WithCustomStringParser(() => new NewtonsoftJsonStringParser());
         }
 
-        public static HypermediaClientBuilder WithJsonObjectSerializer(this HypermediaClientBuilder builder)
+        public static HypermediaClientBuilder WithNewtonsoftJsonObjectSerializer(this HypermediaClientBuilder builder, Formatting formatting = Formatting.None)
         {
-            return builder.WithCustomParameterSerializer(() => new NewtonsoftJsonObjectParameterSerializer());
+            return builder.WithCustomParameterSerializer(() => new NewtonsoftJsonObjectParameterSerializer(formatting));
         }
 
-        public static HypermediaClientBuilder WithSingleJsonParameterSerializer(this HypermediaClientBuilder builder)
+        public static HypermediaClientBuilder WithSingleNewtonsoftJsonParameterSerializer(this HypermediaClientBuilder builder, Formatting formatting = Formatting.None)
         {
-            return builder.WithCustomParameterSerializer(() => new SingleNewtonsoftJsonObjectParameterSerializer());
+            return builder.WithCustomParameterSerializer(() => new SingleNewtonsoftJsonObjectParameterSerializer(formatting));
         }
 
         public static HypermediaClientBuilder WithNewtonsoftJsonProblemReader(this HypermediaClientBuilder builder)

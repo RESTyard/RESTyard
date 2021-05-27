@@ -20,8 +20,6 @@ namespace Bluehands.Hypermedia.Client.Test
     {
         private static readonly Uri ApiEntryPoint = new Uri("http://localhost:5000/entrypoint");
 
-        private HypermediaObjectRegister HypermediaObjectRegister { get; set; }
-
         private HypermediaClient<EntryPointHco> SirenClient { get; set; }
 
 
@@ -30,7 +28,7 @@ namespace Bluehands.Hypermedia.Client.Test
         {
             this.SirenClient = new HypermediaClientBuilder()
                 .ConfigureObjectRegister(ConfigureHypermediaObjectRegister)
-                .WithSingleJsonParameterSerializer()
+                .WithSingleNewtonsoftJsonParameterSerializer()
                 .WithHttpHypermediaResolver(resolver =>
                 {
                     resolver.SetCredentials(new UsernamePasswordCredentials("User", "Password"));

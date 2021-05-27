@@ -369,8 +369,8 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return;
             }
 
-            var jPropertyValue = properties[propertyInfo.Name];
-            if (jPropertyValue == null)
+            var propertyValue = properties[propertyInfo.Name];
+            if (propertyValue == null)
             {
                 if (IsMandatoryHypermediaProperty(propertyInfo))
                 {
@@ -380,7 +380,7 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return;
             }
 
-            propertyInfo.SetValue(hypermediaObjectInstance, jPropertyValue.ToObject(propertyInfo.PropertyType));
+            propertyInfo.SetValue(hypermediaObjectInstance, propertyValue.ToObject(propertyInfo.PropertyType));
         }
 
         private static bool IsMandatoryHypermediaProperty(PropertyInfo propertyInfo)
