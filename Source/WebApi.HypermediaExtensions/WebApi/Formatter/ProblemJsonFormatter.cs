@@ -3,7 +3,7 @@
     using Bluehands.Hypermedia.MediaTypes;
     using Microsoft.AspNetCore.Mvc.Formatters;
 
-#if NETSTANDARD1_6
+#if NETSTANDARD2_0
     using System.Buffers;
     using Newtonsoft.Json;
     
@@ -16,7 +16,7 @@
         }
     }
 
-#elif NETCOREAPP3_0
+#elif NETCOREAPP3_1
 
     using System.Text.Json;
     

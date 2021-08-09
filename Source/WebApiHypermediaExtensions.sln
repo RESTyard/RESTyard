@@ -26,15 +26,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hypermedia.Client.Test", "H
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hypermedia.MediaTypes", "Hypermedia.MediaTypes\Hypermedia.MediaTypes.csproj", "{4DE2A632-382B-4C37-8725-87EAF81E9869}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewtonsoftJson", "Hypermedia.Client.Extensions\NewtonsoftJsonStringParser\NewtonsoftJson.csproj", "{5F5E8A59-5F4F-4527-A811-E527271CF258}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewtonsoftJson", "Hypermedia.Client.Extensions\NewtonsoftJsonStringParser\NewtonsoftJson.csproj", "{5F5E8A59-5F4F-4527-A811-E527271CF258}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hypermedia.Client.Extensions", "Hypermedia.Client.Extensions", "{E147EF98-0984-43D1-BD4F-F23FE79E22FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SystemTextJsonStringParser", "Hypermedia.Client.Extensions\SystemTextJsonStringParser\SystemTextJsonStringParser.csproj", "{5BE57CD6-D776-4808-84D7-DA86EF511D84}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SystemTextJson", "Hypermedia.Client.Extensions\SystemTextJsonStringParser\SystemTextJson.csproj", "{5BE57CD6-D776-4808-84D7-DA86EF511D84}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SystemNetHttp", "Hypermedia.Client.Extensions\SystemNetHttp\SystemNetHttp.csproj", "{B3001627-20BB-4E03-B80A-532B07D7D859}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SystemNetHttp", "Hypermedia.Client.Extensions\SystemNetHttp\SystemNetHttp.csproj", "{B3001627-20BB-4E03-B80A-532B07D7D859}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Extensions.Test", "Hypermedia.Client.Extensions\Extensions.Test\Extensions.Test.csproj", "{4FA6CC8F-C0BA-46C2-B5F6-D2B46E5F8DEF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions.Test", "Hypermedia.Client.Extensions\Extensions.Test\Extensions.Test.csproj", "{4FA6CC8F-C0BA-46C2-B5F6-D2B46E5F8DEF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

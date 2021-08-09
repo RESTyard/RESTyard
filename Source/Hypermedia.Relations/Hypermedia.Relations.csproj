@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>Bluehands.Hypermedia.Relations</AssemblyName>
     <PackageId>Bluehands.Hypermedia.Relations</PackageId>
@@ -10,15 +10,16 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <ApplicationIcon />
     <Authors>Mathias Reichardt</Authors>
-    <PackageLicenseUrl>https://github.com/bluehands/WebApiHypermediaExtensions/blob/master/LICENSE.md</PackageLicenseUrl>
+    <PackageLicenseUrl></PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
     <PackageTags>REST;Siren;Hypermedia;Relations;</PackageTags>
     <Description>Relations for use in hypermedia documents.
 See: https://www.iana.org/assignments/link-relations/link-relations.xml</Description>
     <AssemblyVersion>0.1.0.0</AssemblyVersion>
     <FileVersion>0.1.0.0</FileVersion>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <RootNamespace>Bluehands.Hypermedia.Relations</RootNamespace>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

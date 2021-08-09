@@ -6,7 +6,7 @@ using Bluehands.Hypermedia.Client.Authentication;
 using Bluehands.Hypermedia.Client.Extensions;
 using Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson;
 using Bluehands.Hypermedia.Client.Extensions.SystemNetHttp;
-using Bluehands.Hypermedia.Client.Extensions.SystemTextJsonStringParser;
+using Bluehands.Hypermedia.Client.Extensions.SystemTextJson;
 using Bluehands.Hypermedia.Client.Test.Hypermedia;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -28,7 +28,7 @@ namespace Bluehands.Hypermedia.Client.Test
         {
             this.SirenClient = new HypermediaClientBuilder()
                 .ConfigureObjectRegister(ConfigureHypermediaObjectRegister)
-                .WithSingleNewtonsoftJsonParameterSerializer()
+                .WithSingleNewtonsoftJsonObjectParameterSerializer()
                 .WithHttpHypermediaResolver(resolver =>
                 {
                     resolver.SetCredentials(new UsernamePasswordCredentials("User", "Password"));

@@ -10,9 +10,9 @@ using NJsonSchema.Generation;
 using WebApi.HypermediaExtensions.Util;
 using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
-#if NETSTANDARD1_6
+#if NETSTANDARD2_0
   using Newtonsoft.Json;
-#elif NETCOREAPP3_0
+#elif NETCOREAPP3_1
   using System.Text.Json;
 #endif
 
@@ -31,9 +31,9 @@ namespace WebApi.HypermediaExtensions.JsonSchema
             var schema = await GenerateSchemaAsync(type).ConfigureAwait(false);
             var schemaData = schema.ToJson();
 
-#if NETSTANDARD1_6
+#if NETSTANDARD2_0
             return JsonConvert.DeserializeObject(schemaData);
-#elif NETCOREAPP3_0
+#elif NETCOREAPP3_1
             return JsonDocument.Parse(schemaData);
 #endif
         }

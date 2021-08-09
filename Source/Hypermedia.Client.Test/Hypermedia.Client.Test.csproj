@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>Bluehands.HypermediaClient.Test</AssemblyName>
     <PackageId>Bluehands.HypermediaClient.Test</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
@@ -14,15 +14,15 @@
 
   <ItemGroup>
     <PackageReference Include="Bluehands.Hypermedia.Relations" Version="0.1.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
-    <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
-    <PackageReference Include="MSTest.TestFramework" Version="2.2.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.5" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.5" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Hypermedia.Client.Extensions\NewtonsoftJsonStringParser\NewtonsoftJson.csproj" />
     <ProjectReference Include="..\Hypermedia.Client.Extensions\SystemNetHttp\SystemNetHttp.csproj" />
-    <ProjectReference Include="..\Hypermedia.Client.Extensions\SystemTextJsonStringParser\SystemTextJsonStringParser.csproj" />
+    <ProjectReference Include="..\Hypermedia.Client.Extensions\SystemTextJsonStringParser\SystemTextJson.csproj" />
     <ProjectReference Include="..\Hypermedia.Client\Hypermedia.Client.csproj" />
   </ItemGroup>
 

@@ -9,8 +9,8 @@
       $(VersionSuffix)
     </VersionSuffixLocal>
 
-    <Version>1.6.0$(VersionSuffixLocal)</Version>
-    <TargetFrameworks>netstandard1.6;netcoreapp3.0</TargetFrameworks>
+    <Version>1.6.1$(VersionSuffixLocal)</Version>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
 
@@ -18,8 +18,8 @@
     <Titel>Web Api Hypermedia Extensions</Titel>
     <PackageDescription>Web Api extensions to create REST Web services using Siren as Hypermedia format</PackageDescription>
     <PackageTags>WebApi;REST;Siren;Hypermedia;ASP.NET Core;</PackageTags>
-    <Authors>Mathias Reichardt</Authors>
-    <Copyright>Copyright 2001-2020 Mathias Reichardt</Copyright>
+    <Authors>Mathias Reichardt,Jasper Marianczuk</Authors>
+    <Copyright>Copyright 2001-2021 Mathias Reichardt</Copyright>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
@@ -42,20 +42,20 @@
     <PackageReference Include="NJsonSchema" Version="9.10.50" />
   </ItemGroup>
 
-  <!-- netcoreapp3.0 references, compilation flags and build options -->
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0'">
-    <DefineConstants>NETCOREAPP3_0</DefineConstants>
+  <!-- netcoreapp3.1 references, compilation flags and build options -->
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1'">
+    <DefineConstants>NETCOREAPP3_1</DefineConstants>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0'">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1'">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="1.1.8" />
   </ItemGroup>
 
-  <!-- .NET Standard 1.6 references, compilation flags and build options -->
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.6'">
-    <DefineConstants>NETSTANDARD1_6</DefineConstants>
+  <!-- .NET Standard 2.0 references, compilation flags and build options -->
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0'">
+    <DefineConstants>NETSTANDARD2_0</DefineConstants>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6'">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.8" />
   </ItemGroup>
 
