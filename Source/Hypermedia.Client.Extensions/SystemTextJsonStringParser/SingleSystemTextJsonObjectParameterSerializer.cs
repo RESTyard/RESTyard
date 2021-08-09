@@ -1,10 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using System.Text.Json;
 using Bluehands.Hypermedia.Client.ParameterSerializer;
 
-namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJsonStringParser
+namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJson
 {
     public class SingleSystemTextJsonObjectParameterSerializer : IParameterSerializer
     {

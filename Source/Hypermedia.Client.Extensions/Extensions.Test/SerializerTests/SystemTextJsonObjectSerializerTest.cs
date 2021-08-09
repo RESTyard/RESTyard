@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-using Bluehands.Hypermedia.Client.Extensions.SystemTextJsonStringParser;
+using Bluehands.Hypermedia.Client.Extensions.SystemTextJson;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Extensions.Test.SerializerTests

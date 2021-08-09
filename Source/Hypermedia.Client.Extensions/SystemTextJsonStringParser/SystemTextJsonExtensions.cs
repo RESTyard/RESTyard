@@ -1,8 +1,6 @@
-﻿using System;
-using System.Text.Json;
-using Bluehands.Hypermedia.Client;
+﻿using System.Text.Json;
 
-namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJsonStringParser
+namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJson
 {
     public static class SystemTextJsonExtensions
     {
@@ -11,12 +9,12 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJsonStringParser
             return builder.WithCustomStringParser(() => new SystemTextJsonStringParser());
         }
 
-        public static HypermediaClientBuilder WithSystemTextJsonObjectSerializer(this HypermediaClientBuilder builder, JsonSerializerOptions options = null)
+        public static HypermediaClientBuilder WithSystemTextJsonObjectParameterSerializer(this HypermediaClientBuilder builder, JsonSerializerOptions options = null)
         {
             return builder.WithCustomParameterSerializer(() => new SystemTextJsonObjectParameterSerializer(options));
         }
 
-        public static HypermediaClientBuilder WithSingleSystemTextJsonObjectSerializer(this HypermediaClientBuilder builder, JsonWriterOptions options = default)
+        public static HypermediaClientBuilder WithSingleSystemTextJsonObjectParameterSerializer(this HypermediaClientBuilder builder, JsonWriterOptions options = default)
         {
             return builder.WithCustomParameterSerializer(() => new SingleSystemTextJsonObjectParameterSerializer(options));
         }

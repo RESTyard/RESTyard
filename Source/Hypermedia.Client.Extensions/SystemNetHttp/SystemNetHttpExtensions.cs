@@ -1,7 +1,4 @@
 ﻿using System;
-using Bluehands.Hypermedia.Client;
-using Bluehands.Hypermedia.Client.Extensions.SystemNetHttp;
-using Bluehands.Hypermedia.Client.Reader;
 using Bluehands.Hypermedia.Client.Resolver;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp

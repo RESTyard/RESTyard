@@ -3,7 +3,7 @@ using System.Text.Json;
 using Bluehands.Hypermedia.Client.Exceptions;
 using Bluehands.Hypermedia.Client.Reader;
 
-namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJsonStringParser
+namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJson
 {
     public class SystemTextJsonProblemStringReader : IProblemStringReader
     {
