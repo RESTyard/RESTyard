@@ -20,9 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Hypermedia.Client.Extensions\NewtonsoftJsonStringParser\NewtonsoftJson.csproj" />
+    <ProjectReference Include="..\Hypermedia.Client.Extensions\NewtonsoftJson\NewtonsoftJson.csproj" />
     <ProjectReference Include="..\Hypermedia.Client.Extensions\SystemNetHttp\SystemNetHttp.csproj" />
-    <ProjectReference Include="..\Hypermedia.Client.Extensions\SystemTextJsonStringParser\SystemTextJson.csproj" />
+    <ProjectReference Include="..\Hypermedia.Client.Extensions\SystemTextJson\SystemTextJson.csproj" />
     <ProjectReference Include="..\Hypermedia.Client\Hypermedia.Client.csproj" />
   </ItemGroup>
 
