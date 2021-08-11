@@ -49,8 +49,24 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             hypermediaReader = reader;
         }
 
-        public async Task<ResolverResult<T>> ResolveLinkAsync<T>(Uri uriToResolve) where T : HypermediaClientObject
+        public async Task<ResolverResult<T>> ResolveLinkAsync<T>(Uri uriToResolve)
+            where T : HypermediaClientObject
         {
+            string Quoted(string value)
+            {
+                const string doubleQuoteString = "\"";
+                if (!value.StartsWith(doubleQuoteString))
+                {
+                    value = doubleQuoteString + value;
+                }
+
+                if (!value.EndsWith(doubleQuoteString))
+                {
+                    value = value + doubleQuoteString;
+                }
+
+                return value;
+            }
             HttpResponseMessage response;
             if (this.linkHcoCache.TryGetValue(uriToResolve, out var cacheEntry))
             {
@@ -60,7 +76,10 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                     Method = HttpMethod.Get,
                     Headers =
                     {
-                        {EtagHeaderKey, cacheEntry.Identifier}
+                        IfNoneMatch =
+                        {
+                            new EntityTagHeaderValue(Quoted(cacheEntry.Identifier)),
+                        }
                     },
                 };
                 response = await this.httpClient.SendAsync(request, CancellationToken.None);
@@ -84,10 +103,11 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             
             var resolverResult = await HandleLinkResponse<T>(response);
 
-            if (response.Headers.TryGetValues(EtagHeaderKey, out var values))
+            if (!string.IsNullOrEmpty(response.Headers.ETag?.Tag))
             {
-                var etag = values.First();
-                this.linkHcoCache.Set(uriToResolve, new CacheEntry<string>(resolverResult.ResultObject, etag));
+                const char doubleQuoteChar = '"';
+                var unquoted = response.Headers.ETag.Tag.Trim(doubleQuoteChar);
+                this.linkHcoCache.Set(uriToResolve, new CacheEntry<string>(resolverResult.ResultObject, unquoted));
             }
 
             return resolverResult;
