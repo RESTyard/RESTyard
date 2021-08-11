@@ -101,7 +101,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 response = await httpClient.GetAsync(uriToResolve);
             }
             
-            var resolverResult = await HandleLinkResponse<T>(response);
+            var resolverResult = await HandleLinkResponseAsync<T>(response);
 
             if (!string.IsNullOrEmpty(response.Headers.ETag?.Tag))
             {
@@ -115,8 +115,8 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
         public async Task<HypermediaCommandResult> ResolveActionAsync(Uri uri, string method)
         {
-            var responseMessage = await SendCommand(uri, method);
-            var actionResult = HandleActionResponse(responseMessage);
+            var responseMessage = await SendCommandAsync(uri, method);
+            var actionResult = await HandleActionResponseAsync(responseMessage);
             return actionResult;
         }
 
@@ -124,15 +124,15 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         {
             var serializedParameters = ProcessParameters(parameterDescriptions, parameterObject);
 
-            var responseMessage = await SendCommand(uri, method, serializedParameters);
-            var actionResult = HandleActionResponse(responseMessage);
+            var responseMessage = await SendCommandAsync(uri, method, serializedParameters);
+            var actionResult = await HandleActionResponseAsync(responseMessage);
             return actionResult;
         }
 
         public async Task<HypermediaFunctionResult<T>> ResolveFunctionAsync<T>(Uri uri, string method) where T : HypermediaClientObject
         {
-            var responseMessage = await SendCommand(uri, method);
-            var actionResult = HandleFunctionResponse<T>(responseMessage);
+            var responseMessage = await SendCommandAsync(uri, method);
+            var actionResult = await HandleFunctionResponseAsync<T>(responseMessage);
             return actionResult;
         }
 
@@ -140,12 +140,12 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         {
             var serializedParameters = ProcessParameters(parameterDescriptions, parameterObject);
 
-            var responseMessage = await SendCommand(uri, method, serializedParameters);
-            var actionResult = HandleFunctionResponse<T>(responseMessage);
+            var responseMessage = await SendCommandAsync(uri, method, serializedParameters);
+            var actionResult = await HandleFunctionResponseAsync<T>(responseMessage);
             return actionResult;
         }
 
-        private async Task EnsureRequestIsSuccessful(HttpResponseMessage result)
+        private async Task EnsureRequestIsSuccessfulAsync(HttpResponseMessage result)
         {
             if (result.IsSuccessStatusCode)
             {
@@ -216,9 +216,9 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             return parameterDescription;
         }
 
-        private async Task<ResolverResult<T>> HandleLinkResponse<T>(HttpResponseMessage responseMessage) where T : HypermediaClientObject
+        private async Task<ResolverResult<T>> HandleLinkResponseAsync<T>(HttpResponseMessage responseMessage) where T : HypermediaClientObject
         {
-            EnsureRequestIsSuccessful(responseMessage);
+            await this.EnsureRequestIsSuccessfulAsync(responseMessage);
 
             var hypermediaObjectSiren = await responseMessage.Content.ReadAsStringAsync(); //TODO READ AS STREAM for pref
 
@@ -241,9 +241,9 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             return resolverResult;
         }
 
-        private HypermediaCommandResult HandleActionResponse(HttpResponseMessage responseMessage)
+        private async Task<HypermediaCommandResult> HandleActionResponseAsync(HttpResponseMessage responseMessage)
         {
-            EnsureRequestIsSuccessful(responseMessage);
+            await this.EnsureRequestIsSuccessfulAsync(responseMessage);
 
             var actionResult = new HypermediaCommandResult()
             {
@@ -252,9 +252,9 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             return actionResult;
         }
 
-        private HypermediaFunctionResult<T> HandleFunctionResponse<T>(HttpResponseMessage responseMessage) where T : HypermediaClientObject
+        private async Task<HypermediaFunctionResult<T>> HandleFunctionResponseAsync<T>(HttpResponseMessage responseMessage) where T : HypermediaClientObject
         {
-            EnsureRequestIsSuccessful(responseMessage);
+            await this.EnsureRequestIsSuccessfulAsync(responseMessage);
 
             var location = responseMessage.Headers.Location;
             if (location == null)
@@ -275,7 +275,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             return actionResult;
         }
 
-        private async Task<HttpResponseMessage> SendCommand(Uri uri, string method, string payload = null)
+        private async Task<HttpResponseMessage> SendCommandAsync(Uri uri, string method, string payload = null)
         {
             var httpMethod = GetHttpMethod(method);
             var request = new HttpRequestMessage(httpMethod, uri);
