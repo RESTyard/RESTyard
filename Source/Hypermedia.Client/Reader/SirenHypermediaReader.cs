@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Bluehands.Hypermedia.Client.Hypermedia;
 using Bluehands.Hypermedia.Client.Hypermedia.Attributes;
 using Bluehands.Hypermedia.Client.Hypermedia.Commands;
@@ -47,6 +49,13 @@ namespace Bluehands.Hypermedia.Client.Reader
             // TODO inject deserializer
             // todo catch exception: invalid format
             var rootObject = this.stringParser.Parse(contentString);
+            var result = this.ReadHypermediaObject(rootObject);
+            return result;
+        }
+
+        public async Task<HypermediaClientObject> ReadAsync(Stream contentStream)
+        {
+            var rootObject = await this.stringParser.ParseAsync(contentStream);
             var result = this.ReadHypermediaObject(rootObject);
             return result;
         }

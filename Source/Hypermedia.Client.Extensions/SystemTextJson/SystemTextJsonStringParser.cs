@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Bluehands.Hypermedia.Client.Reader;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJson
@@ -12,6 +14,12 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJson
         public IToken Parse(string contentString)
         {
             var document = JsonDocument.Parse(contentString);
+            return JsonElementWrapper.Wrap(document.RootElement);
+        }
+
+        public async Task<IToken> ParseAsync(Stream contentStream)
+        {
+            var document = await JsonDocument.ParseAsync(contentStream);
             return JsonElementWrapper.Wrap(document.RootElement);
         }
 

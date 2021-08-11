@@ -220,15 +220,16 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         {
             await this.EnsureRequestIsSuccessfulAsync(responseMessage);
 
-            var hypermediaObjectSiren = await responseMessage.Content.ReadAsStringAsync(); //TODO READ AS STREAM for pref
+            var hypermediaObjectSiren = await responseMessage.Content.ReadAsStreamAsync();
 
-            if (hypermediaReader == null)
+            if (this.hypermediaReader == null)
             {
                 throw new Exception(
                     $"Please setup the hypermediaReader before using the resolver. see {nameof(InitializeHypermediaReader)}");
             }
 
-            if (!(hypermediaReader.Read(hypermediaObjectSiren) is T desiredResultObject))
+            var hypermediaClientObject = await this.hypermediaReader.ReadAsync(hypermediaObjectSiren);
+            if (!(hypermediaClientObject is T desiredResultObject))
             {
                 throw new Exception($"Could not retrieve result as {typeof(T).Name} ");
             }
