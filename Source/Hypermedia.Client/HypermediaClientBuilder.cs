@@ -45,7 +45,7 @@ namespace Bluehands.Hypermedia.Client
             return client;
         }
 
-        public HypermediaClientBuilder ConfigureObjectRegister(Action<HypermediaObjectRegister> configure)
+        public HypermediaClientBuilder ConfigureObjectRegister(Action<IHypermediaObjectRegister> configure)
         {
             this.createHypermediaObjectRegister = () =>
             {

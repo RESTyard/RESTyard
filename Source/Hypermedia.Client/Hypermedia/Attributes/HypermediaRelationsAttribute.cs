@@ -1,15 +1,16 @@
 ﻿using System;
+using Bluehands.Hypermedia.Client.Util;
 
 namespace Bluehands.Hypermedia.Client.Hypermedia.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
     public sealed class HypermediaRelationsAttribute : Attribute
     {
-        public HypermediaRelationsAttribute(string[] relations)
+        public HypermediaRelationsAttribute(params string[] relations)
         {
-            this.Relations = relations;
+            this.Relations = new DistinctOrderedStringCollection(relations);
         }
 
-        public string[] Relations { get; private set; }
+        public IDistinctOrderedCollection<string> Relations { get; }
     }
 }

@@ -28,7 +28,7 @@ namespace Bluehands.Hypermedia.Client.Reader
         private readonly IHypermediaCommandFactory hypermediaCommandFactory;
         private IHypermediaResolver resolver;
         private readonly IStringParser stringParser;
-        private readonly StringCollectionComparer stringCollectionComparer = new StringCollectionComparer();
+        private readonly DistinctOrderedStringCollectionComparer distinctOrderedStringCollectionComparer = new DistinctOrderedStringCollectionComparer();
 
         public SirenHypermediaReader(
             IHypermediaObjectRegister hypermediaObjectRegister,
@@ -273,20 +273,20 @@ namespace Bluehands.Hypermedia.Client.Reader
             propertyInfo.SetValue(hypermediaObjectInstance, entity);
         }
 
-        private string[] GetClassesFromEntitiesListProperty(PropertyInfo propertyInfo)
+        private IDistinctOrderedCollection<string> GetClassesFromEntitiesListProperty(PropertyInfo propertyInfo)
         {
             var genericListType = GetGenericFromICollection(propertyInfo.PropertyType);
             return GetClassesFromEntityProperty(genericListType.GetTypeInfo());
         }
 
-        private static string[] GetClassesFromEntityProperty(TypeInfo targetTypeInfo)
+        private static IDistinctOrderedCollection<string> GetClassesFromEntityProperty(TypeInfo targetTypeInfo)
         {
             var classAttribute = targetTypeInfo.GetCustomAttribute<HypermediaClientObjectAttribute>();
 
-            string[] classes;
+            IDistinctOrderedCollection<string> classes;
             if (classAttribute == null || classAttribute.Classes == null)
             {
-                classes = new[] {targetTypeInfo.Name};
+                classes = new DistinctOrderedStringCollection(targetTypeInfo.Name);
             }
             else
             {
@@ -296,9 +296,9 @@ namespace Bluehands.Hypermedia.Client.Reader
             return classes;
         }
 
-        private bool EntityClassMatch(IToken entity, string[] expectedClasses, string propertyName)
+        private bool EntityClassMatch(IToken entity, IDistinctOrderedCollection<string> expectedClasses, string propertyName)
         {
-            if (expectedClasses == null || expectedClasses.Length == 0)
+            if (expectedClasses == null || expectedClasses.Count == 0)
             {
                 throw new Exception($"No class provided for entity property '{propertyName}'.");
             }
@@ -309,10 +309,10 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return false;
             }
 
-            return this.stringCollectionComparer.Equals(actualClasses.ChildrenAsStrings().ToArray(), expectedClasses);
+            return this.distinctOrderedStringCollectionComparer.Equals(new DistinctOrderedStringCollection(actualClasses.ChildrenAsStrings()), expectedClasses);
         }
 
-        private bool EntityRelationsMatch(IToken entity, ICollection<string> expectedRelations)
+        private bool EntityRelationsMatch(IToken entity, IDistinctOrderedCollection<string> expectedRelations)
         {
             if (expectedRelations == null || expectedRelations.Count == 0)
             {
@@ -325,7 +325,7 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return false;
             }
 
-            return this.stringCollectionComparer.Equals(actualRelations.ChildrenAsStrings().ToArray(), expectedRelations);
+            return this.distinctOrderedStringCollectionComparer.Equals(new DistinctOrderedStringCollection(actualRelations.ChildrenAsStrings()), expectedRelations);
         }
 
 
@@ -351,7 +351,7 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return;
             }
 
-            var link = links.FirstOrDefault(l => this.stringCollectionComparer.Equals(l["rel"].ChildrenAsStrings().ToList(), linkAttribute.Relations));
+            var link = links.FirstOrDefault(l => this.distinctOrderedStringCollectionComparer.Equals(new DistinctOrderedStringCollection(l["rel"].ChildrenAsStrings()), linkAttribute.Relations));
             if (link == null)
             {
                 if (IsMandatoryHypermediaLink(propertyInfo))
@@ -467,11 +467,11 @@ namespace Bluehands.Hypermedia.Client.Reader
             hypermediaObjectInstance.Title = title.ValueAsString();
         }      
 
-        private static ICollection<string> ReadClasses(IToken rootObject)
+        private static IDistinctOrderedCollection<string> ReadClasses(IToken rootObject)
         {
             // todo catch exception
             // rel migth be missing so provide better error message
-            return rootObject["class"].ChildrenAsStrings().ToList();
+            return new DistinctOrderedStringCollection(rootObject["class"].ChildrenAsStrings());
         }
     }
 }
