@@ -10,7 +10,7 @@ namespace Bluehands.Hypermedia.Client
 {
     internal class HypermediaObjectRegister : IHypermediaObjectRegister
     {
-        private readonly Dictionary<IDistinctOrderedCollection<string>, Type> hypermediaObjectTypeDictionary = new Dictionary<IDistinctOrderedCollection<string>, Type>(new DistinctOrderedStringCollectionComparer());
+        private readonly IDictionary<IDistinctOrderedCollection<string>, Type> hypermediaObjectTypeDictionary = new Dictionary<IDistinctOrderedCollection<string>, Type>(new DistinctOrderedStringCollectionComparer());
 
         public void Register<THco>() where THco : HypermediaClientObject
         {
