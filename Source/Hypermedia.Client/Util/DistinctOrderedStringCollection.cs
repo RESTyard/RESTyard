@@ -28,7 +28,8 @@ namespace Bluehands.Hypermedia.Client.Util
         private void AddInternal(string item)
         {
             var actualIndex = this.BinarySearch(item);
-            if (this[actualIndex] != item)
+            var alreadyExists = actualIndex < this.Count && this[actualIndex] == item;
+            if (!alreadyExists)
             {
                 this.InsertItem(actualIndex, item);
             }
