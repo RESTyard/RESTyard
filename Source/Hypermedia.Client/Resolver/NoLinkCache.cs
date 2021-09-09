@@ -13,7 +13,7 @@ namespace Bluehands.Hypermedia.Client.Resolver
 
         public bool TryGetValue(Uri uri, out CacheEntry<T> entry)
         {
-            entry = null;
+            entry = new CacheEntry<T>();
             return false;
         }
 

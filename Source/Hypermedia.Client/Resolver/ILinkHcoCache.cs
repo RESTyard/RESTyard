@@ -14,7 +14,7 @@ namespace Bluehands.Hypermedia.Client.Resolver
         void Clear();
 
     }
-    public class CacheEntry<TIdentifier>
+    public readonly struct CacheEntry<TIdentifier>
     {
         public HypermediaClientObject HypermediaClientObject { get; }
 
