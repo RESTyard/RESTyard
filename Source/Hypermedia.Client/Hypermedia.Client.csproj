@@ -9,16 +9,16 @@
       $(VersionSuffix)
     </VersionSuffixLocal>
 
-    <Version>1.4.1$(VersionSuffixLocal)</Version>
-    <TargetFramework>netstandard1.6</TargetFramework>
+    <Version>1.5.0$(VersionSuffixLocal)</Version>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
 
     <!-- Descriptions and information-->
     <Titel>Generic Hypermedia Client</Titel>
     <PackageDescription>Type safe generic REST client which uses the Siren hypermedia format.</PackageDescription>
-    <PackageTags>Client;REST;Siren;Hypermedia;</PackageTags>
-    <Authors>Mathias Reichardt</Authors>
+    <PackageTags>Client REST Siren Hypermedia</PackageTags>
+    <Authors>Mathias Reichardt,Jasper Marianczuk</Authors>
     <Copyright>Copyright 2001-2021 Mathias Reichardt</Copyright>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -33,13 +33,12 @@
     <PackageReleaseNotes>Version $(Version)</PackageReleaseNotes>
     <IsPackable>true</IsPackable>
     <RootNamespace>Bluehands.Hypermedia.Client</RootNamespace>
+    <Description></Description>
 
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Bluehands.Hypermedia.MediaTypes" Version="0.1.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
 
 </Project>

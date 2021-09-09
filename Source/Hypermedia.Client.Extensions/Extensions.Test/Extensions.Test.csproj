@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="6.1.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.5" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.5" />
+    <PackageReference Include="coverlet.collector" Version="3.0.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Hypermedia.Client.Test\Hypermedia.Client.Test.csproj" />
+    <ProjectReference Include="..\..\Hypermedia.Client\Hypermedia.Client.csproj" />
+    <ProjectReference Include="..\NewtonsoftJson\NewtonsoftJson.csproj" />
+    <ProjectReference Include="..\SystemTextJson\SystemTextJson.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ProblemStringReaderTests\" />
+  </ItemGroup>
+
+</Project>

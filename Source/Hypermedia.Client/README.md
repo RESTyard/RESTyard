@@ -4,6 +4,77 @@ _Experimental_ project to create a Client which allows typed access to a Rest Ap
 - Transparent Link and Action resolving with deserialization
 - Action handling
 
+## Usage
+
+### Creating the client
+``` csharp
+var client = new HypermediaClientBuilder()
+    .ConfigureObjectRegister(register =>
+    {
+        register.Register<EntryPointHco>();
+        register.Register<CustomerHco>();
+        ...
+    })
+    .WithSirenHypermediaReader()
+    ...
+    .CreateHypermediaClient<EntryPointHco>(entryPointUri);
+```
+
+- with Newtonsoft.Json
+
+=> reference Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson nuget package
+``` csharp
+var client = new HypermediaClientBuilder()
+    ...
+    .WithSingleNewtonsoftJsonObjectParameterSerializer()
+    .WithNewtonsoftJsonStringParser()
+    .WithNewtonsoftJsonProblemReader()
+    ...
+    .CreateHypermediaClient<EntryPointHco>(entryPointUri);
+```
+
+- with System.Text.Json
+
+=> reference Bluehands.Hypermedia.Client.Extensions.SystemTextJson
+``` csharp
+var client = new HypermediaClientBuilder()
+    ...
+    .WithSingleSystemTextJsonObjectParameterSerializer()
+    .WithSystemTextJsonStringParser()
+    .WithSystemTextJsonProblemReader()
+    ...
+    .CreateHypermediaClient<EntryPointHco>(entryPointUri);
+```
+
+- with System.Net.Http
+
+=> reference Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
+``` csharp
+var client = new HypermediaClientBuilder()
+    ...
+    .WithHttpHypermediaResolver(resolver =>
+    {
+        resolver.SetCredentials(new UsernamePasswordCredentials("User", "Password"));
+        ...
+    })
+    ...
+    .CreateHypermediaClient<EntryPointHco>(entryPointUri);
+```
+or with a cached resolver
+``` csharp
+var client = new HypermediaClientBuilder()
+    ...
+    .WithCachedHttpHypermediaResolver(
+        linkCacheImplementation,
+        resolver =>
+        {
+            resolver.SetCredentials(new UsernamePasswordCredentials("User", "Password));
+            ...
+        })
+    ...
+    .CreateHypermediaClient<EntryPointHco>(entryPointUri);
+```
+
 There is still a lot to do:
 - Pass HttpClient to resolver so lib user has access
 - Exception handling

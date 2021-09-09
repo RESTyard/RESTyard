@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Bluehands.Hypermedia.Client.Hypermedia;
 using Bluehands.Hypermedia.Client.Hypermedia.Attributes;
 using Bluehands.Hypermedia.Client.Hypermedia.Commands;
 using Bluehands.Hypermedia.Client.Resolver;
 using Bluehands.Hypermedia.Client.Util;
-using Newtonsoft.Json.Linq;
 
 namespace Bluehands.Hypermedia.Client.Reader
 {
@@ -25,13 +26,21 @@ namespace Bluehands.Hypermedia.Client.Reader
     {
         private readonly IHypermediaObjectRegister hypermediaObjectRegister;
         private readonly IHypermediaCommandFactory hypermediaCommandFactory;
-        private readonly IHypermediaResolver resolver;
-        private readonly StringCollectionComparer stringCollectionComparer = new StringCollectionComparer();
+        private IHypermediaResolver resolver;
+        private readonly IStringParser stringParser;
+        private readonly DistinctOrderedStringCollectionComparer distinctOrderedStringCollectionComparer = new DistinctOrderedStringCollectionComparer();
 
-        public SirenHypermediaReader(IHypermediaObjectRegister hypermediaObjectRegister, IHypermediaResolver resolver)
+        public SirenHypermediaReader(
+            IHypermediaObjectRegister hypermediaObjectRegister,
+            IStringParser stringParser)
         {
             this.hypermediaObjectRegister = hypermediaObjectRegister;
             this.hypermediaCommandFactory = RegisterHypermediaCommandFactory.Create();
+            this.stringParser = stringParser;
+        }
+
+        public void InitializeHypermediaResolver(IHypermediaResolver resolver)
+        {
             this.resolver = resolver;
         }
 
@@ -39,25 +48,32 @@ namespace Bluehands.Hypermedia.Client.Reader
         {
             // TODO inject deserializer
             // todo catch exception: invalid format
-            var jObject = JObject.Parse(contentString);
-            var result = this.ReadHypermediaObject(jObject);
+            var rootObject = this.stringParser.Parse(contentString);
+            var result = this.ReadHypermediaObject(rootObject);
             return result;
         }
 
-        private HypermediaClientObject ReadHypermediaObject(JObject jObject)
+        public async Task<HypermediaClientObject> ReadAsync(Stream contentStream)
         {
-            var classes = ReadClasses(jObject);
+            var rootObject = await this.stringParser.ParseAsync(contentStream);
+            var result = this.ReadHypermediaObject(rootObject);
+            return result;
+        }
+
+        private HypermediaClientObject ReadHypermediaObject(IToken rootObject)
+        {
+            var classes = ReadClasses(rootObject);
             var hypermediaObjectInstance = this.hypermediaObjectRegister.CreateFromClasses(classes);
 
-            this.ReadTitle(hypermediaObjectInstance, jObject);
-            this.ReadRelations(hypermediaObjectInstance, jObject);
-            this.FillHypermediaProperties(hypermediaObjectInstance, jObject);
+            this.ReadTitle(hypermediaObjectInstance, rootObject);
+            this.ReadRelations(hypermediaObjectInstance, rootObject);
+            this.FillHypermediaProperties(hypermediaObjectInstance, rootObject);
             
 
             return hypermediaObjectInstance;
         }
 
-        private void FillHypermediaProperties(HypermediaClientObject hypermediaObjectInstance, JObject jObject)
+        private void FillHypermediaProperties(HypermediaClientObject hypermediaObjectInstance, IToken rootObject)
         {
             var typeInfo = hypermediaObjectInstance.GetType().GetTypeInfo();
             var properties = typeInfo.GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -73,21 +89,21 @@ namespace Bluehands.Hypermedia.Client.Reader
                 switch (hypermediaPropertyType)
                 {
                     case HypermediaPropertyType.Property:
-                        FillProperty(hypermediaObjectInstance, propertyInfo, jObject);
+                        FillProperty(hypermediaObjectInstance, propertyInfo, rootObject);
                         break;
                    
                     case HypermediaPropertyType.Link:
-                        this.FillLink(hypermediaObjectInstance, propertyInfo, jObject);
+                        this.FillLink(hypermediaObjectInstance, propertyInfo, rootObject);
                         break;
 
                     case HypermediaPropertyType.Entity:
-                        this.FillEntity(hypermediaObjectInstance, propertyInfo, jObject);
+                        this.FillEntity(hypermediaObjectInstance, propertyInfo, rootObject);
                         break;
                     case HypermediaPropertyType.EntityCollection:
-                        this.FillEntities(hypermediaObjectInstance, propertyInfo, jObject);
+                        this.FillEntities(hypermediaObjectInstance, propertyInfo, rootObject);
                         break;
                     case HypermediaPropertyType.Command:
-                        this.FillCommand(hypermediaObjectInstance, propertyInfo, jObject);
+                        this.FillCommand(hypermediaObjectInstance, propertyInfo, rootObject);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -98,7 +114,7 @@ namespace Bluehands.Hypermedia.Client.Reader
         
         //todo linked entities
         //todo no derived types considered
-        private void FillEntities(HypermediaClientObject hypermediaObjectInstance, PropertyInfo propertyInfo, JObject jObject)
+        private void FillEntities(HypermediaClientObject hypermediaObjectInstance, PropertyInfo propertyInfo, IToken rootObject)
         {
             var relationsAttribute = propertyInfo.GetCustomAttribute<HypermediaRelationsAttribute>();
             var classes = this.GetClassesFromEntitiesListProperty(propertyInfo);
@@ -106,32 +122,32 @@ namespace Bluehands.Hypermedia.Client.Reader
             var entityCollection = Activator.CreateInstance(propertyInfo.PropertyType);
             propertyInfo.SetValue(hypermediaObjectInstance, entityCollection);
 
-            var entities = jObject["entities"] as JArray;
+            var entities = rootObject["entities"];
             if (entities == null)
             {
                 return;
             }
 
-            var jEntities = entities.Cast<JObject>().Where(e =>
+            var matchingEntities = entities.Where(e =>
                 this.EntityRelationsMatch(e, relationsAttribute.Relations) && this.EntityClassMatch(e, classes, propertyInfo.Name));
 
             var genericAddFunction = entityCollection.GetType().GetTypeInfo().GetMethod("Add");
 
-            foreach (var jEntity in jEntities)
+            foreach (var match in matchingEntities)
             {
-                var entity = this.ReadHypermediaObject(jEntity);
+                var entity = this.ReadHypermediaObject(match);
                 genericAddFunction.Invoke(entityCollection, new object[] { entity });
             }
 
         }
 
 
-        private void FillCommand(HypermediaClientObject hypermediaObjectInstance, PropertyInfo propertyInfo, JObject jObject)
+        private void FillCommand(HypermediaClientObject hypermediaObjectInstance, PropertyInfo propertyInfo, IToken rootObject)
         {
             var commandAttribute = propertyInfo.GetCustomAttribute<HypermediaCommandAttribute>();
             if (commandAttribute == null)
             {
-                throw new Exception($"Hypermedia command '{propertyInfo.Name}' requires a {typeof(HypermediaCommandAttribute).Name} ");
+                throw new Exception($"Hypermedia command '{propertyInfo.Name}' requires a {nameof(HypermediaCommandAttribute)} ");
             }
 
             // create instance in any case so CanExecute can be called
@@ -140,9 +156,9 @@ namespace Bluehands.Hypermedia.Client.Reader
 
             propertyInfo.SetValue(hypermediaObjectInstance, commandInstance);
 
-            var actions = jObject["actions"] as JArray;
-            var jAction = actions.Cast<JObject>().FirstOrDefault(e => this.IsDesiredAction(e, commandAttribute.Name));
-            if (actions == null || jAction == null)
+            var actions = rootObject["actions"];
+            var desiredAction = actions.FirstOrDefault(e => this.IsDesiredAction(e, commandAttribute.Name));
+            if (actions == null || desiredAction == null)
             {
                 if (IsMandatoryHypermediaProperty(propertyInfo))
                 {
@@ -151,15 +167,15 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return;
             }
             
-            this.FillCommandParameters(commandInstance, jAction, commandAttribute.Name);
+            this.FillCommandParameters(commandInstance, desiredAction, commandAttribute.Name);
         }
 
-        private void FillCommandParameters(IHypermediaClientCommand commandInstance, JObject jAction, string commandName)
+        private void FillCommandParameters(IHypermediaClientCommand commandInstance, IToken action, string commandName)
         {
             commandInstance.Name = commandName;
             commandInstance.CanExecute = true;
 
-            var title = jAction["title"]?.Value<string>();
+            var title = action["title"]?.ValueAsString();
             if (title == null)
             {
                 title = string.Empty;
@@ -167,26 +183,26 @@ namespace Bluehands.Hypermedia.Client.Reader
             commandInstance.Title = title;
 
 
-            var uri = jAction["href"]?.Value<string>();
+            var uri = action["href"]?.ValueAsString();
             if (uri == null)
             {
                 throw new Exception($"Siren action without href: '{commandName}'");
             }
             commandInstance.Uri = new Uri(uri);
 
-            var method = jAction["method"]?.Value<string>();
+            var method = action["method"]?.ValueAsString();
             if (method == null)
             {
                 method = "GET";
             }
             commandInstance.Method = method;
 
-            var jFields = jAction["fields"] as JArray;
-            if (!commandInstance.HasParameters && jFields != null)
+            var fields = action["fields"];
+            if (!commandInstance.HasParameters && fields != null)
             {
                 throw new Exception($"hypermedia Command '{commandName}' has no parameter but hypermedia document indicates parameters.");
             }
-            if (jFields == null)
+            if (fields == null)
             {
                 if (commandInstance.HasParameters)
                 {
@@ -196,12 +212,15 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return;
             }
 
-            foreach (var jField in jFields)
+            foreach (var field in fields)
             {
-                var parameterDescription = new ParameterDescription();
-                parameterDescription.Name = jField["name"].Value<string>();
-                parameterDescription.Type = jField["type"].Value<string>();
-                parameterDescription.Classes = jField["class"]?.Values<string>().ToList(); // todo optional but not save, or check annotation on class
+                var parameterDescription = new ParameterDescription
+                {
+                    Name = field["name"].ValueAsString(),
+                    Type = field["type"].ValueAsString(),
+                    Classes = field["class"]?.ChildrenAsStrings().ToList(),
+                };
+                // todo optional but not save, or check annotation on class
 
                 commandInstance.ParameterDescriptions.Add(parameterDescription);
             }
@@ -213,9 +232,9 @@ namespace Bluehands.Hypermedia.Client.Reader
             return commandInstance;
         }
 
-        private bool IsDesiredAction(JObject jObject, string commandName)
+        private bool IsDesiredAction(IToken action, string commandName)
         {
-            var name = jObject["name"]?.Value<string>();
+            var name = action["name"]?.ValueAsString();
             if (name == null)
             {
                 return false;
@@ -224,12 +243,12 @@ namespace Bluehands.Hypermedia.Client.Reader
             return name.Equals(commandName);
         }
 
-        private void FillEntity(HypermediaClientObject hypermediaObjectInstance, PropertyInfo propertyInfo, JObject jObject)
+        private void FillEntity(HypermediaClientObject hypermediaObjectInstance, PropertyInfo propertyInfo, IToken rootObject)
         {
             var relationsAttribute = propertyInfo.GetCustomAttribute<HypermediaRelationsAttribute>();
             var classes = GetClassesFromEntityProperty(propertyInfo.PropertyType.GetTypeInfo());
 
-            var entities = jObject["entities"] as JArray;
+            var entities = rootObject["entities"];
             if (entities == null)
             {
                 if (IsMandatoryHypermediaProperty(propertyInfo))
@@ -239,7 +258,7 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return;
             }
 
-            var jEntity = entities.Cast<JObject>().FirstOrDefault( e =>
+            var jEntity = entities.FirstOrDefault( e =>
                 this.EntityRelationsMatch(e, relationsAttribute.Relations) && this.EntityClassMatch(e, classes, propertyInfo.Name));
 
             if (jEntity == null)
@@ -254,20 +273,20 @@ namespace Bluehands.Hypermedia.Client.Reader
             propertyInfo.SetValue(hypermediaObjectInstance, entity);
         }
 
-        private string[] GetClassesFromEntitiesListProperty(PropertyInfo propertyInfo)
+        private IDistinctOrderedCollection<string> GetClassesFromEntitiesListProperty(PropertyInfo propertyInfo)
         {
             var genericListType = GetGenericFromICollection(propertyInfo.PropertyType);
             return GetClassesFromEntityProperty(genericListType.GetTypeInfo());
         }
 
-        private static string[] GetClassesFromEntityProperty(TypeInfo targetTypeInfo)
+        private static IDistinctOrderedCollection<string> GetClassesFromEntityProperty(TypeInfo targetTypeInfo)
         {
             var classAttribute = targetTypeInfo.GetCustomAttribute<HypermediaClientObjectAttribute>();
 
-            string[] classes;
+            IDistinctOrderedCollection<string> classes;
             if (classAttribute == null || classAttribute.Classes == null)
             {
-                classes = new[] {targetTypeInfo.Name};
+                classes = new DistinctOrderedStringCollection(targetTypeInfo.Name);
             }
             else
             {
@@ -277,52 +296,52 @@ namespace Bluehands.Hypermedia.Client.Reader
             return classes;
         }
 
-        private bool EntityClassMatch(JObject jObject, string[] classes, string propertyName)
+        private bool EntityClassMatch(IToken entity, IDistinctOrderedCollection<string> expectedClasses, string propertyName)
         {
-            if (classes == null || classes.Length == 0)
+            if (expectedClasses == null || expectedClasses.Count == 0)
             {
                 throw new Exception($"No class provided for entity property '{propertyName}'.");
             }
 
-            var jClasses = jObject["class"];
-            if (jClasses == null)
+            var actualClasses = entity["class"];
+            if (actualClasses == null)
             {
                 return false;
             }
 
-            return this.stringCollectionComparer.Equals(jClasses.Values<string>().ToArray(), classes);
+            return this.distinctOrderedStringCollectionComparer.Equals(new DistinctOrderedStringCollection(actualClasses.ChildrenAsStrings()), expectedClasses);
         }
 
-        private bool EntityRelationsMatch(JObject jObject, string[] relations)
+        private bool EntityRelationsMatch(IToken entity, IDistinctOrderedCollection<string> expectedRelations)
         {
-            if (relations == null || relations.Length == 0)
+            if (expectedRelations == null || expectedRelations.Count == 0)
             {
                 return true;
             }
 
-            var rels = jObject["rel"];
-            if (rels == null)
+            var actualRelations = entity["rel"];
+            if (actualRelations == null)
             {
                 return false;
             }
 
-            return this.stringCollectionComparer.Equals(rels.Values<string>().ToArray(), relations);
+            return this.distinctOrderedStringCollectionComparer.Equals(new DistinctOrderedStringCollection(actualRelations.ChildrenAsStrings()), expectedRelations);
         }
 
 
-        private void FillLink(HypermediaClientObject hypermediaObjectInstance, PropertyInfo propertyInfo, JObject jObject)
+        private void FillLink(HypermediaClientObject hypermediaObjectInstance, PropertyInfo propertyInfo, IToken rootObject)
         {
             var linkAttribute = propertyInfo.GetCustomAttribute<HypermediaRelationsAttribute>();
             if (linkAttribute == null)
             {
-                throw new Exception($"{typeof(IHypermediaLink).Name} requires a {typeof(HypermediaRelationsAttribute).Name} Attribute.");
+                throw new Exception($"{nameof(IHypermediaLink)} requires a {nameof(HypermediaRelationsAttribute)} Attribute.");
             }
 
             var hypermediaLink = (IHypermediaLink)Activator.CreateInstance(propertyInfo.PropertyType);
             hypermediaLink.Resolver = this.resolver;
             propertyInfo.SetValue(hypermediaObjectInstance, hypermediaLink);
 
-            var links = jObject["links"];
+            var links = rootObject["links"];
             if (links == null)
             {
                 if (IsMandatoryHypermediaLink(propertyInfo))
@@ -332,7 +351,7 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return;
             }
 
-            var link = links.FirstOrDefault(l => this.stringCollectionComparer.Equals(l["rel"].Values<string>().ToList(), linkAttribute.Relations.ToList()));
+            var link = links.FirstOrDefault(l => this.distinctOrderedStringCollectionComparer.Equals(new DistinctOrderedStringCollection(l["rel"].ChildrenAsStrings()), linkAttribute.Relations));
             if (link == null)
             {
                 if (IsMandatoryHypermediaLink(propertyInfo))
@@ -342,14 +361,14 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return;
             }
             
-            hypermediaLink.Uri = new Uri(link["href"].Value<string>());
-            hypermediaLink.Relations = link["rel"].Values<string>().ToList();
+            hypermediaLink.Uri = new Uri(link["href"].ValueAsString());
+            hypermediaLink.Relations = link["rel"].ChildrenAsStrings().ToList();
         }
 
         // todo attribute with different property name
-        private static void FillProperty(HypermediaClientObject hypermediaObjectInstance, PropertyInfo propertyInfo, JObject jObject)
+        private static void FillProperty(HypermediaClientObject hypermediaObjectInstance, PropertyInfo propertyInfo, IToken rootObject)
         {
-            var properties = jObject["properties"];
+            var properties = rootObject["properties"];
             if (properties == null)
             {
                 if (IsMandatoryHypermediaProperty(propertyInfo)) { 
@@ -359,8 +378,8 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return;
             }
 
-            var jPropertyValue = properties[propertyInfo.Name];
-            if (jPropertyValue == null)
+            var propertyValue = properties[propertyInfo.Name];
+            if (propertyValue == null)
             {
                 if (IsMandatoryHypermediaProperty(propertyInfo))
                 {
@@ -370,7 +389,7 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return;
             }
 
-            propertyInfo.SetValue(hypermediaObjectInstance, jPropertyValue.ToObject(propertyInfo.PropertyType));
+            propertyInfo.SetValue(hypermediaObjectInstance, propertyValue.ToObject(propertyInfo.PropertyType));
         }
 
         private static bool IsMandatoryHypermediaProperty(PropertyInfo propertyInfo)
@@ -426,33 +445,33 @@ namespace Bluehands.Hypermedia.Client.Reader
             return type.GetTypeInfo().GetGenericArguments()[0];
         }
 
-        private void ReadRelations(HypermediaClientObject hypermediaObjectInstance, JObject jobject)
+        private void ReadRelations(HypermediaClientObject hypermediaObjectInstance, IToken rootObject)
         {
-            var rels = jobject["rel"]?.Values<string>();
-            if (rels == null)
+            var relations = rootObject["rel"]?.ChildrenAsStrings();
+            if (relations == null)
             {
                 return;
             }
 
-            hypermediaObjectInstance.Relations = rels.ToList();
+            hypermediaObjectInstance.Relations = relations.ToList();
         }
 
-        private void ReadTitle(HypermediaClientObject hypermediaObjectInstance, JObject jobject)
+        private void ReadTitle(HypermediaClientObject hypermediaObjectInstance, IToken rootObject)
         {
-            var title = jobject["title"];
+            var title = rootObject["title"];
             if (title == null)
             {
                 return;
             }
 
-            hypermediaObjectInstance.Title = title.Value<string>();
+            hypermediaObjectInstance.Title = title.ValueAsString();
         }      
 
-        private static List<string> ReadClasses(JObject jobject)
+        private static IDistinctOrderedCollection<string> ReadClasses(IToken rootObject)
         {
             // todo catch exception
             // rel migth be missing so provide better error message
-            return jobject["class"].Values<string>().ToList();
+            return new DistinctOrderedStringCollection(rootObject["class"].ChildrenAsStrings());
         }
     }
 }
