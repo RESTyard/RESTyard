@@ -18,7 +18,7 @@ using Bluehands.Hypermedia.MediaTypes;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 {
-    public class HttpHypermediaResolver : IHypermediaResolver, IDisposable
+    public class HttpHypermediaResolver : IHypermediaResolver, IHttpHypermediaResolverConfiguration, IDisposable
     {
         public const string EtagHeaderKey = "ETag";
 

@@ -55,8 +55,16 @@ namespace Bluehands.Hypermedia.Client
 
     public interface IHypermediaObjectRegister
     {
+        /// <summary>
+        /// Register a type. When parsing incoming data, the provided "classes" values are compared to the classes given in the type's HypermediaClientObjectAttribute, or to the types name
+        /// </summary>
+        /// <typeparam name="THco"></typeparam>
         void Register<THco>() where THco : HypermediaClientObject;
         
+        /// <summary>
+        /// Register a type. When parsing incoming data, the provided "classes" values are compared to the classes given in the type's HypermediaClientObjectAttribute, or to the types name
+        /// </summary>
+        /// <param name="hypermediaObjectType"></param>
         void Register(Type hypermediaObjectType);
 
         Type GetHypermediaType(IDistinctOrderedCollection<string> classes);

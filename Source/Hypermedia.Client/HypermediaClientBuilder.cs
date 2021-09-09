@@ -31,6 +31,13 @@ namespace Bluehands.Hypermedia.Client
             return getFunc();
         }
 
+        /// <summary>
+        /// Build the HypermediaClient using all the configured interface implementations
+        /// </summary>
+        /// <typeparam name="TEntryPoint"></typeparam>
+        /// <param name="uriApiEntryPoint"></param>
+        /// <exception cref="System.InvalidOperationException">Thrown if not all necessary configurations were made</exception>
+        /// <returns></returns>
         public HypermediaClient<TEntryPoint> CreateHypermediaClient<TEntryPoint>(Uri uriApiEntryPoint) where TEntryPoint : HypermediaClientObject
         {
             var objectRegister = Get(this.createHypermediaObjectRegister, nameof(ConfigureObjectRegister));
@@ -45,6 +52,11 @@ namespace Bluehands.Hypermedia.Client
             return client;
         }
 
+        /// <summary>
+        /// Use to build the IHypermediaObjectRegister by registering all HCO types that are to be received
+        /// </summary>
+        /// <param name="configure"></param>
+        /// <returns></returns>
         public HypermediaClientBuilder ConfigureObjectRegister(Action<IHypermediaObjectRegister> configure)
         {
             this.createHypermediaObjectRegister = () =>
@@ -56,36 +68,65 @@ namespace Bluehands.Hypermedia.Client
             return this;
         }
 
+        /// <summary>
+        /// Internal extension point for injecting an IParameterSerializer implementation
+        /// </summary>
+        /// <param name="createParameterSerializer"></param>
+        /// <returns></returns>
         public HypermediaClientBuilder WithCustomParameterSerializer(Func<IParameterSerializer> createParameterSerializer)
         {
             this.createParameterSerializer = createParameterSerializer;
             return this;
         }
 
+        /// <summary>
+        /// Internal extension point to inject an IHypermediaResolver implementation
+        /// </summary>
+        /// <param name="createResolver"></param>
+        /// <returns></returns>
         public HypermediaClientBuilder WithCustomHypermediaResolver(Func<IParameterSerializer, IProblemStringReader, IHypermediaResolver> createResolver)
         {
             this.createHypermediaResolver = createResolver;
             return this;
         }
 
+        /// <summary>
+        /// Internal extension point to inject an IStringParser implementation
+        /// </summary>
+        /// <param name="createStringParser"></param>
+        /// <returns></returns>
         public HypermediaClientBuilder WithCustomStringParser(Func<IStringParser> createStringParser)
         {
             this.createStringParser = createStringParser;
             return this;
         }
 
+        /// <summary>
+        /// Internal extension point to inject an IProblemStringReader implementation.
+        /// </summary>
+        /// <param name="createProblemStringReader"></param>
+        /// <returns></returns>
         public HypermediaClientBuilder WithCustomProblemStringReader(Func<IProblemStringReader> createProblemStringReader)
         {
             this.createProblemStringReader = createProblemStringReader;
             return this;
         }
 
+        /// <summary>
+        /// Internal extension point to inject an IHypermediaReader implementation
+        /// </summary>
+        /// <param name="createHypermediaReader"></param>
+        /// <returns></returns>
         public HypermediaClientBuilder WithCustomHypermediaReader(Func<IHypermediaObjectRegister, IStringParser, IHypermediaReader> createHypermediaReader)
         {
             this.createHypermediaReader = createHypermediaReader;
             return this;
         }
 
+        /// <summary>
+        /// Use the SIREN format (https://github.com/kevinswiber/siren) to read incoming data
+        /// </summary>
+        /// <returns></returns>
         public HypermediaClientBuilder WithSirenHypermediaReader()
         {
             this.createHypermediaReader = (register, parser) => new SirenHypermediaReader(register, parser);
