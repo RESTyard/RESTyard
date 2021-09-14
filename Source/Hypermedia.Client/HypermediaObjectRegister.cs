@@ -8,37 +8,41 @@ using Bluehands.Hypermedia.Client.Util;
 
 namespace Bluehands.Hypermedia.Client
 {
-    public class HypermediaObjectRegister : IHypermediaObjectRegister
+    internal class HypermediaObjectRegister : IHypermediaObjectRegister
     {
-        private readonly Dictionary<List<string>, Type> hypermediaObjectTypeDictionary = new Dictionary<List<string>, Type>(new StringCollectionComparer());
+        private readonly IDictionary<IDistinctOrderedCollection<string>, Type> hypermediaObjectTypeDictionary = new Dictionary<IDistinctOrderedCollection<string>, Type>(new DistinctOrderedStringCollectionComparer());
+
+        public void Register<THco>() where THco : HypermediaClientObject
+        {
+            Register(typeof(THco));
+        }
 
         public void Register(Type hypermediaObjectType)
         {
             if (!typeof(HypermediaClientObject).GetTypeInfo().IsAssignableFrom(hypermediaObjectType))
             {
-                throw new Exception($"Can only register {typeof(HypermediaClientObject).Name}");
+                throw new Exception($"Can only register {nameof(HypermediaClientObject)}");
             }
-
             var attribute = hypermediaObjectType.GetTypeInfo().GetCustomAttribute<HypermediaClientObjectAttribute>();
             if (attribute == null)
             {
-                this.hypermediaObjectTypeDictionary.Add(new List<string> { hypermediaObjectType.Name }, hypermediaObjectType);
+                this.hypermediaObjectTypeDictionary.Add(new DistinctOrderedStringCollection(hypermediaObjectType.Name), hypermediaObjectType);
             }
             else
             {
-                this.hypermediaObjectTypeDictionary.Add(attribute.Classes.ToList(), hypermediaObjectType);
+                this.hypermediaObjectTypeDictionary.Add(attribute.Classes, hypermediaObjectType);
             }
             
         }
 
-        public HypermediaClientObject CreateFromClasses(List<string> classes)
+        public HypermediaClientObject CreateFromClasses(IDistinctOrderedCollection<string> classes)
         {
-            var hypermediaObjectType = this.GethypermediaType(classes);
+            var hypermediaObjectType = this.GetHypermediaType(classes);
 
             return (HypermediaClientObject)Activator.CreateInstance(hypermediaObjectType);
         }
 
-        public Type GethypermediaType(List<string> classes)
+        public Type GetHypermediaType(IDistinctOrderedCollection<string> classes)
         {
             Type hypermediaObjectType;
             if (!this.hypermediaObjectTypeDictionary.TryGetValue(classes, out hypermediaObjectType))
@@ -51,10 +55,20 @@ namespace Bluehands.Hypermedia.Client
 
     public interface IHypermediaObjectRegister
     {
+        /// <summary>
+        /// Register a type. When parsing incoming data, the provided "classes" values are compared to the classes given in the type's HypermediaClientObjectAttribute, or to the types name
+        /// </summary>
+        /// <typeparam name="THco"></typeparam>
+        void Register<THco>() where THco : HypermediaClientObject;
+        
+        /// <summary>
+        /// Register a type. When parsing incoming data, the provided "classes" values are compared to the classes given in the type's HypermediaClientObjectAttribute, or to the types name
+        /// </summary>
+        /// <param name="hypermediaObjectType"></param>
         void Register(Type hypermediaObjectType);
 
-        Type GethypermediaType(List<string> classes);
+        Type GetHypermediaType(IDistinctOrderedCollection<string> classes);
 
-        HypermediaClientObject CreateFromClasses(List<string> classes);
+        HypermediaClientObject CreateFromClasses(IDistinctOrderedCollection<string> classes);
     }
 }

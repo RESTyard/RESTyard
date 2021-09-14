@@ -1,20 +1,34 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <!-- General Settings -->
+    
+    <VersionSuffixLocal></VersionSuffixLocal>
+    <!--When variable is set we are building a prerelease package-->
+    <VersionSuffixLocal Condition="'$(IsPreRelease)'!='' AND  '$(IsPreRelease)'">
+      $(VersionSuffix)
+    </VersionSuffixLocal>
+    
+    <Version>0.1.0$(VersionSuffixLocal)</Version>
     <TargetFramework>netstandard1.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <AssemblyName>Bluehands.Hypermedia.MediaTypes</AssemblyName>
-    <PackageId>Bluehands.Hypermedia.MediaTypes</PackageId>
-    <Company />
-    <Product />
-    <Authors>Mathias Reichardt</Authors>
-    <PackageLicenseUrl>https://github.com/bluehands/WebApiHypermediaExtensions/blob/master/LICENSE.md</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
+    
+    <!-- Descriptions and information -->
+    <Title>Default MediaTypes for Hypermedia Communication via HTTP/REST</Title>
     <PackageTags>Media Types;REST;Hypermedia;Siren</PackageTags>
-    <Description>Media types used by REST projects.</Description>
-    <AssemblyVersion>0.1.0.0</AssemblyVersion>
-    <FileVersion>0.1.0.0</FileVersion>
-    <Version>0.1.0</Version>
+    <Authors>Mathias Reichardt</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <AssemblyName>Bluehands.Hypermedia.MediaTypes</AssemblyName>
+    <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
+    <RepositoryType>Git</RepositoryType>
+    <RepositoryUrl>https://github.com/bluehands/WebApiHypermediaExtensions.git</RepositoryUrl>
+    <RepositoryBranch>$(BranchName)</RepositoryBranch>
+    
+    <!-- Package specific settings -->
+    <PackageId>Bluehands.Hypermedia.MediaTypes</PackageId>
+    <PackageVersion>$(Version)</PackageVersion>
+    <PackageReleaseNotes>Version $(Version)</PackageReleaseNotes>
+    <IsPackable>true</IsPackable>
     <RootNamespace>Bluehands.Hypermedia.MediaTypes</RootNamespace>
   </PropertyGroup>
 

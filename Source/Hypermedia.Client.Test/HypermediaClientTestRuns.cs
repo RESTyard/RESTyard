@@ -4,9 +4,9 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Bluehands.Hypermedia.Client.Authentication;
 using Bluehands.Hypermedia.Client.Extensions;
-using Bluehands.Hypermedia.Client.ParameterSerializer;
-using Bluehands.Hypermedia.Client.Reader;
-using Bluehands.Hypermedia.Client.Resolver;
+using Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson;
+using Bluehands.Hypermedia.Client.Extensions.SystemNetHttp;
+using Bluehands.Hypermedia.Client.Extensions.SystemTextJson;
 using Bluehands.Hypermedia.Client.Test.Hypermedia;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -20,23 +20,25 @@ namespace Bluehands.Hypermedia.Client.Test
     {
         private static readonly Uri ApiEntryPoint = new Uri("http://localhost:5000/entrypoint");
 
-        private HypermediaObjectRegister HypermediaObjectRegister { get; set; }
-
         private HypermediaClient<EntryPointHco> SirenClient { get; set; }
 
 
         [TestInitialize]
         public void Initialize()
         {
-            this.HypermediaObjectRegister = CreateHypermediaObjectRegister();
-            
-            var resolver = new HttpHypermediaResolver(new SingleJsonObjectParameterSerializer());
-            // be sure to use https
-            resolver.SetCredentials(new UsernamePasswordCredentials("User", "Password"));
-            resolver.SetCustomDefaultHeaders(headers => headers.AcceptLanguage.Add(new StringWithQualityHeaderValue("en", 1.0)));
-
-            var hypermediaReader = new SirenHypermediaReader(this.HypermediaObjectRegister, resolver);
-            this.SirenClient = new HypermediaClient<EntryPointHco>(ApiEntryPoint, resolver, hypermediaReader);
+            this.SirenClient = new HypermediaClientBuilder()
+                .ConfigureObjectRegister(ConfigureHypermediaObjectRegister)
+                .WithSingleNewtonsoftJsonObjectParameterSerializer()
+                .WithHttpHypermediaResolver(resolver =>
+                {
+                    resolver.SetCredentials(new UsernamePasswordCredentials("User", "Password"));
+                    resolver.SetCustomDefaultHeaders(headers =>
+                        headers.AcceptLanguage.Add(new StringWithQualityHeaderValue("en", 1.0)));
+                })
+                .WithSystemTextJsonStringParser()
+                .WithNewtonsoftJsonProblemReader()
+                .WithSirenHypermediaReader()
+                .CreateHypermediaClient<EntryPointHco>(ApiEntryPoint);
         }
 
         [TestMethod]
@@ -111,14 +113,12 @@ namespace Bluehands.Hypermedia.Client.Test
             var optionalFluent = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All).NavigateAsync(l => l.Next);
         }
 
-        private static HypermediaObjectRegister CreateHypermediaObjectRegister()
+        private static void ConfigureHypermediaObjectRegister(IHypermediaObjectRegister register)
         {
-            var hypermediaObjectRegister = new HypermediaObjectRegister();
-            hypermediaObjectRegister.Register(typeof(EntryPointHco));
-            hypermediaObjectRegister.Register(typeof(CustomerHco));
-            hypermediaObjectRegister.Register(typeof(CustomersRootHco));
-            hypermediaObjectRegister.Register(typeof(CustomerQueryResultHco));
-            return hypermediaObjectRegister;
+            register.Register<EntryPointHco>();
+            register.Register<CustomerHco>();
+            register.Register<CustomersRootHco>();
+            register.Register<CustomerQueryResultHco>();
         }
     }
 }

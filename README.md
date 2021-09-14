@@ -472,6 +472,12 @@ Tested for:
 
 ## Release Notes
 
+### WebApiHypermediaExtensions v1.6.1
+
+- Bumped supported projects:
+  - from netcoreapp3.0 to netcoreapp3.1
+  - from netstandard1.6 to netstandard2.0
+
 ### WebApiHypermediaExtensions v1.6.0
 
 - Fix: Fix options were not passed down on init, so they were not active.
