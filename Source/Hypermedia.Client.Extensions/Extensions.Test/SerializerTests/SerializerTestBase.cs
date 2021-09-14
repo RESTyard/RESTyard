@@ -1,5 +1,5 @@
 ﻿using Bluehands.Hypermedia.Client.ParameterSerializer;
-using Bluehands.Hypermedia.Client.Test.Hypermedia;
+using Extensions.Test.Hco;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

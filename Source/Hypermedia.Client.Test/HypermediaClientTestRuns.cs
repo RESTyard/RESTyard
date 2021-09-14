@@ -4,7 +4,6 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Bluehands.Hypermedia.Client.Authentication;
 using Bluehands.Hypermedia.Client.Extensions;
-using Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson;
 using Bluehands.Hypermedia.Client.Extensions.SystemNetHttp;
 using Bluehands.Hypermedia.Client.Extensions.SystemTextJson;
 using Bluehands.Hypermedia.Client.Test.Hypermedia;
@@ -28,7 +27,7 @@ namespace Bluehands.Hypermedia.Client.Test
         {
             this.SirenClient = new HypermediaClientBuilder()
                 .ConfigureObjectRegister(ConfigureHypermediaObjectRegister)
-                .WithSingleNewtonsoftJsonObjectParameterSerializer()
+                .WithSingleSystemTextJsonObjectParameterSerializer()
                 .WithHttpHypermediaResolver(resolver =>
                 {
                     resolver.SetCredentials(new UsernamePasswordCredentials("User", "Password"));
@@ -36,7 +35,7 @@ namespace Bluehands.Hypermedia.Client.Test
                         headers.AcceptLanguage.Add(new StringWithQualityHeaderValue("en", 1.0)));
                 })
                 .WithSystemTextJsonStringParser()
-                .WithNewtonsoftJsonProblemReader()
+                .WithSystemTextJsonProblemReader()
                 .WithSirenHypermediaReader()
                 .CreateHypermediaClient<EntryPointHco>(ApiEntryPoint);
         }
