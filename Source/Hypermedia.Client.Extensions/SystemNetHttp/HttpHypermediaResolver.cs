@@ -154,13 +154,10 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
             var innerException = GetInnerException(result);
 
-            if (result.Content != null)
+            var (hasProblemDescription, problemDescription) = await this.TryReadProblemStringAsync(result);
+            if (hasProblemDescription)
             {
-                var contentAsString = await result.Content.ReadAsStringAsync();
-                if (this.problemReader.TryReadProblemString(contentAsString, out var problemDescription))
-                {
-                    throw new HypermediaProblemException(problemDescription, innerException);
-                }
+                throw new HypermediaProblemException(problemDescription, innerException);
             }
 
             var message = innerException.Message ?? string.Empty;
@@ -179,6 +176,24 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             }
 
             return null;
+        }
+
+        private async Task<(bool hasProblemDescription, ProblemDescription problemDescription)> TryReadProblemStringAsync(HttpResponseMessage response)
+        {
+            if (response.Content == null)
+            {
+                return (false, null);
+            }
+            try
+            {
+                var contentAsString = await response.Content.ReadAsStringAsync();
+                var result = this.problemReader.TryReadProblemString(contentAsString, out var problemDescription);
+                return (result, problemDescription);
+            }
+            catch (Exception)
+            {
+                return (false, null);
+            }
         }
 
         private string ProcessParameters(List<ParameterDescription> parameterDescriptions, object parameterObject)
