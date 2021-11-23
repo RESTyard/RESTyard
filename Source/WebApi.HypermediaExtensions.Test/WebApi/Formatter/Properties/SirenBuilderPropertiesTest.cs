@@ -9,6 +9,8 @@ using WebApi.HypermediaExtensions.WebApi.Formatter;
 
 namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
 {
+    using HypermediaExtensions.WebApi.RouteResolver;
+
     [TestClass]
     public class SirenBuilderPropertiesTest : SirenBuilderTestBase
     {
@@ -28,7 +30,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
         public void EmptyObjectTest()
         {
             var routeName = typeof(EmptyHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(EmptyHypermediaObject), routeName);
+            RouteRegister.AddHypermediaObjectRoute(typeof(EmptyHypermediaObject), routeName, HttpMethod.GET);
 
             var ho = new EmptyHypermediaObject();
             var siren = SirenConverter.ConvertToJson(ho);
@@ -44,7 +46,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
         public void AttributedEmptyObjectTest()
         {
             var routeName = typeof(AttributedEmptyHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(AttributedEmptyHypermediaObject), routeName);
+            RouteRegister.AddHypermediaObjectRoute(typeof(AttributedEmptyHypermediaObject), routeName, HttpMethod.GET);
 
             var ho = new AttributedEmptyHypermediaObject();
             var siren = SirenConverter.ConvertToJson(ho);
@@ -71,7 +73,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
         public void PropertyDuplicateObjectTest()
         {
             var routeName = typeof(PropertyDuplicateHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyDuplicateHypermediaObject), routeName);
+            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyDuplicateHypermediaObject), routeName, HttpMethod.GET);
 
             var ho = new PropertyDuplicateHypermediaObject();
             SirenConverter.ConvertToJson(ho);
@@ -81,7 +83,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
         public void AttributedPropertyTest()
         {
             var routeName = typeof(AttributedPropertyHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(AttributedPropertyHypermediaObject), routeName);
+            RouteRegister.AddHypermediaObjectRoute(typeof(AttributedPropertyHypermediaObject), routeName, HttpMethod.GET);
 
             var ho = new AttributedPropertyHypermediaObject();
             var siren = SirenConverter.ConvertToJson(ho);
@@ -124,7 +126,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
         public void PropertyDefaultsObjectTest()
         {
             var routeName = typeof(PropertyHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyHypermediaObject), routeName);
+            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyHypermediaObject), routeName, HttpMethod.GET);
 
             var ho = new PropertyHypermediaObject();
             var siren = SirenConverter.ConvertToJson(ho);
@@ -143,7 +145,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
         public void PropertyDefaultsObjectWriteNoNullPropertiesTest()
         {
             var routeName = typeof(PropertyHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyHypermediaObject), routeName);
+            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyHypermediaObject), routeName, HttpMethod.GET);
 
             var ho = new PropertyHypermediaObject();
             var siren = SirenConverterNoNullProperties.ConvertToJson(ho);
@@ -162,7 +164,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
         public void PropertyObjectTest()
         {
             var routeName = typeof(PropertyHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyHypermediaObject), routeName);
+            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyHypermediaObject), routeName, HttpMethod.GET);
 
             var ho = new PropertyHypermediaObject
             {

@@ -9,21 +9,21 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
 {
     public class RouteRegister : IRouteRegister
     {
-        private readonly Dictionary<Type, string> routeRegister;
+        private readonly Dictionary<Type, RouteInfo> routeRegister;
 
         private readonly Dictionary<Type, IKeyProducer> routeKeyProducerRegister;
 
         public RouteRegister()
         {
-            routeRegister  = new Dictionary<Type, string>();
+            routeRegister  = new Dictionary<Type, RouteInfo>();
             routeKeyProducerRegister = new Dictionary<Type, IKeyProducer>();
         }
 
-        public bool TryGetRoute(Type lookupType, out string routeName)
+        public bool TryGetRoute(Type lookupType, out RouteInfo routeInfo)
         {
-            if (!this.routeRegister.TryGetValue(lookupType, out routeName))
+            if (!this.routeRegister.TryGetValue(lookupType, out routeInfo))
             {
-                routeName = string.Empty;
+                routeInfo = RouteInfo.Empty();
                 return false;
                
             }
@@ -31,7 +31,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
             return true;
         }
 
-        public void AddActionRoute(Type hypermediaActionType, string routeName)
+        public void AddActionRoute(Type hypermediaActionType, string routeName, HttpMethod httpMethod)
         {
             if (!IsHypermediaAction(hypermediaActionType) /*&& !IsGenericHypermediaAction(hypermediaActionType)*/)
             {
@@ -39,7 +39,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
                     $"Type {hypermediaActionType} must derive from {typeof(HypermediaAction<>).Name}.");
             }
 
-            this.AddRoute(hypermediaActionType, routeName);
+            this.AddRoute(hypermediaActionType, new RouteInfo(routeName, httpMethod));
         }
 
         private static bool IsHypermediaAction(Type hypermediaActionType)
@@ -47,7 +47,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
             return typeof(HypermediaActionBase).GetTypeInfo().IsAssignableFrom(hypermediaActionType);
         }
 
-        public void AddHypermediaObjectRoute(Type hypermediaObjectType, string routeName)
+        public void AddHypermediaObjectRoute(Type hypermediaObjectType, string routeName, HttpMethod httpMethod)
         {
             if (!typeof(HypermediaObject).GetTypeInfo().IsAssignableFrom(hypermediaObjectType))
             {
@@ -55,10 +55,10 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
                     $"Type {hypermediaObjectType} must derive from {typeof(HypermediaObject).Name}.");
             }
 
-            this.AddRoute(hypermediaObjectType, routeName);
+            this.AddRoute(hypermediaObjectType, new RouteInfo(routeName, httpMethod));
         }
 
-        public void AddParameterTypeRoute(Type iHypermediaActionParameter, string routeName)
+        public void AddParameterTypeRoute(Type iHypermediaActionParameter, string routeName, HttpMethod httpMethod)
         {
             if (!typeof(IHypermediaActionParameter).GetTypeInfo().IsAssignableFrom(iHypermediaActionParameter))
             {
@@ -66,7 +66,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
                     $"Type {iHypermediaActionParameter} must derive from {typeof(IHypermediaActionParameter).Name}.");
             }
 
-            this.AddRoute(iHypermediaActionParameter, routeName);
+            this.AddRoute(iHypermediaActionParameter, new RouteInfo(routeName, httpMethod));
         }
 
         public void AddRouteKeyProducer(Type keySourceType, IKeyProducer keyProducer)
@@ -84,14 +84,14 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
             return this.routeKeyProducerRegister.TryGetValue(type, out keyProducer);
         }
 
-        private void AddRoute(Type type, string routeName)
+        private void AddRoute(Type type, RouteInfo routeInfo)
         {
             if (this.RouteExists(type))
             {
                 throw new RouteRegisterException($"Route to type {type} already exists.");
             }
 
-            this.routeRegister.Add(type, routeName);
+            this.routeRegister.Add(type, routeInfo);
         }
 
         private bool RouteExists(Type lookupType)

@@ -44,7 +44,7 @@ namespace CarShack.Controllers.Customers
         #endregion
 
         #region Actions
-        [HttpPostHypermediaAction("MyFavoriteCustomers", typeof(HypermediaActionCustomerMarkAsFavorite))]
+        [HttpDeleteHypermediaAction("MyFavoriteCustomers", typeof(HypermediaActionCustomerMarkAsFavorite))]
         public async Task<ActionResult> MarkAsFavoriteAction([HypermediaActionParameterFromBody]FavoriteCustomer favoriteCustomer)
         {
             if (favoriteCustomer == null)

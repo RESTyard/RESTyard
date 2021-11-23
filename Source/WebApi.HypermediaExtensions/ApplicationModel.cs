@@ -78,6 +78,18 @@ namespace WebApi.HypermediaExtensions
             {
                 return new ActionMethod(httpPostHypermediaAction.RouteType, httpPostHypermediaAction.Template, controllerType, methodInfo.Name);
             }
+            var httpDeleteHypermediaAction = methodInfo.GetCustomAttribute<HttpDeleteHypermediaAction>();
+            if (httpDeleteHypermediaAction != null)
+            {
+                return new ActionMethod(httpDeleteHypermediaAction.RouteType, httpDeleteHypermediaAction.Template, controllerType, methodInfo.Name);
+            }
+            var httpPatchHypermediaAction = methodInfo.GetCustomAttribute<HttpPatchHypermediaAction>();
+            if (httpPatchHypermediaAction != null)
+            {
+                return new ActionMethod(httpPatchHypermediaAction.RouteType, httpPatchHypermediaAction.Template, controllerType, methodInfo.Name);
+            }
+
+
             var httpGetHypermediaActionParameterInfo = methodInfo.GetCustomAttribute<HttpGetHypermediaActionParameterInfo>();
             if (httpGetHypermediaActionParameterInfo != null)
             {
