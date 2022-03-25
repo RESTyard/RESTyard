@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Bluehands.Hypermedia.Client.Authentication;
@@ -28,12 +29,14 @@ namespace Bluehands.Hypermedia.Client.Test
             this.SirenClient = new HypermediaClientBuilder()
                 .ConfigureObjectRegister(ConfigureHypermediaObjectRegister)
                 .WithSingleSystemTextJsonObjectParameterSerializer()
-                .WithHttpHypermediaResolver(resolver =>
-                {
-                    resolver.SetCredentials(new UsernamePasswordCredentials("User", "Password"));
-                    resolver.SetCustomDefaultHeaders(headers =>
-                        headers.AcceptLanguage.Add(new StringWithQualityHeaderValue("en", 1.0)));
-                })
+                .WithHttpHypermediaResolver(
+                    new HttpClient(),
+                    resolver =>
+                    {
+                        resolver.SetCredentials(new UsernamePasswordCredentials("User", "Password"));
+                        resolver.SetCustomDefaultHeaders(headers =>
+                            headers.AcceptLanguage.Add(new StringWithQualityHeaderValue("en", 1.0)));
+                    })
                 .WithSystemTextJsonStringParser()
                 .WithSystemTextJsonProblemReader()
                 .WithSirenHypermediaReader()
