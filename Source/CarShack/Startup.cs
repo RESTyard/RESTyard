@@ -1,11 +1,13 @@
 ﻿using System.Buffers;
-
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Newtonsoft.Json;
 
 using CarShack.Domain.Customer;
@@ -21,7 +23,7 @@ namespace CarShack
     {
         public IConfigurationRoot Configuration { get; }
 
-        public Startup(IHostingEnvironment env)
+        public Startup(IWebHostEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -32,11 +34,8 @@ namespace CarShack
             Configuration = builder.Build();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-
             app.UseCors(builder =>
                 {
                     builder
@@ -54,12 +53,12 @@ namespace CarShack
             var builder = services.AddMvcCore(options =>
             {
                 options.OutputFormatters.Clear();
-                options.OutputFormatters.Add(new JsonOutputFormatter(
-                    new JsonSerializerSettings
+                options.OutputFormatters.Add(new SystemTextJsonOutputFormatter(
+                    new JsonSerializerOptions
                     {
-                        NullValueHandling = NullValueHandling.Ignore,
-                        DefaultValueHandling = DefaultValueHandling.Ignore
-                    }, ArrayPool<char>.Shared));
+                        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                    }));
+                options.EnableEndpointRouting = false;
             });
             builder.AddMvcOptions(o => { o.Filters.Add(new GlobalExceptionFilter(null)); });
 
