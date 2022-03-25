@@ -18,26 +18,28 @@ using Bluehands.Hypermedia.MediaTypes;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 {
-    public class HttpHypermediaResolver : IHypermediaResolver, IHttpHypermediaResolverConfiguration, IDisposable
+    public class HttpHypermediaResolver
+        : IHypermediaResolver, IHttpHypermediaResolverConfiguration
     {
         public const string EtagHeaderKey = "ETag";
 
+        private readonly HttpClient httpClient;
         private readonly IParameterSerializer parameterSerializer;
         private readonly IProblemStringReader problemReader;
         private readonly ILinkHcoCache<string> linkHcoCache;
         private IHypermediaReader hypermediaReader;
-        private HttpClient httpClient;
 
         private UsernamePasswordCredentials UsernamePasswordCredentials { get; set; }
 
         private Action<HttpRequestHeaders> AddCustomDefaultHeadersAction { get; set; }
 
         public HttpHypermediaResolver(
+            HttpClient httpClient,
             IParameterSerializer parameterSerializer,
             IProblemStringReader problemReader,
             ILinkHcoCache<string> linkHcoCache)
         {
-            // todo maybe pass HttpClient as dependency so it can be modified by the user
+            this.httpClient = httpClient;
             this.parameterSerializer = parameterSerializer;
             this.problemReader = problemReader;
             this.linkHcoCache = linkHcoCache;
@@ -293,11 +295,6 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
         private void InitializeHttpClient()
         {
-            if (httpClient == null)
-            {
-                httpClient = new HttpClient();
-            }
-
             httpClient.DefaultRequestHeaders.Clear();
 
             if (HasCustomHeaders())

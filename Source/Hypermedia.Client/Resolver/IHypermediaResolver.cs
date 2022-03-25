@@ -9,6 +9,7 @@ using Bluehands.Hypermedia.Client.Reader;
 namespace Bluehands.Hypermedia.Client.Resolver
 {
     public interface IHypermediaResolver
+        : IDisposable
     {
         void InitializeHypermediaReader(IHypermediaReader reader);
 

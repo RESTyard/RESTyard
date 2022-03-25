@@ -6,12 +6,14 @@ using Bluehands.Hypermedia.Client.Resolver;
 
 namespace Bluehands.Hypermedia.Client
 {
-    public class HypermediaClient<TEntryPoint> : IHypermediaClient<TEntryPoint> where TEntryPoint : HypermediaClientObject
+    public class HypermediaClient<TEntryPoint>
+        : IHypermediaClient<TEntryPoint>
+        where TEntryPoint : HypermediaClientObject
     {
         private readonly IHypermediaReader sirenHypermediaReader;
         private readonly IHypermediaResolver resolver;
 
-        public Uri UriApiEntryPoint { get; private set; }
+        public Uri UriApiEntryPoint { get; }
 
         public HypermediaClient(
             Uri uriApiEntryPoint,
@@ -35,6 +37,11 @@ namespace Bluehands.Hypermedia.Client
 
             var hypermediaClientObject =  result.ResultObject;
             return hypermediaClientObject;
+        }
+
+        public void Dispose()
+        {
+            this.resolver?.Dispose();
         }
     }
 }
