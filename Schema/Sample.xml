@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Hypermedia xmlns="http://schema.bluehands.de/2022/Hypermedia.xsd" >
+	<Documents>
+        
+		<Document name="EntryPoint" classification="EntryPoint" title="Entry to the CRM REST API">
+            
+            <Properties>
+                <Property name="Id" type="Guid" mandatory="true" isKey="true" />
+                <Property name="Name" type="string" mandatory="true" />
+                <Property name="Id" type="string" mandatory="true" />
+                
+            </Properties>
+            <Entities>
+                <Entity document=""/>
+            </Entities>
+            <Operations>
+                <Operation name="Move" method="Post" resultDocument="x">
+	                <Parameters typeName="Address">
+                        <Property name="Street" type="string" mandatory="true" />
+                        <Property name="ZipCode" type="string" mandatory="true" />
+                        <Property name="City" type="string" mandatory="true" />
+                    </Parameters>
+                </Operation>
+            </Operations>
+            <Links>
+	            <Link rel="self" document="xx" ></Link>
+            </Links>
+        </Document>
+    </Documents>
+</Hypermedia>

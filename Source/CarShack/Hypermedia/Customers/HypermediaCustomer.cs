@@ -16,6 +16,8 @@ namespace CarShack.Hypermedia.Customers
         // See the CustomerController.
         [HypermediaAction(Name = "CustomerMove", Title = "A Customer moved to a new location.")]
         public HypermediaActionCustomerMoveAction MoveAction { get; private set; }
+        [HypermediaAction(Name = "RemoveCustomer", Title = "A Customer removed from the system.")]
+        public HypermediaActionRemoveCustomerAction RemoveCustomerAction { get; private set; }
 
         [HypermediaAction(Title = "Marks a Customer as a favorite buyer.")]
         public HypermediaActionCustomerMarkAsFavorite MarkAsFavoriteAction { get; private set; }
@@ -30,7 +32,7 @@ namespace CarShack.Hypermedia.Customers
         // Assigns an alternative name, so this stays constant even if property is renamed
         [HypermediaProperty(Name = "FullName")]
         public string Name { get; set; }
-        
+
         public int Age { get; set; }
 
         public string Address { get; set; }
@@ -48,7 +50,8 @@ namespace CarShack.Hypermedia.Customers
             Address = customer.Address;
 
             MoveAction = new HypermediaActionCustomerMoveAction(CanMove, DoMove);
-            MarkAsFavoriteAction = new HypermediaActionCustomerMarkAsFavorite (CanMarkAsFavorite, DoMarkAsFavorite);
+            RemoveCustomerAction = new HypermediaActionRemoveCustomerAction(() => true, () => { });
+            MarkAsFavoriteAction = new HypermediaActionCustomerMarkAsFavorite(CanMarkAsFavorite, DoMarkAsFavorite);
         }
 
         private bool CanMarkAsFavorite()

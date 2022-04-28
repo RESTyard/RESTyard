@@ -10,4 +10,5 @@ namespace CarShack.Hypermedia.Customers
         {
         }
     }
+    // Action on a HypermediaCustomer which requires a delete-verb the corresponding route. See CustomerController
 }

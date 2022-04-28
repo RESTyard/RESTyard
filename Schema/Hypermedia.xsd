@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema 
+	attributeFormDefault="unqualified" 
+	elementFormDefault="qualified"
+	targetNamespace="http://schema.bluehands.de/2022/Hypermedia.xsd"
+    xmlns:hm="http://schema.bluehands.de/2022/Hypermedia.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+	<xs:complexType name="HypermediaType">
+		<xs:sequence>
+			<xs:element name="TransferParameters" type="hm:TransferParametersType" maxOccurs="1" minOccurs="0"/>
+			<xs:element name="Documents" type="hm:DocumentsType" maxOccurs="1" minOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<!-- Document -->
+	<xs:complexType name="ClassificationsType">
+		<xs:sequence>
+			<xs:element name="Classification" type="hm:ClassificationType" maxOccurs="unbounded" minOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ClassificationType">
+		<xs:attribute type="xs:string" name="class" use="required"/>
+	</xs:complexType>
+
+	<xs:complexType name="DocumentsType">
+		<xs:sequence>
+			<xs:element name="Document" type="hm:DocumentType" maxOccurs="unbounded" minOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="DocumentType">
+		<xs:sequence>
+			<xs:element name="Classifications" type="hm:ClassificationsType" minOccurs="0" maxOccurs="1" ></xs:element>
+			<xs:element name="Properties" type="hm:PropertiesType" minOccurs="0" maxOccurs="1" ></xs:element>
+			<xs:element name="Entities" type="hm:EntitiesType" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="Operations" type="hm:OperationsType" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="Links" type="hm:LinksType" minOccurs="0" maxOccurs="1" ></xs:element>
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="name" use="required"/>
+		<xs:attribute type="xs:string" name="title" use="optional"/>
+	</xs:complexType>
+
+	<!-- Properties -->
+
+	<xs:complexType name="PropertiesType">
+		<xs:sequence>
+			<xs:element name="Property" type="hm:PropertyType" maxOccurs="unbounded" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="PropertyType">
+		<xs:attribute type="xs:string" name="name" use="required"/>
+		<xs:attribute type="xs:string" name="type" use="required"/>
+		<xs:attribute type="xs:boolean" name="mandatory" use="optional"/>
+		<xs:attribute type="xs:boolean" name="isKey" use="optional"/>
+		<xs:attribute type="xs:boolean" name="hidden" use="optional"/>
+	</xs:complexType>
+
+	<!-- Entities -->
+
+	<xs:complexType name="EntitiesType">
+		<xs:sequence>
+			<xs:element name="Entity" type="hm:EntityType" maxOccurs="unbounded" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="EntityType">
+		<xs:attribute type="xs:string" name="document" use="required"/>
+		<xs:attribute type="xs:string" name="referencedDocument" use="optional"/>
+	</xs:complexType>
+
+	<!-- Operations -->
+	
+	<xs:complexType name="OperationsType">
+		<xs:sequence>
+			<xs:element name="Operation" type="hm:OperationType" maxOccurs="unbounded" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="OperationType">
+		<xs:attribute type="xs:string" name="name" use="required"/>
+		<xs:attribute type="hm:method" name="method" use="required"/>
+		<xs:attribute type="xs:string" name="title" use="optional"/>
+		<xs:attribute type="xs:string" name="parameterTypeName" use="optional"/>
+		<xs:attribute type="xs:string" name="resultDocument" use="optional"/>
+	</xs:complexType>
+
+	<!-- Parameter -->
+	<xs:complexType name="TransferParametersType">
+		<xs:sequence>
+			<xs:element name="Parameters" type="hm:ParameterType" maxOccurs="unbounded" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+
+
+	<xs:complexType name="ParameterType">
+		<xs:sequence>
+			<xs:element name="Property" type="hm:PropertyType" maxOccurs="unbounded" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="typeName" use="required"/>
+		<xs:attribute type="xs:boolean" name="usedForQueries" use="required"/>
+		<xs:attribute type="xs:boolean" name="usedForActions" use="required"/>
+	</xs:complexType>
+
+	<xs:complexType name="QueryParametersType">
+		<xs:sequence>
+			<xs:element name="QueryParameter" type="hm:QueryParameterType" maxOccurs="unbounded" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="QueryParameterType">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="parameterName" type="xs:string">
+				</xs:attribute>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	
+	<!-- Links -->
+
+	<xs:complexType name="LinksType">
+		<xs:sequence>
+			<xs:element name="Link" type="hm:LinkType" maxOccurs="unbounded" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="LinkType">
+		<xs:sequence>
+			<xs:element name="QueryParameters" type="hm:QueryParametersType" maxOccurs="1" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="rel" use="required"/>
+		<xs:attribute type="xs:string" name="document" use="optional"/>
+		<xs:attribute type="xs:string" name="query" use="optional"/>
+		<xs:attribute type="xs:string" name="parameterTypeName" use="optional"/>
+	</xs:complexType>
+
+	<!-- Others -->
+
+	<xs:simpleType name="method">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Post"/>
+			<xs:enumeration value="Delete"/>
+			<xs:enumeration value="Patch"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<!-- Root -->
+
+	<xs:element name="Hypermedia" type="hm:HypermediaType"/>
+</xs:schema>

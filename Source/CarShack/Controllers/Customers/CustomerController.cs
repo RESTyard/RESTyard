@@ -155,6 +155,37 @@ namespace CarShack.Controllers.Customers
                 return this.UnprocessableEntity(problem);
             }
         }
+        
+        [HttpDeleteHypermediaAction("{key:int}", 
+            typeof(HypermediaActionRemoveCustomerAction), 
+            typeof(CustomerRouteKeyProducer))]
+        public async Task<ActionResult> RemoveCustomer(int key)
+        {
+            try
+            {
+                return Ok();
+            }
+            catch (EntityNotFoundException)
+            {
+                return this.Problem(ProblemJsonBuilder.CreateEntityNotFound());
+            }
+            catch (CanNotExecuteActionException)
+            {
+                return this.CanNotExecute();
+            }
+            catch (ActionParameterValidationException e)
+            {
+                var problem = new ProblemJson()
+                {
+                    Title = $"Can not use provided object of type '{typeof(NewAddress)}'",
+                    Detail = e.Message,
+                    ProblemType = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
+                    StatusCode = 422 // Unprocessable Entity
+                };
+                return this.UnprocessableEntity(problem);
+            }
+        }
+
         #endregion
 
         #region TypeRoutes
