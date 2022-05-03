@@ -38,6 +38,7 @@
 		</xs:sequence>
 		<xs:attribute type="xs:string" name="name" use="required"/>
 		<xs:attribute type="xs:string" name="title" use="optional"/>
+		<xs:attribute type="xs:boolean" name="isQueryResult" use="optional"/>
 	</xs:complexType>
 
 	<!-- Properties -->
@@ -63,6 +64,7 @@
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="EntityType">
+		<xs:attribute type="xs:string" name="collectionName" use="required"/>
 		<xs:attribute type="xs:string" name="document" use="required"/>
 		<xs:attribute type="xs:string" name="referencedDocument" use="optional"/>
 	</xs:complexType>

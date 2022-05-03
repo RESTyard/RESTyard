@@ -30,6 +30,7 @@
     <PackageReleaseNotes></PackageReleaseNotes>
     <IsPackable>true</IsPackable>
     <RootNamespace>Bluehands.Hypermedia.Client.Extensions.SystemNetHttp</RootNamespace>
+    <BaseOutputPath>bin</BaseOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
