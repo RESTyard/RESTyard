@@ -83,11 +83,10 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 response = await this.httpClient.SendAsync(request, CancellationToken.None);
                 if (response.StatusCode == HttpStatusCode.NotModified)
                 {
-                    return new ResolverResult<T>()
-                    {
-                        Success = true,
-                        ResultObject = (T) cacheEntry.HypermediaClientObject,
-                    };
+                    return new ResolverResult<T>(
+                        success: true,
+                        (T) cacheEntry.HypermediaClientObject,
+                        this);
                 }
                 else
                 {
@@ -226,11 +225,10 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 throw new Exception($"Could not retrieve result as {typeof(T).Name} ");
             }
 
-            var resolverResult = new ResolverResult<T>()
-            {
-                ResultObject = desiredResultObject, 
-                Success = true,
-            };
+            var resolverResult = new ResolverResult<T>(
+                success: true,
+                desiredResultObject,
+                this);
             return resolverResult;
         }
 
