@@ -21,13 +21,11 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
     public class HttpHypermediaResolver
         : IHypermediaResolver, IHttpHypermediaResolverConfiguration
     {
-        public const string EtagHeaderKey = "ETag";
-
         private readonly HttpClient httpClient;
         private readonly IParameterSerializer parameterSerializer;
         private readonly IProblemStringReader problemReader;
         private readonly ILinkHcoCache<string> linkHcoCache;
-        private IHypermediaReader hypermediaReader;
+        private readonly IHypermediaReader hypermediaReader;
 
         private UsernamePasswordCredentials UsernamePasswordCredentials { get; set; }
 
@@ -35,23 +33,21 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
         public HttpHypermediaResolver(
             HttpClient httpClient,
+            IHypermediaReader hypermediaReader,
             IParameterSerializer parameterSerializer,
             IProblemStringReader problemReader,
             ILinkHcoCache<string> linkHcoCache)
         {
             this.httpClient = httpClient;
+            this.hypermediaReader = hypermediaReader;
             this.parameterSerializer = parameterSerializer;
             this.problemReader = problemReader;
             this.linkHcoCache = linkHcoCache;
             InitializeHttpClient();
         }
 
-        public void InitializeHypermediaReader(IHypermediaReader reader)
-        {
-            hypermediaReader = reader;
-        }
-
-        public async Task<ResolverResult<T>> ResolveLinkAsync<T>(Uri uriToResolve)
+        public async Task<ResolverResult<T>> ResolveLinkAsync<T>(
+            Uri uriToResolve)
             where T : HypermediaClientObject
         {
             string Quoted(string value)
@@ -224,12 +220,6 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
             var hypermediaObjectSiren = await responseMessage.Content.ReadAsStreamAsync();
 
-            if (this.hypermediaReader == null)
-            {
-                throw new Exception(
-                    $"Please setup the hypermediaReader before using the resolver. see {nameof(InitializeHypermediaReader)}");
-            }
-
             var hypermediaClientObject = await this.hypermediaReader.ReadAsync(hypermediaObjectSiren);
             if (!(hypermediaClientObject is T desiredResultObject))
             {
@@ -270,8 +260,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 Success = true, 
                 ResultLocation =
                 {
-                    Uri = location, 
-                    Resolver = this
+                    Uri = location,
                 },
             };
 

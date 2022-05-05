@@ -11,8 +11,6 @@ namespace Bluehands.Hypermedia.Client.Resolver
     public interface IHypermediaResolver
         : IDisposable
     {
-        void InitializeHypermediaReader(IHypermediaReader reader);
-
         void SetCredentials(UsernamePasswordCredentials usernamePasswordCredentials);
 
         Task<ResolverResult<T>> ResolveLinkAsync<T>(Uri uriToResolve) where T : HypermediaClientObject;

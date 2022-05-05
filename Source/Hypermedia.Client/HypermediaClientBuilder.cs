@@ -12,7 +12,6 @@ namespace Bluehands.Hypermedia.Client
         private Func<IParameterSerializer> createParameterSerializer;
         private Func<IStringParser> createStringParser;
         private Func<IProblemStringReader> createProblemStringReader;
-        private Func<IParameterSerializer, IProblemStringReader, IHypermediaResolver> createHypermediaResolver;
         private Func<IHypermediaObjectRegister, IStringParser, IHypermediaReader> createHypermediaReader;
 
         public HypermediaClientBuilder()
@@ -31,25 +30,49 @@ namespace Bluehands.Hypermedia.Client
             return getFunc();
         }
 
-        /// <summary>
-        /// Build the HypermediaClient using all the configured interface implementations
-        /// </summary>
-        /// <typeparam name="TEntryPoint"></typeparam>
-        /// <param name="uriApiEntryPoint"></param>
-        /// <exception cref="System.InvalidOperationException">Thrown if not all necessary configurations were made</exception>
-        /// <returns></returns>
-        public HypermediaClient<TEntryPoint> CreateHypermediaClient<TEntryPoint>(Uri uriApiEntryPoint) where TEntryPoint : HypermediaClientObject
+        public IResolverDependencies BuildDependencies()
         {
             var objectRegister = Get(this.createHypermediaObjectRegister, nameof(ConfigureObjectRegister));
             var serializer = Get(this.createParameterSerializer, nameof(WithCustomParameterSerializer));
             var stringParser = Get(this.createStringParser, nameof(WithCustomStringParser));
             var problemReader = Get(this.createProblemStringReader, nameof(WithCustomProblemStringReader));
-            var resolver = Get(() => this.createHypermediaResolver(serializer, problemReader), nameof(WithCustomHypermediaResolver));
             var reader = Get(() => this.createHypermediaReader(objectRegister, stringParser), nameof(WithSirenHypermediaReader), nameof(WithCustomHypermediaReader));
-            resolver.InitializeHypermediaReader(reader);
-            reader.InitializeHypermediaResolver(resolver);
-            var client = new HypermediaClient<TEntryPoint>(uriApiEntryPoint, resolver, reader);
-            return client;
+            return new ResolverDependencies(objectRegister, serializer, stringParser, problemReader, reader);
+        }
+
+        public interface IResolverDependencies
+        {
+            IHypermediaObjectRegister ObjectRegister { get; }
+
+            IParameterSerializer ParameterSerializer { get; }
+
+            IStringParser StringParser { get; }
+
+            IProblemStringReader ProblemReader { get; }
+
+            IHypermediaReader HypermediaReader { get; }
+        }
+
+        private class ResolverDependencies : IResolverDependencies
+        {
+            public ResolverDependencies(IHypermediaObjectRegister objectRegister,
+                IParameterSerializer parameterSerializer,
+                IStringParser stringParser,
+                IProblemStringReader problemReader,
+                IHypermediaReader hypermediaReader)
+            {
+                ObjectRegister = objectRegister;
+                ParameterSerializer = parameterSerializer;
+                StringParser = stringParser;
+                ProblemReader = problemReader;
+                HypermediaReader = hypermediaReader;
+            }
+
+            public IHypermediaObjectRegister ObjectRegister { get; }
+            public IParameterSerializer ParameterSerializer { get; }
+            public IStringParser StringParser { get; }
+            public IProblemStringReader ProblemReader { get; }
+            public IHypermediaReader HypermediaReader { get; }
         }
 
         /// <summary>
@@ -76,17 +99,6 @@ namespace Bluehands.Hypermedia.Client
         public HypermediaClientBuilder WithCustomParameterSerializer(Func<IParameterSerializer> createParameterSerializer)
         {
             this.createParameterSerializer = createParameterSerializer;
-            return this;
-        }
-
-        /// <summary>
-        /// Internal extension point to inject an IHypermediaResolver implementation
-        /// </summary>
-        /// <param name="createResolver"></param>
-        /// <returns></returns>
-        public HypermediaClientBuilder WithCustomHypermediaResolver(Func<IParameterSerializer, IProblemStringReader, IHypermediaResolver> createResolver)
-        {
-            this.createHypermediaResolver = createResolver;
             return this;
         }
 

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Bluehands.Hypermedia.Client.Hypermedia;
 using Bluehands.Hypermedia.Client.Hypermedia.Attributes;
 using Bluehands.Hypermedia.Client.Hypermedia.Commands;
-using Bluehands.Hypermedia.Client.Resolver;
 using Bluehands.Hypermedia.Client.Util;
 
 namespace Bluehands.Hypermedia.Client.Reader
@@ -26,7 +25,6 @@ namespace Bluehands.Hypermedia.Client.Reader
     {
         private readonly IHypermediaObjectRegister hypermediaObjectRegister;
         private readonly IHypermediaCommandFactory hypermediaCommandFactory;
-        private IHypermediaResolver resolver;
         private readonly IStringParser stringParser;
         private readonly DistinctOrderedStringCollectionComparer distinctOrderedStringCollectionComparer = new DistinctOrderedStringCollectionComparer();
 
@@ -37,11 +35,6 @@ namespace Bluehands.Hypermedia.Client.Reader
             this.hypermediaObjectRegister = hypermediaObjectRegister;
             this.hypermediaCommandFactory = RegisterHypermediaCommandFactory.Create();
             this.stringParser = stringParser;
-        }
-
-        public void InitializeHypermediaResolver(IHypermediaResolver resolver)
-        {
-            this.resolver = resolver;
         }
 
         public HypermediaClientObject Read(string contentString)
@@ -152,7 +145,6 @@ namespace Bluehands.Hypermedia.Client.Reader
 
             // create instance in any case so CanExecute can be called
             var commandInstance = this.CreateHypermediaClientCommand(propertyInfo.PropertyType);
-            commandInstance.Resolver = this.resolver;
 
             propertyInfo.SetValue(hypermediaObjectInstance, commandInstance);
 
@@ -338,7 +330,6 @@ namespace Bluehands.Hypermedia.Client.Reader
             }
 
             var hypermediaLink = (IHypermediaLink)Activator.CreateInstance(propertyInfo.PropertyType);
-            hypermediaLink.Resolver = this.resolver;
             propertyInfo.SetValue(hypermediaObjectInstance, hypermediaLink);
 
             var links = rootObject["links"];
