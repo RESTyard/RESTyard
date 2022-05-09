@@ -8,8 +8,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
     {
         public static IHypermediaResolver CreateHttpHypermediaResolver(
             this HypermediaClientBuilder builder,
-            HttpClient httpClient,
-            Action<IHttpHypermediaResolverConfiguration> configure)
+            HttpClient httpClient)
         {
             var dependencies = builder.BuildDependencies();
             var resolver = new HttpHypermediaResolver(
@@ -18,13 +17,11 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 dependencies.ParameterSerializer,
                 dependencies.ProblemReader,
                 NoLinkCache<string>.Instance);
-            configure(resolver);
             return resolver;
         }
 
         public static Func<HttpClient, IHypermediaResolver> CreateHttpHypermediaResolverFactory(
-            this HypermediaClientBuilder builder,
-            Action<IHttpHypermediaResolverConfiguration> configure)
+            this HypermediaClientBuilder builder)
         {
             var dependencies = builder.BuildDependencies();
             return httpClient =>
@@ -42,8 +39,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         public static IHypermediaResolver CreateCachedHttpHypermediaResolver(
             this HypermediaClientBuilder builder,
             HttpClient httpClient,
-            ILinkHcoCache<string> linkHcoCache,
-            Action<IHttpHypermediaResolverConfiguration> configure)
+            ILinkHcoCache<string> linkHcoCache)
         {
             var dependencies = builder.BuildDependencies();
             var resolver = new HttpHypermediaResolver(
@@ -52,14 +48,12 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 dependencies.ParameterSerializer,
                 dependencies.ProblemReader,
                 linkHcoCache);
-            configure(resolver);
             return resolver;
         }
 
         public static Func<HttpClient, IHypermediaResolver> CreatedCachedHttpHypermediaResolverFactory(
             this HypermediaClientBuilder builder,
-            ILinkHcoCache<string> linkHcoCache,
-            Action<IHttpHypermediaResolverConfiguration> configure)
+            ILinkHcoCache<string> linkHcoCache)
         {
             var dependencies = builder.BuildDependencies();
             return httpClient =>
@@ -70,7 +64,6 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                     dependencies.ParameterSerializer,
                     dependencies.ProblemReader,
                     linkHcoCache);
-                configure(resolver);
                 return resolver;
             };
         }
