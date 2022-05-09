@@ -6,7 +6,7 @@ using Bluehands.Hypermedia.Client.Resolver;
 
 namespace Bluehands.Hypermedia.Client
 {
-    public class HypermediaClientBuilder
+    public class HypermediaResolverBuilder
     {
         private Func<IHypermediaObjectRegister> createHypermediaObjectRegister;
         private Func<IParameterSerializer> createParameterSerializer;
@@ -14,7 +14,7 @@ namespace Bluehands.Hypermedia.Client
         private Func<IProblemStringReader> createProblemStringReader;
         private Func<IHypermediaObjectRegister, IStringParser, IHypermediaReader> createHypermediaReader;
 
-        public HypermediaClientBuilder()
+        public HypermediaResolverBuilder()
         {
 
         }
@@ -80,7 +80,7 @@ namespace Bluehands.Hypermedia.Client
         /// </summary>
         /// <param name="configure"></param>
         /// <returns></returns>
-        public HypermediaClientBuilder ConfigureObjectRegister(Action<IHypermediaObjectRegister> configure)
+        public HypermediaResolverBuilder ConfigureObjectRegister(Action<IHypermediaObjectRegister> configure)
         {
             this.createHypermediaObjectRegister = () =>
             {
@@ -96,7 +96,7 @@ namespace Bluehands.Hypermedia.Client
         /// </summary>
         /// <param name="createParameterSerializer"></param>
         /// <returns></returns>
-        public HypermediaClientBuilder WithCustomParameterSerializer(Func<IParameterSerializer> createParameterSerializer)
+        public HypermediaResolverBuilder WithCustomParameterSerializer(Func<IParameterSerializer> createParameterSerializer)
         {
             this.createParameterSerializer = createParameterSerializer;
             return this;
@@ -107,7 +107,7 @@ namespace Bluehands.Hypermedia.Client
         /// </summary>
         /// <param name="createStringParser"></param>
         /// <returns></returns>
-        public HypermediaClientBuilder WithCustomStringParser(Func<IStringParser> createStringParser)
+        public HypermediaResolverBuilder WithCustomStringParser(Func<IStringParser> createStringParser)
         {
             this.createStringParser = createStringParser;
             return this;
@@ -118,7 +118,7 @@ namespace Bluehands.Hypermedia.Client
         /// </summary>
         /// <param name="createProblemStringReader"></param>
         /// <returns></returns>
-        public HypermediaClientBuilder WithCustomProblemStringReader(Func<IProblemStringReader> createProblemStringReader)
+        public HypermediaResolverBuilder WithCustomProblemStringReader(Func<IProblemStringReader> createProblemStringReader)
         {
             this.createProblemStringReader = createProblemStringReader;
             return this;
@@ -129,7 +129,7 @@ namespace Bluehands.Hypermedia.Client
         /// </summary>
         /// <param name="createHypermediaReader"></param>
         /// <returns></returns>
-        public HypermediaClientBuilder WithCustomHypermediaReader(Func<IHypermediaObjectRegister, IStringParser, IHypermediaReader> createHypermediaReader)
+        public HypermediaResolverBuilder WithCustomHypermediaReader(Func<IHypermediaObjectRegister, IStringParser, IHypermediaReader> createHypermediaReader)
         {
             this.createHypermediaReader = createHypermediaReader;
             return this;
@@ -139,7 +139,7 @@ namespace Bluehands.Hypermedia.Client
         /// Use the SIREN format (https://github.com/kevinswiber/siren) to read incoming data
         /// </summary>
         /// <returns></returns>
-        public HypermediaClientBuilder WithSirenHypermediaReader()
+        public HypermediaResolverBuilder WithSirenHypermediaReader()
         {
             this.createHypermediaReader = (register, parser) => new SirenHypermediaReader(register, parser);
             return this;

@@ -27,20 +27,17 @@ namespace Bluehands.Hypermedia.Client.Test
         [TestInitialize]
         public void Initialize()
         {
-            this.Resolver = new HypermediaClientBuilder()
+            var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Authorization =
+                new UsernamePasswordCredentials("User", "Password").CreateBasicAuthHeaderValue();
+            httpClient.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue("en", 1.0));
+            this.Resolver = new HypermediaResolverBuilder()
                 .ConfigureObjectRegister(ConfigureHypermediaObjectRegister)
                 .WithSingleSystemTextJsonObjectParameterSerializer()
                 .WithSystemTextJsonStringParser()
                 .WithSystemTextJsonProblemReader()
                 .WithSirenHypermediaReader()
-                .CreateHttpHypermediaResolver(
-                    new HttpClient(),
-                    resolver =>
-                    {
-                        resolver.SetCredentials(new UsernamePasswordCredentials("User", "Password"));
-                        resolver.SetCustomDefaultHeaders(headers =>
-                            headers.AcceptLanguage.Add(new StringWithQualityHeaderValue("en", 1.0)));
-                    });
+                .CreateHttpHypermediaResolver(httpClient);
         }
 
         [TestMethod]
