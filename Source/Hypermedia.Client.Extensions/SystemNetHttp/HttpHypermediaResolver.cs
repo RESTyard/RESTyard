@@ -118,17 +118,32 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
             var innerException = GetInnerException(responseMessage);
 
-            if (responseMessage.Content != null)
+            var (hasProblemDescription, problemDescription) = await this.TryReadProblemStringAsync(responseMessage);
+            if (hasProblemDescription)
             {
-                var contentAsString = await responseMessage.Content.ReadAsStringAsync();
-                if (this.ProblemReader.TryReadProblemString(contentAsString, out var problemDescription))
-                {
-                    throw new HypermediaProblemException(problemDescription, innerException);
-                }
+                throw new HypermediaProblemException(problemDescription, innerException);
             }
 
             var message = innerException.Message ?? string.Empty;
             throw new RequestNotSuccessfulException(message, (int)responseMessage.StatusCode, innerException);
+        }
+
+        private async Task<(bool hasProblemDescription, ProblemDescription problemDescription)> TryReadProblemStringAsync(HttpResponseMessage response)
+        {
+            if (response.Content == null)
+            {
+                return (false, null);
+            }
+            try
+            {
+                var contentAsString = await response.Content.ReadAsStringAsync();
+                var result = this.ProblemReader.TryReadProblemString(contentAsString, out var problemDescription);
+                return (result, problemDescription);
+            }
+            catch (Exception)
+            {
+                return (false, null);
+            }
         }
 
         private static Exception GetInnerException(HttpResponseMessage result)
