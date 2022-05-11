@@ -14,7 +14,7 @@ namespace Bluehands.Hypermedia.Client.Resolver
     public abstract class HypermediaResolverBase<TNetworkResponseMessage, TCacheEntryIdentifier>
         : IHypermediaResolver
     {
-        private bool disposed;
+        private bool alreadyDisposed;
 
         protected HypermediaResolverBase(
             IHypermediaReader hypermediaReader,
@@ -235,22 +235,22 @@ namespace Bluehands.Hypermedia.Client.Resolver
 
         ~HypermediaResolverBase()
         {
-            this.Dispose(false);
+            this.Dispose(disposing: false);
         }
 
         protected virtual void Dispose(bool disposing)
         {
-            if (this.disposed)
+            if (this.alreadyDisposed)
             {
                 return;
             }
 
-            this.disposed = true;
+            this.alreadyDisposed = true;
         }
 
         public void Dispose()
         {
-            this.Dispose(true);
+            this.Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
     }

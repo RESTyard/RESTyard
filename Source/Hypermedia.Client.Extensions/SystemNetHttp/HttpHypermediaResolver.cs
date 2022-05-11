@@ -18,9 +18,13 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         : HypermediaResolverBase<HttpResponseMessage, string>
     {
         private readonly HttpClient httpClient;
+        private readonly bool disposeHttpClient;
+
+        private bool alreadyDisposed = false;
 
         public HttpHypermediaResolver(
             HttpClient httpClient,
+            bool disposeHttpClient,
             IHypermediaReader hypermediaReader,
             IParameterSerializer parameterSerializer,
             IProblemStringReader problemReader,
@@ -28,6 +32,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             : base(hypermediaReader, parameterSerializer, problemReader, linkHcoCache)
         {
             this.httpClient = httpClient;
+            this.disposeHttpClient = disposeHttpClient;
         }
 
         protected override async Task<HttpResponseMessage> ResolveAsync(Uri uriToResolve)
@@ -177,7 +182,19 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
         protected override void Dispose(bool disposing)
         {
-            // do not dispose HttpClient, since it was injected. Let the injector dispose it
+            if (this.alreadyDisposed)
+            {
+                return;
+            }
+            if (disposing)
+            {
+                if (this.disposeHttpClient)
+                {
+                    this.httpClient.Dispose();
+                }
+            }
+
+            this.alreadyDisposed = true;
             base.Dispose(disposing);
         }
     }

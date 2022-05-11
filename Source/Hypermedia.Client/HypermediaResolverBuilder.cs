@@ -24,12 +24,16 @@ namespace Bluehands.Hypermedia.Client
             if (getFunc == null)
             {
                 throw new InvalidOperationException(
-                    $"Please call any of {string.Join(",", possibleMethodNames)}, or a suitable extension method from one of the Hypermedia.Client.Extensions packages, before creating the HypermediaClient");
+                    $"Please call any of {string.Join(",", possibleMethodNames)}, or a suitable extension method from one of the Hypermedia.Client.Extensions packages, before creating the {nameof(IHypermediaResolver)}");
             }
 
             return getFunc();
         }
 
+        /// <summary>
+        /// Internal extension point exposing the configured objects to build the IHypermediaResolver with
+        /// </summary>
+        /// <returns></returns>
         public IResolverDependencies BuildDependencies()
         {
             var objectRegister = Get(this.createHypermediaObjectRegister, nameof(ConfigureObjectRegister));
