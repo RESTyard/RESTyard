@@ -172,7 +172,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
         private static HttpMethod GetHttpMethod(string method)
         {
-            switch (method)
+            switch (method.ToUpperInvariant())
             {
                 case "DELETE":
                     return HttpMethod.Delete;
