@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 
 namespace Bluehands.Hypermedia.Client.Hypermedia
 {
-    public class MandatoryHypermediaLink<T> : HypermediaLink<T> where T : HypermediaClientObject
+    public class SelfHypermediaLink<T> : MandatoryHypermediaLink<T> where T : HypermediaClientObject
     {
-        public async Task<T> ResolveAsync(bool ignoreCache = false)
+        public new async Task<T> ResolveAsync(bool ignoreCache = true)
         {
             var result = await this.Resolver.ResolveLinkAsync<T>(this.Uri, ignoreCache: ignoreCache);
             if (!result.Success)

@@ -14,7 +14,7 @@ namespace Bluehands.Hypermedia.Client.Resolver
 
         void SetCredentials(UsernamePasswordCredentials usernamePasswordCredentials);
 
-        Task<ResolverResult<T>> ResolveLinkAsync<T>(Uri uriToResolve) where T : HypermediaClientObject;
+        Task<ResolverResult<T>> ResolveLinkAsync<T>(Uri uriToResolve, bool ignoreCache = false) where T : HypermediaClientObject;
 
         Task<HypermediaCommandResult> ResolveActionAsync(Uri uri, string method);
 
