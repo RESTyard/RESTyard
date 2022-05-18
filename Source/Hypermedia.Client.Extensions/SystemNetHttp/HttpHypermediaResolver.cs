@@ -25,7 +25,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
         private readonly IParameterSerializer parameterSerializer;
         private readonly IProblemStringReader problemReader;
-        private readonly ILinkHcoCache<string, DateTimeOffset?> linkHcoCache;
+        private readonly ILinkHcoCache<HttpResponseValidator> linkHcoCache;
         private IHypermediaReader hypermediaReader;
         private HttpClient httpClient;
 
@@ -36,7 +36,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         public HttpHypermediaResolver(
             IParameterSerializer parameterSerializer,
             IProblemStringReader problemReader,
-            ILinkHcoCache<string, DateTimeOffset?> linkHcoCache)
+            ILinkHcoCache<HttpResponseValidator> linkHcoCache)
         {
             // todo maybe pass HttpClient as dependency so it can be modified by the user
             this.parameterSerializer = parameterSerializer;
@@ -91,13 +91,13 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                     RequestUri = uriToResolve,
                     Method = HttpMethod.Get,
                 };
-                if (!string.IsNullOrEmpty(cacheEntry.StrongValidator))
+                if (!string.IsNullOrEmpty(cacheEntry.Validator.ETag))
                 {
-                    request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(Quoted(cacheEntry.StrongValidator)));
+                    request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(Quoted(cacheEntry.Validator.ETag)));
                 }
-                if (cacheEntry.WeakValidator != null)
+                if (cacheEntry.Validator.LastModified != null)
                 {
-                    request.Headers.IfModifiedSince = cacheEntry.WeakValidator;
+                    request.Headers.IfModifiedSince = cacheEntry.Validator.LastModified;
                 }
                 response = await this.httpClient.SendAsync(request, CancellationToken.None);
                 if (response.StatusCode == HttpStatusCode.NotModified)
@@ -197,12 +197,13 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             {
                 this.linkHcoCache.Set(
                     uriToResolve, 
-                    new CacheEntry<string, DateTimeOffset?>(
+                    new CacheEntry<HttpResponseValidator>(
                         hco,
                         mode,
                         scope,
-                        etag,
-                        lastModified,
+                        new HttpResponseValidator(
+                            etag,
+                            lastModified),
                         expirationDate));
             }
         }

@@ -3,7 +3,7 @@ using Bluehands.Hypermedia.Client.Hypermedia;
 
 namespace Bluehands.Hypermedia.Client.Resolver.Caching
 {
-    public class CacheEntry<TStrongValidator, TWeakValidator>
+    public class CacheEntry<TValidator>
     {
         public HypermediaClientObject HypermediaClientObject { get; }
 
@@ -11,9 +11,7 @@ namespace Bluehands.Hypermedia.Client.Resolver.Caching
 
         public CacheScope CacheScope { get; }
 
-        public TStrongValidator StrongValidator { get; }
-
-        public TWeakValidator WeakValidator { get; }
+        public TValidator Validator { get; }
 
         public DateTime? LocalExpirationDate { get; }
 
@@ -21,15 +19,13 @@ namespace Bluehands.Hypermedia.Client.Resolver.Caching
             HypermediaClientObject hypermediaClientObject,
             CacheMode cacheMode,
             CacheScope cacheScope,
-            TStrongValidator strongValidator,
-            TWeakValidator weakValidator,
+            TValidator validator,
             DateTime? localExpirationDate)
         {
             HypermediaClientObject = hypermediaClientObject;
             CacheMode = cacheMode;
             CacheScope = cacheScope;
-            StrongValidator = strongValidator;
-            WeakValidator = weakValidator;
+            Validator = validator;
             LocalExpirationDate = localExpirationDate;
         }
     }
