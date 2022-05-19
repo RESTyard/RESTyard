@@ -89,7 +89,7 @@ public class MultipleParallelRequestsTest : LinkHcoMemoryUserCacheTestBase
                             this.userCaches[threadNumber].Set(
                                 uri,
                                 new CacheEntry<string>(
-                                    new TestHco($"{threadNumber}", $"{NextInt()}"),
+                                    $"{threadNumber}-{NextInt()}",
                                     CacheMode.Default,
                                     sharedCounter == 0
                                         ? CacheScope.AcrossUserContexts

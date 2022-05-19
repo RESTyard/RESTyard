@@ -21,6 +21,6 @@ public class When_RemoveTheSharedEntry : Given_ACacheWithEntries
     {
         var success = this.UserCache.TryGetValue(this.TestUri, out var entry);
         success.Should().BeTrue();
-        entry.HypermediaClientObject.Should().BeEquivalentTo(this.TestHco);
+        entry.LinkResponseContent.Should().BeEquivalentTo(this.TestHco);
     }
 }

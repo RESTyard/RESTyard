@@ -1,28 +1,27 @@
 ﻿using System;
-using Bluehands.Hypermedia.Client.Hypermedia;
 
 namespace Bluehands.Hypermedia.Client.Resolver.Caching
 {
     public class CacheEntry<TValidator>
     {
-        public HypermediaClientObject HypermediaClientObject { get; }
+        public string LinkResponseContent { get; set; }
 
-        public CacheMode CacheMode { get; }
+        public CacheMode CacheMode { get; set; }
 
-        public CacheScope CacheScope { get; }
+        public CacheScope CacheScope { get; set; }
 
-        public TValidator Validator { get; }
+        public TValidator Validator { get; set; }
 
-        public DateTime? LocalExpirationDate { get; }
+        public DateTime? LocalExpirationDate { get; set; }
 
         public CacheEntry(
-            HypermediaClientObject hypermediaClientObject,
+            string linkResponseContent,
             CacheMode cacheMode,
             CacheScope cacheScope,
             TValidator validator,
             DateTime? localExpirationDate)
         {
-            HypermediaClientObject = hypermediaClientObject;
+            LinkResponseContent = linkResponseContent;
             CacheMode = cacheMode;
             CacheScope = cacheScope;
             Validator = validator;

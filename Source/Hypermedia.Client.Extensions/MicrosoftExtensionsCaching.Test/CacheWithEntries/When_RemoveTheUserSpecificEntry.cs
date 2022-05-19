@@ -16,7 +16,7 @@ public class When_RemoveTheUserSpecificEntry : Given_ACacheWithEntries
         var success = this.UserCache.TryGetValue(this.SharedEntryUri, out var entry);
 
         success.Should().BeTrue();
-        entry.HypermediaClientObject.Should().BeEquivalentTo(this.SharedEntry);
+        entry.LinkResponseContent.Should().BeEquivalentTo(this.SharedEntry);
     }
 
     [Fact]

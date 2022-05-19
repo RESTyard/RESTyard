@@ -80,10 +80,11 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                   || (isStale && cacheEntry.CacheMode == CacheMode.RevalidateStale);
                 if (!mustRevalidate)
                 {
+                    var hco = this.hypermediaReader.Read(cacheEntry.LinkResponseContent);
                     return new ResolverResult<T>()
                     {
                         Success = true,
-                        ResultObject = (T)cacheEntry.HypermediaClientObject,
+                        ResultObject = (T)hco,
                     };
                 }
                 var request = new HttpRequestMessage()
@@ -102,11 +103,12 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 response = await this.httpClient.SendAsync(request, CancellationToken.None);
                 if (response.StatusCode == HttpStatusCode.NotModified)
                 {
+                    var hco = this.hypermediaReader.Read(cacheEntry.LinkResponseContent);
                     // TODO: replace cache entry with possibly updated values for MaxAge
                     return new ResolverResult<T>()
                     {
                         Success = true,
-                        ResultObject = (T) cacheEntry.HypermediaClientObject,
+                        ResultObject = (T) hco,
                     };
                 }
                 else
@@ -118,26 +120,29 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             {
                 response = await httpClient.GetAsync(uriToResolve);
             }
-            
-            var resolverResult = await HandleLinkResponseAsync<T>(response);
 
-            if (resolverResult.Success)
+            var exportToString = this.TryGetCacheParameters(uriToResolve, response, out var entry);
+            var (resolverResult, hcoAsString) = await HandleLinkResponseAsync<T>(response, exportToString);
+
+            if (resolverResult.Success && exportToString && !string.IsNullOrEmpty(hcoAsString))
             {
-                this.TryCacheResult(uriToResolve, response, resolverResult.ResultObject);
+                entry.LinkResponseContent = hcoAsString;
+                this.linkHcoCache.Set(uriToResolve, entry);
             }
 
             return resolverResult;
         }
 
-        private void TryCacheResult(
+        private bool TryGetCacheParameters(
             Uri uriToResolve,
             HttpResponseMessage response,
-            HypermediaClientObject hco)
+            out CacheEntry<HttpResponseValidator> cacheEntry)
         {
+            cacheEntry = null;
             var cc = response.Headers.CacheControl;
             if (cc.NoStore)
             {
-                return;
+                return false;
             }
 
             CacheMode mode = CacheMode.Undefined;
@@ -195,17 +200,18 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
             if (mode != CacheMode.Undefined)
             {
-                this.linkHcoCache.Set(
-                    uriToResolve, 
-                    new CacheEntry<HttpResponseValidator>(
-                        hco,
-                        mode,
-                        scope,
-                        new HttpResponseValidator(
-                            etag,
-                            lastModified),
-                        expirationDate));
+                cacheEntry = new CacheEntry<HttpResponseValidator>(
+                    string.Empty,
+                    mode,
+                    scope,
+                    new HttpResponseValidator(
+                        etag,
+                        lastModified),
+                    expirationDate);
+                return true;
             }
+
+            return false;
         }
 
         public async Task<HypermediaCommandResult> ResolveActionAsync(Uri uri, string method)
@@ -326,7 +332,8 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             return parameterDescription;
         }
 
-        private async Task<ResolverResult<T>> HandleLinkResponseAsync<T>(HttpResponseMessage responseMessage) where T : HypermediaClientObject
+        private async Task<(ResolverResult<T>, string)> HandleLinkResponseAsync<T>(HttpResponseMessage responseMessage, bool exportToString)
+            where T : HypermediaClientObject
         {
             await this.EnsureRequestIsSuccessfulAsync(responseMessage);
 
@@ -337,8 +344,18 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 throw new Exception(
                     $"Please setup the hypermediaReader before using the resolver. see {nameof(InitializeHypermediaReader)}");
             }
+            
+            HypermediaClientObject hypermediaClientObject;
+            string export = string.Empty;
+            if (exportToString)
+            {
+                (hypermediaClientObject, export) = await this.hypermediaReader.ReadAndExportAsync(hypermediaObjectSiren);
+            }
+            else
+            {
+                hypermediaClientObject = await this.hypermediaReader.ReadAsync(hypermediaObjectSiren);
+            }
 
-            var hypermediaClientObject = await this.hypermediaReader.ReadAsync(hypermediaObjectSiren);
             if (!(hypermediaClientObject is T desiredResultObject))
             {
                 throw new Exception($"Could not retrieve result as {typeof(T).Name} ");
@@ -349,7 +366,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 ResultObject = desiredResultObject, 
                 Success = true,
             };
-            return resolverResult;
+            return (resolverResult, export);
         }
 
         private async Task<HypermediaCommandResult> HandleActionResponseAsync(HttpResponseMessage responseMessage)

@@ -7,7 +7,7 @@ public class Given_ACacheWithEntries : LinkHcoMemoryUserCacheTestBase
 {
     protected Uri SharedEntryUri => new Uri("shared://some_path");
 
-    protected TestHco SharedEntry => new TestHco("SharedHco", "SharedRelation");
+    protected string SharedEntry => "SharedEntry";
 
     public Given_ACacheWithEntries()
     {

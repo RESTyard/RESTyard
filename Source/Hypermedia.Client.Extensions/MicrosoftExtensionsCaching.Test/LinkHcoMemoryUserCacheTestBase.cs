@@ -23,7 +23,7 @@ namespace Extensions.Test.Caching
 
         protected Uri TestUri => new Uri("test://some_test_uri");
 
-        protected HypermediaClientObject TestHco => new TestHco();
+        protected string TestHco => "TestHco";
 
         protected IOptions<MemoryCacheOptions> MemoryCacheOptions { get; }
 
@@ -53,11 +53,11 @@ namespace Extensions.Test.Caching
         }
 
         protected CacheEntry<string> CreateEntry(
-            HypermediaClientObject hco,
+            string content,
             CacheScope scope)
         {
             return new CacheEntry<string>(
-                hco,
+                content,
                 CacheMode.Default,
                 scope,
                 "",

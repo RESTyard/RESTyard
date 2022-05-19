@@ -17,6 +17,6 @@ public class When_TryGetTheSharedEntry : Given_ACacheForADifferentUser
     public void Then_TheObjectIsRetrieved()
     {
         this.success.Should().BeTrue();
-        this.entry.HypermediaClientObject.Should().BeEquivalentTo(this.SharedEntry);
+        this.entry.LinkResponseContent.Should().BeEquivalentTo(this.SharedEntry);
     }
 }

@@ -20,7 +20,7 @@ public class When_SetForIndividualUser : Given_AnEmptyCache
     {
         var success = this.UserCache.TryGetValue(this.TestUri, out var entry);
         success.Should().BeTrue();
-        entry.HypermediaClientObject.Should().BeEquivalentTo(this.TestHco);
+        entry.LinkResponseContent.Should().BeEquivalentTo(this.TestHco);
     }
 }
 
@@ -40,6 +40,6 @@ public class When_SetForSharedUser : Given_AnEmptyCache
     {
         var success = this.UserCache.TryGetValue(this.TestUri, out var entry);
         success.Should().BeTrue();
-        entry.HypermediaClientObject.Should().BeEquivalentTo(this.TestHco);
+        entry.LinkResponseContent.Should().BeEquivalentTo(this.TestHco);
     }
 }
