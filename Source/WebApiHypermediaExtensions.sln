@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29926.136
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0AA2CDA8-ACC0-434D-B560-94B7081A77FE}"
 	ProjectSection(SolutionItems) = preProject
@@ -35,6 +35,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SystemNetHttp", "Hypermedia.Client.Extensions\SystemNetHttp\SystemNetHttp.csproj", "{B3001627-20BB-4E03-B80A-532B07D7D859}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions.Test", "Hypermedia.Client.Extensions\Extensions.Test\Extensions.Test.csproj", "{4FA6CC8F-C0BA-46C2-B5F6-D2B46E5F8DEF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicrosoftExtensionsCaching", "Hypermedia.Client.Extensions\MicrosoftExtensionsCaching\MicrosoftExtensionsCaching.csproj", "{7C2C3EAE-35D3-4557-92F3-CBB6B545ACBF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicrosoftExtensionsCaching.Test", "Hypermedia.Client.Extensions\MicrosoftExtensionsCaching.Test\MicrosoftExtensionsCaching.Test.csproj", "{43113788-DE87-45F4-BCB6-B7ED05F813F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -86,6 +90,14 @@ Global
 		{4FA6CC8F-C0BA-46C2-B5F6-D2B46E5F8DEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4FA6CC8F-C0BA-46C2-B5F6-D2B46E5F8DEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4FA6CC8F-C0BA-46C2-B5F6-D2B46E5F8DEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C2C3EAE-35D3-4557-92F3-CBB6B545ACBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C2C3EAE-35D3-4557-92F3-CBB6B545ACBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C2C3EAE-35D3-4557-92F3-CBB6B545ACBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C2C3EAE-35D3-4557-92F3-CBB6B545ACBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43113788-DE87-45F4-BCB6-B7ED05F813F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43113788-DE87-45F4-BCB6-B7ED05F813F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43113788-DE87-45F4-BCB6-B7ED05F813F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43113788-DE87-45F4-BCB6-B7ED05F813F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -95,6 +107,8 @@ Global
 		{5BE57CD6-D776-4808-84D7-DA86EF511D84} = {E147EF98-0984-43D1-BD4F-F23FE79E22FA}
 		{B3001627-20BB-4E03-B80A-532B07D7D859} = {E147EF98-0984-43D1-BD4F-F23FE79E22FA}
 		{4FA6CC8F-C0BA-46C2-B5F6-D2B46E5F8DEF} = {E147EF98-0984-43D1-BD4F-F23FE79E22FA}
+		{7C2C3EAE-35D3-4557-92F3-CBB6B545ACBF} = {E147EF98-0984-43D1-BD4F-F23FE79E22FA}
+		{43113788-DE87-45F4-BCB6-B7ED05F813F9} = {E147EF98-0984-43D1-BD4F-F23FE79E22FA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D610FDC6-5F2C-4F0C-9727-BDEBAC07EE58}
