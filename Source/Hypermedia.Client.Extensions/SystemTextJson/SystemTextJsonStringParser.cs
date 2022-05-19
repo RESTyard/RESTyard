@@ -64,6 +64,11 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJson
             }
 
             public IToken this[string key] => this.element.TryGetProperty(key, out var jsonElement) ? Wrap(jsonElement) : null;
+
+            public string Serialize()
+            {
+                return this.element.ToString();
+            }
         }
     }
 }

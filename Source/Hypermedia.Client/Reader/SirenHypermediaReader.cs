@@ -60,6 +60,14 @@ namespace Bluehands.Hypermedia.Client.Reader
             return result;
         }
 
+        public async Task<(HypermediaClientObject, string)> ReadAndExportAsync(Stream contentStream)
+        {
+            var rootObject = await this.stringParser.ParseAsync(contentStream);
+            var result = this.ReadHypermediaObject(rootObject);
+            var export = rootObject.Serialize();
+            return (result, export);
+        }
+
         private HypermediaClientObject ReadHypermediaObject(IToken rootObject)
         {
             var classes = ReadClasses(rootObject);

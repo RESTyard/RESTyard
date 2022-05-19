@@ -12,5 +12,7 @@ namespace Bluehands.Hypermedia.Client.Reader
         HypermediaClientObject Read(string contentString);
 
         Task<HypermediaClientObject> ReadAsync(Stream contentStream);
+
+        Task<(HypermediaClientObject, string)> ReadAndExportAsync(Stream contentStream);
     }
 }
