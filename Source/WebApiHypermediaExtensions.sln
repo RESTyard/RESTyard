@@ -38,7 +38,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions.Test", "Hypermed
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicrosoftExtensionsCaching", "Hypermedia.Client.Extensions\MicrosoftExtensionsCaching\MicrosoftExtensionsCaching.csproj", "{7C2C3EAE-35D3-4557-92F3-CBB6B545ACBF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicrosoftExtensionsCaching.Test", "Hypermedia.Client.Extensions\MicrosoftExtensionsCaching.Test\MicrosoftExtensionsCaching.Test.csproj", "{43113788-DE87-45F4-BCB6-B7ED05F813F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicrosoftExtensionsCaching.Test", "Hypermedia.Client.Extensions\MicrosoftExtensionsCaching.Test\MicrosoftExtensionsCaching.Test.csproj", "{43113788-DE87-45F4-BCB6-B7ED05F813F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarking", "Hypermedia.Client.Extensions\Benchmarking\Benchmarking.csproj", "{A605FF16-E6EF-4365-A728-AC9C97D2023F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -98,6 +100,10 @@ Global
 		{43113788-DE87-45F4-BCB6-B7ED05F813F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43113788-DE87-45F4-BCB6-B7ED05F813F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{43113788-DE87-45F4-BCB6-B7ED05F813F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A605FF16-E6EF-4365-A728-AC9C97D2023F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A605FF16-E6EF-4365-A728-AC9C97D2023F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A605FF16-E6EF-4365-A728-AC9C97D2023F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A605FF16-E6EF-4365-A728-AC9C97D2023F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -109,6 +115,7 @@ Global
 		{4FA6CC8F-C0BA-46C2-B5F6-D2B46E5F8DEF} = {E147EF98-0984-43D1-BD4F-F23FE79E22FA}
 		{7C2C3EAE-35D3-4557-92F3-CBB6B545ACBF} = {E147EF98-0984-43D1-BD4F-F23FE79E22FA}
 		{43113788-DE87-45F4-BCB6-B7ED05F813F9} = {E147EF98-0984-43D1-BD4F-F23FE79E22FA}
+		{A605FF16-E6EF-4365-A728-AC9C97D2023F} = {E147EF98-0984-43D1-BD4F-F23FE79E22FA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D610FDC6-5F2C-4F0C-9727-BDEBAC07EE58}

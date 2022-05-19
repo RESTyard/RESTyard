@@ -12,14 +12,14 @@ namespace Bluehands.Hypermedia.Client.Resolver.Caching
 
         public TValidator Validator { get; set; }
 
-        public DateTime? LocalExpirationDate { get; set; }
+        public DateTimeOffset? LocalExpirationDate { get; set; }
 
         public CacheEntry(
             string linkResponseContent,
             CacheMode cacheMode,
             CacheScope cacheScope,
             TValidator validator,
-            DateTime? localExpirationDate)
+            DateTimeOffset? localExpirationDate)
         {
             LinkResponseContent = linkResponseContent;
             CacheMode = cacheMode;

@@ -74,7 +74,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             bool forceRevalidate = ignoreCache;
             if (this.linkHcoCache.TryGetValue(uriToResolve, out var cacheEntry))
             {
-                var isStale = cacheEntry.LocalExpirationDate == null || cacheEntry.LocalExpirationDate < DateTime.Now;
+                var isStale = cacheEntry.LocalExpirationDate == null || cacheEntry.LocalExpirationDate < DateTimeOffset.Now;
                 bool mustRevalidate = forceRevalidate
                   || cacheEntry.CacheMode == CacheMode.AlwaysRevalidate
                   || (isStale && cacheEntry.CacheMode == CacheMode.RevalidateStale);
@@ -149,7 +149,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             CacheScope scope = CacheScope.Undefined;
             string etag = string.Empty;
             DateTimeOffset? lastModified = null;
-            DateTime? expirationDate = null;
+            DateTimeOffset? expirationDate = null;
 
             if (cc.MustRevalidate)
             {
@@ -174,7 +174,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
             if (cc.MaxAge != null)
             {
-                expirationDate = DateTime.Now + cc.MaxAge.Value;
+                expirationDate = DateTimeOffset.Now + cc.MaxAge.Value;
             }
             if (!string.IsNullOrEmpty(response.Headers.ETag?.Tag))
             {

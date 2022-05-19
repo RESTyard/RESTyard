@@ -16,6 +16,24 @@ namespace MicrosoftExtensionsCaching
         {
             memoryCache.Remove(rootControlTokenKey);
         }
+
+        public static Action<ICacheEntry, CacheEntry<TValidator>> DefaultEntryExpirationConfiguration<TValidator>()
+        {
+            return (iEntry, entry) =>
+            {
+                iEntry.Size = (entry.LinkResponseContent.Length * sizeof(char)) + sizeof(int);
+            };
+        }
+
+        public static Action<ICacheEntry> DefaultControlExpirationConfiguration { get; } = entry =>
+        {
+            entry.Size = 0;
+        };
+
+        public static Action<ICacheEntry> DefaultRootExpirationConfiguration { get; } = entry =>
+        {
+            entry.Size = 0;
+        };
     }
     /// <summary>
     /// A convenience-implementation of the ILinkHcoCache-interface backed by an IMemoryCache
@@ -47,7 +65,7 @@ namespace MicrosoftExtensionsCaching
         private readonly TUserIdentifier sharedUserIdentifier;
         private readonly Func<TUserIdentifier, Uri, object> hcoEntryKeyBuilder;
         private readonly Func<TUserIdentifier, object> controlEntryKeyBuilder;
-        private readonly Action<ICacheEntry> configureEntryExpiration;
+        private readonly Action<ICacheEntry, CacheEntry<TValidator>> configureEntryExpiration;
         private readonly Action<ICacheEntry> configureControlExpiration;
         private readonly Action<ICacheEntry> configureRootExpiration;
         private readonly object rootControlTokenKey;
@@ -70,7 +88,7 @@ namespace MicrosoftExtensionsCaching
             TUserIdentifier sharedUserIdentifier,
             Func<TUserIdentifier, Uri, object> hcoEntryKeyBuilder,
             Func<TUserIdentifier, object> controlEntryKeyBuilder,
-            Action<ICacheEntry> configureEntryExpiration,
+            Action<ICacheEntry, CacheEntry<TValidator>> configureEntryExpiration,
             Action<ICacheEntry> configureControlExpiration,
             Action<ICacheEntry> configureRootExpiration,
             object rootControlTokenKey)
@@ -122,7 +140,7 @@ namespace MicrosoftExtensionsCaching
             {
                 e.Value = entry;
                 e.ExpirationTokens.Add(userClearToken.Token);
-                this.configureEntryExpiration?.Invoke(e);
+                this.configureEntryExpiration?.Invoke(e, entry);
             }
         }
 
