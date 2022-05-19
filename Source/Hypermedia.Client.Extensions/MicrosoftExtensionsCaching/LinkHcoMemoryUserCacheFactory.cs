@@ -10,7 +10,7 @@ namespace MicrosoftExtensionsCaching
         private readonly TUserIdentifier sharedUserIdentifier;
         private readonly Func<TUserIdentifier, Uri, object> hcoEntryKeyBuilder;
         private readonly Func<TUserIdentifier, object> controlEntryKeyBuilder;
-        private readonly Action<ICacheEntry> configureEntryExpiration;
+        private readonly Action<ICacheEntry, LinkHcoCacheEntry<TValidator>> configureEntryExpiration;
         private readonly Action<ICacheEntry> configureControlExpiration;
         private readonly Action<ICacheEntry> configureRootExpiration;
         private readonly object rootControlTokenKey;
@@ -20,7 +20,7 @@ namespace MicrosoftExtensionsCaching
             TUserIdentifier sharedUserIdentifier,
             Func<TUserIdentifier, Uri, object> hcoEntryKeyBuilder,
             Func<TUserIdentifier, object> controlEntryKeyBuilder,
-            Action<ICacheEntry> configureEntryExpiration,
+            Action<ICacheEntry, LinkHcoCacheEntry<TValidator>> configureEntryExpiration,
             Action<ICacheEntry> configureControlExpiration,
             Action<ICacheEntry> configureRootExpiration,
             object rootControlTokenKey)

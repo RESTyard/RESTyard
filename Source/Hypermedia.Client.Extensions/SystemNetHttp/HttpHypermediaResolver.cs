@@ -136,7 +136,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         private bool TryGetCacheParameters(
             Uri uriToResolve,
             HttpResponseMessage response,
-            out CacheEntry<HttpResponseValidator> cacheEntry)
+            out LinkHcoCacheEntry<HttpResponseValidator> cacheEntry)
         {
             cacheEntry = null;
             var cc = response.Headers.CacheControl;
@@ -200,7 +200,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
             if (mode != CacheMode.Undefined)
             {
-                cacheEntry = new CacheEntry<HttpResponseValidator>(
+                cacheEntry = new LinkHcoCacheEntry<HttpResponseValidator>(
                     string.Empty,
                     mode,
                     scope,

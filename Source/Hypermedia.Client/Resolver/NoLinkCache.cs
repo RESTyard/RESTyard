@@ -12,13 +12,13 @@ namespace Bluehands.Hypermedia.Client.Resolver
 
         public static NoLinkCache<TValidator> Instance { get; } = new NoLinkCache<TValidator>();
 
-        public bool TryGetValue(Uri uri, out CacheEntry<TValidator> entry)
+        public bool TryGetValue(Uri uri, out LinkHcoCacheEntry<TValidator> entry)
         {
             entry = default;
             return false;
         }
 
-        public void Set(Uri uri, CacheEntry<TValidator> entry)
+        public void Set(Uri uri, LinkHcoCacheEntry<TValidator> entry)
         {
 
         }

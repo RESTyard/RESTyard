@@ -14,7 +14,7 @@ namespace Extensions.Test.Caching
     {
         protected Func<string, Uri, object> HcoEntryKeyBuilder = (user, uri) => (user, uri);
         protected Func<string, object> ControlEntryKeyBuilder = user => user;
-        protected Action<ICacheEntry> ConfigureEntryExpiration = _ => { };
+        protected Action<ICacheEntry, LinkHcoCacheEntry<string>> ConfigureEntryExpiration = (_, __) => { };
         protected Action<ICacheEntry> ConfigureControlExpiration = _ => { };
         protected Action<ICacheEntry> ConfigureRootExpiration = _ => { };
         protected const string CurrentUserIdentifier = "CurrentUser";
@@ -52,11 +52,11 @@ namespace Extensions.Test.Caching
                 RootControlTokenKey);
         }
 
-        protected CacheEntry<string> CreateEntry(
+        protected LinkHcoCacheEntry<string> CreateEntry(
             string content,
             CacheScope scope)
         {
-            return new CacheEntry<string>(
+            return new LinkHcoCacheEntry<string>(
                 content,
                 CacheMode.Default,
                 scope,

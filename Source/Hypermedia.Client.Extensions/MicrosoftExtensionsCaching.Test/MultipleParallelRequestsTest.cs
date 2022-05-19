@@ -38,7 +38,7 @@ public class MultipleParallelRequestsTest : LinkHcoMemoryUserCacheTestBase
             SharedUserIdentifier,
             HcoEntryKeyBuilder,
             ControlEntryKeyBuilder,
-            entry => entry.Size = 1,
+            (iEntry, entry) => iEntry.Size = 1,
             entry => entry.Size = 0,
             entry => entry.Size = 0,
             RootControlTokenKey);
@@ -88,7 +88,7 @@ public class MultipleParallelRequestsTest : LinkHcoMemoryUserCacheTestBase
                         {
                             this.userCaches[threadNumber].Set(
                                 uri,
-                                new CacheEntry<string>(
+                                new LinkHcoCacheEntry<string>(
                                     $"{threadNumber}-{NextInt()}",
                                     CacheMode.Default,
                                     sharedCounter == 0

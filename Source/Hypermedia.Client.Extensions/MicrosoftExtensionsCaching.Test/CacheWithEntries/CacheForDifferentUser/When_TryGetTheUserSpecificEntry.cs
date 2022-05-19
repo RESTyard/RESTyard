@@ -7,7 +7,7 @@ namespace Extensions.Test.Caching.CacheWithEntries.CacheForDifferentUser;
 public class When_TryGetTheUserSpecificEntry : Given_ACacheForADifferentUser
 {
     private bool success;
-    private CacheEntry<string> entry;
+    private LinkHcoCacheEntry<string> entry;
 
     public When_TryGetTheUserSpecificEntry()
     {

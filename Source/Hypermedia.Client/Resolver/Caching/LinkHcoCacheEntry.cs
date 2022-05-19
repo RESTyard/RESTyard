@@ -2,7 +2,7 @@
 
 namespace Bluehands.Hypermedia.Client.Resolver.Caching
 {
-    public class CacheEntry<TValidator>
+    public class LinkHcoCacheEntry<TValidator>
     {
         public string LinkResponseContent { get; set; }
 
@@ -14,7 +14,7 @@ namespace Bluehands.Hypermedia.Client.Resolver.Caching
 
         public DateTimeOffset? LocalExpirationDate { get; set; }
 
-        public CacheEntry(
+        public LinkHcoCacheEntry(
             string linkResponseContent,
             CacheMode cacheMode,
             CacheScope cacheScope,
