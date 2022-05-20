@@ -52,7 +52,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
         public async Task<ResolverResult<T>> ResolveLinkAsync<T>(
             Uri uriToResolve,
-            bool ignoreCache = false)
+            bool forceResolve = false)
             where T : HypermediaClientObject
         {
             string Quoted(string value)
@@ -71,7 +71,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 return value;
             }
             HttpResponseMessage response;
-            bool forceRevalidate = ignoreCache;
+            bool forceRevalidate = forceResolve;
             if (this.linkHcoCache.TryGetValue(uriToResolve, out var cacheEntry))
             {
                 var isStale = cacheEntry.LocalExpirationDate == null || cacheEntry.LocalExpirationDate < DateTimeOffset.Now;

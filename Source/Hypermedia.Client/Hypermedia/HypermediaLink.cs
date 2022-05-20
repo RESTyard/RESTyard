@@ -13,14 +13,14 @@ namespace Bluehands.Hypermedia.Client.Hypermedia
 
         public IHypermediaResolver Resolver { get; set; }
 
-        public async Task<ResolverResult<T>> TryResolveAsync(bool ignoreCache = false)
+        public async Task<ResolverResult<T>> TryResolveAsync()
         {
             if (this.Uri == null)
             {
                 return new ResolverResult<T> {Success = false};
             }
 
-            var result = await this.Resolver.ResolveLinkAsync<T>(this.Uri, ignoreCache: ignoreCache);
+            var result = await this.Resolver.ResolveLinkAsync<T>(this.Uri);
             return result;
         }
     }

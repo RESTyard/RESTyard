@@ -33,8 +33,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bluehands.Hypermedia.Client" Version="1.5.0" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Hypermedia.Client\Hypermedia.Client.csproj" />
   </ItemGroup>
 
 </Project>
