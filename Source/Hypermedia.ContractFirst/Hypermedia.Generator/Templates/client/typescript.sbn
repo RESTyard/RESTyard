@@ -1,0 +1,109 @@
+{{-
+    include "../_common.sbn"
+
+    func mapType
+        if $0 == 'bool'
+            ret 'boolean'
+        end
+        ret $0
+    end
+
+    func mapNullableType
+        if $0
+            ret "Nullable<" + (mapType $1) + ">"
+        else
+            ret mapType $1
+        end
+    end
+-}}
+{{ IncludeContent }}
+
+type Nullable<T> = T | undefined | null;
+
+function match<TIn, TOut>(nullable: Nullable<TIn>, onValue: (v: TIn) => TOut, onNothing: () => TOut): TOut {
+    if (nullable === undefined || nullable === null) {
+        return onValue(nullable);
+    } else {
+        return onNothing();
+    }
+}
+{{
+    for parametersType in TransferParameters
+        parameters = []
+        for property in parametersType.Property
+            param = property.name + ": " + (mapNullableType (!property.mandatory) property.type)
+            parameters = array.add parameters param
+        end
+}}
+class {{ parametersType.typeName }} {
+    constructor(
+{{- for param in parameters }}
+        public readonly {{ param }}{{ if !for.last }},{{ end }}
+{{- end }}
+    ) { }
+}
+{{
+    end
+
+    for document in Documents
+}}
+class {{ document.name }}Hco {
+{{- for property in document.Properties }}
+    public get {{ property.name | uncapitalize }}(): {{ mapNullableType (!property.mandatory) property.type }} {
+        return this.sirenObject.getProperty{{ iff property.mandatory "" "Nullable" }}<{{ mapType property.type }}>("{{ property.name }}");
+    }
+{{- end }}
+{{- for entity in document.Entities }}
+    public get {{ entity.collectionName | uncapitalize }}(): {{ entity.document }}Hco[] {
+        return this.sirenObject.getEntities<{{ entity.document }}Hco>("{{ entity.collectionName }}");
+    }
+{{- end }}
+{{- if document.hasSelfLink }}
+    public get self(): HypermediaLink<{{ document.name }}Hco> {
+        return this.sirenObject.getLink("self");
+    }
+{{- end }}
+{{- for link in document.Links }}
+    public get {{ link.rel | uncapitalize }}(): {{ mapNullableType (!link.mandatory) ("HypermediaLink<" + link.document + "Hco>") }} {
+        return this.sirenObject.getLink{{ iff link.mandatory "" "Nullable" }}<{{ link.document }}Hco>("{{ link.rel }}");
+    }
+{{- end }}
+{{- 
+    for operation in document.Operations
+        actionType = ""
+        frameworkMethod = ""
+        typeArgs = []
+        if isEmpty operation.resultDocument
+            actionType = "HypermediaAction"
+            frameworkMethod = "getAction"
+        else
+            actionType = "HypermediaFunction"
+            frameworkMethod = "getFunction"
+            typeArgs = [ (operation.resultDocument + "Hco") ]
+        end
+        if isNotEmpty operation.parameterTypeName
+            typeArgs = array.add typeArgs operation.parameterTypeName
+        end
+        if typeArgs.size > 0
+            actionType += "<"
+            frameworkMethod += "<"
+            for typeArg in typeArgs
+                actionType += typeArg
+                frameworkMethod += typeArg
+                if !for.last
+                    actionType += ", "
+                    frameworkMethod += ", "
+                end
+            end
+            actionType += ">"
+            frameworkMethod += ">"
+        end
+}}
+    public get {{ operation.name | uncapitalize }}(): {{ mapNullableType true actionType }} {
+        return this.sirenObject.{{ frameworkMethod }}("{{ operation.name }}");
+    }
+{{- end }}
+    constructor(private readonly sirenObject: SirenObject) { }
+}
+{{ end }}
+export {};
