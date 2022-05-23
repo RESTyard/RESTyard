@@ -3,22 +3,23 @@ using Bluehands.Hypermedia.Client.Resolver.Caching;
 
 namespace Bluehands.Hypermedia.Client.Resolver
 {
-    public class NoLinkCache<TValidator> : ILinkHcoCache<TValidator>
+    public class NoLinkCache<TLinkHcoCacheEntry> : ILinkHcoCache<TLinkHcoCacheEntry>
+        where TLinkHcoCacheEntry : LinkHcoCacheEntry
     {
         private NoLinkCache()
         {
 
         }
 
-        public static NoLinkCache<TValidator> Instance { get; } = new NoLinkCache<TValidator>();
+        public static NoLinkCache<TLinkHcoCacheEntry> Instance { get; } = new NoLinkCache<TLinkHcoCacheEntry>();
 
-        public bool TryGetValue(Uri uri, out LinkHcoCacheEntry<TValidator> entry)
+        public bool TryGetValue(Uri uri, out TLinkHcoCacheEntry entry)
         {
             entry = default;
             return false;
         }
 
-        public void Set(Uri uri, LinkHcoCacheEntry<TValidator> entry)
+        public void Set(Uri uri, TLinkHcoCacheEntry entry)
         {
 
         }

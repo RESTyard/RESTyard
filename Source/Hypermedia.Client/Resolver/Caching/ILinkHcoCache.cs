@@ -2,11 +2,12 @@
 
 namespace Bluehands.Hypermedia.Client.Resolver.Caching
 {
-    public interface ILinkHcoCache<TValidator>
+    public interface ILinkHcoCache<TLinkHcoCacheEntry>
+        where TLinkHcoCacheEntry : LinkHcoCacheEntry
     {
-        bool TryGetValue(Uri uri, out LinkHcoCacheEntry<TValidator> entry);
+        bool TryGetValue(Uri uri, out TLinkHcoCacheEntry entry);
 
-        void Set(Uri uri, LinkHcoCacheEntry<TValidator> entry);
+        void Set(Uri uri, TLinkHcoCacheEntry entry);
 
         void Remove(Uri uri);
 

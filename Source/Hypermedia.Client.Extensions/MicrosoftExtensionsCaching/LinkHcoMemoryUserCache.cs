@@ -17,7 +17,8 @@ namespace MicrosoftExtensionsCaching
             memoryCache.Remove(rootControlTokenKey);
         }
 
-        public static Action<ICacheEntry, LinkHcoCacheEntry<TValidator>> DefaultEntryExpirationConfiguration<TValidator>()
+        public static Action<ICacheEntry, TLinkHcoCacheEntry> DefaultEntryExpirationConfiguration<TLinkHcoCacheEntry>()
+            where TLinkHcoCacheEntry : LinkHcoCacheEntry
         {
             return (iEntry, entry) =>
             {
@@ -44,8 +45,9 @@ namespace MicrosoftExtensionsCaching
     /// </summary>
     /// <typeparam name="TUserIdentifier">An identifier type to tell users apart. Choose in a way, that no two different users in your system will have the same identifier, and such that no other service enters tuples of (TIdentifier, Uri) into the IMemoryCache</typeparam>
     /// <typeparam name="TValidator"></typeparam>
-    public class LinkHcoMemoryUserCache<TUserIdentifier, TValidator>
-        : ILinkHcoCache<TValidator>
+    public class LinkHcoMemoryUserCache<TUserIdentifier, TLinkHcoCacheEntry>
+        : ILinkHcoCache<TLinkHcoCacheEntry>
+        where TLinkHcoCacheEntry : LinkHcoCacheEntry
     {
         private static readonly PostEvictionDelegate wrapperEvictionDelegate = (
             key,
@@ -65,7 +67,7 @@ namespace MicrosoftExtensionsCaching
         private readonly TUserIdentifier sharedUserIdentifier;
         private readonly Func<TUserIdentifier, Uri, object> hcoEntryKeyBuilder;
         private readonly Func<TUserIdentifier, object> controlEntryKeyBuilder;
-        private readonly Action<ICacheEntry, LinkHcoCacheEntry<TValidator>> configureEntryExpiration;
+        private readonly Action<ICacheEntry, TLinkHcoCacheEntry> configureEntryExpiration;
         private readonly Action<ICacheEntry> configureControlExpiration;
         private readonly Action<ICacheEntry> configureRootExpiration;
         private readonly object rootControlTokenKey;
@@ -88,7 +90,7 @@ namespace MicrosoftExtensionsCaching
             TUserIdentifier sharedUserIdentifier,
             Func<TUserIdentifier, Uri, object> hcoEntryKeyBuilder,
             Func<TUserIdentifier, object> controlEntryKeyBuilder,
-            Action<ICacheEntry, LinkHcoCacheEntry<TValidator>> configureEntryExpiration,
+            Action<ICacheEntry, TLinkHcoCacheEntry> configureEntryExpiration,
             Action<ICacheEntry> configureControlExpiration,
             Action<ICacheEntry> configureRootExpiration,
             object rootControlTokenKey)
@@ -106,7 +108,7 @@ namespace MicrosoftExtensionsCaching
 
         public bool TryGetValue(
             Uri uri,
-            out LinkHcoCacheEntry<TValidator> entry)
+            out TLinkHcoCacheEntry entry)
         {
             if (this.memoryCache.TryGetValue(this.hcoEntryKeyBuilder(this.currentUserIdentifier, uri), out entry))
             {
@@ -118,7 +120,7 @@ namespace MicrosoftExtensionsCaching
 
         public void Set(
             Uri uri,
-            LinkHcoCacheEntry<TValidator> entry)
+            TLinkHcoCacheEntry entry)
         {
             TUserIdentifier userIdentifier;
             switch (entry.CacheScope)

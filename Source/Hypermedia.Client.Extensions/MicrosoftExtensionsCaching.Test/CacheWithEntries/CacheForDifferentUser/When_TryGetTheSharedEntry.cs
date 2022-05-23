@@ -7,7 +7,7 @@ namespace Extensions.Test.Caching.CacheWithEntries.CacheForDifferentUser;
 public class When_TryGetTheSharedEntry : Given_ACacheForADifferentUser
 {
     private bool success;
-    private LinkHcoCacheEntry<string> entry;
+    private LinkHcoCacheEntry entry;
     public When_TryGetTheSharedEntry()
     {
         this.success = this.OtherUserCache.TryGetValue(this.SharedEntryUri, out entry);

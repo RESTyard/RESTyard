@@ -25,7 +25,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
         private readonly IParameterSerializer parameterSerializer;
         private readonly IProblemStringReader problemReader;
-        private readonly ILinkHcoCache<HttpResponseValidator> linkHcoCache;
+        private readonly ILinkHcoCache<HttpLinkHcoCacheEntry> linkHcoCache;
         private IHypermediaReader hypermediaReader;
         private HttpClient httpClient;
 
@@ -36,7 +36,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         public HttpHypermediaResolver(
             IParameterSerializer parameterSerializer,
             IProblemStringReader problemReader,
-            ILinkHcoCache<HttpResponseValidator> linkHcoCache)
+            ILinkHcoCache<HttpLinkHcoCacheEntry> linkHcoCache)
         {
             // todo maybe pass HttpClient as dependency so it can be modified by the user
             this.parameterSerializer = parameterSerializer;
@@ -59,10 +59,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             bool forceRevalidate = forceResolve;
             if (this.linkHcoCache.TryGetValue(uriToResolve, out var cacheEntry))
             {
-                var isStale = cacheEntry.LocalExpirationDate == null || cacheEntry.LocalExpirationDate < DateTimeOffset.Now;
-                bool mustRevalidate = forceRevalidate
-                  || cacheEntry.CacheMode == CacheMode.AlwaysRevalidate
-                  || (isStale && cacheEntry.CacheMode == CacheMode.RevalidateStale);
+                var mustRevalidate = forceRevalidate || cacheEntry.IsRevalidationRequired(DateTimeOffset.Now);
                 if (!mustRevalidate)
                 {
                     var hco = this.hypermediaReader.Read(cacheEntry.LinkResponseContent);
@@ -77,13 +74,14 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                     RequestUri = uriToResolve,
                     Method = HttpMethod.Get,
                 };
-                if (!string.IsNullOrEmpty(cacheEntry.Validator.ETag))
+                if (!string.IsNullOrEmpty(cacheEntry.ETag))
                 {
-                    request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(StringHelpers.SurroundWithQuotes(cacheEntry.ETag)));
+                    request.Headers.IfNoneMatch.Add(
+                        new EntityTagHeaderValue(StringHelpers.SurroundWithQuotes(cacheEntry.ETag)));
                 }
-                if (cacheEntry.Validator.LastModified != null)
+                if (cacheEntry.LastModified != null)
                 {
-                    request.Headers.IfModifiedSince = cacheEntry.Validator.LastModified;
+                    request.Headers.IfModifiedSince = cacheEntry.LastModified;
                 }
                 response = await this.httpClient.SendAsync(request, CancellationToken.None);
                 if (response.StatusCode == HttpStatusCode.NotModified)
@@ -93,7 +91,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                     return new ResolverResult<T>()
                     {
                         Success = true,
-                        ResultObject = (T) hco,
+                        ResultObject = (T)hco,
                     };
                 }
                 else
@@ -106,95 +104,28 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 response = await httpClient.GetAsync(uriToResolve);
             }
 
-            var exportToString = this.TryGetCacheParameters(uriToResolve, response, out var entry);
+            var cacheConfiguration = CacheEntryConfiguration.FromHttpResponse(response);
+            bool exportToString = cacheConfiguration.ShouldCache();
             var (resolverResult, hcoAsString) = await HandleLinkResponseAsync<T>(response, exportToString);
 
             if (resolverResult.Success && exportToString && !string.IsNullOrEmpty(hcoAsString))
             {
-                entry.LinkResponseContent = hcoAsString;
+                var entry = new HttpLinkHcoCacheEntry(hcoAsString, cacheConfiguration);
                 this.linkHcoCache.Set(uriToResolve, entry);
             }
 
             return resolverResult;
         }
 
-        private bool TryGetCacheParameters(
-            Uri uriToResolve,
-            HttpResponseMessage response,
-            out LinkHcoCacheEntry<HttpResponseValidator> cacheEntry)
+        private static bool HasUpdatedCacheParameters(
+            HttpLinkHcoCacheEntry previousEntry,
+            CacheEntryConfiguration newEntryConfiguration)
         {
-            cacheEntry = null;
-            var cc = response.Headers.CacheControl;
-            if (cc.NoStore)
-            {
-                return false;
-            }
-
-            CacheMode mode = CacheMode.Undefined;
-            CacheScope scope = CacheScope.Undefined;
-            string etag = string.Empty;
-            DateTimeOffset? lastModified = null;
-            DateTimeOffset? expirationDate = null;
-
-            if (cc.MustRevalidate)
-            {
-                mode = CacheMode.RevalidateStale;
-            }
-            if (cc.NoCache)
-            {
-                mode = CacheMode.AlwaysRevalidate;
-            }
-            if (cc.Public)
-            {
-                scope = CacheScope.AcrossUserContexts;
-                if (mode == CacheMode.Undefined)
-                {
-                    mode = CacheMode.Default;
-                }
-            }
-            if (cc.Private)
-            {
-                scope = CacheScope.ForIndividualUserContext;
-            }
-
-            if (cc.MaxAge != null)
-            {
-                expirationDate = DateTimeOffset.Now + cc.MaxAge.Value;
-            }
-            if (!string.IsNullOrEmpty(response.Headers.ETag?.Tag))
-            {
-                etag = StringHelpers.RemoveSurroundingQuotes(response.Headers.ETag.Tag);
-            }
-
-            if (response.Content.Headers.LastModified != null)
-            {
-                lastModified = response.Content.Headers.LastModified.Value;
-            }
-
-            if (scope != CacheScope.Undefined
-                || !string.IsNullOrEmpty(etag)
-                || lastModified != null)
-            {
-                if (mode == CacheMode.Undefined)
-                {
-                    mode = CacheMode.Default;
-                }
-            }
-
-            if (mode != CacheMode.Undefined)
-            {
-                cacheEntry = new LinkHcoCacheEntry<HttpResponseValidator>(
-                    string.Empty,
-                    mode,
-                    scope,
-                    new HttpResponseValidator(
-                        etag,
-                        lastModified),
-                    expirationDate);
-                return true;
-            }
-
-            return false;
+            return previousEntry.CacheMode != newEntryConfiguration.CacheMode
+                   || previousEntry.CacheScope != newEntryConfiguration.CacheScope
+                   || previousEntry.LocalExpirationDate != newEntryConfiguration.LocalExpirationDate
+                   || previousEntry.ETag != newEntryConfiguration.ETag
+                   || previousEntry.LastModified != newEntryConfiguration.LastModified;
         }
 
         public async Task<HypermediaCommandResult> ResolveActionAsync(Uri uri, string method)
@@ -327,7 +258,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 throw new Exception(
                     $"Please setup the hypermediaReader before using the resolver. see {nameof(InitializeHypermediaReader)}");
             }
-            
+
             HypermediaClientObject hypermediaClientObject;
             string export = string.Empty;
             if (exportToString)
@@ -346,7 +277,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
             var resolverResult = new ResolverResult<T>()
             {
-                ResultObject = desiredResultObject, 
+                ResultObject = desiredResultObject,
                 Success = true,
             };
             return (resolverResult, export);
@@ -375,10 +306,10 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
             var actionResult = new HypermediaFunctionResult<T>
             {
-                Success = true, 
+                Success = true,
                 ResultLocation =
                 {
-                    Uri = location, 
+                    Uri = location,
                     Resolver = this
                 },
             };
@@ -397,7 +328,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             }
 
             var responseMessage = await httpClient.SendAsync(request);
-            
+
             return responseMessage;
         }
 

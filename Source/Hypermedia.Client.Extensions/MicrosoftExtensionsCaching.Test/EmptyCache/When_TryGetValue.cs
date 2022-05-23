@@ -9,7 +9,7 @@ namespace Extensions.Test.Caching.EmptyCache;
 public class When_TryGetValue : Given_AnEmptyCache
 {
     private readonly bool success;
-    private LinkHcoCacheEntry<string> entry;
+    private LinkHcoCacheEntry entry;
 
     public When_TryGetValue()
     {

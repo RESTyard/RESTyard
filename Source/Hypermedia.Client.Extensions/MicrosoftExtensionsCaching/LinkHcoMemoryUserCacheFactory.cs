@@ -4,13 +4,14 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace MicrosoftExtensionsCaching
 {
-    public class LinkHcoMemoryUserCacheFactory<TUserIdentifier, TValidator>
+    public class LinkHcoMemoryUserCacheFactory<TUserIdentifier, TLinkHcoCacheEntry>
+        where TLinkHcoCacheEntry : LinkHcoCacheEntry
     {
         private readonly IMemoryCache memoryCache;
         private readonly TUserIdentifier sharedUserIdentifier;
         private readonly Func<TUserIdentifier, Uri, object> hcoEntryKeyBuilder;
         private readonly Func<TUserIdentifier, object> controlEntryKeyBuilder;
-        private readonly Action<ICacheEntry, LinkHcoCacheEntry<TValidator>> configureEntryExpiration;
+        private readonly Action<ICacheEntry, TLinkHcoCacheEntry> configureEntryExpiration;
         private readonly Action<ICacheEntry> configureControlExpiration;
         private readonly Action<ICacheEntry> configureRootExpiration;
         private readonly object rootControlTokenKey;
@@ -20,7 +21,7 @@ namespace MicrosoftExtensionsCaching
             TUserIdentifier sharedUserIdentifier,
             Func<TUserIdentifier, Uri, object> hcoEntryKeyBuilder,
             Func<TUserIdentifier, object> controlEntryKeyBuilder,
-            Action<ICacheEntry, LinkHcoCacheEntry<TValidator>> configureEntryExpiration,
+            Action<ICacheEntry, TLinkHcoCacheEntry> configureEntryExpiration,
             Action<ICacheEntry> configureControlExpiration,
             Action<ICacheEntry> configureRootExpiration,
             object rootControlTokenKey)
@@ -35,9 +36,9 @@ namespace MicrosoftExtensionsCaching
             this.rootControlTokenKey = rootControlTokenKey;
         }
 
-        public ILinkHcoCache<TValidator> CreateUserCache(TUserIdentifier currentUserIdentifier)
+        public ILinkHcoCache<TLinkHcoCacheEntry> CreateUserCache(TUserIdentifier currentUserIdentifier)
         {
-            return new LinkHcoMemoryUserCache<TUserIdentifier, TValidator>(
+            return new LinkHcoMemoryUserCache<TUserIdentifier, TLinkHcoCacheEntry>(
                 this.memoryCache,
                 currentUserIdentifier,
                 this.sharedUserIdentifier,

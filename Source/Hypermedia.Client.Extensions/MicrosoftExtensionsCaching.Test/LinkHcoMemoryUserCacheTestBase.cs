@@ -14,7 +14,7 @@ namespace Extensions.Test.Caching
     {
         protected Func<string, Uri, object> HcoEntryKeyBuilder = (user, uri) => (user, uri);
         protected Func<string, object> ControlEntryKeyBuilder = user => user;
-        protected Action<ICacheEntry, LinkHcoCacheEntry<string>> ConfigureEntryExpiration = (_, __) => { };
+        protected Action<ICacheEntry, LinkHcoCacheEntry> ConfigureEntryExpiration = (_, __) => { };
         protected Action<ICacheEntry> ConfigureControlExpiration = _ => { };
         protected Action<ICacheEntry> ConfigureRootExpiration = _ => { };
         protected const string CurrentUserIdentifier = "CurrentUser";
@@ -29,7 +29,7 @@ namespace Extensions.Test.Caching
 
         protected IMemoryCache MemoryCache { get; }
 
-        protected LinkHcoMemoryUserCache<string, string> UserCache { get; }
+        protected LinkHcoMemoryUserCache<string, LinkHcoCacheEntry> UserCache { get; }
 
         protected LinkHcoMemoryUserCacheTestBase()
             : this(new MemoryCacheOptions())
@@ -40,7 +40,7 @@ namespace Extensions.Test.Caching
         {
             this.MemoryCacheOptions = new OptionsWrapper<MemoryCacheOptions>(options);
             this.MemoryCache = new MemoryCache(this.MemoryCacheOptions);
-            this.UserCache = new LinkHcoMemoryUserCache<string, string>(
+            this.UserCache = new LinkHcoMemoryUserCache<string, LinkHcoCacheEntry>(
                 this.MemoryCache,
                 CurrentUserIdentifier,
                 SharedUserIdentifier,
@@ -52,15 +52,13 @@ namespace Extensions.Test.Caching
                 RootControlTokenKey);
         }
 
-        protected LinkHcoCacheEntry<string> CreateEntry(
+        protected LinkHcoCacheEntry CreateEntry(
             string content,
             CacheScope scope)
         {
-            return new LinkHcoCacheEntry<string>(
+            return new LinkHcoCacheEntry(
                 content,
-                CacheMode.Default,
                 scope,
-                "",
                 null);
         }
     }

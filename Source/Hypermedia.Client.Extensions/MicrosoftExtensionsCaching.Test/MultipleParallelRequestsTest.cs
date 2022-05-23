@@ -19,7 +19,7 @@ public class MultipleParallelRequestsTest : LinkHcoMemoryUserCacheTestBase
 
     private readonly IList<string> userIdentifiers;
 
-    private readonly IList<ILinkHcoCache<string>> userCaches;
+    private readonly IList<ILinkHcoCache<LinkHcoCacheEntry>> userCaches;
 
     private readonly IList<Uri> uriCollection;
 
@@ -33,7 +33,7 @@ public class MultipleParallelRequestsTest : LinkHcoMemoryUserCacheTestBase
         })
     {
         this.userIdentifiers = Enumerable.Range(1, NumberOfThreads).Select(x => $"UserIdentifier{x}").ToList();
-        var factory = new LinkHcoMemoryUserCacheFactory<string, string>(
+        var factory = new LinkHcoMemoryUserCacheFactory<string, LinkHcoCacheEntry>(
             this.MemoryCache,
             SharedUserIdentifier,
             HcoEntryKeyBuilder,
@@ -88,13 +88,11 @@ public class MultipleParallelRequestsTest : LinkHcoMemoryUserCacheTestBase
                         {
                             this.userCaches[threadNumber].Set(
                                 uri,
-                                new LinkHcoCacheEntry<string>(
+                                new LinkHcoCacheEntry(
                                     $"{threadNumber}-{NextInt()}",
-                                    CacheMode.Default,
                                     sharedCounter == 0
                                         ? CacheScope.AcrossUserContexts
                                         : CacheScope.ForIndividualUserContext,
-                                    "",
                                     null));
                         }
                     }

@@ -21,7 +21,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 var resolver = new HttpHypermediaResolver(
                     serializer,
                     problemReader,
-                    NoLinkCache<HttpResponseValidator>.Instance);
+                    NoLinkCache<HttpLinkHcoCacheEntry>.Instance);
                 configure(resolver);
                 return resolver;
             });
@@ -36,7 +36,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         /// <returns></returns>
         public static HypermediaClientBuilder WithCachedHttpHypermediaResolver(
             this HypermediaClientBuilder builder,
-            ILinkHcoCache<HttpResponseValidator> linkHcoCache,
+            ILinkHcoCache<HttpLinkHcoCacheEntry> linkHcoCache,
             Action<IHttpHypermediaResolverConfiguration> configure)
         {
             return builder.WithCustomHypermediaResolver((serializer, problemReader) =>

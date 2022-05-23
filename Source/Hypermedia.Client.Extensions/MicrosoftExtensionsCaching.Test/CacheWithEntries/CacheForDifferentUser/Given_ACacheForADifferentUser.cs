@@ -5,11 +5,11 @@ namespace Extensions.Test.Caching.CacheWithEntries.CacheForDifferentUser;
 
 public class Given_ACacheForADifferentUser : Given_ACacheWithEntries
 {
-    protected ILinkHcoCache<string> OtherUserCache { get; }
+    protected ILinkHcoCache<LinkHcoCacheEntry> OtherUserCache { get; }
 
     public Given_ACacheForADifferentUser()
     {
-        this.OtherUserCache = new LinkHcoMemoryUserCache<string, string>(
+        this.OtherUserCache = new LinkHcoMemoryUserCache<string, LinkHcoCacheEntry>(
             this.MemoryCache,
             "OtherUser",
             SharedUserIdentifier,
