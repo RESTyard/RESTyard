@@ -124,6 +124,6 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             return new CacheEntryConfiguration(false);
         }
 
-        public bool ShouldCache() => this.HasCacheConfiguration && this.CacheMode != CacheMode.DoNotCache;
+        public bool ShouldBeAddedToCache() => this.HasCacheConfiguration && this.CacheMode != CacheMode.DoNotCache;
     }
 }

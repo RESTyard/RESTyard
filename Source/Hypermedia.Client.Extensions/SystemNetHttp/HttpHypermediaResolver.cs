@@ -91,7 +91,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             }
 
             var cacheConfiguration = CacheEntryConfiguration.FromHttpResponse(response, DateTimeOffset.Now);
-            bool exportToString = cacheConfiguration.ShouldCache();
+            bool exportToString = cacheConfiguration.ShouldBeAddedToCache();
             var (resolverResult, hcoAsString) = await HandleLinkResponseAsync<T>(response, exportToString);
 
             if (resolverResult.Success && exportToString && !string.IsNullOrEmpty(hcoAsString))
@@ -136,7 +136,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 //TODO generate warning
                 this.linkHcoCache.Remove(uriToResolve);
             }
-            else if (!newConfiguration.ShouldCache())
+            else if (!newConfiguration.ShouldBeAddedToCache())
             {
                 this.linkHcoCache.Remove(uriToResolve);
             }
