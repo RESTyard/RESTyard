@@ -27,7 +27,7 @@ namespace Extensions.Test.Caching
 
         protected IOptions<MemoryCacheOptions> MemoryCacheOptions { get; }
 
-        protected IMemoryCache MemoryCache { get; }
+        protected MemoryCache MemoryCache { get; }
 
         protected LinkHcoMemoryUserCache<string, LinkHcoCacheEntry> UserCache { get; }
 

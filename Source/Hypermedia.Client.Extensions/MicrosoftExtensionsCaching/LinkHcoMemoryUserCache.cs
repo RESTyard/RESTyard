@@ -44,7 +44,7 @@ namespace MicrosoftExtensionsCaching
     /// in the IMemoryCache added by any instance of the LinkHcoMemoryUserCache
     /// </summary>
     /// <typeparam name="TUserIdentifier">An identifier type to tell users apart. Choose in a way, that no two different users in your system will have the same identifier, and such that no other service enters tuples of (TIdentifier, Uri) into the IMemoryCache</typeparam>
-    /// <typeparam name="TValidator"></typeparam>
+    /// <typeparam name="TLinkHcoCacheEntry">The specified Type of entry that derives from LinkHcoCacheEntry</typeparam>
     public class LinkHcoMemoryUserCache<TUserIdentifier, TLinkHcoCacheEntry>
         : ILinkHcoCache<TLinkHcoCacheEntry>
         where TLinkHcoCacheEntry : LinkHcoCacheEntry

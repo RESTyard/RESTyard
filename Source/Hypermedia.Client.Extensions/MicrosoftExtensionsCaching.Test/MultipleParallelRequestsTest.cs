@@ -111,7 +111,7 @@ public class MultipleParallelRequestsTest : LinkHcoMemoryUserCacheTestBase
             t.Join();
         }
 
-        var memCache = this.MemoryCache as MemoryCache;
+        var memCache = this.MemoryCache;
         memCache.Count.Should().BeLessThanOrEqualTo((int)this.MemoryCacheOptions.Value.SizeLimit + this.userCaches.Count + 2);
         memCache.Count.Should().BeGreaterThan(0);
         foreach (var uc in this.userCaches)
