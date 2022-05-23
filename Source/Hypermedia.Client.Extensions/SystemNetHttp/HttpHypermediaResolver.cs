@@ -55,21 +55,6 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             bool forceResolve = false)
             where T : HypermediaClientObject
         {
-            string Quoted(string value)
-            {
-                const string doubleQuoteString = "\"";
-                if (!value.StartsWith(doubleQuoteString))
-                {
-                    value = doubleQuoteString + value;
-                }
-
-                if (!value.EndsWith(doubleQuoteString))
-                {
-                    value = value + doubleQuoteString;
-                }
-
-                return value;
-            }
             HttpResponseMessage response;
             bool forceRevalidate = forceResolve;
             if (this.linkHcoCache.TryGetValue(uriToResolve, out var cacheEntry))
@@ -94,7 +79,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 };
                 if (!string.IsNullOrEmpty(cacheEntry.Validator.ETag))
                 {
-                    request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(Quoted(cacheEntry.Validator.ETag)));
+                    request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(StringHelpers.SurroundWithQuotes(cacheEntry.ETag)));
                 }
                 if (cacheEntry.Validator.LastModified != null)
                 {
@@ -178,9 +163,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             }
             if (!string.IsNullOrEmpty(response.Headers.ETag?.Tag))
             {
-                const char doubleQuoteChar = '"';
-                var unquoted = response.Headers.ETag.Tag.Trim(doubleQuoteChar);
-                etag = unquoted;
+                etag = StringHelpers.RemoveSurroundingQuotes(response.Headers.ETag.Tag);
             }
 
             if (response.Content.Headers.LastModified != null)
