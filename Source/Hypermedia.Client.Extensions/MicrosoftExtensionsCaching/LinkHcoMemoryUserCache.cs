@@ -122,18 +122,7 @@ namespace MicrosoftExtensionsCaching
             Uri uri,
             TLinkHcoCacheEntry entry)
         {
-            TUserIdentifier userIdentifier;
-            switch (entry.CacheScope)
-            {
-                case CacheScope.ForIndividualUserContext:
-                case CacheScope.Undefined:
-                default:
-                    userIdentifier = this.currentUserIdentifier;
-                    break;
-                case CacheScope.AcrossUserContexts:
-                    userIdentifier = this.sharedUserIdentifier;
-                    break;
-            }
+            var userIdentifier = DetermineUserIdentifier(entry.CacheScope);
 
             var userClearTokenKey = this.controlEntryKeyBuilder(userIdentifier);
             var userClearToken = GetUserClearToken(userClearTokenKey);
@@ -144,6 +133,32 @@ namespace MicrosoftExtensionsCaching
                 e.ExpirationTokens.Add(userClearToken.Token);
                 this.configureEntryExpiration?.Invoke(e, entry);
             }
+        }
+
+        private TUserIdentifier DetermineUserIdentifier(CacheScope scope)
+        {
+            switch (scope)
+            {
+                case CacheScope.ForIndividualUserContext:
+                case CacheScope.Undefined:
+                default:
+                    return this.currentUserIdentifier;
+                case CacheScope.AcrossUserContexts:
+                    return this.sharedUserIdentifier;
+            }
+        }
+
+        public void Replace(
+            Uri uri,
+            TLinkHcoCacheEntry oldEntry,
+            TLinkHcoCacheEntry newEntry)
+        {
+            if (oldEntry.CacheScope != newEntry.CacheScope)
+            {
+                var userIdentifier = DetermineUserIdentifier(oldEntry.CacheScope);
+                this.memoryCache.Remove(this.hcoEntryKeyBuilder(userIdentifier, uri));
+            }
+            this.Set(uri, newEntry);
         }
 
         private CancellationChangeTokenWrapper GetUserClearToken(object userClearTokenKey)

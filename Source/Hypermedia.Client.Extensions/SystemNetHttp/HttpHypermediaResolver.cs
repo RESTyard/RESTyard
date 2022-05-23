@@ -87,7 +87,21 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 if (response.StatusCode == HttpStatusCode.NotModified)
                 {
                     var hco = this.hypermediaReader.Read(cacheEntry.LinkResponseContent);
-                    // TODO: replace cache entry with possibly updated values for MaxAge
+
+                    var newConfiguration = CacheEntryConfiguration.FromHttpResponse(response);
+                    if (!newConfiguration.ShouldCache())
+                    {
+                        //TODO generate warning
+                        this.linkHcoCache.Remove(uriToResolve);
+                    }
+                    else if (HasUpdatedCacheParameters(cacheEntry, newConfiguration))
+                    {
+                        this.linkHcoCache.Replace(
+                            uriToResolve,
+                            cacheEntry,
+                            new HttpLinkHcoCacheEntry(cacheEntry.LinkResponseContent, newConfiguration));
+                    }
+
                     return new ResolverResult<T>()
                     {
                         Success = true,

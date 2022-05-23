@@ -8,7 +8,6 @@ namespace Bluehands.Hypermedia.Client.Resolver
     {
         private NoLinkCache()
         {
-
         }
 
         public static NoLinkCache<TLinkHcoCacheEntry> Instance { get; } = new NoLinkCache<TLinkHcoCacheEntry>();
@@ -21,17 +20,21 @@ namespace Bluehands.Hypermedia.Client.Resolver
 
         public void Set(Uri uri, TLinkHcoCacheEntry entry)
         {
+        }
 
+        public void Replace(
+            Uri uri,
+            TLinkHcoCacheEntry oldEntry,
+            TLinkHcoCacheEntry newEntry)
+        {
         }
 
         public void Remove(Uri uri)
         {
-
         }
 
         public void Clear()
         {
-
         }
     }
 }

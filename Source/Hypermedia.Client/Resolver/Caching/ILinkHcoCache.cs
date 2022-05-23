@@ -9,6 +9,11 @@ namespace Bluehands.Hypermedia.Client.Resolver.Caching
 
         void Set(Uri uri, TLinkHcoCacheEntry entry);
 
+        void Replace(
+            Uri uri,
+            TLinkHcoCacheEntry oldEntry,
+            TLinkHcoCacheEntry newEntry);
+
         void Remove(Uri uri);
 
         void Clear();
