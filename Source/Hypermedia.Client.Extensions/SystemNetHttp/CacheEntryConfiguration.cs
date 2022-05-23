@@ -41,9 +41,9 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
         public DateTimeOffset? LastModified { get; }
 
-        public bool ShouldCache() => this.HasCacheConfiguration && this.CacheMode != CacheMode.DoNotCache;
-
-        public static CacheEntryConfiguration FromHttpResponse(HttpResponseMessage response)
+        public static CacheEntryConfiguration FromHttpResponse(
+            HttpResponseMessage response,
+            DateTimeOffset assumedNow)
         {
             var cc = response.Headers.CacheControl;
             if (cc is null)
@@ -57,11 +57,6 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             DateTimeOffset? lastModified = null;
             DateTimeOffset? expirationDate = null;
 
-            if (cc.NoStore)
-            {
-                mode = CacheMode.DoNotCache;
-            }
-
             if (cc.MustRevalidate)
             {
                 mode = CacheMode.RevalidateStale;
@@ -70,6 +65,11 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             {
                 mode = CacheMode.AlwaysRevalidate;
             }
+            if (cc.NoStore)
+            {
+                mode = CacheMode.DoNotCache;
+            }
+
             if (cc.Public)
             {
                 scope = CacheScope.AcrossUserContexts;
@@ -81,7 +81,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
             if (cc.MaxAge != null)
             {
-                expirationDate = DateTimeOffset.Now + cc.MaxAge.Value;
+                expirationDate = assumedNow + cc.MaxAge.Value;
             }
             if (!string.IsNullOrEmpty(response.Headers.ETag?.Tag))
             {
@@ -118,5 +118,12 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
             return new CacheEntryConfiguration(false);
         }
+
+        public static CacheEntryConfiguration EmptyConfiguration()
+        {
+            return new CacheEntryConfiguration(false);
+        }
+
+        public bool ShouldCache() => this.HasCacheConfiguration && this.CacheMode != CacheMode.DoNotCache;
     }
 }
