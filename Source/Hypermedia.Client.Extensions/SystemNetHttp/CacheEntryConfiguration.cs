@@ -23,7 +23,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             CacheScope = cacheScope;
             LocalExpirationDate = localExpirationDate;
             CacheMode = cacheMode;
-            Etag = etag;
+            ETag = etag;
             LastModified = lastModified;
         }
 
@@ -34,8 +34,6 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         public DateTimeOffset? LocalExpirationDate { get; }
 
         public CacheMode CacheMode { get; }
-
-        public string Etag { get; }
 
         public string ETag { get; }
 

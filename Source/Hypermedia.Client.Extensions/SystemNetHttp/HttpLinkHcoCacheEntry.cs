@@ -15,13 +15,11 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             : base(linkResponseContent, cacheScope, localExpirationDate)
         {
             CacheMode = cacheMode;
-            Etag = etag;
+            ETag = etag;
             LastModified = lastModified;
         }
 
         public CacheMode CacheMode { get; }
-
-        public string Etag { get; }
 
         public string ETag { get; }
 
