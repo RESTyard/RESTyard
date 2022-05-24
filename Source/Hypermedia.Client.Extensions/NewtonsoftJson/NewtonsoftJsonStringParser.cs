@@ -67,6 +67,11 @@ namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
                 return this.jToken.ToObject(type);
             }
 
+            public string Serialize()
+            {
+                return this.jToken.ToString(Formatting.None);
+            }
+
             public IToken this[string key] => Wrap(this.jToken[key]);
         }
     }
