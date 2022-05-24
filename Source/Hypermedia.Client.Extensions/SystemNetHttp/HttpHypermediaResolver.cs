@@ -10,12 +10,13 @@ using Bluehands.Hypermedia.Client.Exceptions;
 using Bluehands.Hypermedia.Client.ParameterSerializer;
 using Bluehands.Hypermedia.Client.Reader;
 using Bluehands.Hypermedia.Client.Resolver;
+using Bluehands.Hypermedia.Client.Resolver.Caching;
 using Bluehands.Hypermedia.MediaTypes;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 {
     public class HttpHypermediaResolver
-        : HypermediaResolverBase<HttpResponseMessage, string>
+        : HypermediaResolverBase<HttpResponseMessage, HttpLinkHcoCacheEntry>
     {
         private readonly HttpClient httpClient;
         private readonly bool disposeHttpClient;
@@ -28,67 +29,110 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             IHypermediaReader hypermediaReader,
             IParameterSerializer parameterSerializer,
             IProblemStringReader problemReader,
-            ILinkHcoCache<string> linkHcoCache)
+            ILinkHcoCache<HttpLinkHcoCacheEntry> linkHcoCache)
             : base(hypermediaReader, parameterSerializer, problemReader, linkHcoCache)
         {
             this.httpClient = httpClient;
             this.disposeHttpClient = disposeHttpClient;
         }
 
-        protected override async Task<HttpResponseMessage> ResolveAsync(Uri uriToResolve)
+        public override async Task<ResolverResult<T>> ResolveLinkAsync<T>(
+            Uri uriToResolve,
+            bool forceResolve = false)
         {
-            return await this.httpClient.GetAsync(uriToResolve);
+            HttpResponseMessage response;
+            bool forceRevalidate = forceResolve;
+            if (this.LinkHcoCache.TryGetValue(uriToResolve, out var cacheEntry))
+            {
+                var mustRevalidate = forceRevalidate || cacheEntry.IsRevalidationRequired(DateTimeOffset.Now);
+                if (!mustRevalidate)
+                {
+                    var hco = this.HypermediaReader.Read(cacheEntry.LinkResponseContent);
+                    return new ResolverResult<T>(true, (T)hco, this);
+                }
+                var request = CreateRevalidationRequest(uriToResolve, cacheEntry);
+                response = await this.httpClient.SendAsync(request, CancellationToken.None);
+                if (response.StatusCode == HttpStatusCode.NotModified)
+                {
+                    this.UpdateCacheEntry(uriToResolve, response, cacheEntry);
+
+                    var hco = this.HypermediaReader.Read(cacheEntry.LinkResponseContent);
+                    return new ResolverResult<T>(true, (T)hco, this);
+                }
+                else
+                {
+                    this.LinkHcoCache.Remove(uriToResolve);
+                }
+            }
+            else
+            {
+                response = await httpClient.GetAsync(uriToResolve);
+            }
+
+            var cacheConfiguration = CacheEntryConfiguration.FromHttpResponse(response, DateTimeOffset.Now);
+            bool exportToString = cacheConfiguration.ShouldBeAddedToCache();
+            var (resolverResult, hcoAsString) = await HandleLinkResponseAsync<T>(response, exportToString);
+
+            if (resolverResult.Success && exportToString && !string.IsNullOrEmpty(hcoAsString))
+            {
+                var entry = HttpLinkHcoCacheEntry.FromConfiguration(hcoAsString, cacheConfiguration);
+                this.LinkHcoCache.Set(uriToResolve, entry);
+            }
+
+            return resolverResult;
         }
 
-        protected override async Task<(HttpResponseMessage response, bool wasModified)> ResolveWithCheckForModificationAsync(
+        private static HttpRequestMessage CreateRevalidationRequest(
             Uri uriToResolve,
-            string identifier)
+            HttpLinkHcoCacheEntry cacheEntry)
         {
-            string Quoted(string value)
-            {
-                const string doubleQuoteString = "\"";
-                if (!value.StartsWith(doubleQuoteString))
-                {
-                    value = doubleQuoteString + value;
-                }
-
-                if (!value.EndsWith(doubleQuoteString))
-                {
-                    value = value + doubleQuoteString;
-                }
-
-                return value;
-            }
             var request = new HttpRequestMessage()
             {
                 RequestUri = uriToResolve,
                 Method = HttpMethod.Get,
-                Headers =
-                {
-                    IfNoneMatch =
-                    {
-                        new EntityTagHeaderValue(Quoted(identifier)),
-                    },
-                },
             };
-            var response = await this.httpClient.SendAsync(request, CancellationToken.None);
-            return (response, response.StatusCode != HttpStatusCode.NotModified);
-        }
-
-        protected override bool HasCacheIdentifier(
-            HttpResponseMessage responseMessage,
-            out string identifier)
-        {
-            if (!string.IsNullOrEmpty(responseMessage.Headers.ETag?.Tag))
+            if (!string.IsNullOrEmpty(cacheEntry.ETag))
             {
-                const char doubleQuoteChar = '"';
-                var unquoted = responseMessage.Headers.ETag.Tag.Trim(doubleQuoteChar);
-                identifier = unquoted;
-                return true;
+                request.Headers.IfNoneMatch.Add(
+                    new EntityTagHeaderValue(StringHelpers.SurroundWithQuotes(cacheEntry.ETag)));
+            }
+            if (cacheEntry.LastModified != null)
+            {
+                request.Headers.IfModifiedSince = cacheEntry.LastModified;
             }
 
-            identifier = string.Empty;
-            return false;
+            return request;
+        }
+
+        private void UpdateCacheEntry(
+            Uri uriToResolve,
+            HttpResponseMessage response,
+            HttpLinkHcoCacheEntry oldEntry)
+        {
+            var newConfiguration = CacheEntryConfiguration.FromHttpResponse(response, DateTimeOffset.Now);
+            if (!newConfiguration.HasCacheConfiguration)
+            {
+                //TODO generate warning
+                this.LinkHcoCache.Remove(uriToResolve);
+            }
+            else if (!newConfiguration.ShouldBeAddedToCache())
+            {
+                this.LinkHcoCache.Remove(uriToResolve);
+            }
+            else if (HasUpdatedCacheConfiguration(oldEntry, newConfiguration))
+            {
+                this.LinkHcoCache.Replace(
+                    uriToResolve,
+                    oldEntry,
+                    HttpLinkHcoCacheEntry.FromConfiguration(oldEntry.LinkResponseContent, newConfiguration));
+            }
+        }
+
+        private static bool HasUpdatedCacheConfiguration(
+            HttpLinkHcoCacheEntry previousEntry,
+            CacheEntryConfiguration newEntryConfiguration)
+        {
+            return !previousEntry.IsConfigurationEquivalentTo(newEntryConfiguration);
         }
 
         protected override async Task<HttpResponseMessage> SendCommandAsync(

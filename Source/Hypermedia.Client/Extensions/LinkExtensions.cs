@@ -34,5 +34,19 @@ namespace Bluehands.Hypermedia.Client.Extensions
 
             return result.ResultObject;
         }
+
+        public static async Task<THco> RefreshAsync<THco>(
+            this SelfHypermediaLink<THco> link,
+            IHypermediaResolver resolver)
+            where THco : HypermediaClientObject
+        {
+            var result = await resolver.ResolveLinkAsync<THco>(link.Uri, true);
+            if (!result.Success)
+            {
+                throw new Exception("Could not resolve mandatory link.");
+            }
+
+            return result.ResultObject;
+        }
     }
 }

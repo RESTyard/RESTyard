@@ -8,7 +8,7 @@ using Bluehands.Hypermedia.Client.Util;
 
 namespace Bluehands.Hypermedia.Client
 {
-    internal class HypermediaObjectRegister : IHypermediaObjectRegister
+    public class HypermediaObjectRegister : IHypermediaObjectRegister
     {
         private readonly IDictionary<IDistinctOrderedCollection<string>, Type> hypermediaObjectTypeDictionary = new Dictionary<IDistinctOrderedCollection<string>, Type>(new DistinctOrderedStringCollectionComparer());
 

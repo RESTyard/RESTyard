@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using Bluehands.Hypermedia.Client.Authentication;
 using Bluehands.Hypermedia.Client.Resolver;
+using Bluehands.Hypermedia.Client.Resolver.Caching;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 {
@@ -28,7 +29,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 dependencies.HypermediaReader,
                 dependencies.ParameterSerializer,
                 dependencies.ProblemReader,
-                NoLinkCache<string>.Instance);
+                NoLinkCache<HttpLinkHcoCacheEntry>.Instance);
             return resolver;
         }
 
@@ -45,7 +46,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 dependencies.HypermediaReader,
                 dependencies.ParameterSerializer,
                 dependencies.ProblemReader,
-                NoLinkCache<string>.Instance);
+                NoLinkCache<HttpLinkHcoCacheEntry>.Instance);
         }
 
         /// <summary>
@@ -59,7 +60,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         public static IHypermediaResolver CreateCachedHttpHypermediaResolver(
             this HypermediaResolverBuilder builder,
             HttpClient httpClient,
-            ILinkHcoCache<string> linkHcoCache,
+            ILinkHcoCache<HttpLinkHcoCacheEntry> linkHcoCache,
             bool disposeHttpClient = true)
         {
             var dependencies = builder.BuildDependencies();
@@ -81,7 +82,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         /// <returns></returns>
         public static IHttpHypermediaResolverFactory CreatedCachedHttpHypermediaResolverFactory(
             this HypermediaResolverBuilder builder,
-            ILinkHcoCache<string> linkHcoCache)
+            ILinkHcoCache<HttpLinkHcoCacheEntry> linkHcoCache)
         {
             var dependencies = builder.BuildDependencies();
             return new HttpHypermediaResolverFactory(

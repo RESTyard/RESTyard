@@ -22,5 +22,7 @@ namespace Bluehands.Hypermedia.Client.Reader
         object ToObject(Type type);
 
         IToken this[string key] { get; }
+
+        string Serialize();
     }
 }

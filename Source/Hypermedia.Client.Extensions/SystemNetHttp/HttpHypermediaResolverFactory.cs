@@ -2,6 +2,7 @@
 using Bluehands.Hypermedia.Client.ParameterSerializer;
 using Bluehands.Hypermedia.Client.Reader;
 using Bluehands.Hypermedia.Client.Resolver;
+using Bluehands.Hypermedia.Client.Resolver.Caching;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 {
@@ -10,13 +11,13 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         private readonly IHypermediaReader hypermediaReader;
         private readonly IParameterSerializer parameterSerializer;
         private readonly IProblemStringReader problemReader;
-        private readonly ILinkHcoCache<string> linkHcoCache;
+        private readonly ILinkHcoCache<HttpLinkHcoCacheEntry> linkHcoCache;
 
         public HttpHypermediaResolverFactory(
             IHypermediaReader hypermediaReader,
             IParameterSerializer parameterSerializer,
             IProblemStringReader problemReader,
-            ILinkHcoCache<string> linkHcoCache)
+            ILinkHcoCache<HttpLinkHcoCacheEntry> linkHcoCache)
         {
             this.hypermediaReader = hypermediaReader;
             this.parameterSerializer = parameterSerializer;
