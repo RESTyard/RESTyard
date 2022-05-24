@@ -10,7 +10,7 @@
     },
     "Generate Server": {
       "commandName": "Project",
-      "commandLineArgs": "--schema-file ../../../../Sample.xml --type server --language csharp --output-file ../../../../Hypermedia.Generator.Demo.Server/Hypermedia.Server.g.cs --namespace Hypermedia.Generator.Demo.Server"
+      "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --type server --language csharp --output-file ../../../../../CarShack/Hypermedia/Hypermedia.Server.g.cs --namespace CarShack.Hypermedia"
     }
   }
 }
