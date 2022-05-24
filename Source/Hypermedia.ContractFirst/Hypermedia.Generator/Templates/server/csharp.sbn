@@ -10,6 +10,9 @@
     end
 -}}
 #nullable enable
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Bluehands.Hypermedia.Relations;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Hypermedia.Attributes;
@@ -91,7 +94,7 @@ public class {{ operation.name }} : {{ actionType }}
 {{      end }}
 
 {{- typeName = document.name + "Hto" }}
-[HypermediaObject(Title = "{{ document.title }}", Classes = new[]{ {{ for class in document.Classifications }}"{{ class.class }}"{{ if !for.last }}, {{ end }}{{ end }} })]
+[HypermediaObject(Title = "{{ document.title }}", Classes = new string[]{ {{ for class in document.Classifications }}"{{ class.class }}"{{ if !for.last }}, {{ end }}{{ end }} })]
 public partial class {{ typeName }} : HypermediaObject
 {
 {{- keyProperty = null
