@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Bluehands.Hypermedia.Client.Resolver;
 
 namespace Bluehands.Hypermedia.Client.Hypermedia.Commands
 {
@@ -20,5 +21,7 @@ namespace Bluehands.Hypermedia.Client.Hypermedia.Commands
         bool HasParameters { get; set; }
 
         List<ParameterDescription> ParameterDescriptions { get; }
+
+        IHypermediaResolver Resolver { get; set; }
     }
 }

@@ -12,9 +12,13 @@ using Bluehands.Hypermedia.MediaTypes;
 
 namespace Bluehands.Hypermedia.Client.Resolver
 {
-    public abstract class HypermediaResolverBase<TNetworkResponseMessage, TLinkHcoCacheEntry>
+    public abstract class HypermediaResolverBase<
+            TNetworkResponseMessage,
+            TLinkHcoCacheEntry,
+            TLinkHcoCacheEntryConfiguration>
         : IHypermediaResolver
         where TLinkHcoCacheEntry : LinkHcoCacheEntry
+        where TLinkHcoCacheEntryConfiguration : LinkHcoCacheEntryConfiguration
     {
         private bool alreadyDisposed;
 
@@ -38,45 +42,69 @@ namespace Bluehands.Hypermedia.Client.Resolver
 
         protected ILinkHcoCache<TLinkHcoCacheEntry> LinkHcoCache { get; }
 
-        //public async Task<ResolverResult<T>> ResolveLinkAsync<T>(Uri uriToResolve, bool forceResolve = false)
-        //    where T : HypermediaClientObject
-        //{
-        //    TNetworkResponseMessage response;
-        //    if (this.LinkHcoCache.TryGetValue(uriToResolve, out var cacheEntry))
-        //    {
-        //        bool wasModified;
-        //        (response, wasModified) =
-        //            await this.ResolveWithCheckForModificationAsync(uriToResolve, cacheEntry.Identifier);
-        //        if (!wasModified)
-        //        {
-        //            return new ResolverResult<T>(
-        //                success: true,
-        //                (T)cacheEntry.HypermediaClientObject,
-        //                this);
-        //        }
-        //        else
-        //        {
-        //            this.LinkHcoCache.Remove(uriToResolve);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        response = await this.ResolveAsync(uriToResolve);
-        //    }
-
-        //    var resolverResult = await HandleLinkResponseAsync<T>(response);
-
-        //    if (HasCacheIdentifier(response, out var identifier))
-        //    {
-        //        this.LinkHcoCache.Set(uriToResolve, new CacheEntry<TCacheEntryIdentifier>(resolverResult.ResultObject, identifier));
-        //    }
-
-        //    return resolverResult;
-        //}
-        public abstract Task<ResolverResult<T>> ResolveLinkAsync<T>(
+        public async Task<ResolverResult<T>> ResolveLinkAsync<T>(
             Uri uriToResolve,
             bool forceResolve = false)
-            where T : HypermediaClientObject;
+            where T : HypermediaClientObject
+        {
+            TNetworkResponseMessage response;
+            if (this.LinkHcoCache.TryGetValue(uriToResolve, out var cacheEntry))
+            {
+                var verificationResult = await this.VerifyIfCacheEntryCanBeUsedAsync(uriToResolve, cacheEntry, DateTimeOffset.Now, forceResolve);
+                var cacheEntryCanBeUsed = verificationResult.Match(
+                    canBeUsed => true,
+                    canNotBeUsed => false,
+                    useThisResponseInstead => false);
+                if (cacheEntryCanBeUsed)
+                {
+                    var hco = (T)this.HypermediaReader.Read(cacheEntry.LinkResponseContent, this);
+                    return new ResolverResult<T>(
+                        success: true,
+                        hco);
+                }
+                else
+                {
+                    this.LinkHcoCache.Remove(uriToResolve);
+                }
+
+                response = await verificationResult.Match(
+                    canBeUsed => this.ResolveAsync(uriToResolve),
+                    canNotBeUsed => this.ResolveAsync(uriToResolve),
+                    useResponse => Task.FromResult(useResponse.Response));
+            }
+            else
+            {
+                response = await this.ResolveAsync(uriToResolve);
+            }
+
+            var cacheConfiguration = this.GetCacheConfigurationFromResponse(response, DateTimeOffset.Now);
+            bool serializeToString = cacheConfiguration.ShouldBeAddedToCache();
+            var (resolverResult, hcoAsString) = await this.HandleLinkResponseAsync<T>(response, serializeToString);
+
+            if (resolverResult.Success
+                && cacheConfiguration.ShouldBeAddedToCache()
+                && !string.IsNullOrEmpty(hcoAsString))
+            {
+                var entry = GetCacheEntryFromConfiguration(hcoAsString, cacheConfiguration);
+                this.LinkHcoCache.Set(uriToResolve, entry);
+            }
+
+            return resolverResult;
+        }
+
+        protected abstract Task<CacheEntryVerificationResult<TNetworkResponseMessage>> VerifyIfCacheEntryCanBeUsedAsync(
+            Uri uriToResolve,
+            TLinkHcoCacheEntry cacheEntry,
+            DateTimeOffset assumedNow,
+            bool forceResolve);
+
+        protected abstract TLinkHcoCacheEntryConfiguration GetCacheConfigurationFromResponse(
+            TNetworkResponseMessage response,
+            DateTimeOffset assumedNow);
+
+        protected abstract TLinkHcoCacheEntry GetCacheEntryFromConfiguration(
+            string linkResponseContent,
+            TLinkHcoCacheEntryConfiguration cacheConfiguration);
 
         public async Task<HypermediaCommandResult> ResolveActionAsync(
             Uri uri,
@@ -124,24 +152,23 @@ namespace Bluehands.Hypermedia.Client.Resolver
 
         protected async Task<(ResolverResult<T>, string)> HandleLinkResponseAsync<T>(
             TNetworkResponseMessage responseMessage,
-            bool exportToString)
+            bool serializeToString)
             where T : HypermediaClientObject
         {
             await this.EnsureRequestIsSuccessfulAsync(responseMessage);
 
             var hypermediaObjectSirenStream = await this.ResponseAsStreamAsync(responseMessage);
 
-
             HypermediaClientObject hypermediaClientObject;
-            string export = string.Empty;
-            if (exportToString)
+            string serialized = string.Empty;
+            if (serializeToString)
             {
-                (hypermediaClientObject, export) =
-                    await this.HypermediaReader.ReadAndExportAsync(hypermediaObjectSirenStream);
+                (hypermediaClientObject, serialized) =
+                    await this.HypermediaReader.ReadAndSerializeAsync(hypermediaObjectSirenStream, this);
             }
             else
             {
-                hypermediaClientObject = await this.HypermediaReader.ReadAsync(hypermediaObjectSirenStream);
+                hypermediaClientObject = await this.HypermediaReader.ReadAsync(hypermediaObjectSirenStream, this);
             }
             if (!(hypermediaClientObject is T desiredResultObject))
             {
@@ -150,9 +177,8 @@ namespace Bluehands.Hypermedia.Client.Resolver
 
             var resolverResult = new ResolverResult<T>(
                 success: true,
-                desiredResultObject,
-                this);
-            return (resolverResult, export);
+                desiredResultObject);
+            return (resolverResult, serialized);
         }
 
         protected async Task<HypermediaCommandResult> HandleActionResponseAsync(TNetworkResponseMessage responseMessage)
@@ -184,6 +210,7 @@ namespace Bluehands.Hypermedia.Client.Resolver
                 ResultLocation =
                 {
                     Uri = location,
+                    Resolver = this,
                 },
             };
 
@@ -226,15 +253,7 @@ namespace Bluehands.Hypermedia.Client.Resolver
             return parameterDescription;
         }
 
-        //protected abstract Task<TNetworkResponseMessage> ResolveAsync(Uri uriToResolve);
-
-        //protected abstract Task<(TNetworkResponseMessage response, bool wasModified)> ResolveWithCheckForModificationAsync(
-        //    Uri uriToResolve,
-        //    TCacheEntryIdentifier identifier);
-
-        //protected abstract bool HasCacheIdentifier(
-        //    TNetworkResponseMessage responseMessage,
-        //    out TCacheEntryIdentifier identifier);
+        protected abstract Task<TNetworkResponseMessage> ResolveAsync(Uri uriToResolve);
 
         protected abstract Task<TNetworkResponseMessage> SendCommandAsync(
             Uri uri,
@@ -246,11 +265,6 @@ namespace Bluehands.Hypermedia.Client.Resolver
         protected abstract Task<Stream> ResponseAsStreamAsync(TNetworkResponseMessage responseMessage);
 
         protected abstract Uri GetLocation(TNetworkResponseMessage responseMessage);
-
-        protected void ClearCache()
-        {
-            this.LinkHcoCache?.Clear();
-        }
 
         ~HypermediaResolverBase()
         {

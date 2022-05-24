@@ -58,7 +58,7 @@ namespace Bluehands.Hypermedia.Client.Test
             var newAddress = "New Address";
             var actionResult = await customer.CustomerMove.ExecuteAsync(new NewAddress {Address = newAddress}, this.Resolver);
             
-            customer = await customer.Self.ResolveAsync(this.Resolver);
+            customer = await customer.Self.ResolveAsync();
             Assert.IsTrue(actionResult.Success);
             Assert.AreEqual(newAddress, customer.Address);
         }
@@ -79,7 +79,7 @@ namespace Bluehands.Hypermedia.Client.Test
 
             var actionResult = await customer.MarkAsFavorite.ExecuteAsync(new FavoriteCustomer{ Customer = customer.Self.Uri.ToString() }, this.Resolver); 
 
-            customer = await customer.Self.ResolveAsync(this.Resolver);
+            customer = await customer.Self.ResolveAsync();
             Assert.IsTrue(actionResult.Success);
             Assert.IsTrue(customer.IsFavorite);
         }
@@ -98,7 +98,7 @@ namespace Bluehands.Hypermedia.Client.Test
             };
 
             var resultResource = await customersRoot.ResultObject.CreateQuery.ExecuteAsync(query, this.Resolver);
-            var queryResultPage = await resultResource.ResultLocation.ResolveAsync(this.Resolver);
+            var queryResultPage = await resultResource.ResultLocation.ResolveAsync();
             Assert.IsNotNull(queryResultPage);
         }
 
@@ -106,8 +106,8 @@ namespace Bluehands.Hypermedia.Client.Test
         public async Task EnterEntryPointAndNavigate()
         {
             var apiRoot = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint);
-            var customers = await apiRoot.ResultObject.Customers.ResolveAsync(this.Resolver);
-            var all = await customers.All.ResolveAsync(this.Resolver);
+            var customers = await apiRoot.ResultObject.Customers.ResolveAsync();
+            var all = await customers.All.ResolveAsync();
 
             var allFluent = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint).NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
             var allFluent2 = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);

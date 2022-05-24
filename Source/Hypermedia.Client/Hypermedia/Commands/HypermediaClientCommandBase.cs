@@ -22,5 +22,7 @@ namespace Bluehands.Hypermedia.Client.Hypermedia.Commands
         public bool HasParameters { get; set; }
 
         public List<ParameterDescription> ParameterDescriptions { get; } = new List<ParameterDescription>();
+
+        public IHypermediaResolver Resolver { get; set; }
     }
 }

@@ -7,6 +7,9 @@ namespace Bluehands.Hypermedia.Client.Hypermedia
     public interface IHypermediaLink
     {
         Uri Uri { get; set; }
+
         List<string> Relations { get; set; }
+
+        IHypermediaResolver Resolver { get; set; }
     }
 }

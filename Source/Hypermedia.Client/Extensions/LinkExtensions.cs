@@ -8,25 +8,23 @@ namespace Bluehands.Hypermedia.Client.Extensions
     public static class LinkExtensions
     {
         public static async Task<ResolverResult<THco>> TryResolveAsync<THco>(
-            this HypermediaLink<THco> link,
-            IHypermediaResolver resolver)
+            this HypermediaLink<THco> link)
             where THco : HypermediaClientObject
         {
             if (link.Uri == null)
             {
-                return ResolverResult.Failed<THco>(resolver);
+                return ResolverResult.Failed<THco>();
             }
 
-            var result = await resolver.ResolveLinkAsync<THco>(link.Uri);
+            var result = await link.Resolver.ResolveLinkAsync<THco>(link.Uri);
             return result;
         }
 
         public static async Task<THco> ResolveAsync<THco>(
-            this MandatoryHypermediaLink<THco> link,
-            IHypermediaResolver resolver)
+            this MandatoryHypermediaLink<THco> link)
             where THco : HypermediaClientObject
         {
-            var result = await resolver.ResolveLinkAsync<THco>(link.Uri);
+            var result = await link.Resolver.ResolveLinkAsync<THco>(link.Uri);
             if (!result.Success)
             {
                 throw new Exception("Could not resolve mandatory link.");
@@ -36,11 +34,10 @@ namespace Bluehands.Hypermedia.Client.Extensions
         }
 
         public static async Task<THco> RefreshAsync<THco>(
-            this SelfHypermediaLink<THco> link,
-            IHypermediaResolver resolver)
+            this SelfHypermediaLink<THco> link)
             where THco : HypermediaClientObject
         {
-            var result = await resolver.ResolveLinkAsync<THco>(link.Uri, true);
+            var result = await link.Resolver.ResolveLinkAsync<THco>(link.Uri, true);
             if (!result.Success)
             {
                 throw new Exception("Could not resolve mandatory link.");

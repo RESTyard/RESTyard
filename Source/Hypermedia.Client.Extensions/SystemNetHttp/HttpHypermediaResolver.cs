@@ -16,7 +16,10 @@ using Bluehands.Hypermedia.MediaTypes;
 namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 {
     public class HttpHypermediaResolver
-        : HypermediaResolverBase<HttpResponseMessage, HttpLinkHcoCacheEntry>
+        : HypermediaResolverBase<
+            HttpResponseMessage,
+            HttpLinkHcoCacheEntry,
+            HttpLinkHcoCacheEntryConfiguration>
     {
         private readonly HttpClient httpClient;
         private readonly bool disposeHttpClient;
@@ -36,50 +39,43 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             this.disposeHttpClient = disposeHttpClient;
         }
 
-        public override async Task<ResolverResult<T>> ResolveLinkAsync<T>(
+        protected override async Task<CacheEntryVerificationResult<HttpResponseMessage>> VerifyIfCacheEntryCanBeUsedAsync(
             Uri uriToResolve,
-            bool forceResolve = false)
+            HttpLinkHcoCacheEntry cacheEntry,
+            DateTimeOffset assumedNow,
+            bool forceResolve)
         {
-            HttpResponseMessage response;
             bool forceRevalidate = forceResolve;
-            if (this.LinkHcoCache.TryGetValue(uriToResolve, out var cacheEntry))
+            var mustRevalidate = forceRevalidate || cacheEntry.IsRevalidationRequired(assumedNow);
+            if (!mustRevalidate)
             {
-                var mustRevalidate = forceRevalidate || cacheEntry.IsRevalidationRequired(DateTimeOffset.Now);
-                if (!mustRevalidate)
-                {
-                    var hco = this.HypermediaReader.Read(cacheEntry.LinkResponseContent);
-                    return new ResolverResult<T>(true, (T)hco, this);
-                }
-                var request = CreateRevalidationRequest(uriToResolve, cacheEntry);
-                response = await this.httpClient.SendAsync(request, CancellationToken.None);
-                if (response.StatusCode == HttpStatusCode.NotModified)
-                {
-                    this.UpdateCacheEntry(uriToResolve, response, cacheEntry);
-
-                    var hco = this.HypermediaReader.Read(cacheEntry.LinkResponseContent);
-                    return new ResolverResult<T>(true, (T)hco, this);
-                }
-                else
-                {
-                    this.LinkHcoCache.Remove(uriToResolve);
-                }
-            }
-            else
-            {
-                response = await httpClient.GetAsync(uriToResolve);
+                return new CacheEntryVerificationResult<HttpResponseMessage>.CacheEntryMayBeUsed();
             }
 
-            var cacheConfiguration = CacheEntryConfiguration.FromHttpResponse(response, DateTimeOffset.Now);
-            bool exportToString = cacheConfiguration.ShouldBeAddedToCache();
-            var (resolverResult, hcoAsString) = await HandleLinkResponseAsync<T>(response, exportToString);
-
-            if (resolverResult.Success && exportToString && !string.IsNullOrEmpty(hcoAsString))
+            var request = CreateRevalidationRequest(uriToResolve, cacheEntry);
+            var response = await this.httpClient.SendAsync(request, CancellationToken.None);
+            var assumedNowAfterRequest = DateTimeOffset.Now;
+            if (response.StatusCode == HttpStatusCode.NotModified)
             {
-                var entry = HttpLinkHcoCacheEntry.FromConfiguration(hcoAsString, cacheConfiguration);
-                this.LinkHcoCache.Set(uriToResolve, entry);
+                this.UpdateCacheEntry(uriToResolve, cacheEntry, HttpLinkHcoCacheEntryConfiguration.FromHttpResponse(response, assumedNowAfterRequest));
+                return new CacheEntryVerificationResult<HttpResponseMessage>.CacheEntryMayBeUsed();
             }
 
-            return resolverResult;
+            return new CacheEntryVerificationResult<HttpResponseMessage>.UseThisResponseInstead(response);
+        }
+
+        protected override HttpLinkHcoCacheEntryConfiguration GetCacheConfigurationFromResponse(
+            HttpResponseMessage response,
+            DateTimeOffset assumedNow)
+        {
+            return HttpLinkHcoCacheEntryConfiguration.FromHttpResponse(response, assumedNow);
+        }
+
+        protected override HttpLinkHcoCacheEntry GetCacheEntryFromConfiguration(
+            string linkResponseContent,
+            HttpLinkHcoCacheEntryConfiguration cacheConfiguration)
+        {
+            return HttpLinkHcoCacheEntry.FromConfiguration(linkResponseContent, cacheConfiguration);
         }
 
         private static HttpRequestMessage CreateRevalidationRequest(
@@ -106,10 +102,9 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
         private void UpdateCacheEntry(
             Uri uriToResolve,
-            HttpResponseMessage response,
-            HttpLinkHcoCacheEntry oldEntry)
+            HttpLinkHcoCacheEntry oldEntry,
+            HttpLinkHcoCacheEntryConfiguration newConfiguration)
         {
-            var newConfiguration = CacheEntryConfiguration.FromHttpResponse(response, DateTimeOffset.Now);
             if (!newConfiguration.HasCacheConfiguration)
             {
                 //TODO generate warning
@@ -130,9 +125,14 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
         private static bool HasUpdatedCacheConfiguration(
             HttpLinkHcoCacheEntry previousEntry,
-            CacheEntryConfiguration newEntryConfiguration)
+            HttpLinkHcoCacheEntryConfiguration newEntryConfiguration)
         {
             return !previousEntry.IsConfigurationEquivalentTo(newEntryConfiguration);
+        }
+
+        protected override async Task<HttpResponseMessage> ResolveAsync(Uri uriToResolve)
+        {
+            return await this.httpClient.GetAsync(uriToResolve);
         }
 
         protected override async Task<HttpResponseMessage> SendCommandAsync(
