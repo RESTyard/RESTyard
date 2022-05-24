@@ -26,7 +26,7 @@ namespace {{ Namespace }};
 {{- end }}
 
 {{
-    contentTypes = []
+    contentTypes = [ "application/vnd.siren+json" ]
     for document in Documents
         for link in document.Links
             if isNotEmpty link.contentType
