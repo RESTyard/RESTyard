@@ -9,7 +9,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJson
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static HypermediaResolverBuilder WithSystemTextJsonStringParser(this HypermediaResolverBuilder builder)
+        public static IHypermediaResolverBuilder WithSystemTextJsonStringParser(this IHypermediaResolverBuilder builder)
         {
             return builder.WithCustomStringParser(() => new SystemTextJsonStringParser());
         }
@@ -20,7 +20,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJson
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static HypermediaResolverBuilder WithSystemTextJsonObjectParameterSerializer(this HypermediaResolverBuilder builder, JsonSerializerOptions options = null)
+        public static IHypermediaResolverBuilder WithSystemTextJsonObjectParameterSerializer(this IHypermediaResolverBuilder builder, JsonSerializerOptions options = null)
         {
             return builder.WithCustomParameterSerializer(() => new SystemTextJsonObjectParameterSerializer(options));
         }
@@ -31,7 +31,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJson
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static HypermediaResolverBuilder WithSingleSystemTextJsonObjectParameterSerializer(this HypermediaResolverBuilder builder, JsonWriterOptions options = default)
+        public static IHypermediaResolverBuilder WithSingleSystemTextJsonObjectParameterSerializer(this IHypermediaResolverBuilder builder, JsonWriterOptions options = default)
         {
             return builder.WithCustomParameterSerializer(() => new SingleSystemTextJsonObjectParameterSerializer(options));
         }
@@ -41,7 +41,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJson
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static HypermediaResolverBuilder WithSystemTextJsonProblemReader(this HypermediaResolverBuilder builder)
+        public static IHypermediaResolverBuilder WithSystemTextJsonProblemReader(this IHypermediaResolverBuilder builder)
         {
             return builder.WithCustomProblemStringReader(() => new SystemTextJsonProblemStringReader());
         }

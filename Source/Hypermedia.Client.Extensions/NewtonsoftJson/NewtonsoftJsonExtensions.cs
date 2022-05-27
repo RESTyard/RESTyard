@@ -10,7 +10,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static HypermediaResolverBuilder WithNewtonsoftJsonStringParser(this HypermediaResolverBuilder builder)
+        public static IHypermediaResolverBuilder WithNewtonsoftJsonStringParser(this IHypermediaResolverBuilder builder)
         {
             return builder.WithCustomStringParser(() => new NewtonsoftJsonStringParser());
         }
@@ -21,7 +21,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
         /// <param name="builder"></param>
         /// <param name="formatting"></param>
         /// <returns></returns>
-        public static HypermediaResolverBuilder WithNewtonsoftJsonObjectParameterSerializer(this HypermediaResolverBuilder builder, Formatting formatting = Formatting.None)
+        public static IHypermediaResolverBuilder WithNewtonsoftJsonObjectParameterSerializer(this IHypermediaResolverBuilder builder, Formatting formatting = Formatting.None)
         {
             return builder.WithCustomParameterSerializer(() => new NewtonsoftJsonObjectParameterSerializer(formatting));
         }
@@ -33,7 +33,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
         /// <param name="builder"></param>
         /// <param name="formatting"></param>
         /// <returns></returns>
-        public static HypermediaResolverBuilder WithSingleNewtonsoftJsonObjectParameterSerializer(this HypermediaResolverBuilder builder, Formatting formatting = Formatting.None)
+        public static IHypermediaResolverBuilder WithSingleNewtonsoftJsonObjectParameterSerializer(this IHypermediaResolverBuilder builder, Formatting formatting = Formatting.None)
         {
             return builder.WithCustomParameterSerializer(() => new SingleNewtonsoftJsonObjectParameterSerializer(formatting));
         }
@@ -43,7 +43,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static HypermediaResolverBuilder WithNewtonsoftJsonProblemReader(this HypermediaResolverBuilder builder)
+        public static IHypermediaResolverBuilder WithNewtonsoftJsonProblemReader(this IHypermediaResolverBuilder builder)
         {
             return builder.WithCustomProblemStringReader(() => new NewtonsoftJsonProblemStringReader());
         }

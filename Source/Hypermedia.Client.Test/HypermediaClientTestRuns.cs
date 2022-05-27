@@ -7,6 +7,7 @@ using Bluehands.Hypermedia.Client.Authentication;
 using Bluehands.Hypermedia.Client.Extensions;
 using Bluehands.Hypermedia.Client.Extensions.SystemNetHttp;
 using Bluehands.Hypermedia.Client.Extensions.SystemTextJson;
+using Bluehands.Hypermedia.Client.Reader;
 using Bluehands.Hypermedia.Client.Resolver;
 using Bluehands.Hypermedia.Client.Test.Hypermedia;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -31,7 +32,8 @@ namespace Bluehands.Hypermedia.Client.Test
             httpClient.DefaultRequestHeaders.Authorization =
                 new UsernamePasswordCredentials("User", "Password").CreateBasicAuthHeaderValue();
             httpClient.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue("en", 1.0));
-            this.Resolver = new HypermediaResolverBuilder()
+            this.Resolver = HypermediaResolverBuilder
+                .CreateBuilder()
                 .ConfigureObjectRegister(ConfigureHypermediaObjectRegister)
                 .WithSingleSystemTextJsonObjectParameterSerializer()
                 .WithSystemTextJsonStringParser()

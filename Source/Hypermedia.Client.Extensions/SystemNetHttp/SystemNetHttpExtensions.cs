@@ -18,7 +18,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         /// <param name="disposeHttpClient">If <c>true</c>, disposes the injected HttpClient when the IHypermediaResolver is disposed</param>
         /// <returns></returns>
         public static IHypermediaResolver CreateHttpHypermediaResolver(
-            this HypermediaResolverBuilder builder,
+            this IHypermediaResolverBuilder builder,
             HttpClient httpClient,
             bool disposeHttpClient = true)
         {
@@ -39,7 +39,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         /// <param name="builder">The HypermediaResolverBuilder</param>
         /// <returns></returns>
         public static IHttpHypermediaResolverFactory CreateHttpHypermediaResolverFactory(
-            this HypermediaResolverBuilder builder)
+            this IHypermediaResolverBuilder builder)
         {
             var dependencies = builder.BuildDependencies();
             return new HttpHypermediaResolverFactory(
@@ -58,7 +58,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         /// <param name="disposeHttpClient">If <c>true</c>, disposes the injected HttpClient when the IHypermediaResolver is disposed</param>
         /// <returns></returns>
         public static IHypermediaResolver CreateCachedHttpHypermediaResolver(
-            this HypermediaResolverBuilder builder,
+            this IHypermediaResolverBuilder builder,
             HttpClient httpClient,
             ILinkHcoCache<HttpLinkHcoCacheEntry> linkHcoCache,
             bool disposeHttpClient = true)
@@ -81,7 +81,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         /// <param name="linkHcoCache">The cache to store and retrieve results of HypermediaLinks</param>
         /// <returns></returns>
         public static IHttpHypermediaResolverFactory CreatedCachedHttpHypermediaResolverFactory(
-            this HypermediaResolverBuilder builder,
+            this IHypermediaResolverBuilder builder,
             ILinkHcoCache<HttpLinkHcoCacheEntry> linkHcoCache)
         {
             var dependencies = builder.BuildDependencies();
