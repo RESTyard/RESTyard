@@ -4,7 +4,7 @@ using Bluehands.Hypermedia.Client.ParameterSerializer;
 using Bluehands.Hypermedia.Client.Reader;
 using Bluehands.Hypermedia.Client.Resolver;
 
-namespace Bluehands.Hypermedia.Client
+namespace Bluehands.Hypermedia.Client.Builder
 {
     public static class HypermediaResolverBuilder
     {

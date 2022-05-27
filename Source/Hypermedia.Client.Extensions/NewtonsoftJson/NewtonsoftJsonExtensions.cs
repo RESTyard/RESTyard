@@ -1,4 +1,5 @@
 ﻿using System;
+using Bluehands.Hypermedia.Client.Builder;
 using Newtonsoft.Json;
 
 namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson

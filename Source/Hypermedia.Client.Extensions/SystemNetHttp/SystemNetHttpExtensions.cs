@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using Bluehands.Hypermedia.Client.Authentication;
+using Bluehands.Hypermedia.Client.Builder;
 using Bluehands.Hypermedia.Client.Resolver;
 using Bluehands.Hypermedia.Client.Resolver.Caching;
 
@@ -90,6 +91,25 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                 dependencies.ParameterSerializer,
                 dependencies.ProblemReader,
                 linkHcoCache);
+        }
+
+        /// <summary>
+        /// Create a factory to build an IHypermediaResolver that communicates with the server via HTTP, with the ability to cache the results of HypermediaLinks per session. The HttpClient used for the network communication is provided as a parameter to the factory method, as well as an additional parameter used for creating the cache.
+        /// </summary>
+        /// <typeparam name="TParameter">The Parameter type to instantiate the cache</typeparam>
+        /// <param name="builder">The IHypermediaResolverBuilder</param>
+        /// <param name="createLinkHcoCache">The factory to create the cache that stores and retrieves the results of HypermediaLinks</param>
+        /// <returns></returns>
+        public static IHttpHypermediaResolverFactory<TParameter> CreateCachedHttpHypermediaResolverFactory<TParameter>(
+            this IHypermediaResolverBuilder builder,
+            Func<TParameter, ILinkHcoCache<HttpLinkHcoCacheEntry>> createLinkHcoCache)
+        {
+            var dependencies = builder.BuildDependencies();
+            return new HttpHypermediaResolverFactory<TParameter>(
+                dependencies.HypermediaReader,
+                dependencies.ParameterSerializer,
+                dependencies.ProblemReader,
+                createLinkHcoCache);
         }
 
         public static AuthenticationHeaderValue CreateBasicAuthHeaderValue(

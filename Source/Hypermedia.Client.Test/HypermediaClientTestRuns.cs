@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Bluehands.Hypermedia.Client.Authentication;
+using Bluehands.Hypermedia.Client.Builder;
 using Bluehands.Hypermedia.Client.Extensions;
 using Bluehands.Hypermedia.Client.Extensions.SystemNetHttp;
 using Bluehands.Hypermedia.Client.Extensions.SystemTextJson;

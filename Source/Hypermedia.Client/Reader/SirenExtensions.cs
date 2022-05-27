@@ -1,4 +1,6 @@
-﻿namespace Bluehands.Hypermedia.Client.Reader
+﻿using Bluehands.Hypermedia.Client.Builder;
+
+namespace Bluehands.Hypermedia.Client.Reader
 {
     public static class SirenExtensions
     {

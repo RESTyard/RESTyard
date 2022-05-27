@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using Bluehands.Hypermedia.Client.Builder;
+using System.Text.Json;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJson
 {
