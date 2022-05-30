@@ -15,9 +15,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Bluehands.Hypermedia.Relations;
 using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.Hypermedia.Attributes;
-using WebApi.HypermediaExtensions.Hypermedia.Links;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
+using WebApi.HypermediaExtensions.Hypermedia.Attributes;
+using WebApi.HypermediaExtensions.Hypermedia.Extensions;
+using WebApi.HypermediaExtensions.Hypermedia.Links;
 using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 {{- if isNotEmpty Namespace }}
@@ -123,12 +124,18 @@ public partial class {{ typeName }} : HypermediaObject
         arguments = array.add arguments arg
     end
     for entity in document.Entities
-        arg = "IEnumerable<" + entity.document + "Hto> " + (entity.collectionName | uncapitalize)
+        arg = "IEnumerable<HypermediaObjectReferenceBase> " + (entity.collectionName | uncapitalize)
+        if isNotEmpty entity.document
+            arg = "IEnumerable<" + entity.document + "Hto> " + (entity.collectionName | uncapitalize)
+        end
         arguments = array.add arguments arg
     end
     for link in document.Links
-        if !link.mandatory
+        if !link.mandatory && (isNotEmpty link.document)
             arg = "Func<bool> has" + link.rel
+            arguments = array.add arguments arg
+        else if isEmpty link.document
+            arg = (mapNullableType (!link.mandatory) "HypermediaObjectReferenceBase") + " " + (link.rel | uncapitalize)
             arguments = array.add arguments arg
         end
     end
@@ -145,19 +152,38 @@ public partial class {{ typeName }} : HypermediaObject
 {{- for operation in document.Operations }}
         this.{{ operation.name }} = {{ operation.name | uncapitalize }};
 {{- end }}
-{{- for entity in document.Entities }}
-        Entities.AddRange({{ entity.collectionName | uncapitalize }}.Select(e => new RelatedEntity(DefaultHypermediaRelations.EmbeddedEntities.Item, new HypermediaObjectReference(e))));
-{{- end }}
-{{- for link in document.Links }}
-{{- if link.mandatory }}
-        Links.Add("{{ link.rel }}", new HypermediaObjectKeyReference(typeof({{ link.document }}Hto){{ if keyProperty }}, {{ keyProperty.name | uncapitalize }}{{ end }}));
-{{- else }}
-        if (has{{ link.rel }}())
+{{-
+    for entity in document.Entities
+}}
+        Entities.AddRange("{{ entity.collectionName }}", {{ entity.collectionName | uncapitalize }});
+{{-
+    end
+}}
+{{-
+    for link in document.Links
+        linkGuard = "has" + link.rel + "()"
+        linkValue = "new HypermediaObjectKeyReference(typeof(" + link.document + "Hto))"
+        if keyProperty
+            linkValue = "new HypermediaObjectKeyReference(typeof(" + link.document + "Hto), " + (keyProperty.name | uncapitalize) + ")"
+        end
+        if isEmpty link.document
+            linkGuard = (link.rel | uncapitalize) + " is not null"
+            linkValue = link.rel | uncapitalize
+        end
+        if link.mandatory
+}}
+        Links.Add("{{ link.rel }}", {{ linkValue }});
+{{-
+        else
+}}
+        if ({{ linkGuard }})
         {
-            Links.Add("{{ link.rel }}", new HypermediaObjectKeyReference(typeof({{ link.document }}Hto){{ if keyProperty }}, {{ keyProperty.name | uncapitalize }}{{ end }}));
+            Links.Add("{{ link.rel }}", {{ linkValue }});
         }
-{{- end }}
-{{- end }}
+{{-
+        end
+    end
+}}
     }
 }
 {{ end -}}

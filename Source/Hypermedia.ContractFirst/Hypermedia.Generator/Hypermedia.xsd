@@ -66,7 +66,7 @@
 	</xs:complexType>
 	<xs:complexType name="EntityType">
 		<xs:attribute type="xs:string" name="collectionName" use="required"/>
-		<xs:attribute type="xs:string" name="document" use="required"/>
+		<xs:attribute type="xs:string" name="document" use="optional"/>
 		<xs:attribute type="xs:string" name="referencedDocument" use="optional"/>
 	</xs:complexType>
 
