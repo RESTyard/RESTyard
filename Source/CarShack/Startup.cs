@@ -32,11 +32,8 @@ namespace CarShack
             Configuration = builder.Build();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-
             app.UseCors(builder =>
                 {
                     builder
@@ -53,15 +50,19 @@ namespace CarShack
         {
             var builder = services.AddMvcCore(options =>
             {
-                options.OutputFormatters.Clear();
-                options.OutputFormatters.Add(new JsonOutputFormatter(
-                    new JsonSerializerSettings
-                    {
-                        NullValueHandling = NullValueHandling.Ignore,
-                        DefaultValueHandling = DefaultValueHandling.Ignore
-                    }, ArrayPool<char>.Shared));
+                //options.OutputFormatters.Clear();
+                //options.OutputFormatters.Add(new JsonOutputFormatter(
+                //    new JsonSerializerSettings
+                //    {
+                //        NullValueHandling = NullValueHandling.Ignore,
+                //        DefaultValueHandling = DefaultValueHandling.Ignore
+                //    }, ArrayPool<char>.Shared));
             });
-            builder.AddMvcOptions(o => { o.Filters.Add(new GlobalExceptionFilter(null)); });
+            builder.AddMvcOptions(o =>
+            {
+                o.Filters.Add(new GlobalExceptionFilter(null));
+                o.EnableEndpointRouting = false;
+            });
 
             // Initializes and adds the Hypermedia Extensions
             builder.AddHypermediaExtensions(
