@@ -132,7 +132,9 @@ public partial class {{ typeName }} : HypermediaObject
     end
     for link in document.Links
         if !link.mandatory && (isNotEmpty link.document)
-            arg = "Func<bool> has" + link.rel
+            arg = "bool has" + link.rel
+            arguments = array.add arguments arg
+            arg = "object? " + (link.rel | uncapitalize) + "Key"
             arguments = array.add arguments arg
         else if isEmpty link.document
             arg = (mapNullableType (!link.mandatory) "HypermediaObjectReferenceBase") + " " + (link.rel | uncapitalize)
@@ -161,11 +163,8 @@ public partial class {{ typeName }} : HypermediaObject
 }}
 {{-
     for link in document.Links
-        linkGuard = "has" + link.rel + "()"
-        linkValue = "new HypermediaObjectKeyReference(typeof(" + link.document + "Hto))"
-        if keyProperty
-            linkValue = "new HypermediaObjectKeyReference(typeof(" + link.document + "Hto), " + (keyProperty.name | uncapitalize) + ")"
-        end
+        linkGuard = "has" + link.rel
+        linkValue = "new HypermediaObjectKeyReference(typeof(" + link.document + "Hto), " + (link.rel | uncapitalize) + "Key)"
         if isEmpty link.document
             linkGuard = (link.rel | uncapitalize) + " is not null"
             linkValue = link.rel | uncapitalize
