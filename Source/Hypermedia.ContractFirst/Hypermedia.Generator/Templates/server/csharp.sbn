@@ -131,12 +131,14 @@ public partial class {{ typeName }} : HypermediaObject
         arguments = array.add arguments arg
     end
     for link in document.Links
-        if !link.mandatory && (isNotEmpty link.document)
-            arg = "bool has" + link.rel
-            arguments = array.add arguments arg
+        if isNotEmpty link.document
+            if !link.mandatory
+                arg = "bool has" + link.rel
+                arguments = array.add arguments arg
+            end
             arg = "object? " + (link.rel | uncapitalize) + "Key"
             arguments = array.add arguments arg
-        else if isEmpty link.document
+        else
             arg = (mapNullableType (!link.mandatory) "HypermediaObjectReferenceBase") + " " + (link.rel | uncapitalize)
             arguments = array.add arguments arg
         end
