@@ -341,7 +341,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "[\n\t{\n\t\t\"FavoriteCustomer\":\n\t\t{\n\t\t\t\"Customer\":\"http://localhost:5000/Customers/6\"\n\t\t\t\n\t\t}\n\t\t\n\t}\n]"
+					"raw": "[\n\t{\n\t\t\"MarkAsFavoriteParameters\":\n\t\t{\n\t\t\t\"Customer\":\"http://localhost:5000/Customers/6\"\n\t\t\t\n\t\t}\n\t\t\n\t}\n]"
 				},
 				"url": {
 					"raw": "http://localhost:5000/Customers/MyFavoriteCustomers",

@@ -115,7 +115,7 @@ public partial class {{ typeName }} : {{ iff document.isQueryResult "HypermediaQ
 {{ if property.hidden ~}}
     [FormatterIgnoreHypermediaProperty]
 {{ end ~}}
-    public {{ mapNullableType (!property.mandatory) property.type }} {{ property.name }} { get; init; }
+    public {{ mapNullableType (!property.mandatory) property.type }} {{ property.name }} { get; set; }
 {{ end }}
 {{- for operation in document.Operations }}
     [HypermediaAction(Name = "{{ operation.name }}", Title = "{{operation.title}}")]

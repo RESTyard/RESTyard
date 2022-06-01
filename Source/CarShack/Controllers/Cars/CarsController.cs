@@ -1,4 +1,5 @@
-﻿using CarShack.Hypermedia.Cars;
+﻿using CarShack.Hypermedia;
+using CarShack.Hypermedia.Cars;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.HypermediaExtensions.Exceptions;
@@ -10,14 +11,14 @@ namespace CarShack.Controllers.Cars
     [Route("Cars/")]
     public class CarsController : Controller
     {
-        private readonly HypermediaCarsRoot carsRoot;
+        private readonly HypermediaCarsRootHto carsRoot;
 
-        public CarsController(HypermediaCarsRoot carsRoot)
+        public CarsController(HypermediaCarsRootHto carsRoot)
         {
             this.carsRoot = carsRoot;
         }
         
-        [HttpGetHypermediaObject("", typeof(HypermediaCarsRoot))]
+        [HttpGetHypermediaObject("", typeof(HypermediaCarsRootHto))]
         public ActionResult GetRootDocument()
         {
             return Ok(carsRoot);
@@ -25,13 +26,13 @@ namespace CarShack.Controllers.Cars
 
         // example route with more than one placeholder variable. Mapping of object keys to those parameters when creating links
         // is handled by using KeyAttribute on HypermediaCar instead of passing RouteKeyProducer type in HttpGetHypermediaObject attribute.
-        [HttpGetHypermediaObject("{brand}/{key:int}", typeof(HypermediaCar))]
-        public ActionResult GetEntity(string brand, int key)
+        [HttpGetHypermediaObject("{brand}/{id:int}", typeof(HypermediaCarHto))]
+        public ActionResult GetEntity(string brand, int id)
         {
             try
             {
                 // short cut for example, we should actually call the Car repo and get a Car domain object
-                var result = new HypermediaCar(brand, key);
+                var result = new HypermediaCarHto(brand, id);
                 return Ok(result);
             }
             catch (EntityNotFoundException)

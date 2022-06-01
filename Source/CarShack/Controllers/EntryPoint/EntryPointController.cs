@@ -1,4 +1,4 @@
-﻿using CarShack.Hypermedia.EntryPoint;
+﻿using CarShack.Hypermedia;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
 
@@ -7,16 +7,16 @@ namespace CarShack.Controllers.EntryPoint
     [Route("[controller]/")]
     public class EntryPointController : Controller
     {
-        private readonly HypermediaEntryPoint hypermediaEntryPoint;
+        private readonly HypermediaEntrypointHto hypermediaEntryPoint;
 
-        public EntryPointController(HypermediaEntryPoint hypermediaEntryPoint)
+        public EntryPointController(HypermediaEntrypointHto hypermediaEntryPoint)
         {
             this.hypermediaEntryPoint = hypermediaEntryPoint;
         }
 
         // Initial route to the API. References to HypermediaEntryPoint type will be resolved to this route.
         // Also an optional name is given to the route for debugging.
-        [HttpGetHypermediaObject("", typeof(HypermediaEntryPoint), Name = RouteNames.EntryPoint.Root)]
+        [HttpGetHypermediaObject("", typeof(HypermediaEntrypointHto), Name = RouteNames.EntryPoint.Root)]
         public ActionResult GetRootDocument()
         {
             return Ok(hypermediaEntryPoint);

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using CarShack.Domain.Customer;
-using CarShack.Hypermedia.Customers;
+using CarShack.Hypermedia;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
@@ -15,10 +15,10 @@ namespace CarShack.Controllers.Customers
     [Route("Customers/")]
     public class CustomersRootController : Controller
     {
-        private readonly HypermediaCustomersRoot customersRoot;
+        private readonly HypermediaCustomersRootHto customersRoot;
         private readonly ICustomerRepository customerRepository;
 
-        public CustomersRootController(HypermediaCustomersRoot customersRoot, ICustomerRepository customerRepository)
+        public CustomersRootController(HypermediaCustomersRootHto customersRoot, ICustomerRepository customerRepository)
         {
             this.customersRoot = customersRoot;
             this.customerRepository = customerRepository;
@@ -26,14 +26,14 @@ namespace CarShack.Controllers.Customers
 
 #region HypermediaObjects
         // Route to the HypermediaCustomersRoot. References to HypermediaCustomersRoot type will be resolved to this route.
-        [HttpGetHypermediaObject("", typeof(HypermediaCustomersRoot))]
+        [HttpGetHypermediaObject("", typeof(HypermediaCustomersRootHto))]
         public ActionResult GetRootDocument()
         {
             return Ok(customersRoot);
         }
 
         // Building Queries using the CreateQuery will link to this route.
-        [HttpGetHypermediaObject("Query", typeof(HypermediaCustomerQueryResult))]
+        [HttpGetHypermediaObject("Query", typeof(HypermediaCustomerQueryResultHto))]
         public async Task<ActionResult> Query([FromQuery] CustomerQuery query)
         {
             if (query == null)
@@ -45,10 +45,10 @@ namespace CarShack.Controllers.Customers
             var resultReferences = new List<HypermediaObjectReferenceBase>();
             foreach (var customer in queryResult.Entities)
             {
-                resultReferences.Add(new HypermediaObjectReference(new HypermediaCustomer(customer)));
+                resultReferences.Add(new HypermediaObjectReference(customer.ToHto()));
             }
 
-            var result = new HypermediaCustomerQueryResult(resultReferences, queryResult.TotalCountOfEnties, query);
+            var result = new HypermediaCustomerQueryResultHto(resultReferences, queryResult.TotalCountOfEnties, query);
             var navigationQuerys = NavigationQuerysBuilder.Build(query, queryResult);
             result.AddNavigationQueries(navigationQuerys);
            
@@ -58,7 +58,7 @@ namespace CarShack.Controllers.Customers
 
 #region Actions
         // Provides a link to the result Query.
-        [HttpPostHypermediaAction("Queries", typeof(HypermediaAction<CustomerQuery>))]
+        [HttpPostHypermediaAction("Queries", typeof(CreateQuery))]
         public ActionResult NewQueryAction(CustomerQuery query)
         {
             if (query == null)
@@ -66,16 +66,16 @@ namespace CarShack.Controllers.Customers
                 return this.Problem(ProblemJsonBuilder.CreateBadParameters());
             }
 
-            if (!customersRoot.CreateQueryAction.CanExecute())
+            if (!customersRoot.CreateQuery.CanExecute())
             {
                 return this.CanNotExecute();
             }
 
             // Will create a Location header with a URI to the result.
-            return this.CreatedQuery(typeof(HypermediaCustomerQueryResult), query);
+            return this.CreatedQuery(typeof(HypermediaCustomerQueryResultHto), query);
         }
 
-        [HttpPostHypermediaAction("CreateCustomer", typeof(HypermediaFunction<CreateCustomerParameters, Task<Customer>>))]
+        [HttpPostHypermediaAction("CreateCustomer", typeof(CreateCustomer))]
         public async Task<ActionResult> NewCustomerAction(CreateCustomerParameters createCustomerParameters)
         {
             if (createCustomerParameters == null)
@@ -83,10 +83,10 @@ namespace CarShack.Controllers.Customers
                 return this.Problem(ProblemJsonBuilder.CreateBadParameters());
             }
 
-            var createdCustomer = await customersRoot.CreateCustomerAction.Execute(createCustomerParameters).ConfigureAwait(false);
+            var createdCustomer = await customersRoot.CreateCustomer.ExecuteAsync(createCustomerParameters).ConfigureAwait(false);
 
             // Will create a Location header with a URI to the result.
-            return this.Created(new HypermediaCustomer(createdCustomer));
+            return this.Created(createdCustomer);
         }
 #endregion
     }

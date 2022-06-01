@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using CarShack.Domain.Customer;
+using CarShack.Hypermedia;
 using CarShack.Hypermedia.Cars;
-using CarShack.Hypermedia.Customers;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.HypermediaExtensions.ErrorHandling;
@@ -27,13 +27,13 @@ namespace CarShack.Controllers.Customers
         // Route to the HypermediaCustomer. References to HypermediaCustomer type will be resolved to this route.
         // This RouteTemplate also contains a key, so a RouteKeyProducer can be provided. In this case the RouteKeyProducer
         // could be ommited and KeyAttribute could be used on HypermediaCustomer instead.
-        [HttpGetHypermediaObject("{key:int}", typeof(HypermediaCustomer), typeof(CustomerRouteKeyProducer))]
+        [HttpGetHypermediaObject("{key:int}", typeof(HypermediaCustomerHto), typeof(CustomerRouteKeyProducer))]
         public async Task<ActionResult> GetEntity(int key)
         {
             try
             {
                 var customer = await customerRepository.GetEnitityByKeyAsync(key).ConfigureAwait(false);
-                var result = new HypermediaCustomer(customer);
+                var result = HypermediaCustomerHto.FromDomain(customer);
                 return Ok(result);
             }
             catch (EntityNotFoundException)
@@ -44,14 +44,14 @@ namespace CarShack.Controllers.Customers
         #endregion
 
         #region Actions
-        [HttpPostHypermediaAction("MyFavoriteCustomers", typeof(HypermediaActionCustomerMarkAsFavorite))]
-        public async Task<ActionResult> MarkAsFavoriteAction([HypermediaActionParameterFromBody]FavoriteCustomer favoriteCustomer)
+        [HttpPostHypermediaAction("MyFavoriteCustomers", typeof(MarkAsFavorite))]
+        public async Task<ActionResult> MarkAsFavoriteAction([HypermediaActionParameterFromBody]MarkAsFavoriteParameters favoriteCustomer)
         {
             if (favoriteCustomer == null)
             {
                 var problem = new ProblemJson
                 {
-                    Title = $"Can not use provided object of type '{typeof(FavoriteCustomer)}'",
+                    Title = $"Can not use provided object of type '{typeof(MarkAsFavoriteParameters)}'",
                     Detail = "Json or contained links might be invalid",
                     ProblemType = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
                     StatusCode = 422 // Unprocessable Entity
@@ -62,8 +62,8 @@ namespace CarShack.Controllers.Customers
             try
             {
                 var customer = await customerRepository.GetEnitityByKeyAsync(favoriteCustomer.CustomerId).ConfigureAwait(false);
-                var hypermediaCustomer = new HypermediaCustomer(customer);
-                hypermediaCustomer.MarkAsFavoriteAction.Execute(favoriteCustomer);
+                var hypermediaCustomer = customer.ToHto();
+                hypermediaCustomer.MarkAsFavorite.Execute(favoriteCustomer);
                 return Ok();
             }
             catch (EntityNotFoundException)
@@ -74,7 +74,7 @@ namespace CarShack.Controllers.Customers
             {
                 var problem = new ProblemJson()
                 {
-                    Title = $"Can not use provided object of type '{typeof(FavoriteCustomer)}'",
+                    Title = $"Can not use provided object of type '{typeof(MarkAsFavoriteParameters)}'",
                     Detail = e.Message,
                     ProblemType = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
                     StatusCode = 422 // Unprocessable Entity
@@ -87,14 +87,14 @@ namespace CarShack.Controllers.Customers
             }
         }
 
-        [HttpPostHypermediaAction("{key:int}/BuysCar", typeof(HypermediaActionCustomerBuysCar))]
-        public async Task<ActionResult> BuyCar(int key, HypermediaActionCustomerBuysCar.Parameter parameter)
+        [HttpPostHypermediaAction("{key:int}/BuysCar", typeof(BuyCar))]
+        public async Task<ActionResult> BuyCar(int key, BuyCarParameters parameter)
         {
             if (parameter == null)
             {
                 var problem = new ProblemJson
                 {
-                    Title = $"Can not use provided object of type '{typeof(HypermediaActionCustomerBuysCar.Parameter)}'",
+                    Title = $"Can not use provided object of type '{typeof(BuyCarParameters)}'",
                     Detail = "Json or contained links might be invalid",
                     ProblemType = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
                     StatusCode = 422 // Unprocessable Entity
@@ -105,7 +105,7 @@ namespace CarShack.Controllers.Customers
             try
             {
                 //shortcut for get car from repository
-                var car = new HypermediaCar(parameter.Brand, parameter.CarId);
+                var car = new HypermediaCarHto(parameter.Brand, parameter.CarId);
                 var customer = await customerRepository.GetEnitityByKeyAsync(key).ConfigureAwait(false);
                 //do what has to be done
                 return Ok();
@@ -120,7 +120,7 @@ namespace CarShack.Controllers.Customers
             }
         }
 
-        [HttpPostHypermediaAction("{key:int}/Moves", typeof(HypermediaActionCustomerMoveAction), typeof(CustomerRouteKeyProducer))]
+        [HttpPostHypermediaAction("{key:int}/Moves", typeof(CustomerMove), typeof(CustomerRouteKeyProducer))]
         public async Task<ActionResult> CustomerMove(int key, NewAddress newAddress)
         {
             if (newAddress == null)
@@ -131,8 +131,8 @@ namespace CarShack.Controllers.Customers
             try
             {
                 var customer = await customerRepository.GetEnitityByKeyAsync(key).ConfigureAwait(false);
-                var hypermediaCustomer = new HypermediaCustomer(customer);
-                hypermediaCustomer.MoveAction.Execute(newAddress);
+                var hypermediaCustomer = customer.ToHto();
+                hypermediaCustomer.CustomerMove.Execute(newAddress);
                 return Ok();
             }
             catch (EntityNotFoundException)

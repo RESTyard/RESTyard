@@ -6,34 +6,6 @@ using WebApi.HypermediaExtensions.Util.Repository;
 
 namespace CarShack.Domain.Customer
 {
-    public class CustomerQuery : QueryBase<CustomerSortProperties, CustomerFilter>
-    {
-        // required by Web Api to instanciate when a route is called
-        public CustomerQuery()
-        {
-        }
-
-        // copy constructor
-        public CustomerQuery(CustomerQuery customerQuery) : base(customerQuery)
-        {
-        }
-
-        public override QueryBase<CustomerSortProperties, CustomerFilter> Clone()
-        {
-            return new CustomerQuery(this);
-        }
-    }
-
-    // Options for sorting
-    [TypeConverter(typeof(AttributedEnumTypeConverter<CustomerSortProperties>))]
-    public enum CustomerSortProperties
-    {
-        [EnumMember(Value = "Age")]
-        Age,
-
-        [EnumMember(Value = "Name")]
-        Name
-    }
 
     // Options for filtering
     public class CustomerFilter : IQueryFilter
