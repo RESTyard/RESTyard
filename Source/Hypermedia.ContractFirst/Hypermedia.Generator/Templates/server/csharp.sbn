@@ -19,6 +19,7 @@ using WebApi.HypermediaExtensions.Hypermedia.Actions;
 using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 using WebApi.HypermediaExtensions.Hypermedia.Extensions;
 using WebApi.HypermediaExtensions.Hypermedia.Links;
+using WebApi.HypermediaExtensions.Query;
 using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 {{- if isNotEmpty Namespace }}
@@ -96,7 +97,7 @@ public class {{ operation.name }} : {{ actionType }}
 
 {{- typeName = document.name + "Hto" }}
 [HypermediaObject(Title = "{{ document.title }}", Classes = new string[]{ {{ for class in document.Classifications }}"{{ class.class }}"{{ if !for.last }}, {{ end }}{{ end }} })]
-public partial class {{ typeName }} : HypermediaObject
+public partial class {{ typeName }} : {{ iff document.isQueryResult "HypermediaQueryResult" "HypermediaObject" }}
 {
 {{- keyProperty = null
     for property in document.Properties }}
@@ -143,12 +144,16 @@ public partial class {{ typeName }} : HypermediaObject
             arguments = array.add arguments arg
         end
     end
+    if document.isQueryResult
+        arg = "IHypermediaQuery query"
+        arguments = array.add arguments arg
+    end
 }}
     public {{ typeName }}(
 {{- for argument in arguments }}
         {{ argument }}{{ if !for.last }},{{ end }}
 {{- end }}
-    ) : base(hasSelfLink: {{ document.hasSelfLink }})
+    ) : base({{ if document.isQueryResult }}query{{ else }}hasSelfLink: {{ document.hasSelfLink }}{{ end }})
     {
 {{- for property in document.Properties }}
         this.{{ property.name }} = {{ property.name | uncapitalize }};
