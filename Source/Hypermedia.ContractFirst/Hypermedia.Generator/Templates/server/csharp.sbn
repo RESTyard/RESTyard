@@ -90,8 +90,15 @@ public class {{ operation.name }} : {{ actionType }}
                 executeArg = "Func<" + (mapString operation.parameterTypeName "%s, ") + operation.resultDocument + "Hto>"
             end
             executeArg += " execute" + operation.name
+
+            parameterArg = ""
+            parameterValue = ""
+            if isNotEmpty operation.parameterTypeName
+                parameterArg += ", " + operation.parameterTypeName + "? prefilledValues = default"
+                parameterValue += ", prefilledValues";
+            end
 }}
-    public {{ operation.name }}({{ canExecuteArg }}, {{ executeArg }}) : base(canExecute{{ operation.name }}, execute{{ operation.name }}) { }
+    public {{ operation.name }}({{ canExecuteArg }}, {{ executeArg }}{{ parameterArg }}) : base(canExecute{{ operation.name }}, execute{{ operation.name }}{{ parameterValue }}) { }
 }
 {{      end }}
 
@@ -137,6 +144,10 @@ public partial class {{ typeName }} : {{ iff document.isQueryResult "HypermediaQ
                 arg = "bool has" + link.rel
                 arguments = array.add arguments arg
             end
+            if isNotEmpty link.query
+                arg = link.query + " " + (link.rel | uncapitalize) + "Query"
+                arguments = array.add arguments arg
+            end
             arg = "object? " + (link.rel | uncapitalize) + "Key"
             arguments = array.add arguments arg
         else
@@ -171,7 +182,7 @@ public partial class {{ typeName }} : {{ iff document.isQueryResult "HypermediaQ
 {{-
     for link in document.Links
         linkGuard = "has" + link.rel
-        linkValue = "new HypermediaObjectKeyReference(typeof(" + link.document + "Hto), " + (link.rel | uncapitalize) + "Key)"
+        linkValue = "new HypermediaObject" + (iff (isNotEmpty link.query) "Query" "Key") + "Reference(typeof(" + link.document + "Hto), " + (iff (isNotEmpty link.query) ((link.rel | uncapitalize) + "Query, ") "") + (link.rel | uncapitalize) + "Key)"
         if isEmpty link.document
             linkGuard = (link.rel | uncapitalize) + " is not null"
             linkValue = link.rel | uncapitalize
