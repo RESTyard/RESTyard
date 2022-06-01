@@ -47,7 +47,7 @@ class {{ parametersType.typeName }} {
 
     for document in Documents
 }}
-class {{ document.name }}Hco {
+export class {{ document.name }}Hco {
 {{- for property in document.Properties }}
     public get {{ property.name | uncapitalize }}(): {{ mapNullableType (!property.mandatory) property.type }} {
         return this.sirenObject.getProperty{{ iff property.mandatory "" "Nullable" }}<{{ mapType property.type }}>("{{ property.name }}");
@@ -106,4 +106,3 @@ class {{ document.name }}Hco {
     constructor(private readonly sirenObject: SirenObject) { }
 }
 {{ end }}
-export {};
