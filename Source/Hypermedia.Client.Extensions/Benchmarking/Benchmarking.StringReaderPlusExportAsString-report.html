@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmarking.StringReaderPlusExportAsString-20220519-145123</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.13.1, OS=Windows 10.0.19044.1706 (21H2)
+Intel Core i7-3770 CPU 3.40GHz (Ivy Bridge), 1 CPU, 8 logical and 4 physical cores
+.NET SDK=6.0.202
+  [Host]     : .NET 5.0.16 (5.0.1622.16705), X64 RyuJIT
+  Job-ZPMSHE : .NET 5.0.16 (5.0.1622.16705), X64 RyuJIT
+</code></pre>
+<pre><code>InvocationCount=1  UnrollFactor=1  
+</code></pre>
+
+<table>
+<thead><tr><th>                 Method</th><th>                                                                    Parser</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen 0</th><th>Gen 1</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>ParseFromStringAsync</td><td>Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson.NewtonsoftJsonStringParser</td><td>114.79 ms</td><td>2.215 ms</td><td>2.462 ms</td><td>5000.0000</td><td>1000.0000</td><td>30 MB</td>
+</tr><tr><td>ParseFromStreamAsync</td><td>Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson.NewtonsoftJsonStringParser</td><td>114.13 ms</td><td>2.025 ms</td><td>1.691 ms</td><td>5000.0000</td><td>1000.0000</td><td>28 MB</td>
+</tr><tr><td>ParseFromStreamAndExportAsync</td><td>Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson.NewtonsoftJsonStringParser</td><td>121.91 ms</td><td>2.435 ms</td><td>2.606 ms</td><td>5000.0000</td><td>1000.0000</td><td>30 MB</td>
+</tr><tr><td>ParseFromStringAsync</td><td>Bluehands.Hypermedia.Client.Extensions.SystemTextJson.SystemTextJsonStringParser</td><td>92.70 ms</td><td>1.065 ms</td><td>0.944 ms</td><td>3000.0000</td><td>1000.0000</td><td>24 MB</td>
+</tr><tr><td>ParseFromStreamAsync</td><td>Bluehands.Hypermedia.Client.Extensions.SystemTextJson.SystemTextJsonStringParser</td><td>91.10 ms</td><td>1.724 ms</td><td>2.180 ms</td><td>3000.0000</td><td>1000.0000</td><td>21 MB</td>
+</tr><tr><td>ParseFromStreamAndExportAsync</td><td>Bluehands.Hypermedia.Client.Extensions.SystemTextJson.SystemTextJsonStringParser</td><td>91.32 ms</td><td>1.779 ms</td><td>1.577 ms</td><td>3000.0000</td><td>-</td><td>22 MB</td>
+</tr></tbody></table>
+</body>
+</html>

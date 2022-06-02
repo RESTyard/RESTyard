@@ -1,5 +1,6 @@
 ﻿using System;
 using Bluehands.Hypermedia.Client.Resolver;
+using Bluehands.Hypermedia.Client.Resolver.Caching;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 {
@@ -17,7 +18,10 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         {
             return builder.WithCustomHypermediaResolver((serializer, problemReader) =>
             {
-                var resolver = new HttpHypermediaResolver(serializer, problemReader, NoLinkCache<string>.Instance);
+                var resolver = new HttpHypermediaResolver(
+                    serializer,
+                    problemReader,
+                    NoLinkCache<HttpLinkHcoCacheEntry>.Instance);
                 configure(resolver);
                 return resolver;
             });
@@ -32,12 +36,15 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
         /// <returns></returns>
         public static HypermediaClientBuilder WithCachedHttpHypermediaResolver(
             this HypermediaClientBuilder builder,
-            ILinkHcoCache<string> linkHcoCache,
+            ILinkHcoCache<HttpLinkHcoCacheEntry> linkHcoCache,
             Action<IHttpHypermediaResolverConfiguration> configure)
         {
             return builder.WithCustomHypermediaResolver((serializer, problemReader) =>
             {
-                var resolver = new HttpHypermediaResolver(serializer, problemReader, linkHcoCache);
+                var resolver = new HttpHypermediaResolver(
+                    serializer,
+                    problemReader,
+                    linkHcoCache);
                 configure(resolver);
                 return resolver;
             });
