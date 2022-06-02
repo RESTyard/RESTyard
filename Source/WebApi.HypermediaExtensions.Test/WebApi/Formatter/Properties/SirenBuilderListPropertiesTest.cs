@@ -5,6 +5,8 @@ using Newtonsoft.Json.Linq;
 
 namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
 {
+    using HypermediaExtensions.WebApi.RouteResolver;
+
     [TestClass]
     public class SirenBuilderListPropertiesTest : SirenBuilderTestBase
     {
@@ -24,7 +26,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
         public void SerializeNullListProperty()
         {
             var routeName = typeof(HypermediaObjectWithListProperties).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(HypermediaObjectWithListProperties), routeName);
+            RouteRegister.AddHypermediaObjectRoute(typeof(HypermediaObjectWithListProperties), routeName, HttpMethod.GET);
 
             var ho = new HypermediaObjectWithListProperties();
             var siren = SirenConverter.ConvertToJson(ho);
@@ -43,7 +45,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
         public void SerializeNullListPropertyNoNullPropertiesTest()
         {
             var routeName = typeof(HypermediaObjectWithListProperties).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(HypermediaObjectWithListProperties), routeName);
+            RouteRegister.AddHypermediaObjectRoute(typeof(HypermediaObjectWithListProperties), routeName, HttpMethod.GET);
 
             var ho = new HypermediaObjectWithListProperties();
             var siren = SirenConverterNoNullProperties.ConvertToJson(ho);
@@ -62,7 +64,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
         public void SerializeEmptyListProperties()
         {
             var routeName = typeof(HypermediaObjectWithListProperties).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(HypermediaObjectWithListProperties), routeName);
+            RouteRegister.AddHypermediaObjectRoute(typeof(HypermediaObjectWithListProperties), routeName, HttpMethod.GET);
 
             var ho = new HypermediaObjectWithListProperties();
             ho.AValueList = new List<int>();
@@ -85,7 +87,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
         public void SerializeListProperties()
         {
             var routeName = typeof(HypermediaObjectWithListProperties).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(HypermediaObjectWithListProperties), routeName);
+            RouteRegister.AddHypermediaObjectRoute(typeof(HypermediaObjectWithListProperties), routeName, HttpMethod.GET);
 
             var ho = new HypermediaObjectWithListProperties();
             ho.AValueList = new List<int> { 3, 5, 7 };

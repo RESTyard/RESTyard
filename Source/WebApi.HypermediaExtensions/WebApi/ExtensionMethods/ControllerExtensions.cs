@@ -2,7 +2,6 @@
 using System.Net;
 using Bluehands.Hypermedia.MediaTypes;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using WebApi.HypermediaExtensions.ErrorHandling;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Hypermedia.Links;
@@ -18,7 +17,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// <param name="controller"></param>
         /// <param name="hypermediaObject">The created HypermediaObject</param>
         /// <returns></returns>
-        public static ActionResult Created(this Microsoft.AspNetCore.Mvc.Controller controller, HypermediaObject hypermediaObject)
+        public static ActionResult Created(this ControllerBase controller, HypermediaObject hypermediaObject)
         {
             return controller.Ok(new HypermediaEntityLocation(new HypermediaObjectReference(hypermediaObject), HttpStatusCode.Created));
         }
@@ -29,7 +28,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// <param name="controller"></param>
         /// <param name="hypermediaObjectReferenceBase">Reference to the created HypermediaObject</param>
         /// <returns></returns>
-        public static ActionResult Created(this Microsoft.AspNetCore.Mvc.Controller controller, HypermediaObjectReferenceBase hypermediaObjectReferenceBase)
+        public static ActionResult Created(this ControllerBase controller, HypermediaObjectReferenceBase hypermediaObjectReferenceBase)
         {
             return controller.Ok(new HypermediaEntityLocation(hypermediaObjectReferenceBase, HttpStatusCode.Created));
         }
@@ -41,7 +40,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// <param name="queryType">The type of the QueryResult which will be returned when following the Location header.</param>
         /// <param name="queryParameter">The query which was requested. Used by the Formatter to produce the Location header.</param>
         /// <returns></returns>
-        public static ActionResult CreatedQuery(this Microsoft.AspNetCore.Mvc.Controller controller, Type queryType, IHypermediaQuery queryParameter = null)
+        public static ActionResult CreatedQuery(this ControllerBase controller, Type queryType, IHypermediaQuery queryParameter = null)
         {
             return controller.Ok(new HypermediaQueryLocation(queryType, queryParameter));
         }
@@ -52,7 +51,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// <param name="controller"></param>
         /// <param name="problemJson">The Problem description.</param>
         /// <returns></returns>
-        public static ActionResult Problem(this Microsoft.AspNetCore.Mvc.Controller controller, ProblemJson problemJson)
+        public static ActionResult Problem(this ControllerBase controller, ProblemJson problemJson)
         {
             var objectResult = new ObjectResult(problemJson) {StatusCode = problemJson.StatusCode};
             objectResult.ContentTypes.Add(DefaultMediaTypes.ProblemJson);
@@ -65,7 +64,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// <param name="controller"></param>
         /// <param name="problemJson">Optional Problem Json.</param>
         /// <returns></returns>
-        public static ActionResult UnprocessableEntity(this Microsoft.AspNetCore.Mvc.Controller controller, ProblemJson problemJson = null)
+        public static ActionResult UnprocessableEntity(this ControllerBase controller, ProblemJson problemJson = null)
         {
             if (problemJson == null)
             {
@@ -86,7 +85,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// <param name="controller"></param>
         /// <param name="problemJson"></param>
         /// <returns></returns>
-        public static ActionResult CanNotExecute(this Microsoft.AspNetCore.Mvc.Controller controller, ProblemJson problemJson = null)
+        public static ActionResult CanNotExecute(this ControllerBase controller, ProblemJson problemJson = null)
         {
             if (problemJson == null)
             {

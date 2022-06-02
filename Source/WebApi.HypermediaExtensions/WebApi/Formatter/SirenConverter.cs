@@ -143,8 +143,9 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
                 jAction.Add("title", hypermediaActionAttribute.Title);
             }
 
-            jAction.Add("method", "POST");
-            jAction.Add("href", routeResolver.ActionToRoute(hypermediaObject, actionBase));
+            var resolvedRoute = this.routeResolver.ActionToRoute(hypermediaObject, actionBase);
+            jAction.Add("method", resolvedRoute.HttpMethod.ToString());//TODO get method from rout resolver
+            jAction.Add("href", resolvedRoute.Url);
         }
 
         private static HypermediaActionAttribute GetHypermediaActionAttribute(PropertyInfo hypermediaActionPropertyInfo)
@@ -175,10 +176,13 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
 
             if (!routeResolver.TryGetRouteByType(parameterType, out var classRoute))
             {
-                classRoute = routeResolver.RouteUrl(RouteNames.ActionParameterTypes, new { parameterTypeName = parameterType.BeautifulName() });
+                var generatedRouteUrl = routeResolver.RouteUrl(RouteNames.ActionParameterTypes, new { parameterTypeName = parameterType.BeautifulName() });
+                jfield.Add("class", new JArray { generatedRouteUrl });
             }
-
-            jfield.Add("class", new JArray { classRoute });
+            else
+            {
+                jfield.Add("class", new JArray { classRoute.Url });
+            }
 
             AddPrefilledValue(jfield, hypermediaAction);
 
@@ -266,9 +270,9 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
         {
             var resolvedAdress = routeResolver.ReferenceToRoute(reference);
             var query = reference.GetQuery();
-            resolvedAdress += queryStringBuilder.CreateQueryString(query);
+            var resolvedRoute = resolvedAdress.Url + queryStringBuilder.CreateQueryString(query);
 
-            return resolvedAdress;
+            return resolvedRoute;
         }
 
         private void AddProperties(HypermediaObject hypermediaObject, JObject sirenJson)

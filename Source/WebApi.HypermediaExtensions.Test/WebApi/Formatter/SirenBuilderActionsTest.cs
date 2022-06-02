@@ -9,6 +9,8 @@ using WebApi.HypermediaExtensions.Hypermedia.Attributes;
 
 namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
 {
+    using HypermediaExtensions.WebApi.RouteResolver;
+
     [TestClass]
     public class SirenBuilderActionsTest : SirenBuilderTestBase
     {
@@ -28,25 +30,25 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
         public void ActionsTest()
         {
             var routeName = typeof(ActionsHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(ActionsHypermediaObject), routeName);
+            RouteRegister.AddHypermediaObjectRoute(typeof(ActionsHypermediaObject), routeName, HttpMethod.GET);
 
             var routeNameHypermediaActionNotExecutable = typeof(HypermediaActionNotExecutable).Name + "_Route";
-            RouteRegister.AddActionRoute(typeof(HypermediaActionNotExecutable), routeNameHypermediaActionNotExecutable);
+            RouteRegister.AddActionRoute(typeof(HypermediaActionNotExecutable), routeNameHypermediaActionNotExecutable, HttpMethod.POST);
 
             var routeNameHypermediaActionNoArgument = typeof(HypermediaActionNoArgument).Name + "_Route";
-            RouteRegister.AddActionRoute(typeof(HypermediaActionNoArgument), routeNameHypermediaActionNoArgument);
+            RouteRegister.AddActionRoute(typeof(HypermediaActionNoArgument), routeNameHypermediaActionNoArgument, HttpMethod.POST);
 
             var routeNameHypermediaActionWithArgument = typeof(HypermediaActionWithArgument).Name + "_Route";
-            RouteRegister.AddActionRoute(typeof(HypermediaActionWithArgument), routeNameHypermediaActionWithArgument);
+            RouteRegister.AddActionRoute(typeof(HypermediaActionWithArgument), routeNameHypermediaActionWithArgument, HttpMethod.POST);
 
             var routeNameHypermediaActionWithTypedArgument = typeof(HypermediaFunctionWithTypedArgument).Name + "_Route";
-            RouteRegister.AddActionRoute(typeof(HypermediaFunctionWithTypedArgument), routeNameHypermediaActionWithTypedArgument);
+            RouteRegister.AddActionRoute(typeof(HypermediaFunctionWithTypedArgument), routeNameHypermediaActionWithTypedArgument, HttpMethod.POST);
 
             var routeNameHypermediaActionFuncNoArgument = typeof(HypermediaFunctionNoArgument).Name + "_Route";
-            RouteRegister.AddActionRoute(typeof(HypermediaFunctionNoArgument), routeNameHypermediaActionFuncNoArgument);
+            RouteRegister.AddActionRoute(typeof(HypermediaFunctionNoArgument), routeNameHypermediaActionFuncNoArgument, HttpMethod.POST);
 
             var routeNameRegisteredActionParameter = typeof(RegisteredActionParameter).Name + "_Route";
-            RouteRegister.AddParameterTypeRoute(typeof(RegisteredActionParameter), routeNameRegisteredActionParameter);
+            RouteRegister.AddParameterTypeRoute(typeof(RegisteredActionParameter), routeNameRegisteredActionParameter, HttpMethod.GET);
 
 
 
