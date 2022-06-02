@@ -58,7 +58,7 @@ namespace CarShack.Controllers.Customers
 
 #region Actions
         // Provides a link to the result Query.
-        [HttpPostHypermediaAction("Queries", typeof(CreateQuery))]
+        [HttpPostHypermediaAction("Queries", typeof(HypermediaCustomersRootHto.CreateQueryOp))]
         public ActionResult NewQueryAction(CustomerQuery query)
         {
             if (query == null)
@@ -75,7 +75,7 @@ namespace CarShack.Controllers.Customers
             return this.CreatedQuery(typeof(HypermediaCustomerQueryResultHto), query);
         }
 
-        [HttpPostHypermediaAction("CreateCustomer", typeof(CreateCustomer))]
+        [HttpPostHypermediaAction("CreateCustomer", typeof(HypermediaCustomersRootHto.CreateCustomerOp))]
         public async Task<ActionResult> NewCustomerAction(CreateCustomerParameters createCustomerParameters)
         {
             if (createCustomerParameters == null)

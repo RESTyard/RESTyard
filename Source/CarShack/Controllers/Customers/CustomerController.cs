@@ -45,7 +45,7 @@ namespace CarShack.Controllers.Customers
         #endregion
 
         #region Actions
-        [HttpPostHypermediaAction("MyFavoriteCustomers", typeof(MarkAsFavorite))]
+        [HttpPostHypermediaAction("MyFavoriteCustomers", typeof(HypermediaCustomerHto.MarkAsFavoriteOp))]
         public async Task<ActionResult> MarkAsFavoriteAction([HypermediaActionParameterFromBody]MarkAsFavoriteParameters favoriteCustomer)
         {
             if (favoriteCustomer == null)
@@ -88,7 +88,7 @@ namespace CarShack.Controllers.Customers
             }
         }
 
-        [HttpPostHypermediaAction("{key:int}/BuysCar", typeof(BuyCar))]
+        [HttpPostHypermediaAction("{key:int}/BuysCar", typeof(HypermediaCustomerHto.BuyCarOp))]
         public async Task<ActionResult> BuyCar(int key, BuyCarParameters parameter)
         {
             if (parameter == null)
@@ -121,7 +121,7 @@ namespace CarShack.Controllers.Customers
             }
         }
 
-        [HttpPostHypermediaAction("{key:int}/Moves", typeof(CustomerMove), typeof(CustomerRouteKeyProducer))]
+        [HttpPostHypermediaAction("{key:int}/Moves", typeof(HypermediaCustomerHto.CustomerMoveOp), typeof(CustomerRouteKeyProducer))]
         public async Task<ActionResult> CustomerMove(int key, NewAddress newAddress)
         {
             if (newAddress == null)
@@ -158,7 +158,7 @@ namespace CarShack.Controllers.Customers
         }
         
         [HttpDeleteHypermediaAction("{key:int}", 
-            typeof(CustomerRemove), 
+            typeof(HypermediaCustomerHto.CustomerRemoveOp), 
             typeof(CustomerRouteKeyProducer))]
         public async Task<ActionResult> RemoveCustomer(int key)
         {

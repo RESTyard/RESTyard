@@ -93,14 +93,14 @@ public partial class HypermediaCustomersRootHto
     [ActivatorUtilitiesConstructor]
     public HypermediaCustomersRootHto(ICustomerRepository customerRepository)
         : this(
-            new CreateCustomer(() => true, arg =>
+            new CreateCustomerOp(() => true, arg =>
             {
                 var customer = CustomerService.CreateRandomCustomer();
                 customer.Name = arg.Name;
                 customerRepository.AddEntityAsync(customer).ConfigureAwait(false).GetAwaiter().GetResult();
                 return customer.ToHto();
             }),
-            new CreateQuery(() => true, _ => { }, new CustomerQuery
+            new CreateQueryOp(() => true, _ => { }, new CustomerQuery
             {
                 Filter = new CustomerFilter
                 {
@@ -147,10 +147,10 @@ public partial class HypermediaCustomerHto
             customer.Name,
             customer.Address,
             customer.IsFavorite,
-            new CustomerMove(() => true, address => DoMove(hto!, customer, address)),
-            new CustomerRemove(() => true, () => { }),
-            new MarkAsFavorite(() => !hto!.IsFavorite, p => DoMarkAsFavorite(hto!, customer, p)),
-            new BuyCar(() => true, default!));
+            new CustomerMoveOp(() => true, address => DoMove(hto!, customer, address)),
+            new CustomerRemoveOp(() => true, () => { }),
+            new MarkAsFavoriteOp(() => !hto!.IsFavorite, p => DoMarkAsFavorite(hto!, customer, p)),
+            new BuyCarOp(() => true, default!));
         return hto;
     }
 
