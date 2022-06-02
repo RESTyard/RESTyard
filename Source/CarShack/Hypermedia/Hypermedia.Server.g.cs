@@ -120,6 +120,11 @@ public class CustomerMove : HypermediaAction<NewAddress>
     public CustomerMove(Func<bool> canExecuteCustomerMove, Action<NewAddress> executeCustomerMove, NewAddress? prefilledValues = default) : base(canExecuteCustomerMove, executeCustomerMove, prefilledValues) { }
 }
 
+public class CustomerRemove : HypermediaAction
+{
+    public CustomerRemove(Func<bool> canExecuteCustomerRemove, Action executeCustomerRemove) : base(canExecuteCustomerRemove, executeCustomerRemove) { }
+}
+
 public class MarkAsFavorite : HypermediaAction<MarkAsFavoriteParameters>
 {
     public MarkAsFavorite(Func<bool> canExecuteMarkAsFavorite, Action<MarkAsFavoriteParameters> executeMarkAsFavorite, MarkAsFavoriteParameters? prefilledValues = default) : base(canExecuteMarkAsFavorite, executeMarkAsFavorite, prefilledValues) { }
@@ -147,6 +152,9 @@ public partial class HypermediaCustomerHto : HypermediaObject
     [HypermediaAction(Name = "CustomerMove", Title = "A Customer moved to a new location.")]
     public CustomerMove CustomerMove { get; init; }
 
+    [HypermediaAction(Name = "CustomerRemove", Title = "Remove a Customer.")]
+    public CustomerRemove CustomerRemove { get; init; }
+
     [HypermediaAction(Name = "MarkAsFavorite", Title = "Marks a Customer as a favorite buyer.")]
     public MarkAsFavorite MarkAsFavorite { get; init; }
 
@@ -160,6 +168,7 @@ public partial class HypermediaCustomerHto : HypermediaObject
         string? address,
         bool isFavorite,
         CustomerMove customerMove,
+        CustomerRemove customerRemove,
         MarkAsFavorite markAsFavorite,
         BuyCar buyCar
     ) : base(hasSelfLink: true)
@@ -170,6 +179,7 @@ public partial class HypermediaCustomerHto : HypermediaObject
         this.Address = address;
         this.IsFavorite = isFavorite;
         this.CustomerMove = customerMove;
+        this.CustomerRemove = customerRemove;
         this.MarkAsFavorite = markAsFavorite;
         this.BuyCar = buyCar;
     }

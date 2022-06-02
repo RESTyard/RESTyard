@@ -3,6 +3,7 @@ using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
 using CarShack.Hypermedia.Cars;
 using CarShack.Util;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.HypermediaExtensions.ErrorHandling;
 using WebApi.HypermediaExtensions.Exceptions;
@@ -44,7 +45,7 @@ namespace CarShack.Controllers.Customers
         #endregion
 
         #region Actions
-        [HttpDeleteHypermediaAction("MyFavoriteCustomers", typeof(HypermediaActionCustomerMarkAsFavorite))]
+        [HttpPostHypermediaAction("MyFavoriteCustomers", typeof(MarkAsFavorite))]
         public async Task<ActionResult> MarkAsFavoriteAction([HypermediaActionParameterFromBody]MarkAsFavoriteParameters favoriteCustomer)
         {
             if (favoriteCustomer == null)
@@ -157,7 +158,7 @@ namespace CarShack.Controllers.Customers
         }
         
         [HttpDeleteHypermediaAction("{key:int}", 
-            typeof(HypermediaActionRemoveCustomerAction), 
+            typeof(CustomerRemove), 
             typeof(CustomerRouteKeyProducer))]
         public async Task<ActionResult> RemoveCustomer(int key)
         {

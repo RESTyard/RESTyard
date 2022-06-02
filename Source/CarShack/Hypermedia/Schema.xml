@@ -68,6 +68,7 @@
             </Properties>
             <Operations>
                 <Operation name="CustomerMove" method="Post" title="A Customer moved to a new location." parameterTypeName="NewAddress" />
+                <Operation name="CustomerRemove" method="Delete" title="Remove a Customer." />
                 <Operation name="MarkAsFavorite" method="Post" title="Marks a Customer as a favorite buyer." parameterTypeName="MarkAsFavoriteParameters" />
                 <Operation name="BuyCar" method="Post" title="Buy a car." parameterTypeName="BuyCarParameters" />
             </Operations>

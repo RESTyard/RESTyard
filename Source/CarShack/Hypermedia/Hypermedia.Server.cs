@@ -148,6 +148,7 @@ public partial class HypermediaCustomerHto
             customer.Address,
             customer.IsFavorite,
             new CustomerMove(() => true, address => DoMove(hto!, customer, address)),
+            new CustomerRemove(() => true, () => { }),
             new MarkAsFavorite(() => !hto!.IsFavorite, p => DoMarkAsFavorite(hto!, customer, p)),
             new BuyCar(() => true, default!));
         return hto;
