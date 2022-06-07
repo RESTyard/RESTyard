@@ -20,9 +20,9 @@
 
 type Nullable<T> = T | undefined | null;
 
-function match<TIn, TOut>(nullable: Nullable<TIn>, onValue: (v: TIn) => TOut, onNothing: () => TOut): TOut {
+export function match<TIn, TOut>(nullable: Nullable<TIn>, onValue: (v: TIn) => TOut, onNothing: () => TOut): TOut {
     if (nullable === undefined || nullable === null) {
-        return onValue(nullable);
+        return onValue(nullable as TIn);
     } else {
         return onNothing();
     }
@@ -35,7 +35,7 @@ function match<TIn, TOut>(nullable: Nullable<TIn>, onValue: (v: TIn) => TOut, on
             parameters = array.add parameters param
         end
 }}
-class {{ parametersType.typeName }} {
+export class {{ parametersType.typeName }} {
     constructor(
 {{- for param in parameters }}
         public readonly {{ param }}{{ if !for.last }},{{ end }}
@@ -89,7 +89,7 @@ class {{ parametersType.typeName }} {
             arguments = array.add arguments arg
         end
 }}
-class {{ document.name }}Hco {
+export class {{ document.name }}Hco {
     constructor(
 {{-     for arg in arguments }}
         public readonly {{ arg }}{{ if !for.last }},{{ end }}
