@@ -46,63 +46,54 @@ class {{ parametersType.typeName }} {
     end
 
     for document in Documents
-}}
-export class {{ document.name }}Hco {
-{{- for property in document.Properties }}
-    public get {{ property.name | uncapitalize }}(): {{ mapNullableType (!property.mandatory) property.type }} {
-        return this.sirenObject.getProperty{{ iff property.mandatory "" "Nullable" }}<{{ mapType property.type }}>("{{ property.name }}");
-    }
-{{- end }}
-{{- for entity in document.Entities }}
-    public get {{ entity.collectionName | uncapitalize }}(): {{ entity.document }}Hco[] {
-        return this.sirenObject.getEntities<{{ entity.document }}Hco>("{{ entity.collectionName }}");
-    }
-{{- end }}
-{{- if document.hasSelfLink }}
-    public get self(): HypermediaLink<{{ document.name }}Hco> {
-        return this.sirenObject.getLink("self");
-    }
-{{- end }}
-{{- for link in document.Links }}
-    public get {{ link.rel | uncapitalize }}(): {{ mapNullableType (!link.mandatory) ("HypermediaLink<" + link.document + "Hco>") }} {
-        return this.sirenObject.getLink{{ iff link.mandatory "" "Nullable" }}<{{ link.document }}Hco>("{{ link.rel }}");
-    }
-{{- end }}
-{{- 
-    for operation in document.Operations
-        actionType = ""
-        frameworkMethod = ""
-        typeArgs = []
-        if isEmpty operation.resultDocument
-            actionType = "HypermediaAction"
-            frameworkMethod = "getAction"
-        else
-            actionType = "HypermediaFunction"
-            frameworkMethod = "getFunction"
-            typeArgs = [ (operation.resultDocument + "Hco") ]
+        arguments = []
+        for property in document.Properties
+            arg = property.name + ": " + (mapNullableType (!property.mandatory) property.type)
+            arguments = array.add arguments arg
         end
-        if isNotEmpty operation.parameterTypeName
-            typeArgs = array.add typeArgs operation.parameterTypeName
+        for entity in document.Entities
+            arg = entity.collectionName + ": " + entity.document + "Hco[]"
+            arguments = array.add arguments arg
         end
-        if typeArgs.size > 0
-            actionType += "<"
-            frameworkMethod += "<"
-            for typeArg in typeArgs
-                actionType += typeArg
-                frameworkMethod += typeArg
-                if !for.last
-                    actionType += ", "
-                    frameworkMethod += ", "
-                end
+        if document.hasSelfLink
+            arg = "self: HypermediaLink<" + document.name + "Hco>"
+            arguments = array.add arguments arg
+        end
+        for link in document.Links
+            arg = link.rel + ": " + (mapNullableType (!link.mandatory) ("HypermediaLink<" + link.document + "Hco>"))
+            arguments = array.add arguments arg
+        end
+        for operation in document.Operations
+            actionType = ""
+            typeArgs = []
+            if isEmpty operation.resultDocument
+                actionType += "HypermediaAction"
+            else
+                actionType += "HypermediaFunction"
+                typeArgs = [ (operation.resultDocument + "Hco") ]
             end
-            actionType += ">"
-            frameworkMethod += ">"
+            if isNotEmpty operation.parameterTypeName
+                typeArgs = array.add typeArgs operation.parameterTypeName
+            end
+            if typeArgs.size > 0
+                actionType += "<"
+                for typeArg in typeArgs
+                    actionType += typeArg
+                    if !for.last
+                        actionType += ", "
+                    end
+                end
+                actionType += ">"
+            end
+            arg = operation.name + ": " + (mapNullableType true actionType)
+            arguments = array.add arguments arg
         end
 }}
-    public get {{ operation.name | uncapitalize }}(): {{ mapNullableType true actionType }} {
-        return this.sirenObject.{{ frameworkMethod }}("{{ operation.name }}");
-    }
-{{- end }}
-    constructor(private readonly sirenObject: SirenObject) { }
+class {{ document.name }}Hco {
+    constructor(
+{{-     for arg in arguments }}
+        public readonly {{ arg }}{{ if !for.last }},{{ end }}
+{{-     end }}
+    ) { }
 }
 {{ end }}
