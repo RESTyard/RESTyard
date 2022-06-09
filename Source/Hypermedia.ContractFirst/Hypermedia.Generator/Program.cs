@@ -7,14 +7,14 @@ namespace Hypermedia.Generator;
 
 public static class Program
 {
-    public static async Task Main(string schemaFile, string type, string language, string outputFile, string? @namespace = default, string? includeFile = default)
+    public static async Task Main(string schemaFile, string type, string language, string template, string outputFile, string? @namespace = default, string? includeFile = default)
     {
         await using var schemaFileStream = File.OpenRead(schemaFile);
         var schemaSerializer = new XmlSerializer(typeof(HypermediaType));
         if(schemaSerializer.Deserialize(schemaFileStream) is not HypermediaType schema)
             throw new InvalidOperationException("Failed to read schema.");
 
-        var templatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", type, $"{language}.sbn");
+        var templatePath = string.IsNullOrEmpty(template) ? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", type, $"{language}.sbn") : template;
         await RenderTemplate(schema, templatePath, outputFile, @namespace, includeFile);
         Console.WriteLine("Done.");
     }
