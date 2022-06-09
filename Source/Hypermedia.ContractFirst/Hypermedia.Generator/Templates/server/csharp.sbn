@@ -44,11 +44,25 @@ public static class MimeTypes
 {{- end }}
 }
 
-{{ for parametersType in TransferParameters ~}}
+{{
+    for parametersType in TransferParameters
+        arguments = []
+        for property in parametersType.Property
+            if property.mandatory
+                arg = property.type + " " + property.name
+                arguments = array.add arguments arg
+            end
+        end
+        for property in parametersType.Property
+            if !property.mandatory
+                arg = (mapNullableType true property.type) + " " + property.name + " = default"
+                arguments = array.add arguments arg
+            end
+        end
+~}}
 public partial record {{ parametersType.typeName }}(
-    {{- for property in parametersType.Property }}
-        {{- mapNullableType (!property.mandatory) property.type }} {{ property.name }}
-        {{- if !property.mandatory }} = default{{ end }}
+    {{- for arg in arguments }}
+        {{- arg }}
         {{- if !for.last }}, {{ end }}
     {{- end }}) : IHypermediaActionParameter;
 {{ end }}
