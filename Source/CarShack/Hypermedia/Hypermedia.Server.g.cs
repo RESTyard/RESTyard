@@ -117,7 +117,7 @@ public partial class HypermediaCustomersRootHto : HypermediaObject
     }
 }
 
-[HypermediaObject(Title = "", Classes = new string[]{  })]
+[HypermediaObject(Title = "", Classes = new string[]{ "Customer" })]
 public partial class HypermediaCustomerHto : HypermediaObject
 {
     [FormatterIgnoreHypermediaProperty]

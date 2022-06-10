@@ -4,7 +4,7 @@ using Bluehands.Hypermedia.Relations;
 
 namespace Bluehands.Hypermedia.Client.Test.Hypermedia
 {
-    [HypermediaClientObject("EntryPoint")]
+    [HypermediaClientObject("Entrypoint")]
     public class EntryPointHco : HypermediaClientObject
     {
         [Mandatory]

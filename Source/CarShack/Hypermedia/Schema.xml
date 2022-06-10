@@ -59,7 +59,10 @@
             </Links>
         </Document>
         <Document name="HypermediaCustomer">
-            <Properties>
+			<Classifications>
+                <Classification class="Customer" />
+			</Classifications>
+	        <Properties>
                 <Property name="Id" type="int" hidden="true" mandatory="true" />
                 <Property name="Age" type="int" />
                 <Property name="FullName" type="string" />
