@@ -9,7 +9,7 @@
       $(VersionSuffix)
     </VersionSuffixLocal>
 
-    <Version>1.6.1$(VersionSuffixLocal)</Version>
+    <Version>1.7.0$(VersionSuffixLocal)</Version>
     <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
