@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -30,13 +29,15 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
             var assemblyMethods = assembly.GetTypes().SelectMany(t => t.GetTypeInfo().GetMethods());
             foreach (var method in assemblyMethods)
             {
-                AddAttributedRoute<HttpGetHypermediaObject>(method, this.AddHypermediaObjectRoute, true);
-                AddAttributedRoute<HttpPostHypermediaAction>(method, this.AddActionRoute);
-                AddAttributedRoute<HttpGetHypermediaActionParameterInfo>(method, this.AddParameterTypeRoute);
+                AddAttributedRoute<HttpGetHypermediaObject>(method, HttpMethod.GET, this.AddHypermediaObjectRoute, true);
+                AddAttributedRoute<HttpPostHypermediaAction>(method, HttpMethod.POST, this.AddActionRoute);
+                AddAttributedRoute<HttpDeleteHypermediaAction>(method, HttpMethod.DELETE, this.AddActionRoute);
+                AddAttributedRoute<HttpPatchHypermediaAction>(method, HttpMethod.PATCH, this.AddActionRoute);
+                AddAttributedRoute<HttpGetHypermediaActionParameterInfo>(method, HttpMethod.GET, this.AddParameterTypeRoute);
             }
         }
 
-        private void AddAttributedRoute<T>(MethodInfo method, Action<Type, string> addAction, bool autoAddRouteKeyProducers = false) where T : HttpMethodAttribute, IHaveRouteInfo
+        private void AddAttributedRoute<T>(MethodInfo method, HttpMethod httpMethod, Action<Type, string, HttpMethod> addAction, bool autoAddRouteKeyProducers = false) where T : HttpMethodAttribute, IHaveRouteInfo
         {
             var attribute = method.GetCustomAttribute<T>();
             if (attribute == null)
@@ -49,7 +50,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
                 throw new RouteRegisterException($"{typeof(T).Name} must have a name.");
             }
 
-            addAction(attribute.RouteType, attribute.Name);
+            addAction(attribute.RouteType, attribute.Name, httpMethod);
 
             if (attribute.RouteKeyProducerType != null)
             {

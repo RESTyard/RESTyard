@@ -33,9 +33,9 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
             {
                 k.p,
                 k.att,
-                templateParameterName =
-                    templateParameterNames.FirstOrDefault(n =>
-                        i == 0 && k.att.TemplateParameterName == null || n == k.att.TemplateParameterName)
+                templateParameterName = 
+                    templateParameterNames.FirstOrDefault(
+                        n => i == 0 && k.att.TemplateParameterName == null || n == k.att.TemplateParameterName)
             }).ToImmutableList();
 
             var templateParametersWithoutAttributedProperties =

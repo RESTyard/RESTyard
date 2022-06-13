@@ -1,0 +1,99 @@
+{{-
+    include "../_common.sbn"
+
+    func mapType
+        if $0 == 'bool'
+            ret 'boolean'
+        end
+        ret $0
+    end
+
+    func mapNullableType
+        if $0
+            ret "Nullable<" + (mapType $1) + ">"
+        else
+            ret mapType $1
+        end
+    end
+-}}
+{{ IncludeContent }}
+
+type Nullable<T> = T | undefined | null;
+
+export function match<TIn, TOut>(nullable: Nullable<TIn>, onValue: (v: TIn) => TOut, onNothing: () => TOut): TOut {
+    if (nullable === undefined || nullable === null) {
+        return onValue(nullable as TIn);
+    } else {
+        return onNothing();
+    }
+}
+{{
+    for parametersType in TransferParameters
+        parameters = []
+        for property in parametersType.Property
+            param = property.name + ": " + (mapNullableType (!property.mandatory) property.type)
+            parameters = array.add parameters param
+        end
+}}
+export class {{ parametersType.typeName }} {
+    constructor(
+{{- for param in parameters }}
+        public readonly {{ param }}{{ if !for.last }},{{ end }}
+{{- end }}
+    ) { }
+}
+{{
+    end
+
+    for document in Documents
+        arguments = []
+        for property in document.Properties
+            arg = property.name + ": " + (mapNullableType (!property.mandatory) property.type)
+            arguments = array.add arguments arg
+        end
+        for entity in document.Entities
+            arg = entity.collectionName + ": " + entity.document + "Hco[]"
+            arguments = array.add arguments arg
+        end
+        if document.hasSelfLink
+            arg = "self: HypermediaLink<" + document.name + "Hco>"
+            arguments = array.add arguments arg
+        end
+        for link in document.Links
+            arg = link.rel + ": " + (mapNullableType (!link.mandatory) ("HypermediaLink<" + link.document + "Hco>"))
+            arguments = array.add arguments arg
+        end
+        for operation in document.Operations
+            actionType = ""
+            typeArgs = []
+            if isEmpty operation.resultDocument
+                actionType += "HypermediaAction"
+            else
+                actionType += "HypermediaFunction"
+                typeArgs = [ (operation.resultDocument + "Hco") ]
+            end
+            if isNotEmpty operation.parameterTypeName
+                typeArgs = array.add typeArgs operation.parameterTypeName
+            end
+            if typeArgs.size > 0
+                actionType += "<"
+                for typeArg in typeArgs
+                    actionType += typeArg
+                    if !for.last
+                        actionType += ", "
+                    end
+                end
+                actionType += ">"
+            end
+            arg = operation.name + ": " + (mapNullableType true actionType)
+            arguments = array.add arguments arg
+        end
+}}
+export class {{ document.name }}Hco {
+    constructor(
+{{-     for arg in arguments }}
+        public readonly {{ arg }}{{ if !for.last }},{{ end }}
+{{-     end }}
+    ) { }
+}
+{{ end }}

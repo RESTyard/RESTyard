@@ -9,7 +9,7 @@ namespace Bluehands.Hypermedia.Client.Test.Hypermedia
     public class CustomerQueryResultHco : HypermediaClientObject
     {
         [Mandatory]
-        public int TotalEnties { get; set; }
+        public int TotalEntities { get; set; }
 
         [Mandatory]
         public int CurrentEntitiesCount { get; set; }
@@ -19,7 +19,7 @@ namespace Bluehands.Hypermedia.Client.Test.Hypermedia
 
         [Mandatory]
         //TODO: idear [EnsureUnique]? first hit will be used
-        [HypermediaRelations( new[] { DefaultHypermediaRelations.EmbeddedEntities.Item })]
+        [HypermediaRelations(new[] { DefaultHypermediaRelations.EmbeddedEntities.Item })]
         public CustomerHco Sister { get; set; }
 
 

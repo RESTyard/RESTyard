@@ -1,4 +1,4 @@
-﻿using CarShack.Hypermedia.Customers;
+﻿using CarShack.Hypermedia;
 using WebApi.HypermediaExtensions.Exceptions;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.WebApi.RouteResolver;
@@ -15,9 +15,9 @@ namespace CarShack.Controllers.Customers
     {
         public object CreateFromHypermediaObject(HypermediaObject hypermediaObject)
         {
-            if (!(hypermediaObject is HypermediaCustomer customer))
+            if (!(hypermediaObject is HypermediaCustomerHto customer))
             {
-                throw new HypermediaException($"Passed object is not a {typeof(HypermediaCustomer)}");
+                throw new HypermediaException($"Passed object is not a {typeof(HypermediaCustomerHto)}");
             }
 
             // it is required by Web Api to return a anonymous object with a property named exactly as in teh route template and the method argument.
