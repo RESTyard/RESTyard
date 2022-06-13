@@ -30,11 +30,16 @@
     <PackageReleaseNotes></PackageReleaseNotes>
     <IsPackable>true</IsPackable>
     <RootNamespace>Bluehands.Hypermedia.Client.Extensions.SystemTextJson</RootNamespace>
+    <BaseOutputPath>bin</BaseOutputPath>
+    <BaseIntermediateOutputPath>C:\temp\SystemTextJson</BaseIntermediateOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bluehands.Hypermedia.Client" Version="1.5.0" />
     <PackageReference Include="System.Text.Json" Version="4.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Hypermedia.Client\Hypermedia.Client.csproj" />
   </ItemGroup>
 
 </Project>

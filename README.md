@@ -472,6 +472,12 @@ Tested for:
 
 ## Release Notes
 
+### WebApiHypermediaExtensions v1.7.0
+
+- Add new HTTP methods available for operations:
+  - PATCH
+  - DELETE
+
 ### WebApiHypermediaExtensions v1.6.1
 
 - Bumped supported projects:

@@ -12,8 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bluehands.Hypermedia.Client.Extensions.SystemNetHttp" Version="1.0.0" PrivateAssets="all" />
-    <PackageReference Include="Bluehands.Hypermedia.Client.Extensions.SystemTextJson" Version="1.0.0" PrivateAssets="all" />
     <PackageReference Include="Bluehands.Hypermedia.Relations" Version="0.1.0" />
     <PackageReference Include="FluentAssertions" Version="6.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
@@ -22,6 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Hypermedia.Client.Extensions\SystemNetHttp\SystemNetHttp.csproj" />
+    <ProjectReference Include="..\Hypermedia.Client.Extensions\SystemTextJson\SystemTextJson.csproj" />
     <ProjectReference Include="..\Hypermedia.Client\Hypermedia.Client.csproj" />
   </ItemGroup>
 

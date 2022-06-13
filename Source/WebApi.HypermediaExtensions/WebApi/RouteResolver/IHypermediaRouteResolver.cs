@@ -10,14 +10,18 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
     /// </summary>
     public interface IHypermediaRouteResolver
     {
-        string ObjectToRoute(HypermediaObject hypermediaObject);
+        ResolvedRoute ObjectToRoute(HypermediaObject hypermediaObject);
 
-        string ReferenceToRoute(HypermediaObjectReferenceBase reference);
+        ResolvedRoute ReferenceToRoute(HypermediaObjectReferenceBase reference);
 
-        string ActionToRoute(HypermediaObject hypermediaObject, HypermediaActionBase reference);
-        
-        string TypeToRoute(Type actionParameterType);
-        bool TryGetRouteByType(Type type, out string route, object routeKeys = null);
+        ResolvedRoute ActionToRoute(HypermediaObject hypermediaObject, HypermediaActionBase reference);
+
+        ResolvedRoute TypeToRoute(Type actionParameterType);
+
+        bool TryGetRouteByType(Type type, out ResolvedRoute route, object routeKeys = null);
+
         string RouteUrl(string routeName, object routeKeys = null);
+        
+        ResolvedRoute RouteUrl(RouteInfo routeInfo, object routeKeys = null);
     }
 }

@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "64f545ab-e585-e7d4-38ce-3e5989bbaab8",
+		"_postman_id": "91175866-4dcb-4a76-8c42-6296e0bd7451",
 		"name": "CarShack",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -21,7 +21,6 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"body": {},
 				"url": {
 					"raw": "http://localhost:5000/entrypoint",
 					"protocol": "http",
@@ -52,7 +51,6 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"body": {},
 				"url": {
 					"raw": "http://localhost:5000/Customers",
 					"protocol": "http",
@@ -83,10 +81,6 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "[\r\n{\r\n  \"Address\": \"Fritz Huber\"\r\n}\r\n}"
-				},
 				"url": {
 					"raw": "http://localhost:5000/Customers/1",
 					"protocol": "http",
@@ -118,10 +112,6 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n  \"Filter\": {\r\n  \t\"MinAge\": \"21\"\r\n  },\r\n  \"SortBy\":{\r\n  \t\"PropertyName\":\"Age\",\r\n    \"SortType\": \"Ascending\"\r\n  },\r\n  \"Pagination\": {\r\n  \t\"PageSize\": \"4\",\r\n  \t\"PageOffset\":\"2\"\r\n  }\r\n}"
-				},
 				"url": {
 					"raw": "http://localhost:5000/Customers/Query?Pagination.PageSize=4&Pagination.PageOffset=2&SortBy.PropertyName=Age&SortBy.SortType=Ascending&Filter.MinAge=21",
 					"protocol": "http",
@@ -175,7 +165,6 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"body": {},
 				"url": {
 					"raw": "http://localhost:5000/ActionParmameterTypes/CreateCustomerParameters",
 					"protocol": "http",
@@ -324,10 +313,10 @@
 				{
 					"listen": "test",
 					"script": {
-						"type": "text/javascript",
 						"exec": [
 							"tests[\"response code is 200\"] = responseCode.code === 200;"
-						]
+						],
+						"type": "text/javascript"
 					}
 				}
 			],
@@ -341,7 +330,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "[\n\t{\n\t\t\"FavoriteCustomer\":\n\t\t{\n\t\t\t\"Customer\":\"http://localhost:5000/Customers/6\"\n\t\t\t\n\t\t}\n\t\t\n\t}\n]"
+					"raw": "[\n\t{\n\t\t\"MarkAsFavoriteParameters\":\n\t\t{\n\t\t\t\"Customer\":\"http://localhost:5000/Customers/6\"\n\t\t\t\n\t\t}\n\t\t\n\t}\n]"
 				},
 				"url": {
 					"raw": "http://localhost:5000/Customers/MyFavoriteCustomers",
@@ -363,7 +352,6 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"body": {},
 				"url": {
 					"raw": "http://localhost:5000/Cars",
 					"protocol": "http",
@@ -403,6 +391,42 @@
 						"Customers",
 						"1",
 						"BuysCar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Customers/1/CustomerRemove",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"response code is 200\"] = responseCode.code === 200;"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:5000/Customers/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"Customers",
+						"1"
 					]
 				}
 			},

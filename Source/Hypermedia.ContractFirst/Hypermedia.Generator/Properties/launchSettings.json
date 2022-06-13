@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "Generate C# Client": {
+      "commandName": "Project",
+      "commandLineArgs": "--schema-file ../../../../Sample.xml --type client --language csharp --output-file ../../../../Hypermedia.Generator.Demo.Client/Hypermedia.Client.g.cs --namespace Hypermedia.Generator.Demo.Client"
+    },
+    "Generate TS Client": {
+      "commandName": "Project",
+      "commandLineArgs": "--schema-file ../../../../Sample.xml --type client --language typescript --output-file ../../../../Hypermedia.Generator.Demo.Server/wwwroot/Hypermedia.Client.g.ts --include-file ../../../../include.ts"
+    },
+    "Generate Server": {
+      "commandName": "Project",
+      "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --type server --language csharp --output-file ../../../../../CarShack/Hypermedia/Hypermedia.Server.g.cs --namespace CarShack.Hypermedia"
+    }
+  }
+}

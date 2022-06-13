@@ -1,35 +1,40 @@
 ﻿using System;
+using Bluehands.Hypermedia.Client.Resolver.Caching;
 
 namespace Bluehands.Hypermedia.Client.Resolver
 {
-    public class NoLinkCache<T> : ILinkHcoCache<T>
+    public class NoLinkCache<TLinkHcoCacheEntry> : ILinkHcoCache<TLinkHcoCacheEntry>
+        where TLinkHcoCacheEntry : LinkHcoCacheEntry
     {
         private NoLinkCache()
         {
-
         }
 
-        public static NoLinkCache<T> Instance { get; } = new NoLinkCache<T>();
+        public static NoLinkCache<TLinkHcoCacheEntry> Instance { get; } = new NoLinkCache<TLinkHcoCacheEntry>();
 
-        public bool TryGetValue(Uri uri, out CacheEntry<T> entry)
+        public bool TryGetValue(Uri uri, out TLinkHcoCacheEntry entry)
         {
-            entry = new CacheEntry<T>();
+            entry = default;
             return false;
         }
 
-        public void Set(Uri uri, CacheEntry<T> entry)
+        public void Set(Uri uri, TLinkHcoCacheEntry entry)
         {
+        }
 
+        public void Replace(
+            Uri uri,
+            TLinkHcoCacheEntry oldEntry,
+            TLinkHcoCacheEntry newEntry)
+        {
         }
 
         public void Remove(Uri uri)
         {
-
         }
 
         public void Clear()
         {
-
         }
     }
 }

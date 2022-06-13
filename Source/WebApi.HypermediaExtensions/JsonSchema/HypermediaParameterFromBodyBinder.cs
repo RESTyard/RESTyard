@@ -78,9 +78,9 @@ namespace WebApi.HypermediaExtensions.JsonSchema
                 return;
             }
 
-            if (bindingContext.ActionContext.HttpContext.Request.Method != HttpMethods.Post)
+            if (bindingContext.ActionContext.HttpContext.Request.Method != HttpMethods.Post && bindingContext.ActionContext.HttpContext.Request.Method != HttpMethods.Patch)
             {
-                bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Invalid http method {bindingContext.ActionContext.HttpContext.Request.Method} exptected Post");
+                bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Invalid http method {bindingContext.ActionContext.HttpContext.Request.Method} expected Post or Patch");
                 return;
             }
 

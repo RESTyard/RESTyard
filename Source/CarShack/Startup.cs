@@ -9,9 +9,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 using CarShack.Domain.Customer;
+using CarShack.Hypermedia;
 using CarShack.Hypermedia.Cars;
-using CarShack.Hypermedia.Customers;
-using CarShack.Hypermedia.EntryPoint;
 using CarShack.Util.GlobalExceptionHandler;
 using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
 
@@ -32,11 +31,8 @@ namespace CarShack
             Configuration = builder.Build();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-
             app.UseCors(builder =>
                 {
                     builder
@@ -51,17 +47,12 @@ namespace CarShack
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var builder = services.AddMvcCore(options =>
+            var builder = services.AddMvcCore();
+            builder.AddMvcOptions(o =>
             {
-                options.OutputFormatters.Clear();
-                options.OutputFormatters.Add(new JsonOutputFormatter(
-                    new JsonSerializerSettings
-                    {
-                        NullValueHandling = NullValueHandling.Ignore,
-                        DefaultValueHandling = DefaultValueHandling.Ignore
-                    }, ArrayPool<char>.Shared));
+                o.Filters.Add(new GlobalExceptionFilter(null));
+                o.EnableEndpointRouting = false;
             });
-            builder.AddMvcOptions(o => { o.Filters.Add(new GlobalExceptionFilter(null)); });
 
             // Initializes and adds the Hypermedia Extensions
             builder.AddHypermediaExtensions(
@@ -75,9 +66,9 @@ namespace CarShack
             services.AddCors();
 
             // Domain
-            services.AddSingleton<HypermediaEntryPoint>();
-            services.AddSingleton<HypermediaCustomersRoot>();
-            services.AddSingleton<HypermediaCarsRoot>();
+            services.AddSingleton<HypermediaEntrypointHto>();
+            services.AddSingleton<HypermediaCustomersRootHto>();
+            services.AddSingleton<HypermediaCarsRootHto>();
             services.AddSingleton<ICustomerRepository, CustomerRepository>();
         }
     }

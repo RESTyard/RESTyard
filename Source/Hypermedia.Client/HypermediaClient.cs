@@ -6,7 +6,7 @@ using Bluehands.Hypermedia.Client.Resolver;
 
 namespace Bluehands.Hypermedia.Client
 {
-    public class HypermediaClient<TEntryPoint> : IHypermediaClient<TEntryPoint> where TEntryPoint : HypermediaClientObject
+    public class HypermediaClient<TEntryPoint> : IDisposable, IHypermediaClient<TEntryPoint> where TEntryPoint : HypermediaClientObject
     {
         private readonly IHypermediaReader sirenHypermediaReader;
         private readonly IHypermediaResolver resolver;
@@ -16,12 +16,17 @@ namespace Bluehands.Hypermedia.Client
         public HypermediaClient(
             Uri uriApiEntryPoint,
             IHypermediaResolver hypermediaResolver,
-            IHypermediaReader hypermediaReader) 
+            IHypermediaReader hypermediaReader)
         {
             this.UriApiEntryPoint = uriApiEntryPoint;
             this.resolver = hypermediaResolver;
             this.sirenHypermediaReader = hypermediaReader;
             this.resolver.InitializeHypermediaReader(this.sirenHypermediaReader);
+        }
+        public void Dispose()
+        {
+            var disposableResolver = this.resolver as IDisposable;
+            disposableResolver?.Dispose();
         }
 
         public async Task<TEntryPoint> EnterAsync()
@@ -33,8 +38,10 @@ namespace Bluehands.Hypermedia.Client
                 throw new Exception("Could not resolve Entry Point to API.");
             }
 
-            var hypermediaClientObject =  result.ResultObject;
+            var hypermediaClientObject = result.ResultObject;
             return hypermediaClientObject;
         }
+
+        
     }
 }
