@@ -47,16 +47,7 @@ namespace CarShack
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var builder = services.AddMvcCore(options =>
-            {
-                //options.OutputFormatters.Clear();
-                //options.OutputFormatters.Add(new JsonOutputFormatter(
-                //    new JsonSerializerSettings
-                //    {
-                //        NullValueHandling = NullValueHandling.Ignore,
-                //        DefaultValueHandling = DefaultValueHandling.Ignore
-                //    }, ArrayPool<char>.Shared));
-            });
+            var builder = services.AddMvcCore();
             builder.AddMvcOptions(o =>
             {
                 o.Filters.Add(new GlobalExceptionFilter(null));
