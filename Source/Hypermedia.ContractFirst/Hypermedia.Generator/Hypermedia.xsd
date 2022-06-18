@@ -123,9 +123,18 @@
 			<xs:element name="Link" type="hm:LinkType" maxOccurs="unbounded" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:complexType name="ResultDocumentsType">
+		<xs:sequence>
+			<xs:element name="ResultDocument" type="hm:ResultDocumentType" maxOccurs="unbounded" minOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ResultDocumentType">
+		<xs:attribute type="xs:string" name="document" use="required"/>
+	</xs:complexType>
 	<xs:complexType name="LinkType">
 		<xs:sequence>
 			<xs:element name="QueryParameters" type="hm:QueryParametersType" maxOccurs="1" minOccurs="0"/>
+			<xs:element name="ResultDocuments" type="hm:ResultDocumentsType" maxOccurs="1" minOccurs="0"/>
 		</xs:sequence>
 		<xs:attribute type="xs:string" name="rel" use="required"/>
 		<xs:attribute type="xs:string" name="document" use="optional"/>
