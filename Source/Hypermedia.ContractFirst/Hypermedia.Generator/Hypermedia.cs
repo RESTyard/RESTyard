@@ -231,6 +231,28 @@ public partial class PropertyType {
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.ComponentModel.DesignerCategoryAttribute("code")]
 [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
+public partial class ResultDocumentType {
+    
+    private string documentField;
+    
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public string document {
+        get {
+            return this.documentField;
+        }
+        set {
+            this.documentField = value;
+        }
+    }
+}
+
+/// <remarks/>
+[System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.8.3928.0")]
+[System.SerializableAttribute()]
+[System.Diagnostics.DebuggerStepThroughAttribute()]
+[System.ComponentModel.DesignerCategoryAttribute("code")]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
 public partial class QueryParameterType {
     
     private string parameterNameField;
@@ -270,6 +292,8 @@ public partial class LinkType {
     
     private QueryParameterType[] queryParametersField;
     
+    private ResultDocumentType[] resultDocumentsField;
+    
     private string relField;
     
     private string documentField;
@@ -290,6 +314,17 @@ public partial class LinkType {
         }
         set {
             this.queryParametersField = value;
+        }
+    }
+    
+    /// <remarks/>
+    [System.Xml.Serialization.XmlArrayItemAttribute("ResultDocument", IsNullable=false)]
+    public ResultDocumentType[] ResultDocuments {
+        get {
+            return this.resultDocumentsField;
+        }
+        set {
+            this.resultDocumentsField = value;
         }
     }
     
