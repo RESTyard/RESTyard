@@ -60,7 +60,18 @@ export class {{ parametersType.typeName }} {
             arguments = array.add arguments arg
         end
         for link in document.Links
-            arg = link.rel + ": " + (mapNullableType (!link.mandatory) ("HypermediaLink<" + link.document + "Hco>"))
+            linkType = link.document + "Hco"
+            if (link.ResultDocuments | array.size) > 0
+                linkType = ""
+                for document in link.ResultDocuments
+                    linkType += document.document + "Hco"
+                    if !for.last
+                        linkType += " | "
+                    end
+                end
+            end
+            type = "HypermediaLink<" + linkType + ">"
+            arg = link.rel + ": " + (mapNullableType (!link.mandatory) type)
             arguments = array.add arguments arg
         end
         for operation in document.Operations
