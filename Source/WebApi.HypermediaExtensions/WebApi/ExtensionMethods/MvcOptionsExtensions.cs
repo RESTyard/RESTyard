@@ -32,23 +32,19 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// <param name="hypermediaOptions">
         /// Configures general options for the extensions.
         /// </param>
-        /// <param name="controllerAndHypermediaAssemblies">
-        /// Assemblies to crawl for controller routes and hypermedia objects, if none provided the entry assembly is crawled for Hypermedia route attributes
-        /// </param>
         /// <returns>
         /// The <see cref="IMvcBuilder"/>.
         /// </returns>
         public static IMvcBuilder AddHypermediaExtensions(
             this IMvcBuilder builder,
             IServiceCollection services,
-            HypermediaExtensionsOptions hypermediaOptions,
-            params Assembly[] controllerAndHypermediaAssemblies)
+            HypermediaExtensionsOptions hypermediaOptions)
         {
             //TODO: register ApplicationModel as singleton and use it everywhere to replace runtime reflection 
             builder.AddMvcOptions(o => o
-                .AddHypermediaExtensionsInternal(hypermediaOptions: hypermediaOptions, controllerAndHypermediaAssemblies: controllerAndHypermediaAssemblies)
-                .AddHypermediaParameterBinders(!hypermediaOptions.ImplicitHypermediaActionParameterBinders, controllerAndHypermediaAssemblies));
-            RegisterServices(services, hypermediaOptions, controllerAndHypermediaAssemblies);
+                .AddHypermediaExtensionsInternal(hypermediaOptions: hypermediaOptions)
+                .AddHypermediaParameterBinders(hypermediaOptions));
+            RegisterServices(services, hypermediaOptions);
 
             return builder;
         }
@@ -66,35 +62,30 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// <param name="hypermediaOptions">
         /// Configures general options for the extensions.
         /// </param>
-        /// <param name="controllerAndHypermediaAssemblies">
-        /// Assemblies to crawl for controller routes and hypermedia objects, if none provided the entry assembly is crawled for Hypermedia route attributes
-        /// </param>
         /// <returns>
         /// The <see cref="IMvcCoreBuilder"/>.
         /// </returns>
         public static IMvcCoreBuilder AddHypermediaExtensions(
             this IMvcCoreBuilder builder,
             IServiceCollection services,
-            HypermediaExtensionsOptions hypermediaOptions,
-            params Assembly[] controllerAndHypermediaAssemblies)
+            HypermediaExtensionsOptions hypermediaOptions)
         {
             //TODO: register ApplicationModel as singleton and use it everywhere to replace runtime reflection 
             builder.AddMvcOptions(o => o
-                .AddHypermediaExtensionsInternal(hypermediaOptions: hypermediaOptions, controllerAndHypermediaAssemblies: controllerAndHypermediaAssemblies)
-                .AddHypermediaParameterBinders(!hypermediaOptions.ImplicitHypermediaActionParameterBinders, controllerAndHypermediaAssemblies));
-            RegisterServices(services, hypermediaOptions, controllerAndHypermediaAssemblies);
+                .AddHypermediaExtensionsInternal(hypermediaOptions: hypermediaOptions)
+                .AddHypermediaParameterBinders(hypermediaOptions));
+            RegisterServices(services, hypermediaOptions);
 
             return builder;
         }
 
         private static void RegisterServices(
             IServiceCollection services,
-            HypermediaExtensionsOptions hypermediaOptions,
-            Assembly[] controllerAndHypermediaAssemblies)
+            HypermediaExtensionsOptions hypermediaOptions)
         {
             if (hypermediaOptions.AutoDeliverJsonSchemaForActionParameterTypes)
             { 
-                services.AutoDeliverActionParameterSchemas(hypermediaOptions.CaseSensitiveParameterMatching, controllerAndHypermediaAssemblies);
+                services.AutoDeliverActionParameterSchemas(hypermediaOptions.CaseSensitiveParameterMatching, hypermediaOptions.ControllerAndHypermediaAssemblies);
             }
 
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
@@ -108,19 +99,15 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// <param name="options">The options object of the MVC component.</param>
         /// <param name="alternateRouteRegister">If you wish to use another RoutRegister pass it here, also if you wish another assembly to be crawled.</param>
         /// <param name="alternateQueryStringBuilder">Provide an alternate QueryStringBuilder used for building URL's.</param>
-        /// <param name="hypermediaUrlConfig">Configures the URL used in Hypermedia responses.</param>
-        /// <param name="hypermediaConverterConfiguration">Configures the creation of Hypermedia documents.</param>
         /// <param name="hypermediaOptions">Configures general options for teh extensions.</param>
-        /// <param name="controllerAndHypermediaAssemblies">Assemblies to crawl for controller routes and hypermedia objects</param>
         public static MvcOptions AddHypermediaExtensionsInternal(
             this MvcOptions options,
             IRouteRegister alternateRouteRegister = null,
             IQueryStringBuilder alternateQueryStringBuilder = null,
-            HypermediaExtensionsOptions hypermediaOptions = null,
-            params Assembly[] controllerAndHypermediaAssemblies)
+            HypermediaExtensionsOptions hypermediaOptions = null)
         {
             hypermediaOptions = hypermediaOptions ?? new HypermediaExtensionsOptions();
-            var routeRegister = alternateRouteRegister ?? new AttributedRoutesRegister(controllerAndHypermediaAssemblies);
+            var routeRegister = alternateRouteRegister ?? new AttributedRoutesRegister(hypermediaOptions.ControllerAndHypermediaAssemblies);
 
             var routeResolverFactory = new RegisterRouteResolverFactory(routeRegister, hypermediaOptions);
             var routeKeyFactory = new RouteKeyFactory(routeRegister);
@@ -144,15 +131,12 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// Enables usage of <see cref="KeyFromUriAttribute"/> for properties of those parameter types. 
         /// </summary>
         /// <param name="options"></param>
-        /// <param name="forAttributedActionParametersOnly">
-        ///     If set custom binder will be used for all parameter types that are not attributed differently. 
-        ///     If set to false custom binder will be used for parameter types explicitly attributed with <see cref="HypermediaActionParameterFromBodyAttribute"/> only.
-        ///  </param>
-        /// <param name="controllerAssemblies"></param>
+        /// <param name="hypermediaOptions"></param>
         /// <returns></returns>
-        public static MvcOptions AddHypermediaParameterBinders(this MvcOptions options, bool forAttributedActionParametersOnly = false, params Assembly[] controllerAssemblies)
+        public static MvcOptions AddHypermediaParameterBinders(this MvcOptions options, HypermediaExtensionsOptions hypermediaOptions)
         {
-            var applicationModel = ApplicationModel.Create(controllerAssemblies);
+            var forAttributedActionParametersOnly = !hypermediaOptions.ImplicitHypermediaActionParameterBinders;
+            var applicationModel = ApplicationModel.Create(hypermediaOptions.ControllerAndHypermediaAssemblies);
 
             options.ModelBinderProviders.Insert(0, new HypermediaParameterFromBodyBinderProvider(t =>
             {

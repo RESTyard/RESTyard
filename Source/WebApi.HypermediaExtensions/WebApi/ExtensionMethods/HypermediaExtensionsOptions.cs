@@ -1,10 +1,12 @@
-﻿namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
+﻿using System;
+using System.Reflection;
+
+namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
 {
-    using global::WebApi.HypermediaExtensions.Hypermedia;
-    using global::WebApi.HypermediaExtensions.Hypermedia.Actions;
-    using global::WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
-    using global::WebApi.HypermediaExtensions.WebApi.Formatter;
-    using global::WebApi.HypermediaExtensions.WebApi.RouteResolver;
+    using Hypermedia;
+    using Hypermedia.Actions;
+    using AttributedRoutes;
+    using RouteResolver;
 
     /// <summary>
     /// General options for the extensions
@@ -36,6 +38,8 @@
         /// <summary>
         /// Implicitly add custom binder for parameters of hypermedia actions that derive from <see cref="IHypermediaActionParameter"/>. 
         /// Enables usage of <see cref="KeyFromUriAttribute"/> for properties of those parameter types.
+        /// If set custom binder will be used for all parameter types that are not attributed differently. 
+        /// If set to false custom binder will be used for parameter types explicitly attributed with <see cref="HypermediaActionParameterFromBodyAttribute"/> only.
         /// </summary>
         public bool ImplicitHypermediaActionParameterBinders { get; set; } = true;
 
@@ -49,6 +53,11 @@
         /// Configuration for hypermedia document generation
         /// </summary>
         public HypermediaConverterConfiguration HypermediaConverterConfiguration { get; set; } = new HypermediaConverterConfiguration();
+        
+        /// <summary>
+        /// Assemblies to crawl for controller routes and hypermedia objects, if none provided the entry assembly is crawled for Hypermedia route attributes
+        /// </summary>
+        public Assembly[] ControllerAndHypermediaAssemblies { get; set; } = Array.Empty<Assembly>();
     }
 
     public class HypermediaConverterConfiguration
