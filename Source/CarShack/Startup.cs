@@ -52,9 +52,9 @@ namespace CarShack
             });
 
             // Initializes and adds the Hypermedia Extensions
-            builder.Services.AddHypermediaExtensions(new HypermediaExtensionsOptions
+            builder.Services.AddHypermediaExtensions(o =>
             {
-                ReturnDefaultRouteForUnknownHto = true
+                o.ReturnDefaultRouteForUnknownHto = true;
             });
 
             // Infrastructure

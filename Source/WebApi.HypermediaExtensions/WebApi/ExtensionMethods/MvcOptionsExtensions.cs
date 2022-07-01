@@ -23,8 +23,11 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// Adds the Hypermedia Extensions.
         /// By default a Siren Formatters is added and the entry assembly is crawled for Hypermedia route attributes
         /// </summary>
-        public static IServiceCollection AddHypermediaExtensions(this IServiceCollection serviceCollection, HypermediaExtensionsOptions hypermediaOptions)
+        public static IServiceCollection AddHypermediaExtensions(this IServiceCollection serviceCollection, Action<HypermediaExtensionsOptions> configureHypermediaOptionsAction = null)
         {
+            var hypermediaOptions = new HypermediaExtensionsOptions();
+            configureHypermediaOptionsAction?.Invoke(hypermediaOptions);
+                
             if (hypermediaOptions.AutoDeliverJsonSchemaForActionParameterTypes)
             {
                 serviceCollection.AutoDeliverActionParameterSchemas(hypermediaOptions.CaseSensitiveParameterMatching, hypermediaOptions.ControllerAndHypermediaAssemblies);
