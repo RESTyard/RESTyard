@@ -31,7 +31,6 @@
 		<IsPackable>true</IsPackable>
 		<RootNamespace>Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson</RootNamespace>
 		<BaseOutputPath>bin</BaseOutputPath>
-		<BaseIntermediateOutputPath>C:\temp\NewtonsoftJson</BaseIntermediateOutputPath>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Bluehands.Hypermedia.Client" Version="1.5.0" />
