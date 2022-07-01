@@ -21,74 +21,23 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
     {
         /// <summary>
         /// Adds the Hypermedia Extensions.
-        /// By default a Siren Formatters is added.
-        /// </summary>
-        /// <param name="builder">
-        /// The builder
-        /// </param>
-        /// <param name="services">
-        /// The service collection
-        /// </param>
-        /// <param name="hypermediaOptions">
-        /// Configures general options for the extensions.
-        /// </param>
-        /// <returns>
-        /// The <see cref="IMvcBuilder"/>.
-        /// </returns>
-        public static IMvcBuilder AddHypermediaExtensions(
-            this IMvcBuilder builder,
-            IServiceCollection services,
-            HypermediaExtensionsOptions hypermediaOptions)
-        {
-            //TODO: register ApplicationModel as singleton and use it everywhere to replace runtime reflection 
-            builder.AddMvcOptions(o => o
-                .AddHypermediaExtensionsInternal(hypermediaOptions: hypermediaOptions)
-                .AddHypermediaParameterBinders(hypermediaOptions));
-            RegisterServices(services, hypermediaOptions);
-
-            return builder;
-        }
-
-        /// <summary>
-        /// Adds the Hypermedia Extensions.
         /// By default a Siren Formatters is added and the entry assembly is crawled for Hypermedia route attributes
         /// </summary>
-        /// <param name="builder">
-        /// The builder
-        /// </param>
-        /// <param name="services">
-        /// The service collection
-        /// </param>
-        /// <param name="hypermediaOptions">
-        /// Configures general options for the extensions.
-        /// </param>
-        /// <returns>
-        /// The <see cref="IMvcCoreBuilder"/>.
-        /// </returns>
-        public static IMvcCoreBuilder AddHypermediaExtensions(
-            this IMvcCoreBuilder builder,
-            IServiceCollection services,
-            HypermediaExtensionsOptions hypermediaOptions)
-        {
-            //TODO: register ApplicationModel as singleton and use it everywhere to replace runtime reflection 
-            builder.AddMvcOptions(o => o
-                .AddHypermediaExtensionsInternal(hypermediaOptions: hypermediaOptions)
-                .AddHypermediaParameterBinders(hypermediaOptions));
-            RegisterServices(services, hypermediaOptions);
-
-            return builder;
-        }
-
-        private static void RegisterServices(
-            IServiceCollection services,
-            HypermediaExtensionsOptions hypermediaOptions)
+        public static IServiceCollection AddHypermediaExtensions(this IServiceCollection serviceCollection, HypermediaExtensionsOptions hypermediaOptions)
         {
             if (hypermediaOptions.AutoDeliverJsonSchemaForActionParameterTypes)
-            { 
-                services.AutoDeliverActionParameterSchemas(hypermediaOptions.CaseSensitiveParameterMatching, hypermediaOptions.ControllerAndHypermediaAssemblies);
+            {
+                serviceCollection.AutoDeliverActionParameterSchemas(hypermediaOptions.CaseSensitiveParameterMatching, hypermediaOptions.ControllerAndHypermediaAssemblies);
             }
-
-            services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            serviceCollection.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            
+            serviceCollection.AddSingleton(hypermediaOptions);
+            serviceCollection.Configure<MvcOptions>(options =>
+            {
+                options.AddHypermediaExtensionsInternal(hypermediaOptions: hypermediaOptions);
+                options.AddHypermediaParameterBinders(hypermediaOptions);
+            });
+            return serviceCollection;
         }
 
         /// <summary>
