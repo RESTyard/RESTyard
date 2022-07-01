@@ -463,6 +463,7 @@ Tested for:
 - Reworked initialization of the framework so a single method call on the service collection is enough
   - more general approach
   - configuration is now done using a lambda
+- Removed unneccessary ProblemJsonFormatter. Instead use the configured formatter.
 
 ### WebApiHypermediaExtensions v1.7.0
 
