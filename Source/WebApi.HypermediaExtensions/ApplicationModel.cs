@@ -12,7 +12,7 @@ using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
 
 namespace WebApi.HypermediaExtensions
 {
-    class ApplicationModel
+    public class ApplicationModel
     {
         public ImmutableDictionary<Type, HmoType> HmoTypes { get; }
         public ImmutableDictionary<Type, ActionParameterType> ActionParameterTypes { get; }

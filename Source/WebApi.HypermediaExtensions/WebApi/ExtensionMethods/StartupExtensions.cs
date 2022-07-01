@@ -27,18 +27,22 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         {
             var hypermediaOptions = new HypermediaExtensionsOptions();
             configureHypermediaOptionsAction?.Invoke(hypermediaOptions);
+            
+            var applicationModel = ApplicationModel.Create(hypermediaOptions.ControllerAndHypermediaAssemblies);
                 
             if (hypermediaOptions.AutoDeliverJsonSchemaForActionParameterTypes)
             {
-                serviceCollection.AutoDeliverActionParameterSchemas(hypermediaOptions.CaseSensitiveParameterMatching, hypermediaOptions.ControllerAndHypermediaAssemblies);
+                serviceCollection.AutoDeliverActionParameterSchemas(hypermediaOptions.CaseSensitiveParameterMatching, applicationModel);
             }
             serviceCollection.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
             
             serviceCollection.AddSingleton(hypermediaOptions);
+            
+            serviceCollection.AddSingleton(applicationModel);
             serviceCollection.Configure<MvcOptions>(options =>
             {
                 options.AddHypermediaExtensionsInternal(hypermediaOptions: hypermediaOptions);
-                options.AddHypermediaParameterBinders(hypermediaOptions);
+                options.AddHypermediaParameterBinders(hypermediaOptions, applicationModel);
             });
             return serviceCollection;
         }
@@ -84,11 +88,11 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// </summary>
         /// <param name="options"></param>
         /// <param name="hypermediaOptions"></param>
+        /// <param name="applicationModel">Model of the HTO objects and controllers</param>
         /// <returns></returns>
-        public static MvcOptions AddHypermediaParameterBinders(this MvcOptions options, HypermediaExtensionsOptions hypermediaOptions)
+        public static MvcOptions AddHypermediaParameterBinders(this MvcOptions options, HypermediaExtensionsOptions hypermediaOptions, ApplicationModel applicationModel)
         {
             var forAttributedActionParametersOnly = !hypermediaOptions.ImplicitHypermediaActionParameterBinders;
-            var applicationModel = ApplicationModel.Create(hypermediaOptions.ControllerAndHypermediaAssemblies);
 
             options.ModelBinderProviders.Insert(0, new HypermediaParameterFromBodyBinderProvider(t =>
             {
@@ -109,11 +113,10 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// </summary>
         /// <param name="serviceCollection"></param>
         /// <param name="useCaseSensitiveParameterMatching"></param>
-        /// <param name="controllerAssemblies"></param>
+        /// <param name="applicationModel">Model of the HTO objects and controllers</param>
         /// <returns></returns>
-        public static IServiceCollection AutoDeliverActionParameterSchemas(this IServiceCollection serviceCollection, bool useCaseSensitiveParameterMatching, params Assembly[] controllerAssemblies)
+        public static IServiceCollection AutoDeliverActionParameterSchemas(this IServiceCollection serviceCollection, bool useCaseSensitiveParameterMatching, ApplicationModel applicationModel)
         {
-            var applicationModel = ApplicationModel.Create(controllerAssemblies);
             var controller = new ActionParameterSchemas(applicationModel.ActionParameterTypes.Values.Select(_ => _.Type), useCaseSensitiveParameterMatching);
             return serviceCollection.AddSingleton(controller);
         }
