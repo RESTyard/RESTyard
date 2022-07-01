@@ -17,7 +17,7 @@ using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
 {
-    public static class MvcOptionsExtensions
+    public static class StartupExtensions
     {
         /// <summary>
         /// Adds the Hypermedia Extensions.
