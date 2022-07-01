@@ -5,12 +5,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
-using CarShack.Hypermedia.Cars;
 using CarShack.Util.GlobalExceptionHandler;
 using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
 
@@ -55,12 +52,10 @@ namespace CarShack
             });
 
             // Initializes and adds the Hypermedia Extensions
-            builder.AddHypermediaExtensions(
-                services,
-                new HypermediaExtensionsOptions
-                {
-                    ReturnDefaultRouteForUnknownHto = true
-                });
+            builder.Services.AddHypermediaExtensions(o =>
+            {
+                o.ReturnDefaultRouteForUnknownHto = true;
+            });
 
             // Infrastructure
             services.AddCors();

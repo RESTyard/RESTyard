@@ -31,7 +31,6 @@
     <IsPackable>true</IsPackable>
     <RootNamespace>Bluehands.Hypermedia.Client.Extensions.SystemTextJson</RootNamespace>
     <BaseOutputPath>bin</BaseOutputPath>
-    <BaseIntermediateOutputPath>C:\temp\SystemTextJson</BaseIntermediateOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
