@@ -23,27 +23,13 @@ The Extensions allow you to build a restful web server which responds with Siren
 HypermediaObjects returned from Controllers will be formatted as Siren. All contained referenced HypermediaObjects (e.g. Links and embedded Entities), Actions, and Parameter types (of Actions) are automatically resolved and properly inserted into the Siren document, by looking up attributed routes.
 
 ## Using it in a project
-To use the Extensions just call `AddHypermediaExtensions()` when adding MCV in `Startup.cs`:
+To use the Extensions just call `AddHypermediaExtensions()` on your DI container:
 
 ``` csharp
-public void ConfigureServices(IServiceCollection services)
+builder.Services.AddHypermediaExtensions(o =>
 {
-    var builder = services.AddMvcCore(options =>
-    {
-        ...
-    });
-            
-    ...
-
-    // Initializes and adds the Hypermedia Extensions
-    builder.AddHypermediaExtensions(services,
-        new HypermediaExtensionsOptions
-        {
-            ReturnDefaultRouteForUnknownHto = true // useful during development
-        });
-
-    ...
-}
+    o.ReturnDefaultRouteForUnknownHto = true; // useful during development
+});
 ```
 
 To configure the generated URLs in the Hypermedia documents pass a `HypermediaUrlConfig` to `AddHypermediaExtensionsInternal()`. In this way absolute URLs can be generated which have a different scheme or another host e.g. a load balancer.
@@ -471,6 +457,12 @@ Tested for:
 - Nullable
 
 ## Release Notes
+
+### WebApiHypermediaExtensions v1.8.0
+
+- Reworked initialization of the framework so a single method call on the service collection is enough
+  - more general approach
+  - configuration is now done using a lambda
 
 ### WebApiHypermediaExtensions v1.7.0
 
