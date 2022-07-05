@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.HypermediaExtensions.ErrorHandling;
@@ -15,12 +16,13 @@ namespace WebApi.HypermediaExtensions.WebApi.Controller
     {
         readonly ImmutableDictionary<string, object> schemaByTypeName;
 
-        public ActionParameterSchemas(IEnumerable<Type> actionParameterTypes, bool useCaseSensitiveParameterMatching)
+        public ActionParameterSchemas(ApplicationModel applicationModel, HypermediaExtensionsOptions hypermediaOptions)
         {
+            var actionParameterTypes = applicationModel.ActionParameterTypes.Values.Select(_ => _.Type);
             schemaByTypeName = actionParameterTypes.ToImmutableDictionary(
                 t => t.BeautifulName(),
                 t => JsonSchemaFactory.Generate(t).GetAwaiter().GetResult(),
-                useCaseSensitiveParameterMatching ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase
+                hypermediaOptions.CaseSensitiveParameterMatching ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase
             );
         }
 

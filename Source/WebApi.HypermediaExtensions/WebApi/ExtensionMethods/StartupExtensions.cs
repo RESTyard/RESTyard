@@ -45,7 +45,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
             
             if (hypermediaOptions.AutoDeliverJsonSchemaForActionParameterTypes)
             {
-                serviceCollection.AddSingleton(AutoDeliverActionParameterSchemas);
+                serviceCollection.AddSingleton<ActionParameterSchemas>();
             }
            
             serviceCollection.ConfigureOptions<ConfigureMvcOptionsForHypermediaExtensions>();
@@ -76,15 +76,13 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
 
             public void Configure(MvcOptions options)
             {
-                options.AddHypermediaExtensionsInternal(hypermediaQueryLocationFormatter, hypermediaEntityLocationFormatter, sirenHypermediaFormatter);
+                options.AddHypermediaExtensionsOutputFormatters(hypermediaQueryLocationFormatter, hypermediaEntityLocationFormatter, sirenHypermediaFormatter);
                 options.AddHypermediaParameterBinders(hypermediaOptions, applicationModel);
             }
         }
 
-
         private static ApplicationModel CreateApplicationModel(IServiceProvider s)
         {
-            var logger = s.GetRequiredService<ILogger<ApplicationModel>>();
             var hypermediaOptions = s.GetRequiredService<HypermediaExtensionsOptions>();
             return ApplicationModel.Create(hypermediaOptions.ControllerAndHypermediaAssemblies);
         }
@@ -94,7 +92,7 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// For default cases consider using the convenience overloads AddHypermediaExtensions.
         /// By default a Siren Formatters is added and the entry assembly is crawled for Hypermedia route attributes
         /// </summary>
-        public static MvcOptions AddHypermediaExtensionsInternal(
+        public static MvcOptions AddHypermediaExtensionsOutputFormatters(
             this MvcOptions options,
             HypermediaQueryLocationFormatter hypermediaQueryLocationFormatter,
             HypermediaEntityLocationFormatter hypermediaEntityLocationFormatter,
@@ -131,19 +129,6 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
             }, forAttributedActionParametersOnly));
 
             return options;
-        }
-
-        /// <summary>
-        /// Automatically deliver NJson schema for hypermedia action parameters. Custom schemas can still be delivered by implementing controller methods attributed
-        /// with <see cref="HttpGetHypermediaActionParameterInfo"/> attibute.
-        /// </summary>
-        /// <param name="serviceProvider"></param>
-        /// <returns></returns>
-        public static ActionParameterSchemas AutoDeliverActionParameterSchemas(IServiceProvider serviceProvider)
-        {
-            var applicationModel = serviceProvider.GetRequiredService<ApplicationModel>();
-            var hypermediaOptions = serviceProvider.GetRequiredService<HypermediaExtensionsOptions>();
-            return new ActionParameterSchemas(applicationModel.ActionParameterTypes.Values.Select(_ => _.Type), hypermediaOptions.CaseSensitiveParameterMatching);
         }
 
         public static IServiceCollection AddSingletonWithAlternative<TInterface, TDefault>(this IServiceCollection serviceCollection, Type alternative) where TDefault : TInterface
