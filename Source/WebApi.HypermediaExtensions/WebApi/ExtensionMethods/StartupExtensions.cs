@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
 using WebApi.HypermediaExtensions.JsonSchema;
 using WebApi.HypermediaExtensions.Query;
@@ -28,23 +30,63 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
             var hypermediaOptions = new HypermediaExtensionsOptions();
             configureHypermediaOptionsAction?.Invoke(hypermediaOptions);
             
-            var applicationModel = ApplicationModel.Create(hypermediaOptions.ControllerAndHypermediaAssemblies);
-                
+            serviceCollection.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            serviceCollection.AddSingleton(hypermediaOptions);
+            serviceCollection.AddSingleton<IHypermediaUrlConfig>(hypermediaOptions.HypermediaUrlConfig);
+            serviceCollection.AddSingleton(CreateApplicationModel);
+            serviceCollection.AddSingletonWithAlternative<IRouteRegister, AttributedRoutesRegister>(hypermediaOptions.AlternateRouteRegister);
+            serviceCollection.AddSingletonWithAlternative<IQueryStringBuilder, QueryStringBuilder>(hypermediaOptions.AlternateQueryStringBuilder);
+            serviceCollection.AddSingleton<IRouteResolverFactory, RegisterRouteResolverFactory>();
+            serviceCollection.AddSingleton<IRouteKeyFactory, RouteKeyFactory>();
+            serviceCollection.AddSingleton<ISirenHypermediaConverterFactory, SirenHypermediaConverterFactory>();
+            serviceCollection.AddSingleton<HypermediaQueryLocationFormatter>();
+            serviceCollection.AddSingleton<HypermediaEntityLocationFormatter>();
+            serviceCollection.AddSingleton<SirenHypermediaFormatter>();
+            
             if (hypermediaOptions.AutoDeliverJsonSchemaForActionParameterTypes)
             {
-                serviceCollection.AutoDeliverActionParameterSchemas(hypermediaOptions.CaseSensitiveParameterMatching, applicationModel);
+                serviceCollection.AddSingleton(AutoDeliverActionParameterSchemas);
             }
-            serviceCollection.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
-            
-            serviceCollection.AddSingleton(hypermediaOptions);
-            
-            serviceCollection.AddSingleton(applicationModel);
-            serviceCollection.Configure<MvcOptions>(options =>
-            {
-                options.AddHypermediaExtensionsInternal(hypermediaOptions: hypermediaOptions);
-                options.AddHypermediaParameterBinders(hypermediaOptions, applicationModel);
-            });
+           
+            serviceCollection.ConfigureOptions<ConfigureMvcOptionsForHypermediaExtensions>();
             return serviceCollection;
+        }
+
+        internal class ConfigureMvcOptionsForHypermediaExtensions : IConfigureOptions<MvcOptions>
+        {
+            private readonly HypermediaExtensionsOptions hypermediaOptions;
+            private readonly ApplicationModel applicationModel;
+            private readonly HypermediaQueryLocationFormatter hypermediaQueryLocationFormatter;
+            private readonly HypermediaEntityLocationFormatter hypermediaEntityLocationFormatter;
+            private readonly SirenHypermediaFormatter sirenHypermediaFormatter;
+
+            public ConfigureMvcOptionsForHypermediaExtensions(
+                HypermediaExtensionsOptions hypermediaOptions, 
+                ApplicationModel applicationModel,
+                HypermediaQueryLocationFormatter hypermediaQueryLocationFormatter,
+                HypermediaEntityLocationFormatter hypermediaEntityLocationFormatter,
+                SirenHypermediaFormatter sirenHypermediaFormatter)
+            {
+                this.hypermediaOptions = hypermediaOptions;
+                this.applicationModel = applicationModel;
+                this.hypermediaQueryLocationFormatter = hypermediaQueryLocationFormatter;
+                this.hypermediaEntityLocationFormatter = hypermediaEntityLocationFormatter;
+                this.sirenHypermediaFormatter = sirenHypermediaFormatter;
+            }
+
+            public void Configure(MvcOptions options)
+            {
+                options.AddHypermediaExtensionsInternal(hypermediaQueryLocationFormatter, hypermediaEntityLocationFormatter, sirenHypermediaFormatter);
+                options.AddHypermediaParameterBinders(hypermediaOptions, applicationModel);
+            }
+        }
+
+
+        private static ApplicationModel CreateApplicationModel(IServiceProvider s)
+        {
+            var logger = s.GetRequiredService<ILogger<ApplicationModel>>();
+            var hypermediaOptions = s.GetRequiredService<HypermediaExtensionsOptions>();
+            return ApplicationModel.Create(hypermediaOptions.ControllerAndHypermediaAssemblies);
         }
 
         /// <summary>
@@ -52,29 +94,13 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// For default cases consider using the convenience overloads AddHypermediaExtensions.
         /// By default a Siren Formatters is added and the entry assembly is crawled for Hypermedia route attributes
         /// </summary>
-        /// <param name="options">The options object of the MVC component.</param>
-        /// <param name="alternateRouteRegister">If you wish to use another RoutRegister pass it here, also if you wish another assembly to be crawled.</param>
-        /// <param name="alternateQueryStringBuilder">Provide an alternate QueryStringBuilder used for building URL's.</param>
-        /// <param name="hypermediaOptions">Configures general options for teh extensions.</param>
         public static MvcOptions AddHypermediaExtensionsInternal(
             this MvcOptions options,
-            IRouteRegister alternateRouteRegister = null,
-            IQueryStringBuilder alternateQueryStringBuilder = null,
-            HypermediaExtensionsOptions hypermediaOptions = null)
+            HypermediaQueryLocationFormatter hypermediaQueryLocationFormatter,
+            HypermediaEntityLocationFormatter hypermediaEntityLocationFormatter,
+            SirenHypermediaFormatter sirenHypermediaFormatter
+            )
         {
-            hypermediaOptions = hypermediaOptions ?? new HypermediaExtensionsOptions();
-            var routeRegister = alternateRouteRegister ?? new AttributedRoutesRegister(hypermediaOptions.ControllerAndHypermediaAssemblies);
-
-            var routeResolverFactory = new RegisterRouteResolverFactory(routeRegister, hypermediaOptions);
-            var routeKeyFactory = new RouteKeyFactory(routeRegister);
-
-            var queryStringBuilder = alternateQueryStringBuilder ?? new QueryStringBuilder();
-            var hypermediaQueryLocationFormatter = new HypermediaQueryLocationFormatter(routeResolverFactory, routeKeyFactory, queryStringBuilder, hypermediaOptions.HypermediaUrlConfig);
-            var hypermediaEntityLocationFormatter = new HypermediaEntityLocationFormatter(routeResolverFactory, routeKeyFactory, hypermediaOptions.HypermediaUrlConfig);
-
-            var sirenHypermediaConverterFactory = new SirenHypermediaConverterFactory(queryStringBuilder, hypermediaOptions.HypermediaConverterConfiguration);
-            var sirenHypermediaFormatter = new SirenHypermediaFormatter(routeResolverFactory, routeKeyFactory, sirenHypermediaConverterFactory, hypermediaOptions.HypermediaUrlConfig);
-
             options.OutputFormatters.Insert(0, hypermediaQueryLocationFormatter);
             options.OutputFormatters.Insert(0, hypermediaEntityLocationFormatter);
             options.OutputFormatters.Insert(0, sirenHypermediaFormatter);
@@ -111,14 +137,26 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// Automatically deliver NJson schema for hypermedia action parameters. Custom schemas can still be delivered by implementing controller methods attributed
         /// with <see cref="HttpGetHypermediaActionParameterInfo"/> attibute.
         /// </summary>
-        /// <param name="serviceCollection"></param>
-        /// <param name="useCaseSensitiveParameterMatching"></param>
-        /// <param name="applicationModel">Model of the HTO objects and controllers</param>
+        /// <param name="serviceProvider"></param>
         /// <returns></returns>
-        public static IServiceCollection AutoDeliverActionParameterSchemas(this IServiceCollection serviceCollection, bool useCaseSensitiveParameterMatching, ApplicationModel applicationModel)
+        public static ActionParameterSchemas AutoDeliverActionParameterSchemas(IServiceProvider serviceProvider)
         {
-            var controller = new ActionParameterSchemas(applicationModel.ActionParameterTypes.Values.Select(_ => _.Type), useCaseSensitiveParameterMatching);
-            return serviceCollection.AddSingleton(controller);
+            var applicationModel = serviceProvider.GetRequiredService<ApplicationModel>();
+            var hypermediaOptions = serviceProvider.GetRequiredService<HypermediaExtensionsOptions>();
+            return new ActionParameterSchemas(applicationModel.ActionParameterTypes.Values.Select(_ => _.Type), hypermediaOptions.CaseSensitiveParameterMatching);
+        }
+
+        public static IServiceCollection AddSingletonWithAlternative<TInterface, TDefault>(this IServiceCollection serviceCollection, Type alternative) where TDefault : TInterface
+        {
+            var serviceType = typeof(TInterface);
+            if (alternative != null && !serviceType.IsAssignableFrom(alternative))
+            {
+                throw new Exception($"Provided type as alternative for {serviceType.Name} does not implement the interface");
+            }
+
+            serviceCollection.AddSingleton(serviceType, alternative ?? typeof(TDefault));
+
+            return serviceCollection;
         }
     }
 }

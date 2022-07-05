@@ -5,6 +5,8 @@ using System.Reflection;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using NJsonSchema;
@@ -262,7 +264,7 @@ namespace WebApi.HypermediaExtensions.Test.JsonSchema
 
         public override void When()
         {
-            applicationModel = ApplicationModel.Create(typeof(BaseHmo).GetTypeInfo().Assembly);
+            applicationModel = ApplicationModel.Create(new [] {typeof(BaseHmo).GetTypeInfo().Assembly});
         }
 
         [TestMethod]
