@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
 using WebApi.HypermediaExtensions.Util;
@@ -18,7 +19,7 @@ namespace WebApi.HypermediaExtensions
         public ImmutableDictionary<Type, ActionParameterType> ActionParameterTypes { get; }
         public ImmutableArray<ControllerType> ControllerTypes { get; }
 
-        public static ApplicationModel Create(params Assembly[] assemblies)
+        public static ApplicationModel Create(Assembly[] assemblies)
         {
             var implementingAssemblies = (assemblies.Length > 0
                 ? assemblies

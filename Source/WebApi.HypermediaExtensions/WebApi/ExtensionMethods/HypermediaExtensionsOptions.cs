@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using WebApi.HypermediaExtensions.Query;
 
 namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
 {
@@ -58,6 +59,16 @@ namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
         /// Assemblies to crawl for controller routes and hypermedia objects, if none provided the entry assembly is crawled for Hypermedia route attributes
         /// </summary>
         public Assembly[] ControllerAndHypermediaAssemblies { get; set; } = Array.Empty<Assembly>();
+
+        /// <summary>
+        /// If another route register should be used provide a type which derives from <see cref="IRouteRegister"/>
+        /// </summary>
+        public Type AlternateRouteRegister = null;
+        
+        /// <summary>
+        /// If another query string builder should be used provide a type which derives from <see cref="IQueryStringBuilder"/>
+        /// </summary>
+        public Type AlternateQueryStringBuilder = null;
     }
 
     public class HypermediaConverterConfiguration

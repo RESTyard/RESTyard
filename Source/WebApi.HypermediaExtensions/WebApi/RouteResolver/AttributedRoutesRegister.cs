@@ -4,19 +4,24 @@ using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing.Template;
+using Microsoft.Extensions.Logging;
 using WebApi.HypermediaExtensions.Exceptions;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Util.Extensions;
 using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
+using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
 
 namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
 {
     public class AttributedRoutesRegister : RouteRegister
     {
-        public AttributedRoutesRegister(params Assembly[] controllerAndHypermediaAssemblies)
+        private readonly ILogger logger;
+
+        public AttributedRoutesRegister(HypermediaExtensionsOptions hypermediaOptions, ILogger<AttributedRoutesRegister> logger)
         {
-            var assembliesToCrawl = controllerAndHypermediaAssemblies.Length > 0
-                ? controllerAndHypermediaAssemblies
+            this.logger = logger;
+            var assembliesToCrawl = hypermediaOptions.ControllerAndHypermediaAssemblies.Length > 0
+                ? hypermediaOptions.ControllerAndHypermediaAssemblies
                 : Assembly.GetEntryAssembly().Yield();
 
             foreach (var assemblyToCrawl in assembliesToCrawl)
@@ -87,7 +92,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
             var routeAttributeController = declaringType.GetCustomAttributes<RouteAttribute>().ToList();
             if (routeAttributeController.Count > 1)
             {
-                //logger.LogWarning($"Found more than one route attribute on Type {declaringType.Name}. Only first attribute will be used to automatically provide a RoutKeyProducer with a template. Using {routeAttributeController.First().Template}");
+                logger.LogWarning($"Found more than one route attribute on Type {declaringType.Name}. Only first attribute will be used to automatically provide a RoutKeyProducer with a template. Using {routeAttributeController.First().Template}");
             } else if(routeAttributeController.Count == 0)
             {
                 // no RouteAttribute 
