@@ -458,6 +458,14 @@ Tested for:
 
 ## Release Notes
 
+### WebApiHypermediaExtensions v1.8.1
+
+- Bugfix: controller route templates were not used in automated RouteKeyProducers so full templates were needed on all methods.
+  Now the Controller template is added to the one from the method
+- Rework initialization so all classes are build from DI
+  - Additional options to allow replacement of `IRouteRegister` and `IQueryStringBuilder` if needed
+
+
 ### WebApiHypermediaExtensions v1.8.0
 
 - Reworked initialization of the framework so a single method call on the service collection is enough
