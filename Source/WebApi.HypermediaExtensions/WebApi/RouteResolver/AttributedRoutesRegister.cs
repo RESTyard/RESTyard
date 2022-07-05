@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing.Template;
 using WebApi.HypermediaExtensions.Exceptions;
@@ -56,7 +57,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
             {
                 if (typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(attribute.RouteType))
                 {
-                    throw new RouteRegisterException($"Routes to Querys may not require a key '{attribute.RouteType}'. Queries should not be handled on a Entity.");
+                    throw new RouteRegisterException($"Routes to Query's may not require a key '{attribute.RouteType}'. Queries should not be handled on a Entity.");
                 }
 
                 var keyProducer = (IKeyProducer)Activator.CreateInstance(attribute.RouteKeyProducerType);
@@ -64,12 +65,37 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
             }
             else if (autoAddRouteKeyProducers && !typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(attribute.RouteType) && attribute.Template != null)
             {
-                var template = TemplateParser.Parse(attribute.Template);
+                var controllerRouteSegments = GetControllerRouteSegment(method);
+
+                var template = TemplateParser.Parse(controllerRouteSegments + attribute.Template);
                 if (template.Parameters.Count > 0)
                 {
                     this.AddRouteKeyProducer(attribute.RouteType, RouteKeyProducer.Create(attribute.RouteType, template.Parameters.Select(p => p.Name).ToList()));
                 }
             }
+        }
+
+        private string GetControllerRouteSegment(MethodInfo method)
+        {
+            var declaringType = method.DeclaringType;
+            if (declaringType == null || !typeof(ControllerBase).IsAssignableFrom(declaringType))
+            {
+                // not a controller do not look for RouteAttribute, no segment
+                return string.Empty;
+            }
+            
+            var routeAttributeController = declaringType.GetCustomAttributes<RouteAttribute>().ToList();
+            if (routeAttributeController.Count > 1)
+            {
+                //logger.LogWarning($"Found more than one route attribute on Type {declaringType.Name}. Only first attribute will be used to automatically provide a RoutKeyProducer with a template. Using {routeAttributeController.First().Template}");
+            } else if(routeAttributeController.Count == 0)
+            {
+                // no RouteAttribute 
+                return string.Empty;
+            }
+
+            var template = routeAttributeController.First().Template;
+            return template ?? string.Empty;
         }
     }
 }

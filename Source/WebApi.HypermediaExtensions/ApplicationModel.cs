@@ -26,7 +26,7 @@ namespace WebApi.HypermediaExtensions
 
             var controllerTypes = implementingAssemblies
                 .SelectMany(a => a.GetTypes()
-                    .Where(t => typeof(Controller).GetTypeInfo().IsAssignableFrom(t))
+                    .Where(t => typeof(ControllerBase).GetTypeInfo().IsAssignableFrom(t))
                     .Select(t =>
                     {
                         return new ControllerType(t,
