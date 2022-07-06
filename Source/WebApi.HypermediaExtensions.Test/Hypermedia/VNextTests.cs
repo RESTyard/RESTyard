@@ -37,10 +37,18 @@ namespace WebApi.HypermediaExtensions.Test.Hypermedia
 
         LinkToExtern MyCustomer5 = new LinkToExtern("rel1", "www.example.com", "class1");
 
-        // same as for LinkTo/LinkToMany only other wrapper class
+        
+        // allow embedding entities easy
+        [Relations("Rel1", "Rel2")] // same checks as for links
+        CustomerHto Embedded7 = new CustomerHto();
+        
+        [Relations("Rel1", "Rel2")]
+        List<CustomerHto> EmbeddedCustomers1 = new List<CustomerHto>{ new CustomerHto()};
+        
+        // same as for LinkTo/LinkToMany only other wrapper class for specifying relations dynamically
         Embedded<CustomerHto> EmbeddedCustomer = new Embedded<CustomerHto>("Rel1", new CustomerHto());
 
-        EmbeddedMany<CustomerHto> EmbeddedCustomers = new EmbeddedMany<CustomerHto>("Rel1", new List<CustomerHto> { new CustomerHto() });
+        EmbeddedMany<CustomerHto> EmbeddedCustomers2 = new EmbeddedMany<CustomerHto>("Rel1", new List<CustomerHto> { new CustomerHto() });
     }
 
     public class CustomerHto
