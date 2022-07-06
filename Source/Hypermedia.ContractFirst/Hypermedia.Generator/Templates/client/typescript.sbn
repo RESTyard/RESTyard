@@ -18,7 +18,7 @@
 -}}
 {{ IncludeContent }}
 
-type Nullable<T> = T | undefined | null;
+export type Nullable<T> = T | undefined | null;
 
 export function match<TIn, TOut>(nullable: Nullable<TIn>, onValue: (v: TIn) => TOut, onNothing: () => TOut): TOut {
     if (nullable === undefined || nullable === null) {
