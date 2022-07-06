@@ -46,6 +46,7 @@ public static class MimeTypes
 
 {{
     for parametersType in TransferParameters
+        interfaces = []
         arguments = []
         for property in parametersType.Property
             if property.mandatory
@@ -59,12 +60,18 @@ public static class MimeTypes
                 arguments = array.add arguments arg
             end
         end
+        if parametersType.usedForQueries
+            interfaces = array.add interfaces "IHypermediaQuery"
+        end
+        if parametersType.usedForActions
+            interfaces = array.add interfaces "IHypermediaActionParameter"
+        end
 ~}}
 public partial record {{ parametersType.typeName }}(
     {{- for arg in arguments }}
         {{- arg }}
         {{- if !for.last }}, {{ end }}
-    {{- end }}) : IHypermediaActionParameter;
+    {{- end }}){{ for interface in interfaces }}{{ if for.first }} : {{ end }}{{ interface }}{{ if !for.last }}, {{ end }}{{ end }};
 {{ end }}
 {{-
     for document in Documents
