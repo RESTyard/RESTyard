@@ -68,11 +68,12 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
                 var keyProducer = (IKeyProducer)Activator.CreateInstance(attribute.RouteKeyProducerType);
                 this.AddRouteKeyProducer(attribute.RouteType, keyProducer);
             }
-            else if (autoAddRouteKeyProducers && !typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(attribute.RouteType) && attribute.Template != null)
+            else if (autoAddRouteKeyProducers && !typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(attribute.RouteType))
             {
+                var templateToUse = attribute.Template ?? string.Empty;
                 var controllerRouteSegments = GetControllerRouteSegment(method);
 
-                var template = TemplateParser.Parse(controllerRouteSegments + attribute.Template);
+                var template = TemplateParser.Parse(controllerRouteSegments + templateToUse);
                 if (template.Parameters.Count > 0)
                 {
                     this.AddRouteKeyProducer(attribute.RouteType, RouteKeyProducer.Create(attribute.RouteType, template.Parameters.Select(p => p.Name).ToList()));
