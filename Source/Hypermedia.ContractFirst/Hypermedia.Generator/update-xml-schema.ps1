@@ -1,0 +1,1 @@
+﻿xsd ./Hypermedia.xsd /classes

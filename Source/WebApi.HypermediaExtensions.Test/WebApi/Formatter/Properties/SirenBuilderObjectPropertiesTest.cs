@@ -4,6 +4,8 @@ using Newtonsoft.Json.Linq;
 
 namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
 {
+    using HypermediaExtensions.WebApi.RouteResolver;
+
     [TestClass]
     public class SirenBuilderObjectPropertiesTest : SirenBuilderTestBase
     {
@@ -23,7 +25,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
         public void PropertyNestedClass()
         {
             var routeName = typeof(PropertyNestedClassHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyNestedClassHypermediaObject), routeName);
+            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyNestedClassHypermediaObject), routeName, HttpMethod.GET);
 
             var ho = new PropertyNestedClassHypermediaObject
             {
@@ -59,7 +61,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
         public void PropertyNestedClassNull()
         {
             var routeName = typeof(PropertyNestedClassHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyNestedClassHypermediaObject), routeName);
+            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyNestedClassHypermediaObject), routeName, HttpMethod.GET);
 
             var ho = new PropertyNestedClassHypermediaObject
             {
@@ -83,7 +85,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
         public void PropertyNestedClassNullNoNullProperties()
         {
             var routeName = typeof(PropertyNestedClassHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyNestedClassHypermediaObject), routeName);
+            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyNestedClassHypermediaObject), routeName, HttpMethod.GET);
 
             var ho = new PropertyNestedClassHypermediaObject
             {

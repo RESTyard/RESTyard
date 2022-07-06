@@ -21,7 +21,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
 
         protected override StringValues GetLocation(IHypermediaRouteResolver routeResolver, HypermediaEntityLocation item)
         {
-            return routeResolver.ReferenceToRoute(item.EntityRef);
+            return routeResolver.ReferenceToRoute(item.EntityRef).Url;
         }
 
         protected override HypermediaEntityLocation GetObject(object locationObject)

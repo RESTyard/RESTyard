@@ -1,0 +1,23 @@
+{{-
+func isEmpty
+    ret ($0 | object.default "") == ""
+end
+
+func isNotEmpty
+    ret !(isEmpty $0)
+end
+
+func mapString
+    if isNotEmpty $0
+        ret ($1 | string.replace "%s" $0)
+    end
+end
+
+func iff
+    if $0
+        ret $1
+    else
+        ret $2
+    end
+end
+-}}

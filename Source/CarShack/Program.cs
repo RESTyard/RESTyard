@@ -12,6 +12,11 @@ namespace CarShack
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
+                .ConfigureLogging(loggingBuilder =>
+                {
+                    loggingBuilder.AddConsole();
+                    loggingBuilder.AddDebug();
+                })
                 .UseStartup<Startup>()
                 .ConfigureLogging(
                     (hostingContext, logging) =>

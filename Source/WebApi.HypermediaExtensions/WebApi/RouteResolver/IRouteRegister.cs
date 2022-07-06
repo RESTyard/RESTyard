@@ -4,13 +4,13 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
 {
     public interface IRouteRegister
     {
-        bool TryGetRoute(Type lookupType, out string routeName);
+        bool TryGetRoute(Type lookupType, out RouteInfo routeInfo);
 
-        void AddActionRoute(Type hypermediaActionType, string routeName);
+        void AddActionRoute(Type hypermediaActionType, string routeName, HttpMethod httpMethod);
 
-        void AddHypermediaObjectRoute(Type hypermediaObjectType, string routeName);
+        void AddHypermediaObjectRoute(Type hypermediaObjectType, string routeName, HttpMethod httpMethod);
 
-        void AddParameterTypeRoute(Type iHypermediaActionParameter, string routeName);
+        void AddParameterTypeRoute(Type iHypermediaActionParameter, string routeName, HttpMethod httpMethod);
 
         void AddRouteKeyProducer(Type attributeRouteType, IKeyProducer keyProducer);
 

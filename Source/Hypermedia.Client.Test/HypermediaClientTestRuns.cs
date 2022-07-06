@@ -18,7 +18,7 @@ namespace Bluehands.Hypermedia.Client.Test
     /// <summary>
     /// Tests used during prototyping.
     /// </summary>
-    [TestClass]
+    [TestClass, TestCategory("SkipInCI")]
     public class HypermediaClientTestRuns
     {
         private static readonly Uri ApiEntryPoint = new Uri("http://localhost:5000/entrypoint");

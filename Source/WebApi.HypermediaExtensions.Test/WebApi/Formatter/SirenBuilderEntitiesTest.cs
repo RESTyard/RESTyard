@@ -30,10 +30,10 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
         public void RepresentationEntitiesTest()
         {
             var routeName = typeof(EmptyHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(EmptyHypermediaObject), routeName);
+            RouteRegister.AddHypermediaObjectRoute(typeof(EmptyHypermediaObject), routeName, HttpMethod.GET);
 
             var routeNameEmbedded = typeof(EmbeddedSubEntity).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(EmbeddedSubEntity), routeNameEmbedded);
+            RouteRegister.AddHypermediaObjectRoute(typeof(EmbeddedSubEntity), routeNameEmbedded, HttpMethod.GET);
 
             var ho = new EmptyHypermediaObject();
             var relation1 = "Embedded";
@@ -72,10 +72,10 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
         public void LinkEntitiesTest()
         {
             var routeName = typeof(EmptyHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(EmptyHypermediaObject), routeName);
+            RouteRegister.AddHypermediaObjectRoute(typeof(EmptyHypermediaObject), routeName, HttpMethod.GET);
 
             var routeNameEmbedded = typeof(EmbeddedSubEntity).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(EmbeddedSubEntity), routeNameEmbedded);
+            RouteRegister.AddHypermediaObjectRoute(typeof(EmbeddedSubEntity), routeNameEmbedded, HttpMethod.GET);
             RouteRegister.AddRouteKeyProducer(typeof(EmbeddedSubEntity), new EmbeddedEntityRouteKeyProducer());
 
             var ho = new EmptyHypermediaObject();

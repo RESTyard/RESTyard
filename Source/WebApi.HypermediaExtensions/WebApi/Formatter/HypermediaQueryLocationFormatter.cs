@@ -44,13 +44,18 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             var location = routeResolver.TypeToRoute(hypermediaQueryLocation.QueryType);
 
             var queryString = queryStringBuilder.CreateQueryString(hypermediaQueryLocation.QueryParameter);
+            string locationUrl;
             if (!string.IsNullOrEmpty(queryString))
             {
-                location += queryString;
+                locationUrl = location.Url + queryString;
+            }
+            else
+            {
+                locationUrl = location.Url;
             }
 
             var response = context.HttpContext.Response;
-            response.Headers["Location"] = location;
+            response.Headers["Location"] = locationUrl;
 
             response.StatusCode = (int)HttpStatusCode.Created;
 

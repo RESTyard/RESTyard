@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using CarShack.Domain.Customer;
-using CarShack.Hypermedia.Customers;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.HypermediaExtensions.JsonSchema;
