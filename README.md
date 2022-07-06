@@ -458,6 +458,10 @@ Tested for:
 
 ## Release Notes
 
+### WebApiHypermediaExtensions v1.8.2
+
+- Fix no route key producer was added when template was null but controller still might contain a route template with variables
+
 ### WebApiHypermediaExtensions v1.8.1
 
 - Bugfix: controller route templates were not used in automated RouteKeyProducers so full templates were needed on all methods.
