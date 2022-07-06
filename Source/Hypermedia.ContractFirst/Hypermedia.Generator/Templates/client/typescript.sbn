@@ -100,7 +100,7 @@ export class {{ parametersType.typeName }} {
             arguments = array.add arguments arg
         end
 }}
-export class {{ document.name }}Hco {
+export class {{ document.name }}Hco : HypermediaObject {
     constructor(
 {{-     for arg in arguments }}
         public readonly {{ arg }}{{ if !for.last }},{{ end }}
