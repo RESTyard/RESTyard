@@ -12,16 +12,5 @@ namespace Bluehands.Hypermedia.Client.Hypermedia
         public Uri Uri { get; set; } = null;
 
         public IHypermediaResolver Resolver { get; set; }
-
-        public async Task<ResolverResult<T>> TryResolveAsync()
-        {
-            if (this.Uri == null)
-            {
-                return new ResolverResult<T> {Success = false};
-            }
-
-            var result = await this.Resolver.ResolveLinkAsync<T>(this.Uri);
-            return result;
-        }
     }
 }

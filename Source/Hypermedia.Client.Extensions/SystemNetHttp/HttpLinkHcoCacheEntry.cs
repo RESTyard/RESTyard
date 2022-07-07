@@ -27,7 +27,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
         public static HttpLinkHcoCacheEntry FromConfiguration(
             string linkResponseContent,
-            CacheEntryConfiguration configuration)
+            HttpLinkHcoCacheEntryConfiguration configuration)
         {
             return new HttpLinkHcoCacheEntry(
                 linkResponseContent,
@@ -47,7 +47,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             return mustRevalidate;
         }
 
-        public bool IsConfigurationEquivalentTo(CacheEntryConfiguration configuration)
+        public bool IsConfigurationEquivalentTo(HttpLinkHcoCacheEntryConfiguration configuration)
         {
             return this.CacheMode == configuration.CacheMode
                && this.CacheScope == configuration.CacheScope

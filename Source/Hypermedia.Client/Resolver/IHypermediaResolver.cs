@@ -1,19 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Bluehands.Hypermedia.Client.Authentication;
 using Bluehands.Hypermedia.Client.Hypermedia;
 using Bluehands.Hypermedia.Client.Hypermedia.Commands;
-using Bluehands.Hypermedia.Client.Reader;
 
 namespace Bluehands.Hypermedia.Client.Resolver
 {
     public interface IHypermediaResolver
+        : IDisposable
     {
-        void InitializeHypermediaReader(IHypermediaReader reader);
-
-        void SetCredentials(UsernamePasswordCredentials usernamePasswordCredentials);
-
         /// <summary>
         /// Resolves a link whose data is located at the given URI
         /// </summary>

@@ -82,21 +82,21 @@ namespace Benchmarking
         public async Task ParseFromStringAsync()
         {
             var asString = await this.httpContent.ReadAsStringAsync();
-            var hco = this.sirenReader.Read(asString);
+            var hco = this.sirenReader.Read(asString, null);
         }
 
         [Benchmark]
         public async Task ParseFromStreamAsync()
         {
             var asStream = await this.httpContent.ReadAsStreamAsync();
-            var hco = await this.sirenReader.ReadAsync(asStream);
+            var hco = await this.sirenReader.ReadAsync(asStream, null);
         }
 
         [Benchmark]
         public async Task ParseFromStreamAndExportAsync()
         {
             var asStream = await this.httpContent.ReadAsStreamAsync();
-            var (hco, json) = await this.sirenReader.ReadAndExportAsync(asStream);
+            var (hco, json) = await this.sirenReader.ReadAndSerializeAsync(asStream, null);
         }
 
         private class HttpContentMock : HttpContent

@@ -1,4 +1,5 @@
 ﻿using System;
+using Bluehands.Hypermedia.Client.Builder;
 using Newtonsoft.Json;
 
 namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
@@ -10,7 +11,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static HypermediaClientBuilder WithNewtonsoftJsonStringParser(this HypermediaClientBuilder builder)
+        public static IHypermediaResolverBuilder WithNewtonsoftJsonStringParser(this IHypermediaResolverBuilder builder)
         {
             return builder.WithCustomStringParser(() => new NewtonsoftJsonStringParser());
         }
@@ -21,7 +22,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
         /// <param name="builder"></param>
         /// <param name="formatting"></param>
         /// <returns></returns>
-        public static HypermediaClientBuilder WithNewtonsoftJsonObjectParameterSerializer(this HypermediaClientBuilder builder, Formatting formatting = Formatting.None)
+        public static IHypermediaResolverBuilder WithNewtonsoftJsonObjectParameterSerializer(this IHypermediaResolverBuilder builder, Formatting formatting = Formatting.None)
         {
             return builder.WithCustomParameterSerializer(() => new NewtonsoftJsonObjectParameterSerializer(formatting));
         }
@@ -33,7 +34,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
         /// <param name="builder"></param>
         /// <param name="formatting"></param>
         /// <returns></returns>
-        public static HypermediaClientBuilder WithSingleNewtonsoftJsonObjectParameterSerializer(this HypermediaClientBuilder builder, Formatting formatting = Formatting.None)
+        public static IHypermediaResolverBuilder WithSingleNewtonsoftJsonObjectParameterSerializer(this IHypermediaResolverBuilder builder, Formatting formatting = Formatting.None)
         {
             return builder.WithCustomParameterSerializer(() => new SingleNewtonsoftJsonObjectParameterSerializer(formatting));
         }
@@ -43,7 +44,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static HypermediaClientBuilder WithNewtonsoftJsonProblemReader(this HypermediaClientBuilder builder)
+        public static IHypermediaResolverBuilder WithNewtonsoftJsonProblemReader(this IHypermediaResolverBuilder builder)
         {
             return builder.WithCustomProblemStringReader(() => new NewtonsoftJsonProblemStringReader());
         }

@@ -7,12 +7,16 @@ namespace Bluehands.Hypermedia.Client.Reader
 {
     public interface IHypermediaReader
     {
-        void InitializeHypermediaResolver(IHypermediaResolver resolver);
+        HypermediaClientObject Read(
+            string contentString,
+            IHypermediaResolver resolver);
 
-        HypermediaClientObject Read(string contentString);
+        Task<HypermediaClientObject> ReadAsync(
+            Stream contentStream,
+            IHypermediaResolver resolver);
 
-        Task<HypermediaClientObject> ReadAsync(Stream contentStream);
-
-        Task<(HypermediaClientObject, string)> ReadAndExportAsync(Stream contentStream);
+        Task<(HypermediaClientObject, string)> ReadAndSerializeAsync(
+            Stream contentStream,
+            IHypermediaResolver resolver);
     }
 }

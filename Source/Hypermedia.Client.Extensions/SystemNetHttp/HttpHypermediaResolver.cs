@@ -1,16 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Bluehands.Hypermedia.Client.Authentication;
 using Bluehands.Hypermedia.Client.Exceptions;
-using Bluehands.Hypermedia.Client.Hypermedia;
-using Bluehands.Hypermedia.Client.Hypermedia.Commands;
 using Bluehands.Hypermedia.Client.ParameterSerializer;
 using Bluehands.Hypermedia.Client.Reader;
 using Bluehands.Hypermedia.Client.Resolver;
@@ -19,88 +15,67 @@ using Bluehands.Hypermedia.MediaTypes;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 {
-    public class HttpHypermediaResolver : IHypermediaResolver, IHttpHypermediaResolverConfiguration, IDisposable
+    public class HttpHypermediaResolver
+        : HypermediaResolverBase<
+            HttpResponseMessage,
+            HttpLinkHcoCacheEntry,
+            HttpLinkHcoCacheEntryConfiguration>
     {
-        private readonly IParameterSerializer parameterSerializer;
-        private readonly IProblemStringReader problemReader;
-        private readonly ILinkHcoCache<HttpLinkHcoCacheEntry> linkHcoCache;
-        private IHypermediaReader hypermediaReader;
-        private HttpClient httpClient;
+        private readonly HttpClient httpClient;
+        private readonly bool disposeHttpClient;
 
-        private UsernamePasswordCredentials UsernamePasswordCredentials { get; set; }
-
-        private Action<HttpRequestHeaders> AddCustomDefaultHeadersAction { get; set; }
+        private bool alreadyDisposed = false;
 
         public HttpHypermediaResolver(
+            HttpClient httpClient,
+            bool disposeHttpClient,
+            IHypermediaReader hypermediaReader,
             IParameterSerializer parameterSerializer,
             IProblemStringReader problemReader,
             ILinkHcoCache<HttpLinkHcoCacheEntry> linkHcoCache)
+            : base(hypermediaReader, parameterSerializer, problemReader, linkHcoCache)
         {
-            // todo maybe pass HttpClient as dependency so it can be modified by the user
-            this.parameterSerializer = parameterSerializer;
-            this.problemReader = problemReader;
-            this.linkHcoCache = linkHcoCache;
-            InitializeHttpClient();
+            this.httpClient = httpClient;
+            this.disposeHttpClient = disposeHttpClient;
         }
 
-        public void InitializeHypermediaReader(IHypermediaReader reader)
-        {
-            hypermediaReader = reader;
-        }
-
-        public async Task<ResolverResult<T>> ResolveLinkAsync<T>(
+        protected override async Task<CacheEntryVerificationResult<HttpResponseMessage>> VerifyIfCacheEntryCanBeUsedAsync(
             Uri uriToResolve,
-            bool forceResolve = false)
-            where T : HypermediaClientObject
+            HttpLinkHcoCacheEntry cacheEntry,
+            DateTimeOffset assumedNow,
+            bool forceResolve)
         {
-            HttpResponseMessage response;
             bool forceRevalidate = forceResolve;
-            if (this.linkHcoCache.TryGetValue(uriToResolve, out var cacheEntry))
+            var mustRevalidate = forceRevalidate || cacheEntry.IsRevalidationRequired(assumedNow);
+            if (!mustRevalidate)
             {
-                var mustRevalidate = forceRevalidate || cacheEntry.IsRevalidationRequired(DateTimeOffset.Now);
-                if (!mustRevalidate)
-                {
-                    var hco = this.hypermediaReader.Read(cacheEntry.LinkResponseContent);
-                    return new ResolverResult<T>()
-                    {
-                        Success = true,
-                        ResultObject = (T)hco,
-                    };
-                }
-                var request = CreateRevalidationRequest(uriToResolve, cacheEntry);
-                response = await this.httpClient.SendAsync(request, CancellationToken.None);
-                if (response.StatusCode == HttpStatusCode.NotModified)
-                {
-                    this.UpdateCacheEntry(uriToResolve, response, cacheEntry);
-
-                    var hco = this.hypermediaReader.Read(cacheEntry.LinkResponseContent);
-                    return new ResolverResult<T>()
-                    {
-                        Success = true,
-                        ResultObject = (T)hco,
-                    };
-                }
-                else
-                {
-                    this.linkHcoCache.Remove(uriToResolve);
-                }
-            }
-            else
-            {
-                response = await httpClient.GetAsync(uriToResolve);
+                return new CacheEntryVerificationResult<HttpResponseMessage>.CacheEntryMayBeUsed();
             }
 
-            var cacheConfiguration = CacheEntryConfiguration.FromHttpResponse(response, DateTimeOffset.Now);
-            bool exportToString = cacheConfiguration.ShouldBeAddedToCache();
-            var (resolverResult, hcoAsString) = await HandleLinkResponseAsync<T>(response, exportToString);
-
-            if (resolverResult.Success && exportToString && !string.IsNullOrEmpty(hcoAsString))
+            var request = CreateRevalidationRequest(uriToResolve, cacheEntry);
+            var response = await this.httpClient.SendAsync(request, CancellationToken.None);
+            var assumedNowAfterRequest = DateTimeOffset.Now;
+            if (response.StatusCode == HttpStatusCode.NotModified)
             {
-                var entry = HttpLinkHcoCacheEntry.FromConfiguration(hcoAsString, cacheConfiguration);
-                this.linkHcoCache.Set(uriToResolve, entry);
+                this.UpdateCacheEntry(uriToResolve, cacheEntry, HttpLinkHcoCacheEntryConfiguration.FromHttpResponse(response, assumedNowAfterRequest));
+                return new CacheEntryVerificationResult<HttpResponseMessage>.CacheEntryMayBeUsed();
             }
 
-            return resolverResult;
+            return new CacheEntryVerificationResult<HttpResponseMessage>.UseThisResponseInstead(response);
+        }
+
+        protected override HttpLinkHcoCacheEntryConfiguration GetCacheConfigurationFromResponse(
+            HttpResponseMessage response,
+            DateTimeOffset assumedNow)
+        {
+            return HttpLinkHcoCacheEntryConfiguration.FromHttpResponse(response, assumedNow);
+        }
+
+        protected override HttpLinkHcoCacheEntry GetCacheEntryFromConfiguration(
+            string linkResponseContent,
+            HttpLinkHcoCacheEntryConfiguration cacheConfiguration)
+        {
+            return HttpLinkHcoCacheEntry.FromConfiguration(linkResponseContent, cacheConfiguration);
         }
 
         private static HttpRequestMessage CreateRevalidationRequest(
@@ -127,22 +102,21 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
         private void UpdateCacheEntry(
             Uri uriToResolve,
-            HttpResponseMessage response,
-            HttpLinkHcoCacheEntry oldEntry)
+            HttpLinkHcoCacheEntry oldEntry,
+            HttpLinkHcoCacheEntryConfiguration newConfiguration)
         {
-            var newConfiguration = CacheEntryConfiguration.FromHttpResponse(response, DateTimeOffset.Now);
             if (!newConfiguration.HasCacheConfiguration)
             {
                 //TODO generate warning
-                this.linkHcoCache.Remove(uriToResolve);
+                this.LinkHcoCache.Remove(uriToResolve);
             }
             else if (!newConfiguration.ShouldBeAddedToCache())
             {
-                this.linkHcoCache.Remove(uriToResolve);
+                this.LinkHcoCache.Remove(uriToResolve);
             }
             else if (HasUpdatedCacheConfiguration(oldEntry, newConfiguration))
             {
-                this.linkHcoCache.Replace(
+                this.LinkHcoCache.Replace(
                     uriToResolve,
                     oldEntry,
                     HttpLinkHcoCacheEntry.FromConfiguration(oldEntry.LinkResponseContent, newConfiguration));
@@ -151,60 +125,69 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
         private static bool HasUpdatedCacheConfiguration(
             HttpLinkHcoCacheEntry previousEntry,
-            CacheEntryConfiguration newEntryConfiguration)
+            HttpLinkHcoCacheEntryConfiguration newEntryConfiguration)
         {
             return !previousEntry.IsConfigurationEquivalentTo(newEntryConfiguration);
         }
 
-        public async Task<HypermediaCommandResult> ResolveActionAsync(Uri uri, string method)
+        protected override async Task<HttpResponseMessage> ResolveAsync(Uri uriToResolve)
         {
-            var responseMessage = await SendCommandAsync(uri, method);
-            var actionResult = await HandleActionResponseAsync(responseMessage);
-            return actionResult;
+            return await this.httpClient.GetAsync(uriToResolve);
         }
 
-        public async Task<HypermediaCommandResult> ResolveActionAsync(Uri uri, string method, List<ParameterDescription> parameterDescriptions, object parameterObject)
+        protected override async Task<HttpResponseMessage> SendCommandAsync(
+            Uri uri,
+            string method,
+            string payload = null)
         {
-            var serializedParameters = ProcessParameters(parameterDescriptions, parameterObject);
+            var httpMethod = GetHttpMethod(method);
+            var request = new HttpRequestMessage(httpMethod, uri);
 
-            var responseMessage = await SendCommandAsync(uri, method, serializedParameters);
-            var actionResult = await HandleActionResponseAsync(responseMessage);
-            return actionResult;
+            if (!string.IsNullOrEmpty(payload))
+            {
+                request.Content = new StringContent(payload, Encoding.UTF8, DefaultMediaTypes.ApplicationJson);//CONTENT-TYPE header    
+            }
+
+            var responseMessage = await httpClient.SendAsync(request);
+
+            return responseMessage;
         }
 
-        public async Task<HypermediaFunctionResult<T>> ResolveFunctionAsync<T>(Uri uri, string method) where T : HypermediaClientObject
+        protected override async Task EnsureRequestIsSuccessfulAsync(HttpResponseMessage responseMessage)
         {
-            var responseMessage = await SendCommandAsync(uri, method);
-            var actionResult = await HandleFunctionResponseAsync<T>(responseMessage);
-            return actionResult;
-        }
-
-        public async Task<HypermediaFunctionResult<T>> ResolveFunctionAsync<T>(Uri uri, string method, List<ParameterDescription> parameterDescriptions, object parameterObject) where T : HypermediaClientObject
-        {
-            var serializedParameters = ProcessParameters(parameterDescriptions, parameterObject);
-
-            var responseMessage = await SendCommandAsync(uri, method, serializedParameters);
-            var actionResult = await HandleFunctionResponseAsync<T>(responseMessage);
-            return actionResult;
-        }
-
-        private async Task EnsureRequestIsSuccessfulAsync(HttpResponseMessage result)
-        {
-            if (result.IsSuccessStatusCode)
+            if (responseMessage.IsSuccessStatusCode)
             {
                 return;
             }
 
-            var innerException = GetInnerException(result);
+            var innerException = GetInnerException(responseMessage);
 
-            var (hasProblemDescription, problemDescription) = await this.TryReadProblemStringAsync(result);
+            var (hasProblemDescription, problemDescription) = await this.TryReadProblemStringAsync(responseMessage);
             if (hasProblemDescription)
             {
                 throw new HypermediaProblemException(problemDescription, innerException);
             }
 
             var message = innerException.Message ?? string.Empty;
-            throw new RequestNotSuccessfulException(message, (int)result.StatusCode, innerException);
+            throw new RequestNotSuccessfulException(message, (int)responseMessage.StatusCode, innerException);
+        }
+
+        private async Task<(bool hasProblemDescription, ProblemDescription problemDescription)> TryReadProblemStringAsync(HttpResponseMessage response)
+        {
+            if (response.Content == null)
+            {
+                return (false, null);
+            }
+            try
+            {
+                var contentAsString = await response.Content.ReadAsStringAsync();
+                var result = this.ProblemReader.TryReadProblemString(contentAsString, out var problemDescription);
+                return (result, problemDescription);
+            }
+            catch (Exception)
+            {
+                return (false, null);
+            }
         }
 
         private static Exception GetInnerException(HttpResponseMessage result)
@@ -221,221 +204,57 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
             return null;
         }
 
-        private async Task<(bool hasProblemDescription, ProblemDescription problemDescription)> TryReadProblemStringAsync(HttpResponseMessage response)
+        protected override async Task<Stream> ResponseAsStreamAsync(HttpResponseMessage responseMessage)
         {
-            if (response.Content == null)
-            {
-                return (false, null);
-            }
-            try
-            {
-                var contentAsString = await response.Content.ReadAsStringAsync();
-                var result = this.problemReader.TryReadProblemString(contentAsString, out var problemDescription);
-                return (result, problemDescription);
-            }
-            catch (Exception)
-            {
-                return (false, null);
-            }
+            return await responseMessage.Content.ReadAsStreamAsync();
         }
 
-        private string ProcessParameters(List<ParameterDescription> parameterDescriptions, object parameterObject)
+        protected override Uri GetLocation(HttpResponseMessage responseMessage)
         {
-            if (parameterObject == null)
-            {
-                throw new Exception("Parameter is described but not passed by action.");
-            }
-
-            var parameterDescription = GetParameterDescription(parameterDescriptions);
-
-            var serializedParameters = parameterSerializer.SerializeParameterObject(parameterDescription.Name, parameterObject);
-            return serializedParameters;
-        }
-
-        private static ParameterDescription GetParameterDescription(List<ParameterDescription> parameterDescriptions)
-        {
-            if (parameterDescriptions.Count == 0)
-            {
-                throw new Exception("Parameter not described.");
-            }
-
-            // todo allow more fields
-            if (parameterDescriptions.Count > 1)
-            {
-                throw new Exception("Only one action parameter is supported.");
-            }
-
-            // todo allow more types
-            var parameterDescription = parameterDescriptions.First();
-            if (!parameterDescription.Type.Equals(DefaultMediaTypes.ApplicationJson))
-            {
-                throw new Exception("Only one action type 'application/json' is supported.");
-            }
-            return parameterDescription;
-        }
-
-        private async Task<(ResolverResult<T>, string)> HandleLinkResponseAsync<T>(HttpResponseMessage responseMessage, bool exportToString)
-            where T : HypermediaClientObject
-        {
-            await this.EnsureRequestIsSuccessfulAsync(responseMessage);
-
-            var hypermediaObjectSiren = await responseMessage.Content.ReadAsStreamAsync();
-
-            if (this.hypermediaReader == null)
-            {
-                throw new Exception(
-                    $"Please setup the hypermediaReader before using the resolver. see {nameof(InitializeHypermediaReader)}");
-            }
-
-            HypermediaClientObject hypermediaClientObject;
-            string export = string.Empty;
-            if (exportToString)
-            {
-                (hypermediaClientObject, export) = await this.hypermediaReader.ReadAndExportAsync(hypermediaObjectSiren);
-            }
-            else
-            {
-                hypermediaClientObject = await this.hypermediaReader.ReadAsync(hypermediaObjectSiren);
-            }
-
-            if (!(hypermediaClientObject is T desiredResultObject))
-            {
-                throw new Exception($"Could not retrieve result as {typeof(T).Name} ");
-            }
-
-            var resolverResult = new ResolverResult<T>()
-            {
-                ResultObject = desiredResultObject,
-                Success = true,
-            };
-            return (resolverResult, export);
-        }
-
-        private async Task<HypermediaCommandResult> HandleActionResponseAsync(HttpResponseMessage responseMessage)
-        {
-            await this.EnsureRequestIsSuccessfulAsync(responseMessage);
-
-            var actionResult = new HypermediaCommandResult()
-            {
-                Success = true
-            };
-            return actionResult;
-        }
-
-        private async Task<HypermediaFunctionResult<T>> HandleFunctionResponseAsync<T>(HttpResponseMessage responseMessage) where T : HypermediaClientObject
-        {
-            await this.EnsureRequestIsSuccessfulAsync(responseMessage);
-
-            var location = responseMessage.Headers.Location;
-            if (location == null)
-            {
-                throw new Exception("hypermedia function did not return a result resource location.");
-            }
-
-            var actionResult = new HypermediaFunctionResult<T>
-            {
-                Success = true,
-                ResultLocation =
-                {
-                    Uri = location,
-                    Resolver = this
-                },
-            };
-
-            return actionResult;
-        }
-
-        private async Task<HttpResponseMessage> SendCommandAsync(Uri uri, string method, string payload = null)
-        {
-            var httpMethod = GetHttpMethod(method);
-            var request = new HttpRequestMessage(httpMethod, uri);
-
-            if (!string.IsNullOrEmpty(payload))
-            {
-                request.Content = new StringContent(payload, Encoding.UTF8, DefaultMediaTypes.ApplicationJson);//CONTENT-TYPE header    
-            }
-
-            var responseMessage = await httpClient.SendAsync(request);
-
-            return responseMessage;
-        }
-
-        private void InitializeHttpClient()
-        {
-            if (httpClient == null)
-            {
-                httpClient = new HttpClient();
-            }
-
-            httpClient.DefaultRequestHeaders.Clear();
-
-            if (HasCustomHeaders())
-            {
-                AddCustomDefaultHeadersAction.Invoke(httpClient.DefaultRequestHeaders);
-            }
-
-            if (HasCredentials())
-            {
-                httpClient.DefaultRequestHeaders.Authorization = CreateBasicAuthHeaderValue(UsernamePasswordCredentials);
-            }
-
-            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(DefaultMediaTypes.Siren));
-        }
-
-        private bool HasCustomHeaders()
-        {
-            return AddCustomDefaultHeadersAction != null;
-        }
-
-        private static AuthenticationHeaderValue CreateBasicAuthHeaderValue(UsernamePasswordCredentials credentials)
-        {
-            var encodedCredentials = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(credentials.User + ":" + credentials.Password));
-            return new AuthenticationHeaderValue("Basic", encodedCredentials);
-        }
-
-        private bool HasCredentials()
-        {
-            return UsernamePasswordCredentials != null;
+            return responseMessage.Headers.Location;
         }
 
         private static HttpMethod GetHttpMethod(string method)
         {
-            switch (method)
+            switch (method.ToUpperInvariant())
             {
-                case "POST":
-                    return HttpMethod.Post;
-                case "GET":
-                    return HttpMethod.Get;
                 case "DELETE":
                     return HttpMethod.Delete;
+                case "GET":
+                    return HttpMethod.Get;
+                case "HEAD":
+                    return HttpMethod.Head;
+                case "OPTIONS":
+                    return HttpMethod.Options;
+                case "POST":
+                    return HttpMethod.Post;
                 case "PUT":
                     return HttpMethod.Put;
+                case "TRACE":
+                    return HttpMethod.Trace;
+                case "PATCH":
+                    return new HttpMethod("PATCH");
                 default:
                     throw new Exception($"Unknown method: '{method}'");
             }
         }
 
-        public void SetCredentials(UsernamePasswordCredentials usernamePasswordCredentials)
+        protected override void Dispose(bool disposing)
         {
-            UsernamePasswordCredentials = usernamePasswordCredentials;
-            InitializeHttpClient();
-            ClearCache();
-        }
+            if (this.alreadyDisposed)
+            {
+                return;
+            }
+            if (disposing)
+            {
+                if (this.disposeHttpClient)
+                {
+                    this.httpClient.Dispose();
+                }
+            }
 
-        private void ClearCache()
-        {
-            this.linkHcoCache?.Clear();
-        }
-
-        public void SetCustomDefaultHeaders(Action<HttpRequestHeaders> addCustomDefaultHeadersAction)
-        {
-            AddCustomDefaultHeadersAction = addCustomDefaultHeadersAction;
-            InitializeHttpClient();
-        }
-
-        public void Dispose()
-        {
-            httpClient?.Dispose();
+            this.alreadyDisposed = true;
+            base.Dispose(disposing);
         }
     }
 }

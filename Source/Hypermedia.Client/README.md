@@ -6,9 +6,10 @@ _Experimental_ project to create a Client which allows typed access to a Rest Ap
 
 ## Usage
 
-### Creating the client
+### Creating the resolver
+- setting up the object register and the hypermedia reader
 ``` csharp
-var client = new HypermediaClientBuilder()
+var builder = new HypermediaResolverBuilder()
     .ConfigureObjectRegister(register =>
     {
         register.Register<EntryPointHco>();
@@ -16,73 +17,67 @@ var client = new HypermediaClientBuilder()
         ...
     })
     .WithSirenHypermediaReader()
-    ...
-    .CreateHypermediaClient<EntryPointHco>(entryPointUri);
 ```
 
 - with Newtonsoft.Json
 
 => reference Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson nuget package
 ``` csharp
-var client = new HypermediaClientBuilder()
+var builder = new HypermediaResolverBuilder()
     ...
     .WithSingleNewtonsoftJsonObjectParameterSerializer()
     .WithNewtonsoftJsonStringParser()
     .WithNewtonsoftJsonProblemReader()
-    ...
-    .CreateHypermediaClient<EntryPointHco>(entryPointUri);
 ```
 
 - with System.Text.Json
 
 => reference Bluehands.Hypermedia.Client.Extensions.SystemTextJson
 ``` csharp
-var client = new HypermediaClientBuilder()
+var builder = new HypermediaResolverBuilder()
     ...
     .WithSingleSystemTextJsonObjectParameterSerializer()
     .WithSystemTextJsonStringParser()
     .WithSystemTextJsonProblemReader()
-    ...
-    .CreateHypermediaClient<EntryPointHco>(entryPointUri);
 ```
 
 - with System.Net.Http
 
 => reference Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 ``` csharp
-var client = new HypermediaClientBuilder()
+var httpClient = new HttpClient();
+// configure the HttpClient, e.g. authorization
+var resolver = new HypermediaResolverBuilder()
     ...
-    .WithHttpHypermediaResolver(resolver =>
-    {
-        resolver.SetCredentials(new UsernamePasswordCredentials("User", "Password"));
-        ...
-    })
-    ...
-    .CreateHypermediaClient<EntryPointHco>(entryPointUri);
+    .CreateHttpHypermediaResolver(httpClient);
 ```
 or with a cached resolver
 ``` csharp
-var client = new HypermediaClientBuilder()
+var httpClient = new HttpClient();
+// configure the HttpClient, e.g. authorization
+var resolver = new HypermediaResolverBuilder()
     ...
-    .WithCachedHttpHypermediaResolver(
-        linkCacheImplementation,
-        resolver =>
-        {
-            resolver.SetCredentials(new UsernamePasswordCredentials("User", "Password));
-            ...
-        })
+    .CreateHttpHypermediaResolver(
+        httpClient,
+        linkCacheImplementation);
+```
+if the HttpClient changes throughout the application lifetime, you can build a factory method that will create a new IHypermediaResolver for a given HttpClient, that is then used for that IHypermediaResolver:
+``` csharp
+var resolverFactory = new HypermediaResolverBuilder()
     ...
-    .CreateHypermediaClient<EntryPointHco>(entryPointUri);
+    .CreateHttpHypermediaResolverFactory();
+...
+var httpClient = new HttpClient();
+// configure the HttpClient, e.g. authorization
+var resolver = resolverFactory(httpClient);
 ```
 
 There is still a lot to do:
-- Pass HttpClient to resolver so lib user has access
 - Exception handling
 - Error responses by the api (http, authorization, hypermediaparsing and api), problem json, status codes
 - (more) Authentification/Authorization
-- Use chache info from header so client may cache resolved documents
 - Allow actions with schemas OR fields
-- Add a attribute wich holds the json property name which should be desrialized into a hco property
+- Add a attribute wich holds the json property name which should be deserialized into a hco property
 ...
 
 Assumptions:
