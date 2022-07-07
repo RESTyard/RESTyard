@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "91175866-4dcb-4a76-8c42-6296e0bd7451",
+		"_postman_id": "37a7b8a0-a672-454d-8e08-36172a83dfdf",
 		"name": "CarShack",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -155,10 +155,10 @@
 				{
 					"listen": "test",
 					"script": {
-						"type": "text/javascript",
 						"exec": [
 							"tests[\"response code is 200\"] = responseCode.code === 200;"
-						]
+						],
+						"type": "text/javascript"
 					}
 				}
 			],
@@ -166,14 +166,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:5000/ActionParmameterTypes/CreateCustomerParameters",
+					"raw": "http://localhost:5000/ActionParameterTypes/CreateCustomerParameters",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "5000",
 					"path": [
-						"ActionParmameterTypes",
+						"ActionParameterTypes",
 						"CreateCustomerParameters"
 					]
 				}

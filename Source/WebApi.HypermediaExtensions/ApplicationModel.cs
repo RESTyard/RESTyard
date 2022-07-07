@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using WebApi.HypermediaExtensions.Hypermedia;
 using WebApi.HypermediaExtensions.Hypermedia.Actions;
 using WebApi.HypermediaExtensions.Util;
@@ -12,13 +13,13 @@ using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
 
 namespace WebApi.HypermediaExtensions
 {
-    class ApplicationModel
+    public class ApplicationModel
     {
         public ImmutableDictionary<Type, HmoType> HmoTypes { get; }
         public ImmutableDictionary<Type, ActionParameterType> ActionParameterTypes { get; }
         public ImmutableArray<ControllerType> ControllerTypes { get; }
 
-        public static ApplicationModel Create(params Assembly[] assemblies)
+        public static ApplicationModel Create(Assembly[] assemblies)
         {
             var implementingAssemblies = (assemblies.Length > 0
                 ? assemblies
@@ -26,7 +27,7 @@ namespace WebApi.HypermediaExtensions
 
             var controllerTypes = implementingAssemblies
                 .SelectMany(a => a.GetTypes()
-                    .Where(t => typeof(Controller).GetTypeInfo().IsAssignableFrom(t))
+                    .Where(t => typeof(ControllerBase).GetTypeInfo().IsAssignableFrom(t))
                     .Select(t =>
                     {
                         return new ControllerType(t,

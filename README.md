@@ -23,27 +23,13 @@ The Extensions allow you to build a restful web server which responds with Siren
 HypermediaObjects returned from Controllers will be formatted as Siren. All contained referenced HypermediaObjects (e.g. Links and embedded Entities), Actions, and Parameter types (of Actions) are automatically resolved and properly inserted into the Siren document, by looking up attributed routes.
 
 ## Using it in a project
-To use the Extensions just call `AddHypermediaExtensions()` when adding MCV in `Startup.cs`:
+To use the Extensions just call `AddHypermediaExtensions()` on your DI container:
 
 ``` csharp
-public void ConfigureServices(IServiceCollection services)
+builder.Services.AddHypermediaExtensions(o =>
 {
-    var builder = services.AddMvcCore(options =>
-    {
-        ...
-    });
-            
-    ...
-
-    // Initializes and adds the Hypermedia Extensions
-    builder.AddHypermediaExtensions(services,
-        new HypermediaExtensionsOptions
-        {
-            ReturnDefaultRouteForUnknownHto = true // useful during development
-        });
-
-    ...
-}
+    o.ReturnDefaultRouteForUnknownHto = true; // useful during development
+});
 ```
 
 To configure the generated URLs in the Hypermedia documents pass a `HypermediaUrlConfig` to `AddHypermediaExtensionsInternal()`. In this way absolute URLs can be generated which have a different scheme or another host e.g. a load balancer.
@@ -471,6 +457,31 @@ Tested for:
 - Nullable
 
 ## Release Notes
+
+### WebApiHypermediaExtensions v1.8.2
+
+- Fix no route key producer was added when template was null but controller still might contain a route template with variables
+
+### WebApiHypermediaExtensions v1.8.1
+
+- Bugfix: controller route templates were not used in automated RouteKeyProducers so full templates were needed on all methods.
+  Now the Controller template is added to the one from the method
+- Rework initialization so all classes are build from DI
+  - Additional options to allow replacement of `IRouteRegister` and `IQueryStringBuilder` if needed
+
+
+### WebApiHypermediaExtensions v1.8.0
+
+- Reworked initialization of the framework so a single method call on the service collection is enough
+  - more general approach
+  - configuration is now done using a lambda
+- Removed unneccessary ProblemJsonFormatter. Instead use the configured formatter.
+
+### WebApiHypermediaExtensions v1.7.0
+
+- Add new HTTP methods available for operations:
+  - PATCH
+  - DELETE
 
 ### WebApiHypermediaExtensions v1.6.1
 

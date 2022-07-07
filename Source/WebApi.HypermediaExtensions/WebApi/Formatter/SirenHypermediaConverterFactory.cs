@@ -1,23 +1,23 @@
 namespace WebApi.HypermediaExtensions.WebApi.Formatter
 {
-    using global::WebApi.HypermediaExtensions.Query;
-    using global::WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
-    using global::WebApi.HypermediaExtensions.WebApi.RouteResolver;
+    using Query;
+    using ExtensionMethods;
+    using RouteResolver;
 
     internal class SirenHypermediaConverterFactory : ISirenHypermediaConverterFactory
     {
         private readonly IQueryStringBuilder queryStringBuilder;
-        private readonly HypermediaConverterConfiguration hypermediaConverterConfiguration;
+        private readonly HypermediaExtensionsOptions hypermediaExtensionsOptions;
 
-        public SirenHypermediaConverterFactory(IQueryStringBuilder queryStringBuilder, HypermediaConverterConfiguration hypermediaConverterConfiguration = null)
+        public SirenHypermediaConverterFactory(IQueryStringBuilder queryStringBuilder, HypermediaExtensionsOptions hypermediaExtensionsOptions)
         {
             this.queryStringBuilder = queryStringBuilder;
-            this.hypermediaConverterConfiguration = hypermediaConverterConfiguration;
+            this.hypermediaExtensionsOptions = hypermediaExtensionsOptions;
         }
 
         public IHypermediaConverter CreateSirenConverter(IHypermediaRouteResolver hypermediaRouteResolver)
         {
-            return new SirenConverter(hypermediaRouteResolver, this.queryStringBuilder, this.hypermediaConverterConfiguration);
+            return new SirenConverter(hypermediaRouteResolver, queryStringBuilder, hypermediaExtensionsOptions.HypermediaConverterConfiguration);
         }
     }
 }
