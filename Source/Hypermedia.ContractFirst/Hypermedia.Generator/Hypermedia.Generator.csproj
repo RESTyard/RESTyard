@@ -9,6 +9,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>hypermedia-generator</ToolCommandName>
+    <VersionPrefix>0.1</VersionPrefix>
   </PropertyGroup>
 
   <ItemGroup>
