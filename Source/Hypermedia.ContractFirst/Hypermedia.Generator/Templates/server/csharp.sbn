@@ -21,6 +21,7 @@ using WebApi.HypermediaExtensions.Hypermedia.Extensions;
 using WebApi.HypermediaExtensions.Hypermedia.Links;
 using WebApi.HypermediaExtensions.Query;
 using WebApi.HypermediaExtensions.WebApi.RouteResolver;
+{{ IncludeContent }}
 
 {{- if isNotEmpty Namespace }}
 

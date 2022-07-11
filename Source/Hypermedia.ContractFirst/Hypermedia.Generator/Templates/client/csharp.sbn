@@ -15,6 +15,7 @@ using Bluehands.Hypermedia.Client.Hypermedia;
 using Bluehands.Hypermedia.Client.Hypermedia.Attributes;
 using Bluehands.Hypermedia.Client.Hypermedia.Commands;
 using Bluehands.Hypermedia.Relations;
+{{ IncludeContent }}
 
 {{- if isNotEmpty Namespace }}
 
