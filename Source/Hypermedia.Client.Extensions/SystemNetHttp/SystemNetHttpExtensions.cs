@@ -1,4 +1,9 @@
 ﻿using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using Bluehands.Hypermedia.Client.Authentication;
+using Bluehands.Hypermedia.Client.Builder;
 using Bluehands.Hypermedia.Client.Resolver;
 using Bluehands.Hypermedia.Client.Resolver.Caching;
 
@@ -7,47 +12,111 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
     public static class SystemNetHttpExtensions
     {
         /// <summary>
-        /// Use to resolve URIs over HTTP
+        /// Create an IHypermediaResolver that communicates with the Server via HTTP using the given HttpClient.
         /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="configure">Additional configuration for the resolver, such as setting credentials or custom default headers</param>
+        /// <param name="builder">The HypermediaResolverBuilder</param>
+        /// <param name="httpClient">The HttpClient to use for the network communication. Set up headers like Authentication beforehand.</param>
+        /// <param name="disposeHttpClient">If <c>true</c>, disposes the injected HttpClient when the IHypermediaResolver is disposed</param>
         /// <returns></returns>
-        public static HypermediaClientBuilder WithHttpHypermediaResolver(
-            this HypermediaClientBuilder builder,
-            Action<IHttpHypermediaResolverConfiguration> configure)
+        public static IHypermediaResolver CreateHttpHypermediaResolver(
+            this IHypermediaResolverBuilder builder,
+            HttpClient httpClient,
+            bool disposeHttpClient = true)
         {
-            return builder.WithCustomHypermediaResolver((serializer, problemReader) =>
-            {
-                var resolver = new HttpHypermediaResolver(
-                    serializer,
-                    problemReader,
-                    NoLinkCache<HttpLinkHcoCacheEntry>.Instance);
-                configure(resolver);
-                return resolver;
-            });
+            var dependencies = builder.BuildDependencies();
+            var resolver = new HttpHypermediaResolver(
+                httpClient,
+                disposeHttpClient,
+                dependencies.HypermediaReader,
+                dependencies.ParameterSerializer,
+                dependencies.ProblemReader,
+                NoLinkCache<HttpLinkHcoCacheEntry>.Instance);
+            return resolver;
         }
 
         /// <summary>
-        /// Use to resolve URIs over HTTP. Caches incoming links that have an ETag. Additional code is needed from the server to make use of caching. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag
+        /// Create a factory to build an IHypermediaResolver that communicates with the server via HTTP. The HttpClient used for the network communication is provided as a parameter to the factory method.
         /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="linkHcoCache">The cache to store incoming links in. The cache is responsible to adhere to capacity limits and implement replacement strategies</param>
-        /// <param name="configure">Additional configuration for the resolver, such as setting credentials or custom default headers</param>
+        /// <param name="builder">The HypermediaResolverBuilder</param>
         /// <returns></returns>
-        public static HypermediaClientBuilder WithCachedHttpHypermediaResolver(
-            this HypermediaClientBuilder builder,
-            ILinkHcoCache<HttpLinkHcoCacheEntry> linkHcoCache,
-            Action<IHttpHypermediaResolverConfiguration> configure)
+        public static IHttpHypermediaResolverFactory CreateHttpHypermediaResolverFactory(
+            this IHypermediaResolverBuilder builder)
         {
-            return builder.WithCustomHypermediaResolver((serializer, problemReader) =>
-            {
-                var resolver = new HttpHypermediaResolver(
-                    serializer,
-                    problemReader,
-                    linkHcoCache);
-                configure(resolver);
-                return resolver;
-            });
+            var dependencies = builder.BuildDependencies();
+            return new HttpHypermediaResolverFactory(
+                dependencies.HypermediaReader,
+                dependencies.ParameterSerializer,
+                dependencies.ProblemReader,
+                NoLinkCache<HttpLinkHcoCacheEntry>.Instance);
+        }
+
+        /// <summary>
+        /// Create an IHypermediaResolver that communicates with the Server via HTTP using the given HttpClient, and with the ability to cache the results of HypermediaLinks
+        /// </summary>
+        /// <param name="builder">The HypermediaResolverBuilder</param>
+        /// <param name="httpClient">The HttpClient to use for the network communication. Set up headers like Authentication beforehand.</param>
+        /// <param name="linkHcoCache">The cache to store and retrieve results of HypermediaLinks.</param>
+        /// <param name="disposeHttpClient">If <c>true</c>, disposes the injected HttpClient when the IHypermediaResolver is disposed</param>
+        /// <returns></returns>
+        public static IHypermediaResolver CreateCachedHttpHypermediaResolver(
+            this IHypermediaResolverBuilder builder,
+            HttpClient httpClient,
+            ILinkHcoCache<HttpLinkHcoCacheEntry> linkHcoCache,
+            bool disposeHttpClient = true)
+        {
+            var dependencies = builder.BuildDependencies();
+            var resolver = new HttpHypermediaResolver(
+                httpClient,
+                disposeHttpClient,
+                dependencies.HypermediaReader,
+                dependencies.ParameterSerializer,
+                dependencies.ProblemReader,
+                linkHcoCache);
+            return resolver;
+        }
+
+        /// <summary>
+        /// Create a factory to build an IHypermediaResolver that communicates with the server via HTTP, with the ability to cache the results of HypermediaLinks. The HttpClient used for the network communication is provided as a parameter to the factory method.
+        /// </summary>
+        /// <param name="builder">The HypermediaResolverBuilder</param>
+        /// <param name="linkHcoCache">The cache to store and retrieve results of HypermediaLinks</param>
+        /// <returns></returns>
+        public static IHttpHypermediaResolverFactory CreatedCachedHttpHypermediaResolverFactory(
+            this IHypermediaResolverBuilder builder,
+            ILinkHcoCache<HttpLinkHcoCacheEntry> linkHcoCache)
+        {
+            var dependencies = builder.BuildDependencies();
+            return new HttpHypermediaResolverFactory(
+                dependencies.HypermediaReader,
+                dependencies.ParameterSerializer,
+                dependencies.ProblemReader,
+                linkHcoCache);
+        }
+
+        /// <summary>
+        /// Create a factory to build an IHypermediaResolver that communicates with the server via HTTP, with the ability to cache the results of HypermediaLinks per session. The HttpClient used for the network communication is provided as a parameter to the factory method, as well as an additional parameter used for creating the cache.
+        /// </summary>
+        /// <typeparam name="TParameter">The Parameter type to instantiate the cache</typeparam>
+        /// <param name="builder">The IHypermediaResolverBuilder</param>
+        /// <param name="createLinkHcoCache">The factory to create the cache that stores and retrieves the results of HypermediaLinks</param>
+        /// <returns></returns>
+        public static IHttpHypermediaResolverFactory<TParameter> CreateCachedHttpHypermediaResolverFactory<TParameter>(
+            this IHypermediaResolverBuilder builder,
+            Func<TParameter, ILinkHcoCache<HttpLinkHcoCacheEntry>> createLinkHcoCache)
+        {
+            var dependencies = builder.BuildDependencies();
+            return new HttpHypermediaResolverFactory<TParameter>(
+                dependencies.HypermediaReader,
+                dependencies.ParameterSerializer,
+                dependencies.ProblemReader,
+                createLinkHcoCache);
+        }
+
+        public static AuthenticationHeaderValue CreateBasicAuthHeaderValue(
+            this UsernamePasswordCredentials credentials)
+        {
+            var encodedCredentials = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(credentials.User + ":" + credentials.Password));
+            return new AuthenticationHeaderValue("Basic", encodedCredentials);
         }
     }
 }

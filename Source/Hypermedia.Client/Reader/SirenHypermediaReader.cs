@@ -26,7 +26,6 @@ namespace Bluehands.Hypermedia.Client.Reader
     {
         private readonly IHypermediaObjectRegister hypermediaObjectRegister;
         private readonly IHypermediaCommandFactory hypermediaCommandFactory;
-        private IHypermediaResolver resolver;
         private readonly IStringParser stringParser;
         private readonly DistinctOrderedStringCollectionComparer distinctOrderedStringCollectionComparer = new DistinctOrderedStringCollectionComparer();
 
@@ -39,49 +38,55 @@ namespace Bluehands.Hypermedia.Client.Reader
             this.stringParser = stringParser;
         }
 
-        public void InitializeHypermediaResolver(IHypermediaResolver resolver)
-        {
-            this.resolver = resolver;
-        }
-
-        public HypermediaClientObject Read(string contentString)
+        public HypermediaClientObject Read(
+            string contentString,
+            IHypermediaResolver resolver)
         {
             // TODO inject deserializer
             // todo catch exception: invalid format
             var rootObject = this.stringParser.Parse(contentString);
-            var result = this.ReadHypermediaObject(rootObject);
+            var result = this.ReadHypermediaObject(rootObject, resolver);
             return result;
         }
 
-        public async Task<HypermediaClientObject> ReadAsync(Stream contentStream)
+        public async Task<HypermediaClientObject> ReadAsync(
+            Stream contentStream,
+            IHypermediaResolver resolver)
         {
             var rootObject = await this.stringParser.ParseAsync(contentStream);
-            var result = this.ReadHypermediaObject(rootObject);
+            var result = this.ReadHypermediaObject(rootObject, resolver);
             return result;
         }
 
-        public async Task<(HypermediaClientObject, string)> ReadAndExportAsync(Stream contentStream)
+        public async Task<(HypermediaClientObject, string)> ReadAndSerializeAsync(
+            Stream contentStream,
+            IHypermediaResolver resolver)
         {
             var rootObject = await this.stringParser.ParseAsync(contentStream);
-            var result = this.ReadHypermediaObject(rootObject);
+            var result = this.ReadHypermediaObject(rootObject, resolver);
             var export = rootObject.Serialize();
             return (result, export);
         }
 
-        private HypermediaClientObject ReadHypermediaObject(IToken rootObject)
+        private HypermediaClientObject ReadHypermediaObject(
+            IToken rootObject,
+            IHypermediaResolver resolver)
         {
             var classes = ReadClasses(rootObject);
             var hypermediaObjectInstance = this.hypermediaObjectRegister.CreateFromClasses(classes);
 
             this.ReadTitle(hypermediaObjectInstance, rootObject);
             this.ReadRelations(hypermediaObjectInstance, rootObject);
-            this.FillHypermediaProperties(hypermediaObjectInstance, rootObject);
+            this.FillHypermediaProperties(hypermediaObjectInstance, rootObject, resolver);
             
 
             return hypermediaObjectInstance;
         }
 
-        private void FillHypermediaProperties(HypermediaClientObject hypermediaObjectInstance, IToken rootObject)
+        private void FillHypermediaProperties(
+            HypermediaClientObject hypermediaObjectInstance,
+            IToken rootObject,
+            IHypermediaResolver resolver)
         {
             var typeInfo = hypermediaObjectInstance.GetType().GetTypeInfo();
             var properties = typeInfo.GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -99,19 +104,17 @@ namespace Bluehands.Hypermedia.Client.Reader
                     case HypermediaPropertyType.Property:
                         FillProperty(hypermediaObjectInstance, propertyInfo, rootObject);
                         break;
-                   
                     case HypermediaPropertyType.Link:
-                        this.FillLink(hypermediaObjectInstance, propertyInfo, rootObject);
+                        this.FillLink(hypermediaObjectInstance, propertyInfo, rootObject, resolver);
                         break;
-
                     case HypermediaPropertyType.Entity:
-                        this.FillEntity(hypermediaObjectInstance, propertyInfo, rootObject);
+                        this.FillEntity(hypermediaObjectInstance, propertyInfo, rootObject, resolver);
                         break;
                     case HypermediaPropertyType.EntityCollection:
-                        this.FillEntities(hypermediaObjectInstance, propertyInfo, rootObject);
+                        this.FillEntities(hypermediaObjectInstance, propertyInfo, rootObject, resolver);
                         break;
                     case HypermediaPropertyType.Command:
-                        this.FillCommand(hypermediaObjectInstance, propertyInfo, rootObject);
+                        this.FillCommand(hypermediaObjectInstance, propertyInfo, rootObject, resolver);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -122,7 +125,11 @@ namespace Bluehands.Hypermedia.Client.Reader
         
         //todo linked entities
         //todo no derived types considered
-        private void FillEntities(HypermediaClientObject hypermediaObjectInstance, PropertyInfo propertyInfo, IToken rootObject)
+        private void FillEntities(
+            HypermediaClientObject hypermediaObjectInstance,
+            PropertyInfo propertyInfo,
+            IToken rootObject,
+            IHypermediaResolver resolver)
         {
             var relationsAttribute = propertyInfo.GetCustomAttribute<HypermediaRelationsAttribute>();
             var classes = this.GetClassesFromEntitiesListProperty(propertyInfo);
@@ -143,14 +150,17 @@ namespace Bluehands.Hypermedia.Client.Reader
 
             foreach (var match in matchingEntities)
             {
-                var entity = this.ReadHypermediaObject(match);
+                var entity = this.ReadHypermediaObject(match, resolver);
                 genericAddFunction.Invoke(entityCollection, new object[] { entity });
             }
 
         }
 
-
-        private void FillCommand(HypermediaClientObject hypermediaObjectInstance, PropertyInfo propertyInfo, IToken rootObject)
+        private void FillCommand(
+            HypermediaClientObject hypermediaObjectInstance,
+            PropertyInfo propertyInfo,
+            IToken rootObject,
+            IHypermediaResolver resolver)
         {
             var commandAttribute = propertyInfo.GetCustomAttribute<HypermediaCommandAttribute>();
             if (commandAttribute == null)
@@ -160,7 +170,6 @@ namespace Bluehands.Hypermedia.Client.Reader
 
             // create instance in any case so CanExecute can be called
             var commandInstance = this.CreateHypermediaClientCommand(propertyInfo.PropertyType);
-            commandInstance.Resolver = this.resolver;
 
             propertyInfo.SetValue(hypermediaObjectInstance, commandInstance);
 
@@ -175,13 +184,18 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return;
             }
             
-            this.FillCommandParameters(commandInstance, desiredAction, commandAttribute.Name);
+            this.FillCommandParameters(commandInstance, desiredAction, commandAttribute.Name, resolver);
         }
 
-        private void FillCommandParameters(IHypermediaClientCommand commandInstance, IToken action, string commandName)
+        private void FillCommandParameters(
+            IHypermediaClientCommand commandInstance,
+            IToken action,
+            string commandName,
+            IHypermediaResolver resolver)
         {
             commandInstance.Name = commandName;
             commandInstance.CanExecute = true;
+            commandInstance.Resolver = resolver;
 
             var title = action["title"]?.ValueAsString();
             if (title == null)
@@ -251,7 +265,11 @@ namespace Bluehands.Hypermedia.Client.Reader
             return name.Equals(commandName);
         }
 
-        private void FillEntity(HypermediaClientObject hypermediaObjectInstance, PropertyInfo propertyInfo, IToken rootObject)
+        private void FillEntity(
+            HypermediaClientObject hypermediaObjectInstance,
+            PropertyInfo propertyInfo,
+            IToken rootObject,
+            IHypermediaResolver resolver)
         {
             var relationsAttribute = propertyInfo.GetCustomAttribute<HypermediaRelationsAttribute>();
             var classes = GetClassesFromEntityProperty(propertyInfo.PropertyType.GetTypeInfo());
@@ -277,7 +295,7 @@ namespace Bluehands.Hypermedia.Client.Reader
                 return;
             }
 
-            var entity = this.ReadHypermediaObject(jEntity);
+            var entity = this.ReadHypermediaObject(jEntity, resolver);
             propertyInfo.SetValue(hypermediaObjectInstance, entity);
         }
 
@@ -337,7 +355,11 @@ namespace Bluehands.Hypermedia.Client.Reader
         }
 
 
-        private void FillLink(HypermediaClientObject hypermediaObjectInstance, PropertyInfo propertyInfo, IToken rootObject)
+        private void FillLink(
+            HypermediaClientObject hypermediaObjectInstance,
+            PropertyInfo propertyInfo,
+            IToken rootObject,
+            IHypermediaResolver resolver)
         {
             var linkAttribute = propertyInfo.GetCustomAttribute<HypermediaRelationsAttribute>();
             if (linkAttribute == null)
@@ -346,7 +368,6 @@ namespace Bluehands.Hypermedia.Client.Reader
             }
 
             var hypermediaLink = (IHypermediaLink)Activator.CreateInstance(propertyInfo.PropertyType);
-            hypermediaLink.Resolver = this.resolver;
             propertyInfo.SetValue(hypermediaObjectInstance, hypermediaLink);
 
             var links = rootObject["links"];
@@ -371,6 +392,7 @@ namespace Bluehands.Hypermedia.Client.Reader
             
             hypermediaLink.Uri = new Uri(link["href"].ValueAsString());
             hypermediaLink.Relations = link["rel"].ChildrenAsStrings().ToList();
+            hypermediaLink.Resolver = resolver;
         }
 
         // todo attribute with different property name

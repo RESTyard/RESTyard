@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xs:schema 
-	attributeFormDefault="unqualified" 
+<xs:schema
+	attributeFormDefault="unqualified"
 	elementFormDefault="qualified"
 	targetNamespace="http://schema.bluehands.de/2022/Hypermedia.xsd"
     xmlns:hm="http://schema.bluehands.de/2022/Hypermedia.xsd"
@@ -35,6 +35,7 @@
 			<xs:element name="Entities" type="hm:EntitiesType" minOccurs="0" maxOccurs="1"></xs:element>
 			<xs:element name="Operations" type="hm:OperationsType" minOccurs="0" maxOccurs="1"></xs:element>
 			<xs:element name="Links" type="hm:LinksType" minOccurs="0" maxOccurs="1" ></xs:element>
+			<xs:element name="Policies" type="hm:PoliciesType" minOccurs="0" maxOccurs="1"/>
 		</xs:sequence>
 		<xs:attribute type="xs:string" name="name" use="required"/>
 		<xs:attribute type="xs:string" name="title" use="optional"/>
@@ -71,13 +72,16 @@
 	</xs:complexType>
 
 	<!-- Operations -->
-	
+
 	<xs:complexType name="OperationsType">
 		<xs:sequence>
 			<xs:element name="Operation" type="hm:OperationType" maxOccurs="unbounded" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="OperationType">
+		<xs:sequence>
+			<xs:element name="Policies" type="hm:PoliciesType" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
 		<xs:attribute type="xs:string" name="name" use="required"/>
 		<xs:attribute type="hm:method" name="method" use="required"/>
 		<xs:attribute type="xs:string" name="title" use="optional"/>
@@ -91,7 +95,6 @@
 			<xs:element name="Parameters" type="hm:ParameterType" maxOccurs="unbounded" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
-
 
 	<xs:complexType name="ParameterType">
 		<xs:sequence>
@@ -115,7 +118,7 @@
 			</xs:extension>
 		</xs:simpleContent>
 	</xs:complexType>
-	
+
 	<!-- Links -->
 
 	<xs:complexType name="LinksType">
@@ -153,6 +156,24 @@
 			<xs:enumeration value="Patch"/>
 		</xs:restriction>
 	</xs:simpleType>
+
+	<!-- Policies & Permissions-->
+
+	<xs:complexType name ="PoliciesType">
+		<xs:sequence>
+			<xs:element name="Permissions" type="hm:PermissionsType" maxOccurs="1" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="PermissionsType">
+		<xs:sequence>
+			<xs:element name="Permission" type="hm:PermissionType" maxOccurs="unbounded" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute type="xs:boolean" name="authorize" use="optional" default="true"/>
+	</xs:complexType>
+	<xs:complexType name ="PermissionType">
+		<xs:attribute type="xs:string" name="scope" use="required"/>
+	</xs:complexType>
 
 	<!-- Root -->
 

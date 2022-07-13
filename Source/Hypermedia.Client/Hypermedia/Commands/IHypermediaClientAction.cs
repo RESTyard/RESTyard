@@ -2,14 +2,13 @@
 
 namespace Bluehands.Hypermedia.Client.Hypermedia.Commands
 {
-    public interface IHypermediaClientAction : IHypermediaClientCommand
+    public interface IHypermediaClientAction
+        : IHypermediaClientCommand
     {
-        Task<HypermediaCommandResult> ExecuteAsync();
-        
     }
 
-    public interface IHypermediaClientAction<TParameters> : IHypermediaClientCommand
+    public interface IHypermediaClientAction<TParameters>
+        : IHypermediaClientCommand
     {
-        Task<HypermediaCommandResult> ExecuteAsync(TParameters parameters);
     }
 }

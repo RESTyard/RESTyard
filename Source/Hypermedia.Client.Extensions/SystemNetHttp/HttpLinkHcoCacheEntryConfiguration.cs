@@ -1,37 +1,28 @@
 ﻿using System;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using Bluehands.Hypermedia.Client.Resolver.Caching;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 {
-    public class CacheEntryConfiguration
+    public class HttpLinkHcoCacheEntryConfiguration : LinkHcoCacheEntryConfiguration
     {
-        private CacheEntryConfiguration(bool hasCacheConfiguration)
+        protected HttpLinkHcoCacheEntryConfiguration(bool hasConfiguration)
+            : base(hasConfiguration)
         {
-            HasCacheConfiguration = hasCacheConfiguration;
         }
 
-        public CacheEntryConfiguration(
+        public HttpLinkHcoCacheEntryConfiguration(
             CacheScope cacheScope,
             DateTimeOffset? localExpirationDate,
             CacheMode cacheMode,
             string etag,
             DateTimeOffset? lastModified)
-            : this(hasCacheConfiguration: true)
+            : base(cacheScope, localExpirationDate)
         {
-            CacheScope = cacheScope;
-            LocalExpirationDate = localExpirationDate;
             CacheMode = cacheMode;
             ETag = etag;
             LastModified = lastModified;
         }
-
-        public bool HasCacheConfiguration { get; }
-
-        public CacheScope CacheScope { get; }
-
-        public DateTimeOffset? LocalExpirationDate { get; }
 
         public CacheMode CacheMode { get; }
 
@@ -39,14 +30,14 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
         public DateTimeOffset? LastModified { get; }
 
-        public static CacheEntryConfiguration FromHttpResponse(
+        public static HttpLinkHcoCacheEntryConfiguration FromHttpResponse(
             HttpResponseMessage response,
             DateTimeOffset assumedNow)
         {
             var cc = response.Headers.CacheControl;
             if (cc is null)
             {
-                return new CacheEntryConfiguration(false);
+                return new HttpLinkHcoCacheEntryConfiguration(false);
             }
 
             CacheMode mode = CacheMode.Undefined;
@@ -106,7 +97,7 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 
             if (mode != CacheMode.Undefined)
             {
-                return new CacheEntryConfiguration(
+                return new HttpLinkHcoCacheEntryConfiguration(
                     scope,
                     expirationDate,
                     mode,
@@ -114,14 +105,14 @@ namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
                     lastModified);
             }
 
-            return new CacheEntryConfiguration(false);
+            return new HttpLinkHcoCacheEntryConfiguration(false);
         }
 
-        public static CacheEntryConfiguration EmptyConfiguration()
+        public static HttpLinkHcoCacheEntryConfiguration EmptyConfiguration()
         {
-            return new CacheEntryConfiguration(false);
+            return new HttpLinkHcoCacheEntryConfiguration(false);
         }
 
-        public bool ShouldBeAddedToCache() => this.HasCacheConfiguration && this.CacheMode != CacheMode.DoNotCache;
+        public override bool ShouldBeAddedToCache() => base.ShouldBeAddedToCache() && this.CacheMode != CacheMode.DoNotCache;
     }
 }

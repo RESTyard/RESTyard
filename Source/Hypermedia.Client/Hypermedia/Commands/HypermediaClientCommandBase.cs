@@ -4,7 +4,8 @@ using Bluehands.Hypermedia.Client.Resolver;
 
 namespace Bluehands.Hypermedia.Client.Hypermedia.Commands
 {
-    public abstract class HypermediaClientCommandBase : IHypermediaClientCommand
+    public abstract class HypermediaClientCommandBase
+        : IHypermediaClientCommand
     {
         public string Name { get; set; }
 

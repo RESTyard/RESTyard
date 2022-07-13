@@ -1,16 +1,15 @@
 ﻿using System.Buffers;
-
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using Microsoft.Extensions.Logging.Console;
 
 using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
-using CarShack.Hypermedia.Cars;
 using CarShack.Util.GlobalExceptionHandler;
 using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
 
@@ -20,7 +19,7 @@ namespace CarShack
     {
         public IConfigurationRoot Configuration { get; }
 
-        public Startup(IHostingEnvironment env)
+        public Startup(IWebHostEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -31,7 +30,7 @@ namespace CarShack
             Configuration = builder.Build();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseCors(builder =>
                 {
@@ -47,20 +46,24 @@ namespace CarShack
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var builder = services.AddMvcCore();
-            builder.AddMvcOptions(o =>
-            {
-                o.Filters.Add(new GlobalExceptionFilter(null));
-                o.EnableEndpointRouting = false;
-            });
+            var builder = services.AddMvcCore(
+                options =>
+                {
+                    options.OutputFormatters.Clear();
+                    options.OutputFormatters.Add(new SystemTextJsonOutputFormatter(
+                        new JsonSerializerOptions
+                        {
+                            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                        }));
+                    options.Filters.Add(new GlobalExceptionFilter(null));
+                    options.EnableEndpointRouting = false;
+                });
 
             // Initializes and adds the Hypermedia Extensions
-            builder.AddHypermediaExtensions(
-                services,
-                new HypermediaExtensionsOptions
-                {
-                    ReturnDefaultRouteForUnknownHto = true
-                });
+            builder.Services.AddHypermediaExtensions(o =>
+            {
+                o.ReturnDefaultRouteForUnknownHto = true;
+            });
 
             // Infrastructure
             services.AddCors();
