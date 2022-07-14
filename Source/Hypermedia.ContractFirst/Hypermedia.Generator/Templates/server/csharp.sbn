@@ -203,7 +203,7 @@ public partial class {{ typeName }} : {{ iff document.isQueryResult "HypermediaQ
                 end
             end
 }}
-    public class {{ operation.name }}Op : {{ actionType }}
+    public partial class {{ operation.name }}Op : {{ actionType }}
     {
 {{-
             canExecuteArg = "Func<bool> canExecute" + operation.name
