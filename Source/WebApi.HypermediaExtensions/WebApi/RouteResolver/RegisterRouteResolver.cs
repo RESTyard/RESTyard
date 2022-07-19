@@ -24,6 +24,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
         private readonly IRouteKeyFactory routeKeyFactory;
         private readonly bool returnDefaultRouteForUnknownHto;
         private readonly string defaultRouteSegmentForUnknownHto;
+        private readonly TypeInfo externalReferenceTypeInfo = typeof(ExternalReference).GetTypeInfo();
 
         public RegisterRouteResolver(IUrlHelper urlHelper, IRouteKeyFactory routeKeyFactory, IRouteRegister routeRegister, HypermediaExtensionsOptions hypermediaOptions, IHypermediaUrlConfig hypermediaUrlConfig = null)
         {
@@ -47,7 +48,8 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
             var lookupType = reference.GetHypermediaType();
 
             // ExternalReference object is not registered in the RouteRegister and provides its own URI
-            if (typeof(ExternalReference).GetTypeInfo().IsAssignableFrom(lookupType))
+            
+            if (externalReferenceTypeInfo.IsAssignableFrom(lookupType))
             {
                 if (!(reference.GetInstance() is ExternalReference externalReferenceObject))
                 {
@@ -55,7 +57,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
                 }
 
                 // we assume get here since external references will be links only for now
-                return new ResolvedRoute(externalReferenceObject.ExternalUri.ToString(), HttpMethod.GET);
+                return new ResolvedRoute(externalReferenceObject.ExternalUri.ToString(), HttpMethod.GET, externalReferenceObject.AvailableMediaTypes);
             }
 
             if (reference is HypermediaExternalObjectReference)

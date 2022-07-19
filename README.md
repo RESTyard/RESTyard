@@ -159,10 +159,13 @@ Links.Add(DefaultHypermediaRelations.Queries.All, new HypermediaObjectQueryRefer
 
 #### External References
 It might be necessary to reference a external source or a route which can not be build by the framework. In this case use the `ExternalReference`. This object works around the default route resolving process by providing its own URI. It can only be used in combination with `HypermediaObjectReference`.
+As additional information for clients a external reference can contain a media type or a list of media types. This is useful if a client wants to switch the media type e.g. to a download or get the resource as image.
 
-Example reference of an external site:
+Example references of an external site:
 ```
 Links.Add("GreatSite", new ExternalReference(new Uri("http://www.example.com/")));
+Links.Add("GreatSite", new ExternalReference(new Uri("http://www.example.com/"), "image/png"));
+Links.Add("GreatSite", new ExternalReference(new Uri("http://www.example.com/"), new []{"application/xml", "image/png"}));
 ```
 
 ## Attributed routes
