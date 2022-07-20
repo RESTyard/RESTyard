@@ -1,9 +1,10 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Xml.Serialization;
 using Scriban;
 using Scriban.Runtime;
 
-namespace Hypermedia.Generator;
+namespace RESTyard.Generator;
 
 public static class Program
 {

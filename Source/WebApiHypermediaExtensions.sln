@@ -36,7 +36,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SystemNetHttp", "Hypermedia
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions.Test", "Hypermedia.Client.Extensions\Extensions.Test\Extensions.Test.csproj", "{4FA6CC8F-C0BA-46C2-B5F6-D2B46E5F8DEF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hypermedia.Generator", "Hypermedia.ContractFirst\Hypermedia.Generator\Hypermedia.Generator.csproj", "{444C814C-97AE-4090-A4DA-0E44A4AB9418}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTyard.Generator", "Hypermedia.ContractFirst\Hypermedia.Generator\RESTyard.Generator.csproj", "{444C814C-97AE-4090-A4DA-0E44A4AB9418}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ContractFirst", "ContractFirst", "{68F696D4-A692-4750-9915-90A2BBED2C89}"
 EndProject
@@ -44,7 +44,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicrosoftExtensionsCaching"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicrosoftExtensionsCaching.Test", "Hypermedia.Client.Extensions\MicrosoftExtensionsCaching.Test\MicrosoftExtensionsCaching.Test.csproj", "{43113788-DE87-45F4-BCB6-B7ED05F813F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarking", "Hypermedia.Client.Extensions\Benchmarking\Benchmarking.csproj", "{A605FF16-E6EF-4365-A728-AC9C97D2023F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarking", "Hypermedia.Client.Extensions\Benchmarking\Benchmarking.csproj", "{A605FF16-E6EF-4365-A728-AC9C97D2023F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

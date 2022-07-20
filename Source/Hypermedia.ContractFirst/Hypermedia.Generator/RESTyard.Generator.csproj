@@ -8,7 +8,7 @@
     <RepositoryUrl>https://github.com/bluehands/WebApiHypermediaExtensions</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackAsTool>true</PackAsTool>
-    <ToolCommandName>hypermedia-generator</ToolCommandName>
+    <ToolCommandName>restyard-generator</ToolCommandName>
     <VersionPrefix>0.1</VersionPrefix>
   </PropertyGroup>
 

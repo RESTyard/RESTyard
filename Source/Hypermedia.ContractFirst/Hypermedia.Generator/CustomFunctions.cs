@@ -1,6 +1,7 @@
-﻿using Scriban.Runtime;
+﻿using System;
+using Scriban.Runtime;
 
-namespace Hypermedia.Generator;
+namespace RESTyard.Generator;
 
 internal class CustomFunctions : ScriptObject
 {

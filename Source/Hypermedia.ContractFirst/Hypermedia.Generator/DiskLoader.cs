@@ -1,8 +1,9 @@
-﻿using Scriban;
+﻿using System;
+using Scriban;
 using Scriban.Parsing;
 using Scriban.Runtime;
 
-namespace Hypermedia.Generator;
+namespace RESTyard.Generator;
 
 internal class DiskLoader : ITemplateLoader
 {
