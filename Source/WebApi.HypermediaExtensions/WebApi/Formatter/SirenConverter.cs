@@ -221,22 +221,27 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
                 {
                     var jLink = new JObject();
 
-                    string resolvedAdress;
+                    string resolvedAddress;
                     if (embeddedEntity.Reference is HypermediaExternalObjectReference externalReference)
                     {
                         AddClasses("External", jLink, externalReference.Classes);
-                        resolvedAdress = externalReference.Uri.ToString();
+                        resolvedAddress = externalReference.Uri.ToString();
                     }
                     else
                     {
                         var entityType = embeddedEntity.Reference.GetHypermediaType();
                         var hypermediaObjectAttribute = GetHypermediaObjectAttribute(entityType);
                         AddClasses(entityType, jLink, hypermediaObjectAttribute);
-                        resolvedAdress = ResolveReferenceRoute(embeddedEntity.Reference);
+                        var (resolvedRoute, avaialbleMediaTypes) = ResolveReferenceRoute(embeddedEntity.Reference);
+                        resolvedAddress = resolvedRoute;
+                        if (avaialbleMediaTypes.Any())
+                        {
+                            throw new Exception("Embedded entities can not have media types");
+                        }
                     }
 
                     AddEmbeddedEntityRelations(jLink, embeddedEntity.Relations);
-                    jLink.Add("href", resolvedAdress);
+                    jLink.Add("href", resolvedAddress);
                     jEntities.Add(jLink);
                 }
             }
@@ -256,9 +261,14 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
                 var jRel = new JArray { hypermediaLink.Key };
                 jLink.Add("rel", jRel);
 
-                var resolvedAdress = ResolveReferenceRoute(hypermediaLink.Value.Reference);
+                var (resolvedRoute, avaialbleMediaTypes) = ResolveReferenceRoute(hypermediaLink.Value.Reference);
 
-                jLink.Add("href", resolvedAdress);
+                jLink.Add("href", resolvedRoute);
+
+                if (avaialbleMediaTypes.Any())
+                {
+                    jLink.Add("type", avaialbleMediaTypes);
+                }
 
                 jLinks.Add(jLink);
             }
@@ -266,15 +276,16 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             sirenJson.Add("links", jLinks);
         }
 
-        private string ResolveReferenceRoute(HypermediaObjectReferenceBase reference)
+        private Tuple<string, string> ResolveReferenceRoute(HypermediaObjectReferenceBase reference)
         {
-            var resolvedAdress = routeResolver.ReferenceToRoute(reference);
+            var resolvedRoute = routeResolver.ReferenceToRoute(reference);
             var query = reference.GetQuery();
-            var resolvedRoute = resolvedAdress.Url + queryStringBuilder.CreateQueryString(query);
+            var buildRoute = resolvedRoute.Url + queryStringBuilder.CreateQueryString(query);
 
-            return resolvedRoute;
+            var resolvedRouteAvailableMediaTypes = string.Join(",", resolvedRoute.AvailableMediaTypes);
+            return new Tuple<string, string>(buildRoute, resolvedRouteAvailableMediaTypes);
         }
-
+        
         private void AddProperties(HypermediaObject hypermediaObject, JObject sirenJson)
         {
             sirenJson.Add("properties", SerializeObjectProperties(hypermediaObject));

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
+using Bluehands.Hypermedia.MediaTypes;
 using CarShack.Domain.Customer;
 using Microsoft.Extensions.DependencyInjection;
 using WebApi.HypermediaExtensions.Exceptions;
@@ -120,7 +121,7 @@ public partial class HypermediaCustomersRootHto
             new CustomerQuery(),
             default,
             1,
-            new HypermediaObjectReference(new ExternalReference(new Uri("http://www.example.com/"))))
+            new HypermediaObjectReference(new ExternalReference(new Uri("http://www.example.com/")).WithAvailableMediaType("text/html")))
     {
     }
 }

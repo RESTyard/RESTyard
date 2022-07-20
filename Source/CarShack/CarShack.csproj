@@ -7,6 +7,9 @@
     <OutputType>Exe</OutputType>
     <PackageId>CarShack</PackageId>
     <UserSecretsId>de8b6b6f-42d0-4ce9-b43c-0bc3604fc623</UserSecretsId>
+
+    <!-- CS1591: missing documentation on public methods -->
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
