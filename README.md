@@ -157,15 +157,21 @@ var allQuery = new CustomerQuery();
 Links.Add(DefaultHypermediaRelations.Queries.All, new HypermediaObjectQueryReference(typeof(HypermediaCustomerQueryResult), allQuery));
 ```
 
-#### External References
-It might be necessary to reference a external source or a route which can not be build by the framework. In this case use the `ExternalReference`. This object works around the default route resolving process by providing its own URI. It can only be used in combination with `HypermediaObjectReference`.
+#### Direct References
+It might be necessary to reference a external source or a route which can not be build by the framework. In this case use the `ExternalReference` for links outside of the server 
+or `InternalReference` for server routes. These objects work around the default route resolving process by providing its own URI or route name. It can only be used in combination with `HypermediaObjectReference`.
 As additional information for clients a external reference can contain a media type or a list of media types. This is useful if a client wants to switch the media type e.g. to a download or get the resource as image.
 
 Example references of an external site:
 ```
 Links.Add("GreatSite", new ExternalReference(new Uri("http://www.example.com/")));
-Links.Add("GreatSite", new ExternalReference(new Uri("http://www.example.com/"), "image/png"));
-Links.Add("GreatSite", new ExternalReference(new Uri("http://www.example.com/"), new []{"application/xml", "image/png"}));
+Links.Add("GreatSite", new ExternalReference(new Uri("http://www.example.com/")).WithAvailableMediaType("image/png"));
+Links.Add("GreatSite", new ExternalReference(new Uri("http://www.example.com/")).WithAvailableMediaTypes(new []{"application/xml", "image/png"}));
+
+Links.Add("GreatSite", new InternalReference("My_Route_Name"));
+Links.Add("GreatSite", new InternalReference("My_Route_Name", new {routevariable1 = 1}));
+Links.Add("GreatSite", new InternalReference("My_Route_Name").WithAvailableMediaType("image/png"));
+Links.Add("GreatSite", new InternalReference("My_Route_Name").WithAvailableMediaTypes(new []{"application/xml", "image/png"}));
 ```
 
 ## Attributed routes
@@ -460,6 +466,12 @@ Tested for:
 - Nullable
 
 ## Release Notes
+
+### WebApiHypermediaExtensions v1.9.0
+
+- Add `InternalReference` wich allows to build a link to a route by name 
+- Add capability for `ExternalReference` and  `InternalReference` to specify media types. This will be rendered as `type` on a Siren link. 
+  This is intended for clients, so they can switch media type e.g. to a download or other than Siren via link.  
 
 ### WebApiHypermediaExtensions v1.8.2
 
