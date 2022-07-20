@@ -8,6 +8,9 @@
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+
+    <!-- CS1591: missing documentation on public methods -->
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
     
