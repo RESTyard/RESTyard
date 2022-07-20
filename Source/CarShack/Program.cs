@@ -18,6 +18,12 @@ namespace CarShack
                     loggingBuilder.AddDebug();
                 })
                 .UseStartup<Startup>()
+                .ConfigureLogging(
+                    (hostingContext, logging) =>
+                    {
+                        logging.AddConsole();
+                        logging.AddDebug();
+                    })
                 .Build();
 
             host.Run();

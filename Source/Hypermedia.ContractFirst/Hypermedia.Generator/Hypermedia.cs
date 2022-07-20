@@ -231,6 +231,28 @@ public partial class PropertyType {
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.ComponentModel.DesignerCategoryAttribute("code")]
 [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
+public partial class ResultDocumentType {
+    
+    private string documentField;
+    
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public string document {
+        get {
+            return this.documentField;
+        }
+        set {
+            this.documentField = value;
+        }
+    }
+}
+
+/// <remarks/>
+[System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.8.3928.0")]
+[System.SerializableAttribute()]
+[System.Diagnostics.DebuggerStepThroughAttribute()]
+[System.ComponentModel.DesignerCategoryAttribute("code")]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
 public partial class QueryParameterType {
     
     private string parameterNameField;
@@ -270,6 +292,8 @@ public partial class LinkType {
     
     private QueryParameterType[] queryParametersField;
     
+    private ResultDocumentType[] resultDocumentsField;
+    
     private string relField;
     
     private string documentField;
@@ -290,6 +314,17 @@ public partial class LinkType {
         }
         set {
             this.queryParametersField = value;
+        }
+    }
+    
+    /// <remarks/>
+    [System.Xml.Serialization.XmlArrayItemAttribute("ResultDocument", IsNullable=false)]
+    public ResultDocumentType[] ResultDocuments {
+        get {
+            return this.resultDocumentsField;
+        }
+        set {
+            this.resultDocumentsField = value;
         }
     }
     
@@ -366,7 +401,92 @@ public partial class LinkType {
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.ComponentModel.DesignerCategoryAttribute("code")]
 [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
+public partial class PermissionType {
+    
+    private string scopeField;
+    
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public string scope {
+        get {
+            return this.scopeField;
+        }
+        set {
+            this.scopeField = value;
+        }
+    }
+}
+
+/// <remarks/>
+[System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.8.3928.0")]
+[System.SerializableAttribute()]
+[System.Diagnostics.DebuggerStepThroughAttribute()]
+[System.ComponentModel.DesignerCategoryAttribute("code")]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
+public partial class PermissionsType {
+    
+    private PermissionType[] permissionField;
+    
+    private bool authorizeField;
+    
+    public PermissionsType() {
+        this.authorizeField = true;
+    }
+    
+    /// <remarks/>
+    [System.Xml.Serialization.XmlElementAttribute("Permission")]
+    public PermissionType[] Permission {
+        get {
+            return this.permissionField;
+        }
+        set {
+            this.permissionField = value;
+        }
+    }
+    
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [System.ComponentModel.DefaultValueAttribute(true)]
+    public bool authorize {
+        get {
+            return this.authorizeField;
+        }
+        set {
+            this.authorizeField = value;
+        }
+    }
+}
+
+/// <remarks/>
+[System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.8.3928.0")]
+[System.SerializableAttribute()]
+[System.Diagnostics.DebuggerStepThroughAttribute()]
+[System.ComponentModel.DesignerCategoryAttribute("code")]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
+public partial class PoliciesType {
+    
+    private PermissionsType permissionsField;
+    
+    /// <remarks/>
+    public PermissionsType Permissions {
+        get {
+            return this.permissionsField;
+        }
+        set {
+            this.permissionsField = value;
+        }
+    }
+}
+
+/// <remarks/>
+[System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.8.3928.0")]
+[System.SerializableAttribute()]
+[System.Diagnostics.DebuggerStepThroughAttribute()]
+[System.ComponentModel.DesignerCategoryAttribute("code")]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
 public partial class OperationType {
+    
+    private PoliciesType policiesField;
     
     private string nameField;
     
@@ -377,6 +497,16 @@ public partial class OperationType {
     private string parameterTypeNameField;
     
     private string resultDocumentField;
+    
+    /// <remarks/>
+    public PoliciesType Policies {
+        get {
+            return this.policiesField;
+        }
+        set {
+            this.policiesField = value;
+        }
+    }
     
     /// <remarks/>
     [System.Xml.Serialization.XmlAttributeAttribute()]
@@ -538,6 +668,8 @@ public partial class DocumentType {
     
     private LinkType[] linksField;
     
+    private PoliciesType policiesField;
+    
     private string nameField;
     
     private string titleField;
@@ -604,6 +736,16 @@ public partial class DocumentType {
         }
         set {
             this.linksField = value;
+        }
+    }
+    
+    /// <remarks/>
+    public PoliciesType Policies {
+        get {
+            return this.policiesField;
+        }
+        set {
+            this.policiesField = value;
         }
     }
     

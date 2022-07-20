@@ -11,6 +11,10 @@
     "Generate Server": {
       "commandName": "Project",
       "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --type server --language csharp --output-file ../../../../../CarShack/Hypermedia/Hypermedia.Server.g.cs --namespace CarShack.Hypermedia"
+    },
+    "Generate Server Controllers": {
+      "commandName": "Project",
+      "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --type server --language csharp-controller --output-file ../../../../../CarShack/Hypermedia/Hypermedia.Server.Controllers.g.cs --namespace CarShack.Hypermedia"
     }
   }
 }

@@ -11,9 +11,13 @@ namespace WebApi.HypermediaExtensions.Hypermedia
     /// Serializer will assume a GET HTTP method
     /// </summary>
     [HypermediaObject(Classes = new[] { "External" })]
-    public class ExternalReference : HypermediaObject
+    public class ExternalReference : DirectReferenceBase<ExternalReference>
     {
-        public ExternalReference(Uri externalUri) : base(false)
+        /// <summary>
+        /// Creates a external link
+        /// </summary>
+        /// <param name="externalUri">The external URI</param>
+        public ExternalReference(Uri externalUri) : base()
         {
             ExternalUri = externalUri;
         }

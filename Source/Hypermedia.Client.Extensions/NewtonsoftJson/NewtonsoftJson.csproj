@@ -30,10 +30,9 @@
 		<PackageReleaseNotes></PackageReleaseNotes>
 		<IsPackable>true</IsPackable>
 		<RootNamespace>Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson</RootNamespace>
-		<BaseOutputPath>bin</BaseOutputPath>
 	</PropertyGroup>
+
 	<ItemGroup>
-		<PackageReference Include="Bluehands.Hypermedia.Client" Version="1.5.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
 	</ItemGroup>
 

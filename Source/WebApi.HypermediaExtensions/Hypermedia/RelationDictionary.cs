@@ -6,7 +6,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia
 {
     /// <summary>
     /// Holds Links to related HypermediaObjects.
-    /// Relations are treated as equal if all entries are provided by both lists and no additional entry is pressent.
+    /// Relations are treated as equal if all entries are provided by both lists and no additional entry is present.
     /// </summary>
     public class RelationDictionary : Dictionary<List<string>, RelatedEntity>
     {
@@ -16,7 +16,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia
 
         /// <summary>
         /// Add a related Entity to the Links Dictionary.
-        /// If a related entity with the same relation is pressent it is replaced.
+        /// If a related entity with the same relation is present it is replaced.
         /// </summary>
         /// <param name="relatedEntity">To be added.</param>
         public void Add(RelatedEntity relatedEntity)
@@ -26,7 +26,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia
 
         /// <summary>
         /// Convenience function: Add a HypermediaObjectReferenceBase to the Links Dictionary.
-        /// If a related entity with the same relation is pressent it is replaced.
+        /// If a related entity with the same relation is present it is replaced.
         /// </summary>
         /// <param name="relation">The relation to use</param>
         /// <param name="reference">To be added.</param>
@@ -38,7 +38,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia
 
         /// <summary>
         /// Convenience function: Add a HypermediaObjectReferenceBase to the Links Dictionary.
-        /// If a related entity with the same relations is pressent it is replaced.
+        /// If a related entity with the same relations is present it is replaced.
         /// </summary>
         /// <param name="relations">The relations to use</param>
         /// <param name="reference">To be added.</param>
@@ -50,7 +50,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia
 
         /// <summary>
         /// Convenience function: Add a HypermediaObject to the Links Dictionary.
-        /// If a related entity with the same relation is pressent it is replaced.
+        /// If a related entity with the same relation is present it is replaced.
         /// </summary>
         /// <param name="relation">The relations to use</param>
         /// <param name="reference">To be added.</param>
@@ -62,7 +62,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia
 
         /// <summary>
         /// Convenience function: Add a HypermediaObject to the Links Dictionary.
-        /// If a related entity with the same relations is pressent it is replaced.
+        /// If a related entity with the same relations is present it is replaced.
         /// </summary>
         /// <param name="relations">The relations to use</param>
         /// <param name="reference">To be added.</param>

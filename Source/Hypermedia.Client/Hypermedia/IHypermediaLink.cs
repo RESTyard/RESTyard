@@ -4,9 +4,12 @@ using Bluehands.Hypermedia.Client.Resolver;
 
 namespace Bluehands.Hypermedia.Client.Hypermedia
 {
-    public interface IHypermediaLink : ICanResolve
+    public interface IHypermediaLink
     {
         Uri Uri { get; set; }
+
         List<string> Relations { get; set; }
+
+        IHypermediaResolver Resolver { get; set; }
     }
 }
