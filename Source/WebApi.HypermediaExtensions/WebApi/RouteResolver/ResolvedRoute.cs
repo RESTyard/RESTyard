@@ -9,7 +9,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
 
         public HttpMethod HttpMethod { get; }
 
-        public IReadOnlyCollection<string> AvailableMediaTypes { get; }
+        public IReadOnlyCollection<string> AvailableMediaTypes { get; set; }
 
         public ResolvedRoute(string url, HttpMethod httpMethod, IReadOnlyCollection<string> availableMediaTypes = null)
         {

@@ -245,7 +245,6 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
             AssertHasLinkWithKeyAndQuery(linksArray, link2Rel, routeNameLinked2, "{ key = 3 }", QueryStringBuilder.CreateQueryString(queryObject2));
         }
 
-
         [TestMethod]
         public void LinksExternalReferenceTest()
         {
@@ -262,7 +261,6 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
                 "External3",
             };
             
-            
             var availableMediaType1 = "custom/mediatype";
             var availableMediaTypes2 = new List<string>{"custom/mediaType1", "custom/mediaType2"};
             var availableMediaTypes = new List<List<string>>
@@ -274,9 +272,9 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
             };
             
             ho.Links.Add(rels[0], new ExternalReference(new Uri(externalUri)));
-            ho.Links.Add(rels[1], new ExternalReference(new Uri(externalUri), availableMediaType1));
-            ho.Links.Add(rels[2], new ExternalReference(new Uri(externalUri), availableMediaTypes2));
-            ho.Links.Add(rels[3], new ExternalReference(new Uri(externalUri), Array.Empty<string>()));
+            ho.Links.Add(rels[1], new ExternalReference(new Uri(externalUri)).WithAvailableMediaType(availableMediaType1));
+            ho.Links.Add(rels[2], new ExternalReference(new Uri(externalUri)).WithAvailableMediaTypes(availableMediaTypes2));
+            ho.Links.Add(rels[3], new ExternalReference(new Uri(externalUri)).WithAvailableMediaTypes(Array.Empty<string>()));
 
             var siren = SirenConverter.ConvertToJson(ho);
 
@@ -297,13 +295,13 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
                     throw new Exception("Link array item should be a JObject");
                 }
                 
-                AssertExternalLink(linkObject, rels[i], externalUri, availableMediaTypes[i]);
+                AssertLink(linkObject, rels[i], externalUri, availableMediaTypes[i]);
                 i++;
             }
            
         }
 
-        private static void AssertExternalLink(JObject linkObject, string rel, string externalUri, ICollection<string> expectedAvailableMediaTypes)
+        private static void AssertLink(JObject linkObject, string rel, string expectedUrl, ICollection<string> expectedAvailableMediaTypes)
         {
             var relationArray = (JArray)linkObject["rel"];
             var sirenRelations = relationArray.Values<string>().ToList();
@@ -311,7 +309,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
             var hasDesiredRelations = stringListComparer.Equals(sirenRelations, new List<string> { rel });
 
             Assert.IsTrue(hasDesiredRelations);
-            Assert.AreEqual(((JValue)linkObject["href"]).Value<string>(), externalUri);
+            Assert.AreEqual(expectedUrl, ((JValue)linkObject["href"]).Value<string>());
 
             var typeParameter = linkObject["type"];
             if (typeParameter == null)
@@ -322,7 +320,63 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
             {
                 AssertMediaTypes(expectedAvailableMediaTypes, linkObject["type"]);
             }
-            
+        }
+        
+         [TestMethod]
+        public void LinksInternalReferenceTest()
+        {
+            var routeNameLinking = typeof(InternalUsingHypermediaObject).Name + "_Route";
+            RouteRegister.AddHypermediaObjectRoute(typeof(InternalUsingHypermediaObject), routeNameLinking, HttpMethod.GET);
+
+            var ho = new InternalUsingHypermediaObject();
+            var rels = new List<string>()
+            {
+                "External0",
+                "External1",
+                "External2",
+                "External3",
+            };
+
+            var availableMediaType1 = "custom/mediatype";
+            var availableMediaTypes2 = new List<string>{"custom/mediaType1", "custom/mediaType2"};
+            var availableMediaTypes = new List<List<string>>
+            {
+                new List<string>(),
+                new List<string> { availableMediaType1 },
+                availableMediaTypes2,
+                new List<string>()
+            };
+
+            var routeName = "ARouteName";
+            ho.Links.Add(rels[0], new InternalReference(routeName));
+            ho.Links.Add(rels[1], new InternalReference(routeName).WithAvailableMediaType(availableMediaType1));
+            ho.Links.Add(rels[2], new InternalReference(routeName).WithAvailableMediaTypes(availableMediaTypes2));
+            ho.Links.Add(rels[3], new InternalReference(routeName).WithAvailableMediaTypes( Array.Empty<string>()));
+
+            var siren = SirenConverter.ConvertToJson(ho);
+
+            AssertDefaultClassName(siren, typeof(InternalUsingHypermediaObject));
+            AssertEmptyProperties(siren);
+            AssertEmptyEntities(siren);
+            AssertEmptyActions(siren);
+
+            Assert.IsTrue(siren["links"].Type == JTokenType.Array);
+            var linksArray = (JArray)siren["links"];
+            Assert.AreEqual(linksArray.Count, ho.Links.Count);
+
+            var internalRoute = $"{TestUrlConfig.Scheme}/{TestUrlConfig.Host}/{routeName}/";
+            var i = 0;
+            foreach (var jToken in linksArray)
+            {
+                if (!(linksArray[i] is JObject linkObject))
+                {
+                    throw new Exception("Link array item should be a JObject");
+                }
+                
+                AssertLink(linkObject, rels[i], internalRoute, availableMediaTypes[i]);
+                i++;
+            }
+           
         }
 
         private static void AssertMediaTypes(ICollection<string> expectedAvailableMediaType, JToken typeToken)
@@ -375,6 +429,13 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
     public class ExternalUsingHypermediaObject : HypermediaObject
     {
         public ExternalUsingHypermediaObject() : base(false)
+        {
+        }
+    }
+    
+    public class InternalUsingHypermediaObject : HypermediaObject
+    {
+        public InternalUsingHypermediaObject() : base(false)
         {
         }
     }

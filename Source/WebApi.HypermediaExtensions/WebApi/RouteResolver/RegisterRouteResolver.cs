@@ -25,6 +25,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
         private readonly bool returnDefaultRouteForUnknownHto;
         private readonly string defaultRouteSegmentForUnknownHto;
         private readonly TypeInfo externalReferenceTypeInfo = typeof(ExternalReference).GetTypeInfo();
+        private readonly TypeInfo internalReferenceTypeInfo = typeof(InternalReference).GetTypeInfo();
 
         public RegisterRouteResolver(IUrlHelper urlHelper, IRouteKeyFactory routeKeyFactory, IRouteRegister routeRegister, HypermediaExtensionsOptions hypermediaOptions, IHypermediaUrlConfig hypermediaUrlConfig = null)
         {
@@ -58,6 +59,20 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
 
                 // we assume get here since external references will be links only for now
                 return new ResolvedRoute(externalReferenceObject.ExternalUri.ToString(), HttpMethod.GET, externalReferenceObject.AvailableMediaTypes);
+            }     
+            
+            if (internalReferenceTypeInfo.IsAssignableFrom(lookupType))
+            {
+                if (!(reference.GetInstance() is InternalReference internalReference))
+                {
+                    throw new HypermediaRouteException("Can not get instance for InternalReference.");
+                }
+
+                // we assume get here since external references will be links only for now
+                var routeInfo = new RouteInfo(internalReference.RouteName, HttpMethod.GET);
+                var resolvedInternalRoute = RouteUrl(routeInfo, internalReference.RouteParameters);
+                resolvedInternalRoute.AvailableMediaTypes = internalReference.AvailableMediaTypes;
+                return resolvedInternalRoute;
             }
 
             if (reference is HypermediaExternalObjectReference)
