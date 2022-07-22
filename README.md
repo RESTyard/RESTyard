@@ -178,6 +178,8 @@ Links.Add("GreatSite", new InternalReference("My_Route_Name").WithAvailableMedia
 The included SirenFormatter will build required links to other routes. At startup all routes attributed with:
 - `HttpGetHypermediaObject`
 - `HttpPostHypermediaAction`
+- `HttpDeleteHypermediaAction`
+- `HttpPatchHypermediaAction`
 - `HttpGetHypermediaActionParameterInfo`
 
 will be placed in an internal register.
@@ -244,6 +246,18 @@ public ActionResult CreateCustomerParametersType()
 
 Also see See: [extracting keys from action parameter URLs](#extracting-keys-from-action-parameter-urls)
 
+### Actions with acceptable media type
+
+The action attributes allow to specify a media type so it can be transmitted that a client should send the data in a acceptable format
+
+- `HttpPostHypermediaAction`
+- `HttpDeleteHypermediaAction`
+- `HttpPatchHypermediaAction`
+
+```csharp
+[HttpPostHypermediaAction("my/route/template", typeof(MyOperation), AcceptedMediaType = "multipart/form-data"))]
+```
+Will be rendered to siren as `type` on the action. Default is `application/json`.
 
 ### Routes with a placeholder in the route template
 For access to entities a route template may contain placeholder variables like _key_ in the example below.
@@ -466,6 +480,12 @@ Tested for:
 - Nullable
 
 ## Release Notes
+
+### WebApiHypermediaExtensions v1.10.0
+
+- Extend `HttpDeleteHypermediaAction`, `HttpPatchHypermediaAction` and `HttpPostHypermediaAction` attributes so a media type can be configured which is accepted by the action.
+Rendered as `type` in siren action.
+- Relax requirement for relations list from `List<string>` to `IReadOnlyCollection<string>`
 
 ### WebApiHypermediaExtensions v1.9.0
 
