@@ -110,7 +110,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
         {
             var urlString = this.urlHelper.RouteUrl(routeInfo.Name, routeKeys, hypermediaUrlConfig.Scheme, hypermediaUrlConfig.Host.ToUriComponent());
 
-            return new ResolvedRoute(urlString, routeInfo.HttpMethod);
+            return new ResolvedRoute(urlString, routeInfo.HttpMethod, acceptableMediaType: routeInfo.AcceptableMediaType);
         } 
         
         /// <summary>
@@ -140,7 +140,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
                 throw new RouteResolverException($"Could not build route: '{routeInfo.Name}' with method {routeInfo.HttpMethod}");
             }
 
-            return new ResolvedRoute(routeUrl, routeInfo.HttpMethod);
+            return new ResolvedRoute(routeUrl, routeInfo.HttpMethod, acceptableMediaType: routeInfo.AcceptableMediaType);
         }
 
         private ResolvedRoute HandleUnknownRoute(Type lookupType)

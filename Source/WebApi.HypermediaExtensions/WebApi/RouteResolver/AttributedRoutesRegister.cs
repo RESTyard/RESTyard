@@ -35,50 +35,107 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
             var assemblyMethods = assembly.GetTypes().SelectMany(t => t.GetTypeInfo().GetMethods());
             foreach (var method in assemblyMethods)
             {
-                AddAttributedRoute<HttpGetHypermediaObject>(method, HttpMethod.GET, this.AddHypermediaObjectRoute, true);
-                AddAttributedRoute<HttpPostHypermediaAction>(method, HttpMethod.POST, this.AddActionRoute);
-                AddAttributedRoute<HttpDeleteHypermediaAction>(method, HttpMethod.DELETE, this.AddActionRoute);
-                AddAttributedRoute<HttpPatchHypermediaAction>(method, HttpMethod.PATCH, this.AddActionRoute);
-                AddAttributedRoute<HttpGetHypermediaActionParameterInfo>(method, HttpMethod.GET, this.AddParameterTypeRoute);
+                if (!TryGetSingleHypermediaAttribute(method, out var hypermediaAttribute))
+                {
+                    continue;
+                }
+                
+                AssertAttributeHasName(hypermediaAttribute);
+
+                switch (hypermediaAttribute)
+                {
+                    case HttpGetHypermediaObject httpGetHypermediaObject:
+                        this.AddHypermediaObjectRoute(httpGetHypermediaObject.RouteType, httpGetHypermediaObject.Name, HttpMethod.GET);
+                        AddRouteKeyProducer(method, httpGetHypermediaObject);
+                        break;
+                    case HttpPostHypermediaAction httpPostHypermediaAction:
+                        this.AddActionRoute(httpPostHypermediaAction.RouteType, httpPostHypermediaAction.Name, HttpMethod.POST, httpPostHypermediaAction.AcceptedMediaType);
+                        AddRouteKeyProducer(method, httpPostHypermediaAction);
+                        break;
+                    case HttpDeleteHypermediaAction httpDeleteHypermediaAction:
+                        this.AddActionRoute(httpDeleteHypermediaAction.RouteType, httpDeleteHypermediaAction.Name, HttpMethod.DELETE, httpDeleteHypermediaAction.AcceptedMediaType);
+                        AddRouteKeyProducer(method, httpDeleteHypermediaAction);
+                        break;
+                    case HttpPatchHypermediaAction httpPatchHypermediaAction:
+                        this.AddActionRoute(httpPatchHypermediaAction.RouteType, httpPatchHypermediaAction.Name, HttpMethod.PATCH, httpPatchHypermediaAction.AcceptedMediaType);
+                        AddRouteKeyProducer(method, httpPatchHypermediaAction);
+                        break;
+                    case HttpGetHypermediaActionParameterInfo httpGetHypermediaActionParameterInfo:
+                        this.AddParameterTypeRoute(httpGetHypermediaActionParameterInfo.RouteType, httpGetHypermediaActionParameterInfo.Name, HttpMethod.GET);
+                        AddRouteKeyProducer(method, httpGetHypermediaActionParameterInfo);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(hypermediaAttribute), $"Unknown hypermedia attribute: {hypermediaAttribute.GetType().Name}");
+                }
             }
         }
 
-        private void AddAttributedRoute<T>(MethodInfo method, HttpMethod httpMethod, Action<Type, string, HttpMethod> addAction, bool autoAddRouteKeyProducers = false) where T : HttpMethodAttribute, IHaveRouteInfo
+        private void AddRouteKeyProducer<T>(MethodInfo method, T hypermediaAttribute) where T : HttpMethodAttribute, IHaveRouteInfo
         {
-            var attribute = method.GetCustomAttribute<T>();
-            if (attribute == null)
+            var autoAddRouteKeyProducers = hypermediaAttribute is HttpGetHypermediaObject;
+          
+            if (hypermediaAttribute.RouteKeyProducerType != null)
             {
-                return;
-            }
-
-            if (string.IsNullOrEmpty(attribute.Name))
-            {
-                throw new RouteRegisterException($"{typeof(T).Name} must have a name.");
-            }
-
-            addAction(attribute.RouteType, attribute.Name, httpMethod);
-
-            if (attribute.RouteKeyProducerType != null)
-            {
-                if (typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(attribute.RouteType))
+                if (typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(hypermediaAttribute.RouteType))
                 {
-                    throw new RouteRegisterException($"Routes to Query's may not require a key '{attribute.RouteType}'. Queries should not be handled on a Entity.");
+                    throw new RouteRegisterException(
+                        $"Routes to Query's may not require a key '{hypermediaAttribute.RouteType}'. Queries should not be handled on a Entity.");
                 }
 
-                var keyProducer = (IKeyProducer)Activator.CreateInstance(attribute.RouteKeyProducerType);
-                this.AddRouteKeyProducer(attribute.RouteType, keyProducer);
+                var keyProducer = (IKeyProducer)Activator.CreateInstance(hypermediaAttribute.RouteKeyProducerType);
+                this.AddRouteKeyProducer(hypermediaAttribute.RouteType, keyProducer);
             }
-            else if (autoAddRouteKeyProducers && !typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(attribute.RouteType))
+            else if (autoAddRouteKeyProducers && !typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(hypermediaAttribute.RouteType))
             {
-                var templateToUse = attribute.Template ?? string.Empty;
+                var templateToUse = hypermediaAttribute.Template ?? string.Empty;
                 var controllerRouteSegments = GetControllerRouteSegment(method);
 
                 var template = TemplateParser.Parse(controllerRouteSegments + templateToUse);
                 if (template.Parameters.Count > 0)
                 {
-                    this.AddRouteKeyProducer(attribute.RouteType, RouteKeyProducer.Create(attribute.RouteType, template.Parameters.Select(p => p.Name).ToList()));
+                    this.AddRouteKeyProducer(
+                        hypermediaAttribute.RouteType,
+                        RouteKeyProducer.Create(hypermediaAttribute.RouteType, template.Parameters.Select(p => p.Name).ToList()));
                 }
             }
+        }
+
+        private static void AssertAttributeHasName(HttpMethodAttribute hypermediaAttribute)
+        {
+            if (string.IsNullOrEmpty(hypermediaAttribute.Name))
+            {
+                throw new RouteRegisterException($"{hypermediaAttribute.GetType().Name} must have a name.");
+            }
+        }
+
+        private static bool TryGetSingleHypermediaAttribute(MethodInfo method, out HttpMethodAttribute hypermediaAttribute)
+        {
+            var httpMethodAttributes = method.GetCustomAttributes<HttpMethodAttribute>(true)
+                .Where(IsExtensionAttribute)
+                .ToArray();
+            if (httpMethodAttributes.Length == 0)
+            {
+                hypermediaAttribute = null;
+                return false;
+            }
+
+            if (httpMethodAttributes.Length > 1)
+            {
+                throw new RouteRegisterException($"More than one hypermedia attribute on route: {method.Name}");
+            }
+
+            hypermediaAttribute = httpMethodAttributes.First();
+            return true;
+        }
+        
+        private static bool IsExtensionAttribute(HttpMethodAttribute a)
+        {
+            var attributeType = a.GetType();
+            return attributeType == typeof(HttpGetHypermediaObject)
+                   || attributeType == typeof(HttpPostHypermediaAction)
+                   || attributeType == typeof(HttpDeleteHypermediaAction)
+                   || attributeType == typeof(HttpPatchHypermediaAction)
+                   || attributeType == typeof(HttpGetHypermediaActionParameterInfo);
         }
 
         private string GetControllerRouteSegment(MethodInfo method)

@@ -112,9 +112,9 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
                 if (actionBase.CanExecute())
                 {
                     var jAction = new JObject();
-                    AddGeneralSirenActionProperties(jAction, property, hypermediaObject, actionBase);
-
-                    AddActionParameters(actionBase, jAction);
+                    var resolvedRoute = this.routeResolver.ActionToRoute(hypermediaObject, actionBase);
+                    AddGeneralSirenActionProperties(jAction, property, resolvedRoute);
+                    AddActionParameters(actionBase, jAction, resolvedRoute.AcceptableMediaType);
 
                     jActions.Add(jAction);
                 }
@@ -123,7 +123,10 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             sirenJson.Add("actions", jActions);
         }
 
-        private void AddGeneralSirenActionProperties(JObject jAction, PropertyInfo property, HypermediaObject hypermediaObject, HypermediaActionBase actionBase)
+        private void AddGeneralSirenActionProperties(
+            JObject jAction, 
+            PropertyInfo property,
+            ResolvedRoute resolvedRoute)
         {
             var hypermediaActionAttribute = GetHypermediaActionAttribute(property);
 
@@ -143,7 +146,6 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
                 jAction.Add("title", hypermediaActionAttribute.Title);
             }
 
-            var resolvedRoute = this.routeResolver.ActionToRoute(hypermediaObject, actionBase);
             jAction.Add("method", resolvedRoute.HttpMethod.ToString());//TODO get method from rout resolver
             jAction.Add("href", resolvedRoute.Url);
         }
@@ -153,14 +155,14 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             return hypermediaActionPropertyInfo.GetCustomAttribute<HypermediaActionAttribute>();
         }
 
-        private void AddActionParameters(HypermediaActionBase hypermediaAction, JObject jAction)
+        private void AddActionParameters(HypermediaActionBase hypermediaAction, JObject jAction, string acceptedMediaType)
         {
             if (!hypermediaAction.HasParameter())
             {
                 return;
             }
-
-            jAction.Add("type", DefaultMediaTypes.ApplicationJson);
+            
+            jAction.Add("type",  acceptedMediaType ?? DefaultMediaTypes.ApplicationJson);
             AddActionFields(jAction, hypermediaAction);
         }
 

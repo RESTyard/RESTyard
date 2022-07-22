@@ -6,7 +6,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
     {
         bool TryGetRoute(Type lookupType, out RouteInfo routeInfo);
 
-        void AddActionRoute(Type hypermediaActionType, string routeName, HttpMethod httpMethod);
+        void AddActionRoute(Type hypermediaActionType, string routeName, HttpMethod httpMethod, string acceptableMediaType);
 
         void AddHypermediaObjectRoute(Type hypermediaObjectType, string routeName, HttpMethod httpMethod);
 
