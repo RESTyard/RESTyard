@@ -27,7 +27,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
         protected SirenConverter SirenConverter;
         protected SirenConverter SirenConverterNoNullProperties;
         protected IHypermediaRouteResolver RouteResolver;
-        private static readonly StringCollectionComparer stringListComparer = new StringCollectionComparer();
+        private static readonly StringReadOnlyCollectionComparer StringReadOnlyListComparer = new StringReadOnlyCollectionComparer();
 
         protected static void ClassInitBase()
         {
@@ -165,7 +165,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
 
                 var relationArray = (JArray)linkObject["rel"];
                 var sirenRelations = relationArray.Values<string>().ToList();
-                var hasDesiredRelations = stringListComparer.Equals(sirenRelations, linkRelations);
+                var hasDesiredRelations = StringReadOnlyListComparer.Equals(sirenRelations, linkRelations);
 
                 if (hasDesiredRelations)
                 {

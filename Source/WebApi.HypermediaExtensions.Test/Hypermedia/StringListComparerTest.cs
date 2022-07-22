@@ -7,18 +7,18 @@ namespace WebApi.HypermediaExtensions.Test.Hypermedia
     [TestClass]
     public class StringListComparerTest
     {
-        private StringCollectionComparer stringListComparer;
+        private StringReadOnlyCollectionComparer stringReadOnlyListComparer;
 
         [TestInitialize]
         public void TestInit()
         {
-            stringListComparer = new StringCollectionComparer();
+            stringReadOnlyListComparer = new StringReadOnlyCollectionComparer();
         }
 
         [TestMethod]
         public void Compare_Null_ReturnsTrue()
         {
-            Assert.IsTrue(stringListComparer.Equals(null, null));
+            Assert.IsTrue(stringReadOnlyListComparer.Equals(null, null));
         }
 
         [TestMethod]
@@ -26,14 +26,14 @@ namespace WebApi.HypermediaExtensions.Test.Hypermedia
         {
             var listA = new List<string> { "" };
 
-            Assert.IsTrue(stringListComparer.Equals(listA, listA));
+            Assert.IsTrue(stringReadOnlyListComparer.Equals(listA, listA));
         }
 
         [TestMethod]
         public void Compare_EmptyNull_ReturnsFalse()
         {
             var listA = new List<string> {""};
-            Assert.IsFalse(stringListComparer.Equals(listA, null));
+            Assert.IsFalse(stringReadOnlyListComparer.Equals(listA, null));
         }
 
         [TestMethod]
@@ -42,7 +42,7 @@ namespace WebApi.HypermediaExtensions.Test.Hypermedia
             var listA = new List<string> { "" };
             var listB = new List<string> { "" };
 
-            Assert.IsTrue(stringListComparer.Equals(listA, listB));
+            Assert.IsTrue(stringReadOnlyListComparer.Equals(listA, listB));
         }
 
         [TestMethod]
@@ -51,7 +51,7 @@ namespace WebApi.HypermediaExtensions.Test.Hypermedia
             var listA = new List<string> { "A" };
             var listB = new List<string> { "A" };
 
-            Assert.IsTrue(stringListComparer.Equals(listA, listB));
+            Assert.IsTrue(stringReadOnlyListComparer.Equals(listA, listB));
         }
 
         [TestMethod]
@@ -60,7 +60,7 @@ namespace WebApi.HypermediaExtensions.Test.Hypermedia
             var listA = new List<string> { "A" };
             var listB = new List<string> { "" };
 
-            Assert.IsFalse(stringListComparer.Equals(listA, listB));
+            Assert.IsFalse(stringReadOnlyListComparer.Equals(listA, listB));
         }
 
         [TestMethod]
@@ -69,7 +69,7 @@ namespace WebApi.HypermediaExtensions.Test.Hypermedia
             var listA = new List<string> { "A", "B" };
             var listB = new List<string> { "A" };
 
-            Assert.IsFalse(stringListComparer.Equals(listA, listB));
+            Assert.IsFalse(stringReadOnlyListComparer.Equals(listA, listB));
         }
 
         [TestMethod]
@@ -78,7 +78,7 @@ namespace WebApi.HypermediaExtensions.Test.Hypermedia
             var listA = new List<string> { "B", "A" };
             var listB = new List<string> { "A", "B"};
 
-            Assert.IsTrue(stringListComparer.Equals(listA, listB));
+            Assert.IsTrue(stringReadOnlyListComparer.Equals(listA, listB));
         }
 
         [TestMethod]
@@ -87,7 +87,7 @@ namespace WebApi.HypermediaExtensions.Test.Hypermedia
             var listA = new List<string> { "Abc", "Def" };
             var listB = new List<string> { "Def", "Abc" };
 
-            Assert.IsTrue(stringListComparer.Equals(listA, listB));
+            Assert.IsTrue(stringReadOnlyListComparer.Equals(listA, listB));
         }
 
 

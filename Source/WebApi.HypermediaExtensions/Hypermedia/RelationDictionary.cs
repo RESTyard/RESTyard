@@ -8,9 +8,9 @@ namespace WebApi.HypermediaExtensions.Hypermedia
     /// Holds Links to related HypermediaObjects.
     /// Relations are treated as equal if all entries are provided by both lists and no additional entry is present.
     /// </summary>
-    public class RelationDictionary : Dictionary<List<string>, RelatedEntity>
+    public class RelationDictionary : Dictionary<IReadOnlyCollection<string>, RelatedEntity>
     {
-        public RelationDictionary() : base(new StringCollectionComparer())
+        public RelationDictionary() : base(new StringReadOnlyCollectionComparer())
         {
         }
 
@@ -42,7 +42,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia
         /// </summary>
         /// <param name="relations">The relations to use</param>
         /// <param name="reference">To be added.</param>
-        public void Add(List<string> relations, HypermediaObjectReferenceBase reference)
+        public void Add(IReadOnlyCollection<string> relations, HypermediaObjectReferenceBase reference)
         {
             var relatedEntity = new RelatedEntity(relations, reference);
             Add(relatedEntity);
@@ -66,7 +66,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia
         /// </summary>
         /// <param name="relations">The relations to use</param>
         /// <param name="reference">To be added.</param>
-        public void Add(List<string> relations, HypermediaObject reference)
+        public void Add(IReadOnlyCollection<string> relations, HypermediaObject reference)
         {
             var relatedEntity = new RelatedEntity(relations, new HypermediaObjectReference(reference));
             Add(relatedEntity);

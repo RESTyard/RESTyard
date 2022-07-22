@@ -48,7 +48,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             return CreateSirenInternal(hypermediaObject);
         }
 
-        private JObject CreateSirenInternal(HypermediaObject hypermediaObject, bool isEmbedded = false, List<string> embeddedEntityRelations = null)
+        private JObject CreateSirenInternal(HypermediaObject hypermediaObject, bool isEmbedded = false, IReadOnlyCollection<string> embeddedEntityRelations = null)
         {
             var sirenJson = new JObject();
 
@@ -496,7 +496,7 @@ namespace WebApi.HypermediaExtensions.WebApi.Formatter
             sirenJson.Add("class", sirenClasses);
         }
 
-        private static void AddEmbeddedEntityRelations(JObject jembeddedEntity, List<string> embeddedEntityRelations)
+        private static void AddEmbeddedEntityRelations(JObject jembeddedEntity, IReadOnlyCollection<string> embeddedEntityRelations)
         {
             var rels = new JArray();
             foreach (var embeddedEntityRelation in embeddedEntityRelations)

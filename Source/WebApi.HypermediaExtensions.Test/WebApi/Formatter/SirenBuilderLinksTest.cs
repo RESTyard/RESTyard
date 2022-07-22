@@ -301,11 +301,11 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
            
         }
 
-        private static void AssertLink(JObject linkObject, string rel, string expectedUrl, ICollection<string> expectedAvailableMediaTypes)
+        private static void AssertLink(JObject linkObject, string rel, string expectedUrl, IReadOnlyCollection<string> expectedAvailableMediaTypes)
         {
             var relationArray = (JArray)linkObject["rel"];
             var sirenRelations = relationArray.Values<string>().ToList();
-            var stringListComparer = new StringCollectionComparer();
+            var stringListComparer = new StringReadOnlyCollectionComparer();
             var hasDesiredRelations = stringListComparer.Equals(sirenRelations, new List<string> { rel });
 
             Assert.IsTrue(hasDesiredRelations);
@@ -379,11 +379,11 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
            
         }
 
-        private static void AssertMediaTypes(ICollection<string> expectedAvailableMediaType, JToken typeToken)
+        private static void AssertMediaTypes(IReadOnlyCollection<string> expectedAvailableMediaType, JToken typeToken)
         {
             var mediaTypesFromJToken = typeToken.Value<string>().Split(',').ToList();
-            var stringListComparer = new StringCollectionComparer();
-            var hasDesiredMediaTypes = stringListComparer.Equals(expectedAvailableMediaType, mediaTypesFromJToken);
+            var stringReadOnlyCollectionComparer = new StringReadOnlyCollectionComparer();
+            var hasDesiredMediaTypes = stringReadOnlyCollectionComparer.Equals(expectedAvailableMediaType, mediaTypesFromJToken);
 
             Assert.IsTrue(hasDesiredMediaTypes, $"Expected media types do not match {string.Join(",", expectedAvailableMediaType)} <-> {string.Join(",", mediaTypesFromJToken)}");
         }

@@ -12,7 +12,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia
         /// Describes the relations that the related entity has to the embedding entity.
         /// This allows to give the related entities extra context similar to the relations used by Links.
         /// </summary>
-        public List<string> Relations { get; set; }
+        public IReadOnlyCollection<string> Relations { get; set; }
 
         /// <summary>
         /// A reference to the related entity.
@@ -24,7 +24,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia
         /// </summary>
         /// <param name="relations">List of relations as string, should at least contain one relation.</param>
         /// <param name="reference">Reference to the related Entity.</param>
-        public RelatedEntity(List<string> relations, HypermediaObjectReferenceBase reference)
+        public RelatedEntity(IReadOnlyCollection<string> relations, HypermediaObjectReferenceBase reference)
         {
             Relations = new List<string>(relations);
             Reference = reference;

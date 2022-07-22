@@ -16,7 +16,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Extensions
         /// <param name="entitiesList">Entities List.</param>
         /// <param name="relations">Relations for the Entities.</param>
         /// <param name="entities">The added Entities.</param>
-        public static void AddRange(this List<RelatedEntity> entitiesList, List<string> relations, IEnumerable<HypermediaObjectReferenceBase> entities)
+        public static void AddRange(this List<RelatedEntity> entitiesList, IReadOnlyCollection<string> relations, IEnumerable<HypermediaObjectReferenceBase> entities)
         {
             entitiesList.AddRange(entities.Select(entity => new RelatedEntity(relations, entity)));
         }
@@ -27,7 +27,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Extensions
         /// <param name="entitiesList">Entities List.</param>
         /// <param name="relations">Relations for the Entities.</param>
         /// <param name="entities">The added Entities.</param>
-        public static void AddRange(this List<RelatedEntity> entitiesList, List<string> relations, IEnumerable<HypermediaObject> entities)
+        public static void AddRange(this List<RelatedEntity> entitiesList, IReadOnlyCollection<string> relations, IEnumerable<HypermediaObject> entities)
         {
             entitiesList.AddRange(entities.Select(entity => new RelatedEntity(relations, new HypermediaObjectReference(entity))));
         }
@@ -82,7 +82,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Extensions
         /// <param name="entitiesList">Entities List.</param>
         /// <param name="relations">Relations for the Entity.</param>
         /// <param name="entity">The added Entity.</param>
-        public static void Add(this List<RelatedEntity> entitiesList, List<string> relations, HypermediaObjectReferenceBase entity)
+        public static void Add(this List<RelatedEntity> entitiesList, IReadOnlyCollection<string> relations, HypermediaObjectReferenceBase entity)
         {
             entitiesList.Add(new RelatedEntity(relations, entity));
         }
@@ -93,7 +93,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia.Extensions
         /// <param name="entitiesList">Entities List.</param>
         /// <param name="relations">Relations for the Entity.</param>
         /// <param name="entity">The added Entity.</param>
-        public static void Add(this List<RelatedEntity> entitiesList, List<string> relations, HypermediaObject entity)
+        public static void Add(this List<RelatedEntity> entitiesList, IReadOnlyCollection<string> relations, HypermediaObject entity)
         {
             entitiesList.Add(new RelatedEntity(relations, new HypermediaObjectReference(entity)));
         }
