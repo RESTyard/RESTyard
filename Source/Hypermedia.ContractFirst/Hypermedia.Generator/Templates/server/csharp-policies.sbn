@@ -20,7 +20,7 @@
     func generateScopeHelper
         policies = $0
 -}}
-private static readonly string[] allowedScopes = new[]
+private static readonly string[] allowedScopes = new string[]
 {
 {{~
         for permission in policies.Permissions.Permission

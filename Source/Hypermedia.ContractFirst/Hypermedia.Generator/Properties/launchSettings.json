@@ -2,7 +2,7 @@
   "profiles": {
     "Generate C# Client": {
       "commandName": "Project",
-      "commandLineArgs": "--schema-file ../../../../Sample.xml --type client --language csharp --output-file ../../../../Hypermedia.Generator.Demo.Client/Hypermedia.Client.g.cs --namespace Hypermedia.Generator.Demo.Client"
+      "commandLineArgs": "--schema-file \"C:\\Users\\MirMohammadi\\Projekte\\Siemens Registration Authority RA-Service\\03 Code\\Source\\Siemens.DFPD.Pki.LRA.WebApi.Core\\Controllers\\Hypermedia.xml\" --type server --language csharp-Policies --output-file \"C:\\Users\\MirMohammadi\\Projekte\\Siemens Registration Authority RA-Service\\03 Code\\Source\\Siemens.DFPD.Pki.LRA.WebApi.Core\\Controllers\\Hypermedia.Policies.g.cs\" --namespace Siemens.DFPD.Pki.RAService.Controllers"
     },
     "Generate TS Client": {
       "commandName": "Project",
