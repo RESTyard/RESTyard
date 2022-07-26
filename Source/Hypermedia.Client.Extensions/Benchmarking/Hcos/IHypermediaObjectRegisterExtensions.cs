@@ -1,7 +1,8 @@
 ﻿using System.Linq;
 using System.Reflection;
 using Bluehands.Hypermedia.Client;
-using Bluehands.Hypermedia.Client.Hypermedia;
+using RESTyard.Client;
+using RESTyard.Client.Hypermedia;
 
 namespace Benchmarking.Hcos
 {

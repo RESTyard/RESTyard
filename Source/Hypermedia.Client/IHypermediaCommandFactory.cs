@@ -1,7 +1,7 @@
 using System;
-using Bluehands.Hypermedia.Client.Hypermedia.Commands;
+using RESTyard.Client.Hypermedia.Commands;
 
-namespace Bluehands.Hypermedia.Client
+namespace RESTyard.Client
 {
     public interface IHypermediaCommandFactory
     {

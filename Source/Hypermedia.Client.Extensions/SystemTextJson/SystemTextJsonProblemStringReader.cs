@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json;
-using Bluehands.Hypermedia.Client.Exceptions;
-using Bluehands.Hypermedia.Client.Reader;
+using RESTyard.Client.Exceptions;
+using RESTyard.Client.Reader;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJson
 {

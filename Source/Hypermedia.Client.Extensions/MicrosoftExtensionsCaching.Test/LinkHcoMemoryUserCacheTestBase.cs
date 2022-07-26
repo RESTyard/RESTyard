@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Bluehands.Hypermedia.Client.Hypermedia;
-using Bluehands.Hypermedia.Client.Resolver.Caching;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using MicrosoftExtensionsCaching;
+using RESTyard.Client.Hypermedia;
+using RESTyard.Client.Resolver.Caching;
 using Xunit;
 
 namespace Extensions.Test.Caching

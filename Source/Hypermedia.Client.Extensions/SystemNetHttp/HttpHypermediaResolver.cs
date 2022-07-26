@@ -6,12 +6,12 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Bluehands.Hypermedia.Client.Exceptions;
-using Bluehands.Hypermedia.Client.ParameterSerializer;
-using Bluehands.Hypermedia.Client.Reader;
-using Bluehands.Hypermedia.Client.Resolver;
-using Bluehands.Hypermedia.Client.Resolver.Caching;
 using Bluehands.Hypermedia.MediaTypes;
+using RESTyard.Client.Exceptions;
+using RESTyard.Client.ParameterSerializer;
+using RESTyard.Client.Reader;
+using RESTyard.Client.Resolver;
+using RESTyard.Client.Resolver.Caching;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 {

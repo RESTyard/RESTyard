@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bluehands.Hypermedia.Client.Exceptions
+namespace RESTyard.Client.Exceptions
 {
     /// <summary>
     /// The parameters for an Action are not correct.

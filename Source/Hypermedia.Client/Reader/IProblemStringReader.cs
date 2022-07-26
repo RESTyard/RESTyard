@@ -1,6 +1,7 @@
-﻿using Bluehands.Hypermedia.Client.Exceptions;
+﻿using System;
+using RESTyard.Client.Exceptions;
 
-namespace Bluehands.Hypermedia.Client.Reader
+namespace RESTyard.Client.Reader
 {
     public interface IProblemStringReader
     {

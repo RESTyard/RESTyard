@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Net.Http;
-using Bluehands.Hypermedia.Client.ParameterSerializer;
-using Bluehands.Hypermedia.Client.Reader;
-using Bluehands.Hypermedia.Client.Resolver;
-using Bluehands.Hypermedia.Client.Resolver.Caching;
+using RESTyard.Client.ParameterSerializer;
+using RESTyard.Client.Reader;
+using RESTyard.Client.Resolver;
+using RESTyard.Client.Resolver.Caching;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 {

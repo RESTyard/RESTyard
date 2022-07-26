@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using Bluehands.Hypermedia.Client.Resolver.Caching;
 using Microsoft.Extensions.Caching.Memory;
+using RESTyard.Client.Resolver.Caching;
 
 namespace MicrosoftExtensionsCaching
 {

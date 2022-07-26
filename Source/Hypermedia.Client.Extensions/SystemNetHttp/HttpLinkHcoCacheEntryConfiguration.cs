@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Net.Http;
-using Bluehands.Hypermedia.Client.Resolver.Caching;
+using RESTyard.Client.Resolver.Caching;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 {

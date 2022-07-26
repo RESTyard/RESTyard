@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 using System.Text.Json;
-using Bluehands.Hypermedia.Client.ParameterSerializer;
+using RESTyard.Client.ParameterSerializer;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJson
 {

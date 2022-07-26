@@ -1,6 +1,6 @@
-﻿using Bluehands.Hypermedia.Client.Reader;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using RESTyard.Client.Reader;
 
 namespace Extensions.Test.ProblemStringReaderTests
 {

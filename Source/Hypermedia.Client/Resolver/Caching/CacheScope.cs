@@ -1,4 +1,6 @@
-﻿namespace Bluehands.Hypermedia.Client.Resolver.Caching
+﻿using System;
+
+namespace RESTyard.Client.Resolver.Caching
 {
     public enum CacheScope
     {

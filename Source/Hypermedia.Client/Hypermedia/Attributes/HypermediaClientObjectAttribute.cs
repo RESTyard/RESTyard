@@ -1,7 +1,7 @@
 ﻿using System;
-using Bluehands.Hypermedia.Client.Util;
+using RESTyard.Client.Util;
 
-namespace Bluehands.Hypermedia.Client.Hypermedia.Attributes
+namespace RESTyard.Client.Hypermedia.Attributes
 {
     [AttributeUsage(AttributeTargets.Class)]
     public sealed class HypermediaClientObjectAttribute : Attribute

@@ -1,4 +1,6 @@
-namespace Bluehands.Hypermedia.Client.ParameterSerializer
+using System;
+
+namespace RESTyard.Client.ParameterSerializer
 {
     public interface IParameterSerializer
     {

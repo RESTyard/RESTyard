@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using Bluehands.Hypermedia.Client.Hypermedia;
+using RESTyard.Client.Hypermedia;
 
-namespace Bluehands.Hypermedia.Client.Util
+namespace RESTyard.Client.Util
 {
     public class DistinctOrderedStringCollectionComparer : IEqualityComparer<IDistinctOrderedCollection<string>>
     {

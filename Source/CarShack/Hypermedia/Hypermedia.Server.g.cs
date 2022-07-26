@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bluehands.Hypermedia.Relations;
 using RESTyard.WebApi.Extensions.Hypermedia;
 using RESTyard.WebApi.Extensions.Hypermedia.Actions;
 using RESTyard.WebApi.Extensions.Hypermedia.Attributes;

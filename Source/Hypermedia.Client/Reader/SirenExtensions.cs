@@ -1,6 +1,7 @@
-﻿using Bluehands.Hypermedia.Client.Builder;
+﻿using System;
+using RESTyard.Client.Builder;
 
-namespace Bluehands.Hypermedia.Client.Reader
+namespace RESTyard.Client.Reader
 {
     public static class SirenExtensions
     {

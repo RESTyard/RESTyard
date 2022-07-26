@@ -1,4 +1,6 @@
-﻿namespace Bluehands.Hypermedia.Client.Hypermedia.Commands
+﻿using System;
+
+namespace RESTyard.Client.Hypermedia.Commands
 {
     public class HypermediaCommandResult
     {

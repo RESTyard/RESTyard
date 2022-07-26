@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Bluehands.Hypermedia.Client.Hypermedia;
+using RESTyard.Client.Hypermedia;
 
-namespace Bluehands.Hypermedia.Client.Util
+namespace RESTyard.Client.Util
 {
     public class DistinctOrderedStringCollection : Collection<string>, IDistinctOrderedCollection<string>
     {

@@ -1,4 +1,6 @@
-﻿namespace Bluehands.Hypermedia.Client.Authentication
+﻿using System;
+
+namespace RESTyard.Client.Authentication
 {
     public class UsernamePasswordCredentials
     {

@@ -1,8 +1,9 @@
-﻿using Bluehands.Hypermedia.Client.ParameterSerializer;
-using Bluehands.Hypermedia.Client.Reader;
-using Bluehands.Hypermedia.Client.Resolver.Caching;
+﻿using System;
+using RESTyard.Client.ParameterSerializer;
+using RESTyard.Client.Reader;
+using RESTyard.Client.Resolver.Caching;
 
-namespace Bluehands.Hypermedia.Client.Builder
+namespace RESTyard.Client.Builder
 {
     public interface IHypermediaResolverDependencies
     {

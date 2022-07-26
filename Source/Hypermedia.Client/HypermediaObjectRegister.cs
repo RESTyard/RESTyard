@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using Bluehands.Hypermedia.Client.Hypermedia;
-using Bluehands.Hypermedia.Client.Hypermedia.Attributes;
-using Bluehands.Hypermedia.Client.Util;
+using RESTyard.Client.Hypermedia;
+using RESTyard.Client.Hypermedia.Attributes;
+using RESTyard.Client.Util;
 
-namespace Bluehands.Hypermedia.Client
+namespace RESTyard.Client
 {
     public class HypermediaObjectRegister : IHypermediaObjectRegister
     {

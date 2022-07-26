@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Bluehands.Hypermedia.Client.Reader;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RESTyard.Client.Reader;
 
 namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
 {

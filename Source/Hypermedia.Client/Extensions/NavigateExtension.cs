@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using Bluehands.Hypermedia.Client.Hypermedia;
-using Bluehands.Hypermedia.Client.Resolver;
+using RESTyard.Client.Hypermedia;
+using RESTyard.Client.Resolver;
 
-namespace Bluehands.Hypermedia.Client.Extensions
+namespace RESTyard.Client.Extensions
 {
     public static class NavigateExtension
     {

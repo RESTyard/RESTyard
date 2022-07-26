@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Bluehands.Hypermedia.Client.Hypermedia.Commands;
+using RESTyard.Client.Hypermedia.Commands;
 
-namespace Bluehands.Hypermedia.Client
+namespace RESTyard.Client
 {
     internal class RegisterHypermediaCommandFactory : IHypermediaCommandFactory
     {

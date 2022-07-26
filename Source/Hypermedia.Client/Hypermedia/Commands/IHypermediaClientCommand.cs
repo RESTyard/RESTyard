@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Bluehands.Hypermedia.Client.Resolver;
+using RESTyard.Client.Resolver;
 
-namespace Bluehands.Hypermedia.Client.Hypermedia.Commands
+namespace RESTyard.Client.Hypermedia.Commands
 {
     public interface IHypermediaClientCommand
     {

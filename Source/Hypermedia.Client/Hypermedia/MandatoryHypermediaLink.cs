@@ -1,7 +1,6 @@
 using System;
-using System.Threading.Tasks;
 
-namespace Bluehands.Hypermedia.Client.Hypermedia
+namespace RESTyard.Client.Hypermedia
 {
     public class MandatoryHypermediaLink<T> : HypermediaLink<T>
         where T : HypermediaClientObject

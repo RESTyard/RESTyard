@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
-namespace Bluehands.Hypermedia.Client.Hypermedia.Commands
+namespace RESTyard.Client.Hypermedia.Commands
 {
     public class ParameterDescription
     {

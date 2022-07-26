@@ -1,7 +1,7 @@
 ﻿using System;
-using Bluehands.Hypermedia.Client.Extensions;
+using RESTyard.Client.Extensions;
 
-namespace Bluehands.Hypermedia.Client.Resolver.Caching
+namespace RESTyard.Client.Resolver.Caching
 {
     public abstract class CacheEntryVerificationResult<TNetworkResponseMessage>
     {

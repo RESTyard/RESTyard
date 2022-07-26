@@ -1,9 +1,10 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
-using Bluehands.Hypermedia.Client.Hypermedia;
-using Bluehands.Hypermedia.Client.Resolver;
+using RESTyard.Client.Hypermedia;
+using RESTyard.Client.Resolver;
 
-namespace Bluehands.Hypermedia.Client.Reader
+namespace RESTyard.Client.Reader
 {
     public interface IHypermediaReader
     {

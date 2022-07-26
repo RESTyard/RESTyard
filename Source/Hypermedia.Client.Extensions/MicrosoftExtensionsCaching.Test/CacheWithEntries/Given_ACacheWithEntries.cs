@@ -1,5 +1,5 @@
 ﻿using System;
-using Bluehands.Hypermedia.Client.Resolver.Caching;
+using RESTyard.Client.Resolver.Caching;
 
 namespace Extensions.Test.Caching.CacheWithEntries;
 

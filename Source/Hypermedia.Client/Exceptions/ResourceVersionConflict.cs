@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bluehands.Hypermedia.Client.Exceptions
+namespace RESTyard.Client.Exceptions
 {
     /// <summary>
     /// The used resource has changed.

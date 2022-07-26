@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Bluehands.Hypermedia.Client.Hypermedia;
-using Bluehands.Hypermedia.Client.Hypermedia.Commands;
-using Bluehands.Hypermedia.Client.ParameterSerializer;
-using Bluehands.Hypermedia.Client.Reader;
-using Bluehands.Hypermedia.Client.Resolver.Caching;
 using Bluehands.Hypermedia.MediaTypes;
+using RESTyard.Client.Hypermedia;
+using RESTyard.Client.Hypermedia.Commands;
+using RESTyard.Client.ParameterSerializer;
+using RESTyard.Client.Reader;
+using RESTyard.Client.Resolver.Caching;
 
-namespace Bluehands.Hypermedia.Client.Resolver
+namespace RESTyard.Client.Resolver
 {
     public abstract class HypermediaResolverBase<
             TNetworkResponseMessage,

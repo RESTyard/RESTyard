@@ -1,7 +1,7 @@
 ﻿using System;
-using Bluehands.Hypermedia.Client.Resolver.Caching;
+using RESTyard.Client.Resolver.Caching;
 
-namespace Bluehands.Hypermedia.Client.Resolver
+namespace RESTyard.Client.Resolver
 {
     public class NoLinkCache<TLinkHcoCacheEntry> : ILinkHcoCache<TLinkHcoCacheEntry>
         where TLinkHcoCacheEntry : LinkHcoCacheEntry

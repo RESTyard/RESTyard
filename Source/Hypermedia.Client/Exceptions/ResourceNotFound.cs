@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bluehands.Hypermedia.Client.Exceptions
+namespace RESTyard.Client.Exceptions
 {
     /// <summary>
     /// Resolving a link failed because tjhe ressource does not exist.

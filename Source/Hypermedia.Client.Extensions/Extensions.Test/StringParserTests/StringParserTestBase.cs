@@ -1,7 +1,7 @@
 ﻿using System.Linq;
-using Bluehands.Hypermedia.Client.Reader;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using RESTyard.Client.Reader;
 
 namespace Extensions.Test.StringParserTests
 {

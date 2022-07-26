@@ -14,8 +14,9 @@ using Benchmarking.Hcos;
 using Bluehands.Hypermedia.Client;
 using Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson;
 using Bluehands.Hypermedia.Client.Extensions.SystemTextJson;
-using Bluehands.Hypermedia.Client.Hypermedia;
-using Bluehands.Hypermedia.Client.Reader;
+using RESTyard.Client;
+using RESTyard.Client.Hypermedia;
+using RESTyard.Client.Reader;
 
 namespace Benchmarking
 {

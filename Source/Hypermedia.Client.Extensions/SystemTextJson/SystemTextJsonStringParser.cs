@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Bluehands.Hypermedia.Client.Reader;
+using RESTyard.Client.Reader;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJson
 {

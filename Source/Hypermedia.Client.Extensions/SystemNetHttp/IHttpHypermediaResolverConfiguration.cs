@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Net.Http.Headers;
-using Bluehands.Hypermedia.Client.Authentication;
+using RESTyard.Client.Authentication;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 {

@@ -1,6 +1,7 @@
-using Bluehands.Hypermedia.Client.Hypermedia;
+using System;
+using RESTyard.Client.Hypermedia;
 
-namespace Bluehands.Hypermedia.Client.Resolver
+namespace RESTyard.Client.Resolver
 {
     public static class ResolverResult
     {

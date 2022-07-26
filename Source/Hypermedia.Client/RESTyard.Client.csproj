@@ -28,11 +28,9 @@
     <RepositoryBranch>$(BranchName)</RepositoryBranch>
 
     <!-- Package specific settings -->
-    <PackageId>Bluehands.Hypermedia.Client</PackageId>
     <PackageVersion>$(Version)</PackageVersion>
     <PackageReleaseNotes>Version $(Version)</PackageReleaseNotes>
     <IsPackable>true</IsPackable>
-    <RootNamespace>Bluehands.Hypermedia.Client</RootNamespace>
     <Description></Description>
 
   </PropertyGroup>

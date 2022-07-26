@@ -1,5 +1,5 @@
 ﻿using System.Net.Http;
-using Bluehands.Hypermedia.Client.Resolver;
+using RESTyard.Client.Resolver;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 {

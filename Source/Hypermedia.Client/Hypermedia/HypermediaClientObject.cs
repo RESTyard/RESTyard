@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
-using Bluehands.Hypermedia.Client.Hypermedia.Attributes;
+﻿using System;
+using System.Collections.Generic;
+using RESTyard.Client.Hypermedia.Attributes;
 
-namespace Bluehands.Hypermedia.Client.Hypermedia
+namespace RESTyard.Client.Hypermedia
 {
     public abstract class HypermediaClientObject
     {

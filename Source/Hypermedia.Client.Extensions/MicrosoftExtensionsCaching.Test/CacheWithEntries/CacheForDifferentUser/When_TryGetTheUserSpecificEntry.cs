@@ -1,5 +1,5 @@
-﻿using Bluehands.Hypermedia.Client.Resolver.Caching;
-using FluentAssertions;
+﻿using FluentAssertions;
+using RESTyard.Client.Resolver.Caching;
 using Xunit;
 
 namespace Extensions.Test.Caching.CacheWithEntries.CacheForDifferentUser;

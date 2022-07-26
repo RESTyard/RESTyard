@@ -1,10 +1,9 @@
 ﻿using System;
-using Bluehands.Hypermedia.Client.Hypermedia;
-using Bluehands.Hypermedia.Client.ParameterSerializer;
-using Bluehands.Hypermedia.Client.Reader;
-using Bluehands.Hypermedia.Client.Resolver;
+using RESTyard.Client.ParameterSerializer;
+using RESTyard.Client.Reader;
+using RESTyard.Client.Resolver;
 
-namespace Bluehands.Hypermedia.Client.Builder
+namespace RESTyard.Client.Builder
 {
     public static class HypermediaResolverBuilder
     {

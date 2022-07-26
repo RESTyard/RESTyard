@@ -1,16 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Bluehands.Hypermedia.Client.Hypermedia;
-using Bluehands.Hypermedia.Client.Hypermedia.Attributes;
-using Bluehands.Hypermedia.Client.Hypermedia.Commands;
-using Bluehands.Hypermedia.Client.Resolver;
-using Bluehands.Hypermedia.Client.Util;
+using RESTyard.Client.Hypermedia;
+using RESTyard.Client.Hypermedia.Attributes;
+using RESTyard.Client.Hypermedia.Commands;
+using RESTyard.Client.Resolver;
+using RESTyard.Client.Util;
 
-namespace Bluehands.Hypermedia.Client.Reader
+namespace RESTyard.Client.Reader
 {
     internal enum HypermediaPropertyType
     {

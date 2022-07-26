@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
 
-namespace Bluehands.Hypermedia.Client.Hypermedia.Commands
+namespace RESTyard.Client.Hypermedia.Commands
 {
     public interface IHypermediaClientAction
         : IHypermediaClientCommand

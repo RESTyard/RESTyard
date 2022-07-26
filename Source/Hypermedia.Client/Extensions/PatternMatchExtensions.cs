@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bluehands.Hypermedia.Client.Extensions
+namespace RESTyard.Client.Extensions
 {
     public static class PatternMatchExtensions
     {

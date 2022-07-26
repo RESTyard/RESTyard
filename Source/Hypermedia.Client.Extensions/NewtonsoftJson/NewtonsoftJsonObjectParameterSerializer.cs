@@ -1,6 +1,6 @@
-using Bluehands.Hypermedia.Client.ParameterSerializer;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RESTyard.Client.ParameterSerializer;
 
 namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
 {

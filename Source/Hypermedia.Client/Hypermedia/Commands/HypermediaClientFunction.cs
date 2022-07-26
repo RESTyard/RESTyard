@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Threading.Tasks;
 
-namespace Bluehands.Hypermedia.Client.Hypermedia.Commands
+namespace RESTyard.Client.Hypermedia.Commands
 {
     public class HypermediaClientFunction<TResultType>
         : HypermediaClientCommandBase,

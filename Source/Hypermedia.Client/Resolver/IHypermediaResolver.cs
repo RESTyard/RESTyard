@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Bluehands.Hypermedia.Client.Hypermedia;
-using Bluehands.Hypermedia.Client.Hypermedia.Commands;
+using RESTyard.Client.Hypermedia;
+using RESTyard.Client.Hypermedia.Commands;
 
-namespace Bluehands.Hypermedia.Client.Resolver
+namespace RESTyard.Client.Resolver
 {
     public interface IHypermediaResolver
         : IDisposable

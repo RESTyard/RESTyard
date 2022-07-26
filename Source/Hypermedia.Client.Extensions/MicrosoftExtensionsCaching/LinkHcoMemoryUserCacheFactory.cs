@@ -1,6 +1,6 @@
 ﻿using System;
-using Bluehands.Hypermedia.Client.Resolver.Caching;
 using Microsoft.Extensions.Caching.Memory;
+using RESTyard.Client.Resolver.Caching;
 
 namespace MicrosoftExtensionsCaching
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bluehands.Hypermedia.Client.Resolver.Caching
+namespace RESTyard.Client.Resolver.Caching
 {
     public class LinkHcoCacheEntryConfiguration
     {

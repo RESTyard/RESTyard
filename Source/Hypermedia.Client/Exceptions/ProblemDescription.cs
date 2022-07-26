@@ -1,4 +1,6 @@
-﻿namespace Bluehands.Hypermedia.Client.Exceptions
+﻿using System;
+
+namespace RESTyard.Client.Exceptions
 {
     public class ProblemDescription
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Bluehands.Hypermedia.Client.Resolver.Caching;
 using FluentAssertions;
+using RESTyard.Client.Resolver.Caching;
 using Xunit;
 
 namespace Extensions.Test.Caching.EmptyCache;

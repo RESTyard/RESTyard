@@ -1,6 +1,6 @@
-﻿using Bluehands.Hypermedia.Client.Hypermedia;
-using Bluehands.Hypermedia.Client.Hypermedia.Attributes;
-using Bluehands.Hypermedia.Client.Hypermedia.Commands;
+﻿using RESTyard.Client.Hypermedia;
+using RESTyard.Client.Hypermedia.Attributes;
+using RESTyard.Client.Hypermedia.Commands;
 
 namespace Benchmarking.Hcos
 {

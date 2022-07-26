@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Bluehands.Hypermedia.Client.Reader
+namespace RESTyard.Client.Reader
 {
     public interface IStringParser
     {

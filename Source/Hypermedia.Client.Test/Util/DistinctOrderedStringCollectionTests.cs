@@ -1,7 +1,7 @@
-﻿using Bluehands.Hypermedia.Client.Hypermedia;
-using Bluehands.Hypermedia.Client.Util;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using RESTyard.Client.Hypermedia;
+using RESTyard.Client.Util;
 
 namespace Bluehands.Hypermedia.Client.Test.Util
 {

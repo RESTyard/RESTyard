@@ -1,7 +1,7 @@
 ﻿using System;
-using Bluehands.Hypermedia.Client.Exceptions;
-using Bluehands.Hypermedia.Client.Reader;
 using Newtonsoft.Json;
+using RESTyard.Client.Exceptions;
+using RESTyard.Client.Reader;
 
 namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
 {

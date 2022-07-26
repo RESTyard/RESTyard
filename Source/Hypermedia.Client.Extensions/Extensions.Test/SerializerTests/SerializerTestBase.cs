@@ -1,7 +1,7 @@
-﻿using Bluehands.Hypermedia.Client.ParameterSerializer;
-using Extensions.Test.Hco;
+﻿using Extensions.Test.Hco;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using RESTyard.Client.ParameterSerializer;
 
 namespace Extensions.Test.SerializerTests
 {

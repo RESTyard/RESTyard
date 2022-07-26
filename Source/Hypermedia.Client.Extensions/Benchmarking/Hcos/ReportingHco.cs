@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Bluehands.Hypermedia.Client.Hypermedia;
-using Bluehands.Hypermedia.Client.Hypermedia.Attributes;
 using Bluehands.Hypermedia.Relations;
+using RESTyard.Client.Hypermedia;
+using RESTyard.Client.Hypermedia.Attributes;
 
 namespace Benchmarking.Hcos
 {

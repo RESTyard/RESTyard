@@ -1,5 +1,5 @@
-﻿using Bluehands.Hypermedia.Client.Resolver.Caching;
-using MicrosoftExtensionsCaching;
+﻿using MicrosoftExtensionsCaching;
+using RESTyard.Client.Resolver.Caching;
 
 namespace Extensions.Test.Caching.CacheWithEntries.CacheForDifferentUser;
 

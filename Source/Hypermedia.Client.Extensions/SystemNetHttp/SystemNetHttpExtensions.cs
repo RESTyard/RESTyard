@@ -2,10 +2,10 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using Bluehands.Hypermedia.Client.Authentication;
-using Bluehands.Hypermedia.Client.Builder;
-using Bluehands.Hypermedia.Client.Resolver;
-using Bluehands.Hypermedia.Client.Resolver.Caching;
+using RESTyard.Client.Authentication;
+using RESTyard.Client.Builder;
+using RESTyard.Client.Resolver;
+using RESTyard.Client.Resolver.Caching;
 
 namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
 {
