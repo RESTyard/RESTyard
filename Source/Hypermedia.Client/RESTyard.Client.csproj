@@ -35,8 +35,4 @@
 
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Bluehands.Hypermedia.MediaTypes" Version="0.1.0" />
-  </ItemGroup>
-
 </Project>

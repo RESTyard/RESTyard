@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Bluehands.Hypermedia.MediaTypes;
 using RESTyard.Client.Hypermedia;
 using RESTyard.Client.Hypermedia.Commands;
 using RESTyard.Client.ParameterSerializer;
