@@ -14,8 +14,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     
     <!-- Descriptions and information -->
-    <Title>System.Net.Http implementation for Bluehands.Hypermedia.Client</Title>
-    <PackageDescription>Implementations of IHypermediaResolver for Bluehands.Hypermedia.Client using System.Net.Http</PackageDescription>
+    <Title>System.Net.Http implementation for RESTyard.Client</Title>
+    <PackageDescription>Implementations of IHypermediaResolver for RESTyard.Client using System.Net.Http</PackageDescription>
     <PackageTags>Client REST Siren Hypermedia Extensions</PackageTags>
     <Authors>Jasper Marianczuk</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -25,11 +25,11 @@
     <RepositoryBranch>$(BranchName)</RepositoryBranch>
     
     <!-- Package specific settings -->
-    <PackageId>Bluehands.Hypermedia.Client.Extensions.SystemNetHttp</PackageId>
+    <PackageId>RESTyard.Client.Extensions.SystemNetHttp</PackageId>
     <PackageVersion>$(Version)</PackageVersion>
     <PackageReleaseNotes></PackageReleaseNotes>
     <IsPackable>true</IsPackable>
-    <RootNamespace>Bluehands.Hypermedia.Client.Extensions.SystemNetHttp</RootNamespace>
+    <RootNamespace>RESTyard.Client.Extensions.SystemNetHttp</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

@@ -2,7 +2,7 @@
 using System.Net.Http.Headers;
 using RESTyard.Client.Authentication;
 
-namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
+namespace RESTyard.Client.Extensions.SystemNetHttp
 {
     public interface IHttpHypermediaResolverConfiguration
     {

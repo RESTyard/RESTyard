@@ -7,7 +7,7 @@ using RESTyard.Client.Builder;
 using RESTyard.Client.Resolver;
 using RESTyard.Client.Resolver.Caching;
 
-namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
+namespace RESTyard.Client.Extensions.SystemNetHttp
 {
     public static class SystemNetHttpExtensions
     {

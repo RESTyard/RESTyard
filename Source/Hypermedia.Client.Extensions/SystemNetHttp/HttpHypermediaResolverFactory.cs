@@ -5,7 +5,7 @@ using RESTyard.Client.Reader;
 using RESTyard.Client.Resolver;
 using RESTyard.Client.Resolver.Caching;
 
-namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
+namespace RESTyard.Client.Extensions.SystemNetHttp
 {
     public class HttpHypermediaResolverFactory : IHttpHypermediaResolverFactory
     {

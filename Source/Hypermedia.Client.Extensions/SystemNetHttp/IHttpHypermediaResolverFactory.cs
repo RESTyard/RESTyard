@@ -1,7 +1,8 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using RESTyard.Client.Resolver;
 
-namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
+namespace RESTyard.Client.Extensions.SystemNetHttp
 {
     public interface IHttpHypermediaResolverFactory
     {

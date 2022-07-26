@@ -1,4 +1,6 @@
-﻿namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
+﻿using System;
+
+namespace RESTyard.Client.Extensions.SystemNetHttp
 {
     public static class StringHelpers
     {

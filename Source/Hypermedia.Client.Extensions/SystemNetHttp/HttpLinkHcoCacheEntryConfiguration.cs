@@ -2,7 +2,7 @@
 using System.Net.Http;
 using RESTyard.Client.Resolver.Caching;
 
-namespace Bluehands.Hypermedia.Client.Extensions.SystemNetHttp
+namespace RESTyard.Client.Extensions.SystemNetHttp
 {
     public class HttpLinkHcoCacheEntryConfiguration : LinkHcoCacheEntryConfiguration
     {
