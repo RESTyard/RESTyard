@@ -17,7 +17,7 @@
 		<Title>Newtonsoft.Json implementation for RESTyard.Client</Title>
 		<PackageDescription>Implementations of IStringParser, IParameterSerializer, IProblemStringReader for RESTyard.Client using Newtonsoft.Json</PackageDescription>
 		<PackageTags>Client REST Siren Hypermedia Extensions</PackageTags>
-		<Authors>Jasper Marianczuk</Authors>
+		<Authors>Jasper Marianczuk; Aydin Mir Mohammadi; Waldemar Tomme</Authors>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
 		<RepositoryType>Git</RepositoryType>

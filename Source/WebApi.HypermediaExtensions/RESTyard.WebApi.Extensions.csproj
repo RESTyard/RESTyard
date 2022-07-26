@@ -18,8 +18,8 @@
     <Titel>Web Api Hypermedia Extensions</Titel>
     <PackageDescription>Web Api extensions to create REST Web services using Siren as Hypermedia format</PackageDescription>
     <PackageTags>WebApi;REST;Siren;Hypermedia;ASP.NET Core;</PackageTags>
-    <Authors>Mathias Reichardt,Jasper Marianczuk</Authors>
-    <Copyright>Copyright 2001-2021 Mathias Reichardt</Copyright>
+    <Authors>Mathias Reichardt; Jasper Marianczuk; Aydin Mir Mohammadi; Waldemar Tomme</Authors>
+    <Copyright>Copyright 2001-2022 RESTyard Team</Copyright>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>

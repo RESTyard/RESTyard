@@ -10,6 +10,17 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>restyard-generator</ToolCommandName>
     <VersionPrefix>0.1</VersionPrefix>
+
+	  <!-- Descriptions and information -->
+	  <Title>RESTyard Code Generation Tool</Title>
+	  <PackageDescription>Code generator for multiple languages and types to use with RESTyard libraries.</PackageDescription>
+	  <PackageTags>Client REST Siren Hypermedia Extensions RESTyard Generator Generation</PackageTags>
+	  <Authors>Waldemar Tomme</Authors>
+	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
+	  <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
+	  <RepositoryType>Git</RepositoryType>
+	  <RepositoryUrl>https://github.com/bluehands/WebApiHypermediaExtensions.git</RepositoryUrl>
+	  <RepositoryBranch>$(BranchName)</RepositoryBranch>
   </PropertyGroup>
 
   <ItemGroup>
