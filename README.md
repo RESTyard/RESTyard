@@ -10,9 +10,9 @@ For a first feel there is a demo project called [CarShack](https://github.com/bl
 To develop C# client applications there is a generic REST client. It is in an early stage at the moment: [https://github.com/bluehands/WebApiHypermediaExtensions/tree/master/Source/HypermediaClient](https://github.com/bluehands/WebApiHypermediaExtensions/tree/master/Source/HypermediaClient)
 
 ## On nuget.org
-The Extensions: [https://www.nuget.org/packages/WebApiHypermediaExtensionsCore](https://www.nuget.org/packages/WebApiHypermediaExtensionsCore)
+The Extensions: [https://www.nuget.org/packages/RESTyard.WebApi.Extensions](https://www.nuget.org/packages/RESTyard.WebApi.Extensions)
 
-The Client: [https://www.nuget.org/packages/Bluehands.Hypermedia.Client/](https://www.nuget.org/packages/Bluehands.Hypermedia.Client/)
+The Client: [https://www.nuget.org/packages/RESTyard.Client/](https://www.nuget.org/packages/RESTyard.Client/)
 
 ## UI client
 There is a partner project which aims for a generic UI client: [HypermediaUi](https://github.com/MathiasReichardt/HypermediaUi)
