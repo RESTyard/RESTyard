@@ -7,7 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using RESTyard.Client.Reader;
 
-namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJson
+namespace RESTyard.Client.Extensions.SystemTextJson
 {
     public class SystemTextJsonStringParser : IStringParser
     {

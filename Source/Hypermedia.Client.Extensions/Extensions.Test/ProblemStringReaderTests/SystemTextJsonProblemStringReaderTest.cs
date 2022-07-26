@@ -1,5 +1,5 @@
-﻿using Bluehands.Hypermedia.Client.Extensions.SystemTextJson;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using RESTyard.Client.Extensions.SystemTextJson;
 
 namespace Extensions.Test.ProblemStringReaderTests
 {

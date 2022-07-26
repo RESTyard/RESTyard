@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
-using Bluehands.Hypermedia.Client.Extensions.SystemTextJson;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using RESTyard.Client.Extensions.SystemTextJson;
 
 namespace Extensions.Test.SerializerTests
 {

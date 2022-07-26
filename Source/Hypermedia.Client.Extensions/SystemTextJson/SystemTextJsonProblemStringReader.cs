@@ -3,7 +3,7 @@ using System.Text.Json;
 using RESTyard.Client.Exceptions;
 using RESTyard.Client.Reader;
 
-namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJson
+namespace RESTyard.Client.Extensions.SystemTextJson
 {
     public class SystemTextJsonProblemStringReader : IProblemStringReader
     {

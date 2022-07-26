@@ -14,8 +14,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     
     <!-- Descriptions and information -->
-    <Title>System.Text.Json implementation for Bluehands.Hypermedia.Client</Title>
-    <PackageDescription>Implementations of IStringParser, IParameterSerializer, IProblemStringReader for Bluehands.Hypermedia.Client using System.Text.Json</PackageDescription>
+    <Title>System.Text.Json implementation for RESTyard.Client</Title>
+    <PackageDescription>Implementations of IStringParser, IParameterSerializer, IProblemStringReader for RESTyard.Client using System.Text.Json</PackageDescription>
     <PackageTags>Client REST Siren Hypermedia Extensions</PackageTags>
     <Authors>Jasper Marianczuk</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -25,11 +25,11 @@
     <RepositoryBranch>$(BranchName)</RepositoryBranch>
     
     <!-- Package specific settings -->
-    <PackageId>Bluehands.Hypermedia.Client.Extensions.SystemTextJson</PackageId>
+    <PackageId>RESTyard.Client.Extensions.SystemTextJson</PackageId>
     <PackageVersion>$(Version)</PackageVersion>
     <PackageReleaseNotes></PackageReleaseNotes>
     <IsPackable>true</IsPackable>
-    <RootNamespace>Bluehands.Hypermedia.Client.Extensions.SystemTextJson</RootNamespace>
+    <RootNamespace>RESTyard.Client.Extensions.SystemTextJson</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

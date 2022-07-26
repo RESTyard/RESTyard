@@ -1,7 +1,8 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Text.Json;
 using RESTyard.Client.Builder;
 
-namespace Bluehands.Hypermedia.Client.Extensions.SystemTextJson
+namespace RESTyard.Client.Extensions.SystemTextJson
 {
     public static class SystemTextJsonExtensions
     {
