@@ -37,7 +37,7 @@
 	</ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Hypermedia.Client\Hypermedia.Client.csproj" />
+    <ProjectReference Include="..\..\Hypermedia.Client\RESTyard.Client.csproj" />
   </ItemGroup>
 
 </Project>

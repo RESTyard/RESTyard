@@ -20,9 +20,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTyard.Relations", "Hyper
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarShack", "CarShack\CarShack.csproj", "{89465847-B042-40A5-853B-E8DAC3160C56}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hypermedia.Client", "Hypermedia.Client\Hypermedia.Client.csproj", "{1E4E6AC2-1E5B-443C-9782-2AD056A750D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTyard.Client", "Hypermedia.Client\RESTyard.Client.csproj", "{1E4E6AC2-1E5B-443C-9782-2AD056A750D0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hypermedia.Client.Test", "Hypermedia.Client.Test\Hypermedia.Client.Test.csproj", "{3FD04265-F0B7-4AFC-A8E9-F4DDF7381CAF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTyard.Client.Test", "Hypermedia.Client.Test\RESTyard.Client.Test.csproj", "{3FD04265-F0B7-4AFC-A8E9-F4DDF7381CAF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTyard.MediaTypes", "Hypermedia.MediaTypes\RESTyard.MediaTypes.csproj", "{4DE2A632-382B-4C37-8725-87EAF81E9869}"
 EndProject
