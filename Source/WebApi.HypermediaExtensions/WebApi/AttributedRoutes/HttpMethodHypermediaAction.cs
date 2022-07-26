@@ -22,7 +22,9 @@ namespace WebApi.HypermediaExtensions.WebApi.AttributedRoutes
         ///     This type will be used to create a n instance of the producer and generate the key object used in a UrlHelper to
         ///     determine the final URL.
         /// </param>
-        public HttpMethodHypermediaAction(IEnumerable<string> httpMethods, Type routeType,
+        public HttpMethodHypermediaAction(
+            IEnumerable<string> httpMethods,
+            Type routeType,
             Type routeKeyProducerType = null) : base(httpMethods)
         {
             Init(routeType, routeKeyProducerType);
@@ -43,7 +45,11 @@ namespace WebApi.HypermediaExtensions.WebApi.AttributedRoutes
         ///     This type will be used to create a n instance of the producer and generate the key object used in a UrlHelper to
         ///     determine the final URL.
         /// </param>
-        public HttpMethodHypermediaAction(IEnumerable<string> httpMethods, string template, Type routeType,
+        /// <param name="acceptedMediaType">The media type which is acceptable for this action.</param>
+        public HttpMethodHypermediaAction(
+            IEnumerable<string> httpMethods,
+            string template,
+            Type routeType,
             Type routeKeyProducerType = null) : base(httpMethods, template)
         {
             Init(routeType, routeKeyProducerType);
@@ -51,6 +57,12 @@ namespace WebApi.HypermediaExtensions.WebApi.AttributedRoutes
 
         public Type RouteType { get; private set; }
         public Type RouteKeyProducerType { get; private set; }
+        
+        
+        /// <summary>
+        /// The media type which is acceptable for this action. 
+        /// </summary>
+        public string AcceptedMediaType { get; set; } = null;
 
         private void Init(Type routeType, Type routeKeyProducerType)
         {

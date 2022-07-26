@@ -7,5 +7,7 @@ namespace WebApi.HypermediaExtensions.WebApi.AttributedRoutes
         Type RouteType { get; }
 
         Type RouteKeyProducerType { get; }
+        
+        string AcceptedMediaType { get; }
     }
 }

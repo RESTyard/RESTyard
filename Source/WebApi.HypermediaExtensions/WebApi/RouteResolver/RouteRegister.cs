@@ -31,7 +31,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
             return true;
         }
 
-        public void AddActionRoute(Type hypermediaActionType, string routeName, HttpMethod httpMethod)
+        public void AddActionRoute(Type hypermediaActionType, string routeName, HttpMethod httpMethod, string acceptableMediaType = null)
         {
             if (!IsHypermediaAction(hypermediaActionType) /*&& !IsGenericHypermediaAction(hypermediaActionType)*/)
             {
@@ -39,7 +39,7 @@ namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
                     $"Type {hypermediaActionType} must derive from {typeof(HypermediaAction<>).Name}.");
             }
 
-            this.AddRoute(hypermediaActionType, new RouteInfo(routeName, httpMethod));
+            this.AddRoute(hypermediaActionType, new RouteInfo(routeName, httpMethod, acceptableMediaType));
         }
 
         private static bool IsHypermediaAction(Type hypermediaActionType)

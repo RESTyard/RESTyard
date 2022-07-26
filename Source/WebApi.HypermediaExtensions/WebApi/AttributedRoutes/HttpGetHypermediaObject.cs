@@ -15,6 +15,8 @@ namespace WebApi.HypermediaExtensions.WebApi.AttributedRoutes
         public Type RouteType { get; private set; }
 
         public Type RouteKeyProducerType { get; private set; }
+        
+        public string AcceptedMediaType => null;
 
         /// <summary>
         /// Indicates that this Rout will provide a <see cref="HypermediaObject"/>. It is not required that only this <see cref="HypermediaObject"/> can be returned.

@@ -9,6 +9,8 @@ namespace WebApi.HypermediaExtensions.WebApi.AttributedRoutes
     {
         public Type RouteType { get; private set; }
         public Type RouteKeyProducerType { get; } = null;
+        public string AcceptedMediaType => null;
+
         /// <summary>
         /// Indicates a route to a Type which is aused in an action. The route should provide type information.
         /// </summary>

@@ -9,6 +9,9 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <RootNamespace>Bluehands.Hypermedia.Client.Test</RootNamespace>
+    
+    <!-- CS1591: missing documentation on public methods -->
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

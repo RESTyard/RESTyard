@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace WebApi.HypermediaExtensions.Util
 {
-    public class StringCollectionComparer : IEqualityComparer<ICollection<string>>
+    public class StringReadOnlyCollectionComparer : IEqualityComparer<IReadOnlyCollection<string>>
     {
-        public bool Equals(ICollection<string> x, ICollection<string> y)
+        public bool Equals(IReadOnlyCollection<string> x, IReadOnlyCollection<string> y)
         {
             if (ReferenceEquals(x, y))
             {
@@ -25,7 +25,7 @@ namespace WebApi.HypermediaExtensions.Util
             return !x.Except(y).Any();
         }
 
-        public int GetHashCode(ICollection<string> obj)
+        public int GetHashCode(IReadOnlyCollection<string> obj)
         {
             return 0;
         }

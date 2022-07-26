@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFramework>net5</TargetFramework>
     <OutputType>Exe</OutputType>
+
+    <!-- CS1591: missing documentation on public methods -->
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

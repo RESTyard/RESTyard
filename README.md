@@ -157,18 +157,29 @@ var allQuery = new CustomerQuery();
 Links.Add(DefaultHypermediaRelations.Queries.All, new HypermediaObjectQueryReference(typeof(HypermediaCustomerQueryResult), allQuery));
 ```
 
-#### External References
-It might be necessary to reference a external source or a route which can not be build by the framework. In this case use the `ExternalReference`. This object works around the default route resolving process by providing its own URI. It can only be used in combination with `HypermediaObjectReference`.
+#### Direct References
+It might be necessary to reference a external source or a route which can not be build by the framework. In this case use the `ExternalReference` for links outside of the server 
+or `InternalReference` for server routes. These objects work around the default route resolving process by providing its own URI or route name. It can only be used in combination with `HypermediaObjectReference`.
+As additional information for clients a external reference can contain a media type or a list of media types. This is useful if a client wants to switch the media type e.g. to a download or get the resource as image.
 
-Example reference of an external site:
+Example references of an external site:
 ```
 Links.Add("GreatSite", new ExternalReference(new Uri("http://www.example.com/")));
+Links.Add("GreatSite", new ExternalReference(new Uri("http://www.example.com/")).WithAvailableMediaType("image/png"));
+Links.Add("GreatSite", new ExternalReference(new Uri("http://www.example.com/")).WithAvailableMediaTypes(new []{"application/xml", "image/png"}));
+
+Links.Add("GreatSite", new InternalReference("My_Route_Name"));
+Links.Add("GreatSite", new InternalReference("My_Route_Name", new {routevariable1 = 1}));
+Links.Add("GreatSite", new InternalReference("My_Route_Name").WithAvailableMediaType("image/png"));
+Links.Add("GreatSite", new InternalReference("My_Route_Name").WithAvailableMediaTypes(new []{"application/xml", "image/png"}));
 ```
 
 ## Attributed routes
 The included SirenFormatter will build required links to other routes. At startup all routes attributed with:
 - `HttpGetHypermediaObject`
 - `HttpPostHypermediaAction`
+- `HttpDeleteHypermediaAction`
+- `HttpPatchHypermediaAction`
 - `HttpGetHypermediaActionParameterInfo`
 
 will be placed in an internal register.
@@ -235,6 +246,18 @@ public ActionResult CreateCustomerParametersType()
 
 Also see See: [extracting keys from action parameter URLs](#extracting-keys-from-action-parameter-urls)
 
+### Actions with acceptable media type
+
+The action attributes allow to specify a media type so it can be transmitted that a client should send the data in a acceptable format
+
+- `HttpPostHypermediaAction`
+- `HttpDeleteHypermediaAction`
+- `HttpPatchHypermediaAction`
+
+```csharp
+[HttpPostHypermediaAction("my/route/template", typeof(MyOperation), AcceptedMediaType = "multipart/form-data"))]
+```
+Will be rendered to siren as `type` on the action. Default is `application/json`.
 
 ### Routes with a placeholder in the route template
 For access to entities a route template may contain placeholder variables like _key_ in the example below.
@@ -457,6 +480,18 @@ Tested for:
 - Nullable
 
 ## Release Notes
+
+### WebApiHypermediaExtensions v1.10.0
+
+- Extend `HttpDeleteHypermediaAction`, `HttpPatchHypermediaAction` and `HttpPostHypermediaAction` attributes so a media type can be configured which is accepted by the action.
+Rendered as `type` in siren action.
+- Relax requirement for relations list from `List<string>` to `IReadOnlyCollection<string>`
+
+### WebApiHypermediaExtensions v1.9.0
+
+- Add `InternalReference` wich allows to build a link to a route by name 
+- Add capability for `ExternalReference` and  `InternalReference` to specify media types. This will be rendered as `type` on a Siren link. 
+  This is intended for clients, so they can switch media type e.g. to a download or other than Siren via link.  
 
 ### WebApiHypermediaExtensions v1.8.2
 

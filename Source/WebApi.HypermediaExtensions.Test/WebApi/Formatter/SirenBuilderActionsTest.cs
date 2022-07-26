@@ -39,7 +39,8 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
             RouteRegister.AddActionRoute(typeof(HypermediaActionNoArgument), routeNameHypermediaActionNoArgument, HttpMethod.POST);
 
             var routeNameHypermediaActionWithArgument = typeof(HypermediaActionWithArgument).Name + "_Route";
-            RouteRegister.AddActionRoute(typeof(HypermediaActionWithArgument), routeNameHypermediaActionWithArgument, HttpMethod.POST);
+            var customMediaType = "custome/mediatype";
+            RouteRegister.AddActionRoute(typeof(HypermediaActionWithArgument), routeNameHypermediaActionWithArgument, HttpMethod.POST, customMediaType);
 
             var routeNameHypermediaActionWithTypedArgument = typeof(HypermediaFunctionWithTypedArgument).Name + "_Route";
             RouteRegister.AddActionRoute(typeof(HypermediaFunctionWithTypedArgument), routeNameHypermediaActionWithTypedArgument, HttpMethod.POST);
@@ -67,7 +68,7 @@ namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
             AssertActionBasic((JObject)siren["actions"][1], "ActionNoArgument", "POST", routeNameHypermediaActionNoArgument, 3);
 
             AssertActionBasic((JObject)siren["actions"][2], "ActionWithArgument", "POST", routeNameHypermediaActionWithArgument, 5);
-            AssertActionArgument((JObject) siren["actions"][2], DefaultMediaTypes.ApplicationJson, "ActionParameter", "ActionParameter");
+            AssertActionArgument((JObject) siren["actions"][2], customMediaType, "ActionParameter", "ActionParameter");
 
             AssertActionBasic((JObject)siren["actions"][3], "FunctionWithTypedArgument", "POST", routeNameHypermediaActionWithTypedArgument, 5);
             AssertActionArgument((JObject)siren["actions"][3], DefaultMediaTypes.ApplicationJson, "RegisteredActionParameter", routeNameRegisteredActionParameter, true);

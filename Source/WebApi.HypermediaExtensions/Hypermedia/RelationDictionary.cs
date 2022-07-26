@@ -6,17 +6,17 @@ namespace WebApi.HypermediaExtensions.Hypermedia
 {
     /// <summary>
     /// Holds Links to related HypermediaObjects.
-    /// Relations are treated as equal if all entries are provided by both lists and no additional entry is pressent.
+    /// Relations are treated as equal if all entries are provided by both lists and no additional entry is present.
     /// </summary>
-    public class RelationDictionary : Dictionary<List<string>, RelatedEntity>
+    public class RelationDictionary : Dictionary<IReadOnlyCollection<string>, RelatedEntity>
     {
-        public RelationDictionary() : base(new StringCollectionComparer())
+        public RelationDictionary() : base(new StringReadOnlyCollectionComparer())
         {
         }
 
         /// <summary>
         /// Add a related Entity to the Links Dictionary.
-        /// If a related entity with the same relation is pressent it is replaced.
+        /// If a related entity with the same relation is present it is replaced.
         /// </summary>
         /// <param name="relatedEntity">To be added.</param>
         public void Add(RelatedEntity relatedEntity)
@@ -26,7 +26,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia
 
         /// <summary>
         /// Convenience function: Add a HypermediaObjectReferenceBase to the Links Dictionary.
-        /// If a related entity with the same relation is pressent it is replaced.
+        /// If a related entity with the same relation is present it is replaced.
         /// </summary>
         /// <param name="relation">The relation to use</param>
         /// <param name="reference">To be added.</param>
@@ -38,11 +38,11 @@ namespace WebApi.HypermediaExtensions.Hypermedia
 
         /// <summary>
         /// Convenience function: Add a HypermediaObjectReferenceBase to the Links Dictionary.
-        /// If a related entity with the same relations is pressent it is replaced.
+        /// If a related entity with the same relations is present it is replaced.
         /// </summary>
         /// <param name="relations">The relations to use</param>
         /// <param name="reference">To be added.</param>
-        public void Add(List<string> relations, HypermediaObjectReferenceBase reference)
+        public void Add(IReadOnlyCollection<string> relations, HypermediaObjectReferenceBase reference)
         {
             var relatedEntity = new RelatedEntity(relations, reference);
             Add(relatedEntity);
@@ -50,7 +50,7 @@ namespace WebApi.HypermediaExtensions.Hypermedia
 
         /// <summary>
         /// Convenience function: Add a HypermediaObject to the Links Dictionary.
-        /// If a related entity with the same relation is pressent it is replaced.
+        /// If a related entity with the same relation is present it is replaced.
         /// </summary>
         /// <param name="relation">The relations to use</param>
         /// <param name="reference">To be added.</param>
@@ -62,11 +62,11 @@ namespace WebApi.HypermediaExtensions.Hypermedia
 
         /// <summary>
         /// Convenience function: Add a HypermediaObject to the Links Dictionary.
-        /// If a related entity with the same relations is pressent it is replaced.
+        /// If a related entity with the same relations is present it is replaced.
         /// </summary>
         /// <param name="relations">The relations to use</param>
         /// <param name="reference">To be added.</param>
-        public void Add(List<string> relations, HypermediaObject reference)
+        public void Add(IReadOnlyCollection<string> relations, HypermediaObject reference)
         {
             var relatedEntity = new RelatedEntity(relations, new HypermediaObjectReference(reference));
             Add(relatedEntity);
