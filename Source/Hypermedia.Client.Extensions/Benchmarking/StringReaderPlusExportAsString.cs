@@ -11,7 +11,6 @@ using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Reports;
 using Benchmarking.Hcos;
-using Bluehands.Hypermedia.Client;
 using RESTyard.Client;
 using RESTyard.Client.Extensions.NewtonsoftJson;
 using RESTyard.Client.Extensions.SystemTextJson;

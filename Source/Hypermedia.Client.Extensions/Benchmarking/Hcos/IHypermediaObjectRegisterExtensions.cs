@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using System.Reflection;
-using Bluehands.Hypermedia.Client;
 using RESTyard.Client;
 using RESTyard.Client.Hypermedia;
 
