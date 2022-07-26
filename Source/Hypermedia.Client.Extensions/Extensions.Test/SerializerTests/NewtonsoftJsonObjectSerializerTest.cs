@@ -1,6 +1,6 @@
-﻿using Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using RESTyard.Client.Extensions.NewtonsoftJson;
 
 namespace Extensions.Test.SerializerTests
 {

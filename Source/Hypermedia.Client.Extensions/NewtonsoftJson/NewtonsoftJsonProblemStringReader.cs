@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using RESTyard.Client.Exceptions;
 using RESTyard.Client.Reader;
 
-namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
+namespace RESTyard.Client.Extensions.NewtonsoftJson
 {
     public class NewtonsoftJsonProblemStringReader : IProblemStringReader
     {

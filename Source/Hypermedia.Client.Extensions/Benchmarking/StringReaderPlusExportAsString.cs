@@ -12,9 +12,9 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Reports;
 using Benchmarking.Hcos;
 using Bluehands.Hypermedia.Client;
-using Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson;
 using Bluehands.Hypermedia.Client.Extensions.SystemTextJson;
 using RESTyard.Client;
+using RESTyard.Client.Extensions.NewtonsoftJson;
 using RESTyard.Client.Hypermedia;
 using RESTyard.Client.Reader;
 

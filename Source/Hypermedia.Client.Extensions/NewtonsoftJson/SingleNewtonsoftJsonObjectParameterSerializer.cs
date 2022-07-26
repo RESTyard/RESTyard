@@ -1,8 +1,9 @@
+using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RESTyard.Client.ParameterSerializer;
 
-namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
+namespace RESTyard.Client.Extensions.NewtonsoftJson
 {
     public class SingleNewtonsoftJsonObjectParameterSerializer : IParameterSerializer
     {

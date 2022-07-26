@@ -1,5 +1,5 @@
-﻿using Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using RESTyard.Client.Extensions.NewtonsoftJson;
 
 namespace Extensions.Test.ProblemStringReaderTests
 {

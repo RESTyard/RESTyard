@@ -14,7 +14,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
 		<!-- Descriptions and information -->
-		<Title>Newtonsoft.Json implementation for Bluehands.Hypermedia.Client</Title>
+		<Title>Newtonsoft.Json implementation for RESTyard.Client</Title>
 		<PackageDescription>Implementations of IStringParser, IParameterSerializer, IProblemStringReader for Bluehands.Hypermedia.Client using Newtonsoft.Json</PackageDescription>
 		<PackageTags>Client REST Siren Hypermedia Extensions</PackageTags>
 		<Authors>Jasper Marianczuk</Authors>
@@ -25,11 +25,11 @@
 		<RepositoryBranch>$(BranchName)</RepositoryBranch>
 
 		<!-- Package specific settings -->
-		<PackageId>Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson</PackageId>
+		<PackageId>RESTyard.Client.Extensions.NewtonsoftJson</PackageId>
 		<PackageVersion>$(Version)</PackageVersion>
 		<PackageReleaseNotes></PackageReleaseNotes>
 		<IsPackable>true</IsPackable>
-		<RootNamespace>Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson</RootNamespace>
+		<RootNamespace>RESTyard.Client.Extensions.NewtonsoftJson</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>

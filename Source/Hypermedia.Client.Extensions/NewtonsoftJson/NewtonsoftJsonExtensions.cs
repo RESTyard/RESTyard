@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using RESTyard.Client.Builder;
 
-namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
+namespace RESTyard.Client.Extensions.NewtonsoftJson
 {
     public static class NewtonsoftJsonExtensions
     {

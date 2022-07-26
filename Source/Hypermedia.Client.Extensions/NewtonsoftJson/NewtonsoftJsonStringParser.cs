@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RESTyard.Client.Reader;
 
-namespace Bluehands.Hypermedia.Client.Extensions.NewtonsoftJson
+namespace RESTyard.Client.Extensions.NewtonsoftJson
 {
     public class NewtonsoftJsonStringParser : IStringParser
     {
