@@ -1,8 +1,9 @@
-﻿using Bluehands.Hypermedia.Relations;
+﻿using System;
+using Bluehands.Hypermedia.Relations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.WebApi.Extensions.Util.Repository;
 
-namespace WebApi.HypermediaExtensions.Test
+namespace RESTyard.WebApi.Extensions.Test
 {
     [TestClass]
     public class NavigationQueryBuilderTest

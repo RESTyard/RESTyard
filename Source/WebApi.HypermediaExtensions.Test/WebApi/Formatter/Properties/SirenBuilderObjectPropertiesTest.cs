@@ -1,9 +1,10 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
-namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
+namespace RESTyard.WebApi.Extensions.Test.WebApi.Formatter.Properties
 {
     [TestClass]
     public class SirenBuilderObjectPropertiesTest : SirenBuilderTestBase

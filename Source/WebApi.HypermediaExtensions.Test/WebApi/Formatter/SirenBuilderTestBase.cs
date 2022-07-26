@@ -6,15 +6,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using RESTyard.WebApi.Extensions.Query;
+using RESTyard.WebApi.Extensions.Test.WebApi.Formatter.Properties;
 using RESTyard.WebApi.Extensions.Util;
 using RESTyard.WebApi.Extensions.WebApi;
 using RESTyard.WebApi.Extensions.WebApi.AttributedRoutes;
 using RESTyard.WebApi.Extensions.WebApi.ExtensionMethods;
 using RESTyard.WebApi.Extensions.WebApi.Formatter;
 using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
-using WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties;
 
-namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
+namespace RESTyard.WebApi.Extensions.Test.WebApi.Formatter
 {
     public class SirenBuilderTestBase
     {

@@ -8,7 +8,7 @@ using RESTyard.WebApi.Extensions.Hypermedia.Actions;
 using RESTyard.WebApi.Extensions.Hypermedia.Attributes;
 using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
-namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
+namespace RESTyard.WebApi.Extensions.Test.WebApi.Formatter
 {
     [TestClass]
     public class SirenBuilderActionsTest : SirenBuilderTestBase

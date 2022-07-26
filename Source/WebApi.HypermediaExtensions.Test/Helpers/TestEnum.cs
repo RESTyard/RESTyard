@@ -1,6 +1,7 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 
-namespace WebApi.HypermediaExtensions.Test.Helpers
+namespace RESTyard.WebApi.Extensions.Test.Helpers
 {
     public enum TestEnum
     {

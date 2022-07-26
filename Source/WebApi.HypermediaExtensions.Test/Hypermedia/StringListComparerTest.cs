@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.WebApi.Extensions.Util;
 
-namespace WebApi.HypermediaExtensions.Test.Hypermedia
+namespace RESTyard.WebApi.Extensions.Test.Hypermedia
 {
     [TestClass]
     public class StringListComparerTest

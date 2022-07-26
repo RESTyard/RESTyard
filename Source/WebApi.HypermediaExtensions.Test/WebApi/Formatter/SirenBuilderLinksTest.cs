@@ -10,7 +10,7 @@ using RESTyard.WebApi.Extensions.Query;
 using RESTyard.WebApi.Extensions.Util;
 using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
-namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
+namespace RESTyard.WebApi.Extensions.Test.WebApi.Formatter
 {
     [TestClass]
     public class SirenBuilderLinksTest : SirenBuilderTestBase

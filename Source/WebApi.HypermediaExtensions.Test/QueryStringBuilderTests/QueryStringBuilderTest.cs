@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.WebApi.Extensions.Query;
-using WebApi.HypermediaExtensions.Test.Helpers;
+using RESTyard.WebApi.Extensions.Test.Helpers;
 
-namespace WebApi.HypermediaExtensions.Test.QueryStringBuilderTests
+namespace RESTyard.WebApi.Extensions.Test.QueryStringBuilderTests
 {
     [TestClass]
     public class QueryStringBuilderTest

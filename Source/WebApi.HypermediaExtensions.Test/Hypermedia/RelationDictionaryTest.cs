@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.WebApi.Extensions.Hypermedia;
 using RESTyard.WebApi.Extensions.Hypermedia.Links;
 
-namespace WebApi.HypermediaExtensions.Test.Hypermedia
+namespace RESTyard.WebApi.Extensions.Test.Hypermedia
 {
     [TestClass]
     public class RelationDictionaryTest

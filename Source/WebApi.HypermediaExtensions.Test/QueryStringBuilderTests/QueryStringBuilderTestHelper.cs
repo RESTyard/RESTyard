@@ -1,7 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace WebApi.HypermediaExtensions.Test.QueryStringBuilderTests
+namespace RESTyard.WebApi.Extensions.Test.QueryStringBuilderTests
 {
     static internal class QueryStringBuilderTestHelper
     {

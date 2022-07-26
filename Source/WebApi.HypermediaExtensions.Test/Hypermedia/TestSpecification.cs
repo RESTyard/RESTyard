@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace WebApi.HypermediaExtensions.Test.Hypermedia
+namespace RESTyard.WebApi.Extensions.Test.Hypermedia
 {
     public abstract class TestSpecification
     {

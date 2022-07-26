@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
@@ -6,10 +7,10 @@ using RESTyard.WebApi.Extensions.Hypermedia;
 using RESTyard.WebApi.Extensions.Hypermedia.Extensions;
 using RESTyard.WebApi.Extensions.Hypermedia.Links;
 using RESTyard.WebApi.Extensions.Query;
+using RESTyard.WebApi.Extensions.Test.WebApi.Formatter.Properties;
 using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
-using WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties;
 
-namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
+namespace RESTyard.WebApi.Extensions.Test.WebApi.Formatter
 {
     [TestClass]
     public class SirenBuilderEntitiesTest : SirenBuilderTestBase

@@ -1,8 +1,9 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 
-namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
+namespace RESTyard.WebApi.Extensions.Test.WebApi.Formatter
 {
     public class MockUrlHelper : IUrlHelper
     {
