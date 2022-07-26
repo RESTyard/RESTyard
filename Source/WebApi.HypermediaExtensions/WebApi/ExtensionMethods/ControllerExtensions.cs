@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using Bluehands.Hypermedia.MediaTypes;
 using Microsoft.AspNetCore.Mvc;
 using RESTyard.WebApi.Extensions.ErrorHandling;
 using RESTyard.WebApi.Extensions.Hypermedia;

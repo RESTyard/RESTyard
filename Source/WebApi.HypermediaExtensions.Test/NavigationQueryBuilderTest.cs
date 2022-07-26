@@ -1,5 +1,4 @@
 ﻿using System;
-using Bluehands.Hypermedia.Relations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.WebApi.Extensions.Util.Repository;
 

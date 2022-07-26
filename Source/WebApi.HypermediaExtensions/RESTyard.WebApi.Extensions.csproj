@@ -36,8 +36,6 @@
 
   <!-- shared references, compilation flags and build options -->
   <ItemGroup>
-    <PackageReference Include="Bluehands.Hypermedia.MediaTypes" Version="0.1.0" />
-    <PackageReference Include="Bluehands.Hypermedia.Relations" Version="0.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.26" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.1.1" />
     <PackageReference Include="NJsonSchema" Version="9.10.50" />

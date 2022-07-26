@@ -1,5 +1,4 @@
 ﻿using System;
-using Bluehands.Hypermedia.Relations;
 using RESTyard.WebApi.Extensions.Query;
 
 namespace RESTyard.WebApi.Extensions.Util.Repository

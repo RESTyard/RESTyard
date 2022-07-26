@@ -1,5 +1,4 @@
 ﻿using System;
-using Bluehands.Hypermedia.Relations;
 using RESTyard.Client.Hypermedia;
 using RESTyard.Client.Hypermedia.Attributes;
 using RESTyard.Client.Hypermedia.Commands;

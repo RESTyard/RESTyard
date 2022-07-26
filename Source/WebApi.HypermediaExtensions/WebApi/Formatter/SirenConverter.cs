@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Bluehands.Hypermedia.MediaTypes;
 using Newtonsoft.Json.Linq;
 using RESTyard.WebApi.Extensions.Exceptions;
 using RESTyard.WebApi.Extensions.Hypermedia;
