@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace WebApi.HypermediaExtensions.WebApi.Formatter
+namespace RESTyard.WebApi.Extensions.WebApi.Formatter
 {
     public class FormatterHelper
     {

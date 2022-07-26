@@ -1,8 +1,8 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.HypermediaExtensions.Hypermedia.Actions;
+using RESTyard.WebApi.Extensions.Hypermedia.Actions;
 
-namespace WebApi.HypermediaExtensions.WebApi.AttributedRoutes
+namespace RESTyard.WebApi.Extensions.WebApi.AttributedRoutes
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
     public class HttpGetHypermediaActionParameterInfo : HttpGetAttribute, IHaveRouteInfo

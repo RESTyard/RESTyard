@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
-namespace WebApi.HypermediaExtensions.Util.Repository
+namespace RESTyard.WebApi.Extensions.Util.Repository
 {
     public class SortParameter<T>
         where T : struct

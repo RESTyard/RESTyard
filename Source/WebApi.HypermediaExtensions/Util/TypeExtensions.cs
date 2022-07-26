@@ -1,10 +1,10 @@
-﻿namespace WebApi.HypermediaExtensions.Util
-{
-    using System;
-    using System.Linq;
-    using System.Reflection;
-    using System.Text;
+﻿using System;
+using System.Linq;
+using System.Reflection;
+using System.Text;
 
+namespace RESTyard.WebApi.Extensions.Util
+{
     public static class TypeExtension
     {
         public static string BeautifulName(this Type t)

@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Reflection;
 using System.Collections.Generic;
-using WebApi.HypermediaExtensions.Exceptions;
-using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.Hypermedia.Actions;
+using System.Reflection;
+using RESTyard.WebApi.Extensions.Exceptions;
+using RESTyard.WebApi.Extensions.Hypermedia;
+using RESTyard.WebApi.Extensions.Hypermedia.Actions;
 
-namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
+namespace RESTyard.WebApi.Extensions.WebApi.RouteResolver
 {
     public class RouteRegister : IRouteRegister
     {

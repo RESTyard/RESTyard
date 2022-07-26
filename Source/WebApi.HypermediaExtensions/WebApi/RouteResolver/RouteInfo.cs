@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
 
-namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
+namespace RESTyard.WebApi.Extensions.WebApi.RouteResolver
 {
     public class RouteInfo
     {

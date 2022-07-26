@@ -1,8 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using WebApi.HypermediaExtensions.WebApi.RouteResolver;
+using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
-namespace WebApi.HypermediaExtensions.WebApi.Formatter
+namespace RESTyard.WebApi.Extensions.WebApi.Formatter
 {
     public abstract class HypermediaOutputFormatter : IOutputFormatter
     {

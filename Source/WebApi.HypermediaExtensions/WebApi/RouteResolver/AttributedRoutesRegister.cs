@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
-using WebApi.HypermediaExtensions.Exceptions;
-using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.Util.Extensions;
-using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
-using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
+using RESTyard.WebApi.Extensions.Exceptions;
+using RESTyard.WebApi.Extensions.Hypermedia;
+using RESTyard.WebApi.Extensions.Util.Extensions;
+using RESTyard.WebApi.Extensions.WebApi.AttributedRoutes;
+using RESTyard.WebApi.Extensions.WebApi.ExtensionMethods;
 
-namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
+namespace RESTyard.WebApi.Extensions.WebApi.RouteResolver
 {
     public class AttributedRoutesRegister : RouteRegister
     {

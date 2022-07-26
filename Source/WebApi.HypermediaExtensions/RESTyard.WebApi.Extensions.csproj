@@ -28,7 +28,6 @@
     <RepositoryBranch>$(BranchName)</RepositoryBranch>
 
     <!-- Package specific settings -->
-    <PackageId>WebApiHypermediaExtensionsCore</PackageId>
     <PackageVersion>$(Version)</PackageVersion>
     <PackageReleaseNotes>Version $(Version)</PackageReleaseNotes>
     <IsPackable>true</IsPackable>

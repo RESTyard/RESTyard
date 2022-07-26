@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Globalization;
-using WebApi.HypermediaExtensions.Exceptions;
+using RESTyard.WebApi.Extensions.Exceptions;
 
-namespace WebApi.HypermediaExtensions.Util.Enum
+namespace RESTyard.WebApi.Extensions.Util.Enum
 {
 
     // Enables WebApi to accept enum parameters which value is related to the EnumMemberAttribute.

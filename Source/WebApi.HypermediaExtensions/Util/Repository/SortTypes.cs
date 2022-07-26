@@ -1,8 +1,9 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.Serialization;
-using WebApi.HypermediaExtensions.Util.Enum;
+using RESTyard.WebApi.Extensions.Util.Enum;
 
-namespace WebApi.HypermediaExtensions.Util.Repository
+namespace RESTyard.WebApi.Extensions.Util.Repository
 {
     [TypeConverter(typeof(AttributedEnumTypeConverter<SortTypes>))]
     public enum SortTypes

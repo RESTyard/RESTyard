@@ -3,14 +3,11 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
+using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 using WebApi.HypermediaExtensions.Test.Helpers;
-using WebApi.HypermediaExtensions.Util.Enum;
-using WebApi.HypermediaExtensions.WebApi.Formatter;
 
 namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
 {
-    using HypermediaExtensions.WebApi.RouteResolver;
-
     [TestClass]
     public class SirenBuilderPropertiesTest : SirenBuilderTestBase
     {

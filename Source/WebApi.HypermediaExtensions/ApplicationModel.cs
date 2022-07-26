@@ -4,14 +4,13 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.Hypermedia.Actions;
-using WebApi.HypermediaExtensions.Util;
-using WebApi.HypermediaExtensions.Util.Extensions;
-using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
+using RESTyard.WebApi.Extensions.Hypermedia;
+using RESTyard.WebApi.Extensions.Hypermedia.Actions;
+using RESTyard.WebApi.Extensions.Util;
+using RESTyard.WebApi.Extensions.Util.Extensions;
+using RESTyard.WebApi.Extensions.WebApi.AttributedRoutes;
 
-namespace WebApi.HypermediaExtensions
+namespace RESTyard.WebApi.Extensions
 {
     public class ApplicationModel
     {

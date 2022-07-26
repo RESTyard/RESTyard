@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WebApi.HypermediaExtensions.Hypermedia.Actions
+namespace RESTyard.WebApi.Extensions.Hypermedia.Actions
 {
     public abstract class HypermediaActionBase
     {

@@ -1,4 +1,6 @@
-﻿namespace WebApi.HypermediaExtensions.Exceptions
+﻿using System;
+
+namespace RESTyard.WebApi.Extensions.Exceptions
 {
     public class RouteRegisterException : HypermediaException
     {

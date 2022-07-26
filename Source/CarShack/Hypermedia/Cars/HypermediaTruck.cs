@@ -1,5 +1,5 @@
-﻿using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.Hypermedia.Attributes;
+﻿using RESTyard.WebApi.Extensions.Hypermedia;
+using RESTyard.WebApi.Extensions.Hypermedia.Attributes;
 
 namespace CarShack.Hypermedia.Cars
 {

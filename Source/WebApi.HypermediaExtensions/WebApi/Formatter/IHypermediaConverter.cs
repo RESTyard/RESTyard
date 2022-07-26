@@ -1,6 +1,7 @@
-using WebApi.HypermediaExtensions.Hypermedia;
+using System;
+using RESTyard.WebApi.Extensions.Hypermedia;
 
-namespace WebApi.HypermediaExtensions.WebApi.Formatter
+namespace RESTyard.WebApi.Extensions.WebApi.Formatter
 {
     public interface IHypermediaConverter
     {

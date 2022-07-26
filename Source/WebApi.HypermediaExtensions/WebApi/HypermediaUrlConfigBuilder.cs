@@ -1,7 +1,8 @@
-﻿namespace WebApi.HypermediaExtensions.WebApi
-{
-    using Microsoft.AspNetCore.Http;
+﻿using System;
+using Microsoft.AspNetCore.Http;
 
+namespace RESTyard.WebApi.Extensions.WebApi
+{
     public class HypermediaUrlConfigBuilder : IHypermediaUrlConfig
     {
         public HypermediaUrlConfigBuilder(IHypermediaUrlConfig defaultHypermediaUrlConfig, HttpRequest request)

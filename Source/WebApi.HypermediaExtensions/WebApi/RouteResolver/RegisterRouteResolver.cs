@@ -1,13 +1,13 @@
 using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.HypermediaExtensions.Exceptions;
-using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.Hypermedia.Actions;
-using WebApi.HypermediaExtensions.Hypermedia.Links;
-using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
+using RESTyard.WebApi.Extensions.Exceptions;
+using RESTyard.WebApi.Extensions.Hypermedia;
+using RESTyard.WebApi.Extensions.Hypermedia.Actions;
+using RESTyard.WebApi.Extensions.Hypermedia.Links;
+using RESTyard.WebApi.Extensions.WebApi.ExtensionMethods;
 
-namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
+namespace RESTyard.WebApi.Extensions.WebApi.RouteResolver
 {
     /// <summary>
     /// Uses a IRouteRegister to access routes by type.

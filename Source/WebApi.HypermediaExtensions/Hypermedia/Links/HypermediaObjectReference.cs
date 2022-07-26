@@ -1,8 +1,9 @@
-﻿using WebApi.HypermediaExtensions.Exceptions;
-using WebApi.HypermediaExtensions.Query;
-using WebApi.HypermediaExtensions.WebApi.RouteResolver;
+﻿using System;
+using RESTyard.WebApi.Extensions.Exceptions;
+using RESTyard.WebApi.Extensions.Query;
+using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
-namespace WebApi.HypermediaExtensions.Hypermedia.Links
+namespace RESTyard.WebApi.Extensions.Hypermedia.Links
 {
     /// <summary>
     /// Reference to a HypermediaObject. Use this if you already have a HypermediaObject.

@@ -15,7 +15,7 @@
 
     
   <ItemGroup>
-    <ProjectReference Include="..\WebApi.HypermediaExtensions\WebApi.HypermediaExtensions.csproj" />
+    <ProjectReference Include="..\WebApi.HypermediaExtensions\RESTyard.WebApi.Extensions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

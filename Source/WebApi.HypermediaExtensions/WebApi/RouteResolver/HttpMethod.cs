@@ -1,4 +1,6 @@
-﻿namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
+﻿using System;
+
+namespace RESTyard.WebApi.Extensions.WebApi.RouteResolver
 {
     public enum HttpMethod
     {

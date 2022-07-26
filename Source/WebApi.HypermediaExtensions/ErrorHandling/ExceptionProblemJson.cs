@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WebApi.HypermediaExtensions.ErrorHandling
+namespace RESTyard.WebApi.Extensions.ErrorHandling
 {
     public class ExceptionProblemJson : ProblemJson
     {

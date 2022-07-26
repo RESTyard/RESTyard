@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
 
-namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
+namespace RESTyard.WebApi.Extensions.WebApi.RouteResolver
 {
     static class RouteMatcher
     {

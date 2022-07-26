@@ -1,6 +1,6 @@
 using System;
 
-namespace WebApi.HypermediaExtensions.WebApi.AttributedRoutes
+namespace RESTyard.WebApi.Extensions.WebApi.AttributedRoutes
 {
     public class HttpDeleteHypermediaAction : HttpMethodHypermediaAction
     {

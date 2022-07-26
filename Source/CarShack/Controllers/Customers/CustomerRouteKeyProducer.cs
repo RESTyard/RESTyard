@@ -1,7 +1,7 @@
 ﻿using CarShack.Hypermedia;
-using WebApi.HypermediaExtensions.Exceptions;
-using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.WebApi.RouteResolver;
+using RESTyard.WebApi.Extensions.Exceptions;
+using RESTyard.WebApi.Extensions.Hypermedia;
+using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
 namespace CarShack.Controllers.Customers
 {

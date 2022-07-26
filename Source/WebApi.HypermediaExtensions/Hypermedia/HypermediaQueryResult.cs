@@ -1,9 +1,10 @@
-﻿namespace WebApi.HypermediaExtensions.Hypermedia
-{
-    using Query;
-    using Links;
-    using Attributes;
+﻿using System;
+using RESTyard.WebApi.Extensions.Hypermedia.Attributes;
+using RESTyard.WebApi.Extensions.Hypermedia.Links;
+using RESTyard.WebApi.Extensions.Query;
 
+namespace RESTyard.WebApi.Extensions.Hypermedia
+{
     /// <summary>
     /// Base class for query results.
     /// </summary>

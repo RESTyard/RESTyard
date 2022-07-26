@@ -4,11 +4,11 @@ using System.Linq;
 using Bluehands.Hypermedia.Relations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.Hypermedia.Links;
-using WebApi.HypermediaExtensions.Query;
-using WebApi.HypermediaExtensions.Util;
-using WebApi.HypermediaExtensions.WebApi.RouteResolver;
+using RESTyard.WebApi.Extensions.Hypermedia;
+using RESTyard.WebApi.Extensions.Hypermedia.Links;
+using RESTyard.WebApi.Extensions.Query;
+using RESTyard.WebApi.Extensions.Util;
+using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
 namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
 {

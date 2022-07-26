@@ -1,4 +1,6 @@
-﻿namespace WebApi.HypermediaExtensions.ErrorHandling
+﻿using System;
+
+namespace RESTyard.WebApi.Extensions.ErrorHandling
 {
     /// <summary>
     /// Problem JSON <see href="https://tools.ietf.org/html/draft-nottingham-http-problem-03"/>

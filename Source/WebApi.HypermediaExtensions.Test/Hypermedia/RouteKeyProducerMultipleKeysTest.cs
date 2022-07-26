@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 using FluentAssertions;
+using RESTyard.WebApi.Extensions.Hypermedia;
+using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
 namespace WebApi.HypermediaExtensions.Test.Hypermedia
 {

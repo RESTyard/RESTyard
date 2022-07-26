@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Reflection;
-using WebApi.HypermediaExtensions.Query;
+using RESTyard.WebApi.Extensions.Hypermedia;
+using RESTyard.WebApi.Extensions.Hypermedia.Actions;
+using RESTyard.WebApi.Extensions.Query;
+using RESTyard.WebApi.Extensions.WebApi.AttributedRoutes;
+using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
-namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
+namespace RESTyard.WebApi.Extensions.WebApi.ExtensionMethods
 {
-    using Hypermedia;
-    using Hypermedia.Actions;
-    using AttributedRoutes;
-    using RouteResolver;
-
     /// <summary>
     /// General options for the extensions
     /// </summary>

@@ -1,9 +1,9 @@
 using System;
 using System.Reflection;
-using WebApi.HypermediaExtensions.Exceptions;
-using WebApi.HypermediaExtensions.WebApi.RouteResolver;
+using RESTyard.WebApi.Extensions.Exceptions;
+using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
-namespace WebApi.HypermediaExtensions.WebApi.AttributedRoutes
+namespace RESTyard.WebApi.Extensions.WebApi.AttributedRoutes
 {
     public static class AttributedRouteHelper
     {

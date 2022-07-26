@@ -1,8 +1,9 @@
-namespace WebApi.HypermediaExtensions.WebApi.AttributedRoutes
-{
-    using Microsoft.AspNetCore.Routing;
-    using Microsoft.AspNetCore.Routing.Template;
+using System;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Template;
 
+namespace RESTyard.WebApi.Extensions.WebApi.AttributedRoutes
+{
     public class RouteMatcher
     {
         public bool TryMatch(string routeTemplate, string requestPath, out RouteValueDictionary values)

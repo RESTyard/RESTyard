@@ -1,9 +1,10 @@
-namespace WebApi.HypermediaExtensions.WebApi.Formatter
-{
-    using Query;
-    using ExtensionMethods;
-    using RouteResolver;
+using System;
+using RESTyard.WebApi.Extensions.Query;
+using RESTyard.WebApi.Extensions.WebApi.ExtensionMethods;
+using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
+namespace RESTyard.WebApi.Extensions.WebApi.Formatter
+{
     internal class SirenHypermediaConverterFactory : ISirenHypermediaConverterFactory
     {
         private readonly IQueryStringBuilder queryStringBuilder;

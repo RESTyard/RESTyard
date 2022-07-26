@@ -4,19 +4,18 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-
+using Newtonsoft.Json;
 using NJsonSchema;
 using NJsonSchema.Generation;
-using WebApi.HypermediaExtensions.Util;
-using WebApi.HypermediaExtensions.WebApi.RouteResolver;
-
+using RESTyard.WebApi.Extensions.Util;
+using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 #if NETSTANDARD2_0
-  using Newtonsoft.Json;
+
 #elif NETCOREAPP3_1
   using System.Text.Json;
 #endif
 
-namespace WebApi.HypermediaExtensions.JsonSchema
+namespace RESTyard.WebApi.Extensions.JsonSchema
 {
     public static class JsonSchemaFactory
     {

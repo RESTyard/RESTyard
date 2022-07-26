@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
-namespace WebApi.HypermediaExtensions.Util.Repository
+namespace RESTyard.WebApi.Extensions.Util.Repository
 {
     public class QueryResult<T>
     {

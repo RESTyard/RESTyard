@@ -1,6 +1,6 @@
 ﻿using Bluehands.Hypermedia.Relations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using WebApi.HypermediaExtensions.Util.Repository;
+using RESTyard.WebApi.Extensions.Util.Repository;
 
 namespace WebApi.HypermediaExtensions.Test
 {

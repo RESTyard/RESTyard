@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
-using WebApi.HypermediaExtensions.Hypermedia.Links;
+﻿using System;
+using System.Collections.Generic;
+using RESTyard.WebApi.Extensions.Hypermedia.Links;
 
-namespace WebApi.HypermediaExtensions.Hypermedia
+namespace RESTyard.WebApi.Extensions.Hypermedia
 {
     /// <summary>
     /// A Entity which is related to a HypermediaObject.

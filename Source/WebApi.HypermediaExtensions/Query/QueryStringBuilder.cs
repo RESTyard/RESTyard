@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
-namespace WebApi.HypermediaExtensions.Query
+namespace RESTyard.WebApi.Extensions.Query
 {
     public class QueryStringBuilder : IQueryStringBuilder
     {

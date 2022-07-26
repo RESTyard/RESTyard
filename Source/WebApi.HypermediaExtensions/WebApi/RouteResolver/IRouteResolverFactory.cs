@@ -1,6 +1,7 @@
+using System;
 using Microsoft.AspNetCore.Mvc;
 
-namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
+namespace RESTyard.WebApi.Extensions.WebApi.RouteResolver
 {
     public interface IRouteResolverFactory
     {

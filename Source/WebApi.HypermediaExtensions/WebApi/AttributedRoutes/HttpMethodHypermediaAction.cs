@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Routing;
-using WebApi.HypermediaExtensions.Hypermedia.Actions;
+using RESTyard.WebApi.Extensions.Hypermedia.Actions;
 
-namespace WebApi.HypermediaExtensions.WebApi.AttributedRoutes
+namespace RESTyard.WebApi.Extensions.WebApi.AttributedRoutes
 {
     [AttributeUsage(AttributeTargets.Method)]
     public abstract class HttpMethodHypermediaAction : HttpMethodAttribute, IHaveRouteInfo

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using WebApi.HypermediaExtensions.Util;
+using RESTyard.WebApi.Extensions.Util;
 
 namespace WebApi.HypermediaExtensions.Test.Hypermedia
 {

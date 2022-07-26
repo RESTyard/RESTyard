@@ -1,4 +1,6 @@
-﻿namespace WebApi.HypermediaExtensions.Hypermedia.Actions
+﻿using System;
+
+namespace RESTyard.WebApi.Extensions.Hypermedia.Actions
 {
     public interface IHypermediaActionParameter
     {

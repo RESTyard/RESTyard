@@ -1,23 +1,21 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using WebApi.HypermediaExtensions.Hypermedia.Actions;
-using WebApi.HypermediaExtensions.JsonSchema;
-using WebApi.HypermediaExtensions.Query;
-using WebApi.HypermediaExtensions.Util;
-using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
-using WebApi.HypermediaExtensions.WebApi.Controller;
-using WebApi.HypermediaExtensions.WebApi.Formatter;
-using WebApi.HypermediaExtensions.WebApi.RouteResolver;
+using RESTyard.WebApi.Extensions.Hypermedia.Actions;
+using RESTyard.WebApi.Extensions.JsonSchema;
+using RESTyard.WebApi.Extensions.Query;
+using RESTyard.WebApi.Extensions.Util;
+using RESTyard.WebApi.Extensions.WebApi.AttributedRoutes;
+using RESTyard.WebApi.Extensions.WebApi.Controller;
+using RESTyard.WebApi.Extensions.WebApi.Formatter;
+using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
-namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
+namespace RESTyard.WebApi.Extensions.WebApi.ExtensionMethods
 {
     public static class StartupExtensions
     {

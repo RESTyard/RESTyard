@@ -1,6 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
-namespace WebApi.HypermediaExtensions.Util.Repository
+namespace RESTyard.WebApi.Extensions.Util.Repository
 {
     public interface IRepository<TEntity, in TKey, in TQuery>
     {

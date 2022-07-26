@@ -1,7 +1,8 @@
+using System;
 using Newtonsoft.Json.Linq;
-using WebApi.HypermediaExtensions.Hypermedia;
+using RESTyard.WebApi.Extensions.Hypermedia;
 
-namespace WebApi.HypermediaExtensions.WebApi.Formatter
+namespace RESTyard.WebApi.Extensions.WebApi.Formatter
 {
     public interface IHypermediaJsonConverter
     {

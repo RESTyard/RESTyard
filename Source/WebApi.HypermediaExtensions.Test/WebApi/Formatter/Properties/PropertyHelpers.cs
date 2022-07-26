@@ -4,8 +4,8 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
+using RESTyard.WebApi.Extensions.Util.Enum;
 using WebApi.HypermediaExtensions.Test.Helpers;
-using WebApi.HypermediaExtensions.Util.Enum;
 
 namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties
 {

@@ -1,8 +1,8 @@
 ﻿using System;
-using WebApi.HypermediaExtensions.Hypermedia.Attributes;
-using WebApi.HypermediaExtensions.Hypermedia.Links;
+using RESTyard.WebApi.Extensions.Hypermedia.Attributes;
+using RESTyard.WebApi.Extensions.Hypermedia.Links;
 
-namespace WebApi.HypermediaExtensions.Hypermedia
+namespace RESTyard.WebApi.Extensions.Hypermedia
 {
     /// <summary>
     /// This class is intended for situations where a reference to a route or external URI

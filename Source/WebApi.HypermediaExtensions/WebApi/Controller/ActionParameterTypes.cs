@@ -1,16 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.HypermediaExtensions.ErrorHandling;
-using WebApi.HypermediaExtensions.JsonSchema;
-using WebApi.HypermediaExtensions.Util;
-using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
-using WebApi.HypermediaExtensions.WebApi.Formatter;
+using RESTyard.WebApi.Extensions.ErrorHandling;
+using RESTyard.WebApi.Extensions.JsonSchema;
+using RESTyard.WebApi.Extensions.Util;
+using RESTyard.WebApi.Extensions.WebApi.ExtensionMethods;
+using RESTyard.WebApi.Extensions.WebApi.Formatter;
 
-namespace WebApi.HypermediaExtensions.WebApi.Controller
+namespace RESTyard.WebApi.Extensions.WebApi.Controller
 {
     public class ActionParameterSchemas
     {

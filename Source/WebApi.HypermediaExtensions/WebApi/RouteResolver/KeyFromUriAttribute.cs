@@ -1,8 +1,8 @@
 ﻿using System;
-using WebApi.HypermediaExtensions.JsonSchema;
-using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
+using RESTyard.WebApi.Extensions.JsonSchema;
+using RESTyard.WebApi.Extensions.WebApi.ExtensionMethods;
 
-namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
+namespace RESTyard.WebApi.Extensions.WebApi.RouteResolver
 {
     /// <summary>
     /// Key value will be  extracted automatically from Get route to Hypermediaobject of type <see cref="ReferencedHypermediaObjectType"/>.

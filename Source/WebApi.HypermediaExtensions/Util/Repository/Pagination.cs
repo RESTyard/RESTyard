@@ -1,4 +1,6 @@
-﻿namespace WebApi.HypermediaExtensions.Util.Repository
+﻿using System;
+
+namespace RESTyard.WebApi.Extensions.Util.Repository
 {
     public class Pagination
     {

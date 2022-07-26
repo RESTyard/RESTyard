@@ -1,7 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace WebApi.HypermediaExtensions.Util
+namespace RESTyard.WebApi.Extensions.Util
 {
     public class StringReadOnlyCollectionComparer : IEqualityComparer<IReadOnlyCollection<string>>
     {

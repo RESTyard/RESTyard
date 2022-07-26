@@ -1,7 +1,7 @@
 ﻿using System;
-using WebApi.HypermediaExtensions.Query;
+using RESTyard.WebApi.Extensions.Query;
 
-namespace WebApi.HypermediaExtensions.Hypermedia.Links
+namespace RESTyard.WebApi.Extensions.Hypermedia.Links
 {
     /// <summary>
     /// A reference to an <see cref="IHypermediaQuery"/> where the Type and Query is known.

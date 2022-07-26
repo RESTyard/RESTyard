@@ -1,8 +1,9 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.HypermediaExtensions.Hypermedia.Links;
+using RESTyard.WebApi.Extensions.Hypermedia.Links;
 
-namespace WebApi.HypermediaExtensions.Hypermedia
+namespace RESTyard.WebApi.Extensions.Hypermedia
 {
     public class HypermediaEntityLocation : ActionResult
     {

@@ -9,11 +9,11 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using WebApi.HypermediaExtensions.Exceptions;
-using WebApi.HypermediaExtensions.Util;
-using WebApi.HypermediaExtensions.WebApi.RouteResolver;
+using RESTyard.WebApi.Extensions.Exceptions;
+using RESTyard.WebApi.Extensions.Util;
+using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
-namespace WebApi.HypermediaExtensions.JsonSchema
+namespace RESTyard.WebApi.Extensions.JsonSchema
 {
     public class JsonDeserializer
     {

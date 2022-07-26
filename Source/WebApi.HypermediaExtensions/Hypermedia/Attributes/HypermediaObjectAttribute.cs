@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WebApi.HypermediaExtensions.Hypermedia.Attributes
+namespace RESTyard.WebApi.Extensions.Hypermedia.Attributes
 {
     [AttributeUsage(AttributeTargets.Class)]
     public sealed class HypermediaObjectAttribute : Attribute

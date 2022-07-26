@@ -5,14 +5,14 @@ using Bluehands.Hypermedia.Relations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using WebApi.HypermediaExtensions.Query;
+using RESTyard.WebApi.Extensions.Query;
+using RESTyard.WebApi.Extensions.Util;
+using RESTyard.WebApi.Extensions.WebApi;
+using RESTyard.WebApi.Extensions.WebApi.AttributedRoutes;
+using RESTyard.WebApi.Extensions.WebApi.ExtensionMethods;
+using RESTyard.WebApi.Extensions.WebApi.Formatter;
+using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 using WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties;
-using WebApi.HypermediaExtensions.Util;
-using WebApi.HypermediaExtensions.WebApi;
-using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
-using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
-using WebApi.HypermediaExtensions.WebApi.Formatter;
-using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
 {

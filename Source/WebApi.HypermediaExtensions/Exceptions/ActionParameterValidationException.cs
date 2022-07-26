@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WebApi.HypermediaExtensions.Exceptions
+namespace RESTyard.WebApi.Extensions.Exceptions
 {
     public class ActionParameterValidationException : Exception
     {

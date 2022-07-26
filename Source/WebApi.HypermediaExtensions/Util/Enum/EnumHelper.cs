@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 
-namespace WebApi.HypermediaExtensions.Util.Enum
+namespace RESTyard.WebApi.Extensions.Util.Enum
 {
     public static class EnumHelper
     {

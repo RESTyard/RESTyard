@@ -1,4 +1,4 @@
-﻿using WebApi.HypermediaExtensions.ErrorHandling;
+﻿using RESTyard.WebApi.Extensions.ErrorHandling;
 
 namespace CarShack.Util
 {

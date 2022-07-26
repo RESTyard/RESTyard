@@ -2,12 +2,12 @@
 using System.Net;
 using Bluehands.Hypermedia.MediaTypes;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.HypermediaExtensions.ErrorHandling;
-using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.Hypermedia.Links;
-using WebApi.HypermediaExtensions.Query;
+using RESTyard.WebApi.Extensions.ErrorHandling;
+using RESTyard.WebApi.Extensions.Hypermedia;
+using RESTyard.WebApi.Extensions.Hypermedia.Links;
+using RESTyard.WebApi.Extensions.Query;
 
-namespace WebApi.HypermediaExtensions.WebApi.ExtensionMethods
+namespace RESTyard.WebApi.Extensions.WebApi.ExtensionMethods
 {
     public static class ControllerExtensions
     {

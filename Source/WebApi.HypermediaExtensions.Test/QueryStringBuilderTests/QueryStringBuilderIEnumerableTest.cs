@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using WebApi.HypermediaExtensions.Query;
+using RESTyard.WebApi.Extensions.Query;
 using WebApi.HypermediaExtensions.Test.Helpers;
 
 namespace WebApi.HypermediaExtensions.Test.QueryStringBuilderTests

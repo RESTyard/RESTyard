@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Reflection;
 
-namespace WebApi.HypermediaExtensions.Query
+namespace RESTyard.WebApi.Extensions.Query
 {
     internal class SerializeInfo
     {

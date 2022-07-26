@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.Hypermedia.Attributes;
+using RESTyard.WebApi.Extensions.Hypermedia;
+using RESTyard.WebApi.Extensions.Hypermedia.Attributes;
 using WebApi.HypermediaExtensions.Test.Helpers;
 
 namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties

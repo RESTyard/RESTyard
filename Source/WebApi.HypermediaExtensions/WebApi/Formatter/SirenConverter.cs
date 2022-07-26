@@ -1,27 +1,24 @@
-namespace WebApi.HypermediaExtensions.WebApi.Formatter
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using Bluehands.Hypermedia.MediaTypes;
+using Newtonsoft.Json.Linq;
+using RESTyard.WebApi.Extensions.Exceptions;
+using RESTyard.WebApi.Extensions.Hypermedia;
+using RESTyard.WebApi.Extensions.Hypermedia.Actions;
+using RESTyard.WebApi.Extensions.Hypermedia.Attributes;
+using RESTyard.WebApi.Extensions.Hypermedia.Links;
+using RESTyard.WebApi.Extensions.Query;
+using RESTyard.WebApi.Extensions.Util;
+using RESTyard.WebApi.Extensions.Util.Enum;
+using RESTyard.WebApi.Extensions.WebApi.ExtensionMethods;
+using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
+
+namespace RESTyard.WebApi.Extensions.WebApi.Formatter
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Linq;
-    using System.Reflection;
-
-    using Bluehands.Hypermedia.MediaTypes;
-
-    using global::WebApi.HypermediaExtensions.Exceptions;
-    using global::WebApi.HypermediaExtensions.Hypermedia;
-    using global::WebApi.HypermediaExtensions.Hypermedia.Actions;
-    using global::WebApi.HypermediaExtensions.Hypermedia.Attributes;
-    using global::WebApi.HypermediaExtensions.Hypermedia.Links;
-    using global::WebApi.HypermediaExtensions.Query;
-    using global::WebApi.HypermediaExtensions.Util;
-    using global::WebApi.HypermediaExtensions.Util.Enum;
-    using global::WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
-    using global::WebApi.HypermediaExtensions.WebApi.RouteResolver;
-
-    using Newtonsoft.Json.Linq;
-
     public class SirenConverter : IHypermediaJsonConverter, IHypermediaConverter
     {
         private static readonly HypermediaConverterConfiguration DefaultConfiguration = new HypermediaConverterConfiguration();

@@ -1,7 +1,8 @@
-﻿using Bluehands.Hypermedia.Relations;
-using WebApi.HypermediaExtensions.Query;
+﻿using System;
+using Bluehands.Hypermedia.Relations;
+using RESTyard.WebApi.Extensions.Query;
 
-namespace WebApi.HypermediaExtensions.Util.Repository
+namespace RESTyard.WebApi.Extensions.Util.Repository
 {
     public static class NavigationQuerysBuilder
     {

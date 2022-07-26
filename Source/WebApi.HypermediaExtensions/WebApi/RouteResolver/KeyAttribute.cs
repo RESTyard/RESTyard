@@ -1,7 +1,7 @@
-namespace WebApi.HypermediaExtensions.WebApi.RouteResolver
-{
-    using System;
+using System;
 
+namespace RESTyard.WebApi.Extensions.WebApi.RouteResolver
+{
     /// <summary>
     /// Marks a property as (part of) the objects key. The route template to obtain the object 
     /// must contain parameters matching the TemplateParameterName property. If a single property contains the complete

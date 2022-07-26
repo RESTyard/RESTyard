@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using WebApi.HypermediaExtensions.Hypermedia.Attributes;
+using RESTyard.WebApi.Extensions.Hypermedia.Attributes;
 
-namespace WebApi.HypermediaExtensions.Hypermedia
+namespace RESTyard.WebApi.Extensions.Hypermedia
 {
     public class DirectReferenceBase<TDerived> :  HypermediaObject where TDerived : DirectReferenceBase<TDerived>
     {

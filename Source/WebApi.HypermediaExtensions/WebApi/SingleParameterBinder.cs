@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace WebApi.HypermediaExtensions.WebApi
+namespace RESTyard.WebApi.Extensions.WebApi
 {
     /// <summary>
     /// Siren requires that a Post to an Action is an array of objects.

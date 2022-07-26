@@ -1,7 +1,7 @@
 ﻿using System;
-using WebApi.HypermediaExtensions.Exceptions;
+using RESTyard.WebApi.Extensions.Exceptions;
 
-namespace WebApi.HypermediaExtensions.Hypermedia.Actions
+namespace RESTyard.WebApi.Extensions.Hypermedia.Actions
 {
     /// <summary>
     /// A HypermediaAction. For each concrete type a corresponding attributed route must exist.

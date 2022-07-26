@@ -1,4 +1,6 @@
-﻿namespace WebApi.HypermediaExtensions.Query
+﻿using System;
+
+namespace RESTyard.WebApi.Extensions.Query
 {
     public interface IQueryStringBuilder
     {

@@ -1,8 +1,8 @@
 ﻿using System;
-using WebApi.HypermediaExtensions.Query;
-using WebApi.HypermediaExtensions.WebApi.RouteResolver;
+using RESTyard.WebApi.Extensions.Query;
+using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
-namespace WebApi.HypermediaExtensions.Hypermedia.Links
+namespace RESTyard.WebApi.Extensions.Hypermedia.Links
 {
     /// <summary>
     /// A reference to an <see cref="HypermediaObject"/> where the Type and (if required for the <see cref="HypermediaObject"/>) key are known.

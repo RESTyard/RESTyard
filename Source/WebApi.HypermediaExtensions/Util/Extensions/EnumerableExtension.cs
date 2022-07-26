@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace WebApi.HypermediaExtensions.Util.Extensions
+namespace RESTyard.WebApi.Extensions.Util.Extensions
 {
     static class EnumerableExtension
     {

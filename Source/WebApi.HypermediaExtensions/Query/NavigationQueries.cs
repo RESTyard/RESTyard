@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
-namespace WebApi.HypermediaExtensions.Query
+namespace RESTyard.WebApi.Extensions.Query
 {
     public class NavigationQueries
     {

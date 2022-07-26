@@ -3,14 +3,13 @@ using System.Linq;
 using Bluehands.Hypermedia.MediaTypes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.Hypermedia.Actions;
-using WebApi.HypermediaExtensions.Hypermedia.Attributes;
+using RESTyard.WebApi.Extensions.Hypermedia;
+using RESTyard.WebApi.Extensions.Hypermedia.Actions;
+using RESTyard.WebApi.Extensions.Hypermedia.Attributes;
+using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
 namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
 {
-    using HypermediaExtensions.WebApi.RouteResolver;
-
     [TestClass]
     public class SirenBuilderActionsTest : SirenBuilderTestBase
     {

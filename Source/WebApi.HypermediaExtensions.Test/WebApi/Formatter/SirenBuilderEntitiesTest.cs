@@ -2,12 +2,12 @@
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.Hypermedia.Extensions;
-using WebApi.HypermediaExtensions.Hypermedia.Links;
-using WebApi.HypermediaExtensions.Query;
+using RESTyard.WebApi.Extensions.Hypermedia;
+using RESTyard.WebApi.Extensions.Hypermedia.Extensions;
+using RESTyard.WebApi.Extensions.Hypermedia.Links;
+using RESTyard.WebApi.Extensions.Query;
+using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 using WebApi.HypermediaExtensions.Test.WebApi.Formatter.Properties;
-using WebApi.HypermediaExtensions.WebApi.RouteResolver;
 
 namespace WebApi.HypermediaExtensions.Test.WebApi.Formatter
 {

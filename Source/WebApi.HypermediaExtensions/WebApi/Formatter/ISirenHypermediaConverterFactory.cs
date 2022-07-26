@@ -1,6 +1,7 @@
-using WebApi.HypermediaExtensions.WebApi.RouteResolver;
+using System;
+using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
-namespace WebApi.HypermediaExtensions.WebApi.Formatter
+namespace RESTyard.WebApi.Extensions.WebApi.Formatter
 {
     public interface ISirenHypermediaConverterFactory
     {
