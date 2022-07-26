@@ -29,8 +29,8 @@
 -}}
 #nullable enable
 using Microsoft.AspNetCore.Mvc;
-using WebApi.HypermediaExtensions.WebApi;
-using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
+using RESTyard.WebApi.Extensions.WebApi;
+using RESTyard.WebApi.Extensions.WebApi.AttributedRoutes;
 
 {{-
     if isNotEmpty Namespace

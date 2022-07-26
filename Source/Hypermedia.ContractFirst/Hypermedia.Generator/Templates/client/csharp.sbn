@@ -10,11 +10,10 @@
     end
 -}}
 #nullable enable
-using Bluehands.Hypermedia.Client;
-using Bluehands.Hypermedia.Client.Hypermedia;
-using Bluehands.Hypermedia.Client.Hypermedia.Attributes;
-using Bluehands.Hypermedia.Client.Hypermedia.Commands;
-using Bluehands.Hypermedia.Relations;
+using RESTyard.Client;
+using RESTyard.Client.Hypermedia;
+using RESTyard.Client.Hypermedia.Attributes;
+using RESTyard.Client.Hypermedia.Commands;
 {{ IncludeContent }}
 
 {{- if isNotEmpty Namespace }}
@@ -55,7 +54,7 @@ public partial class {{ typeName }} : HypermediaClientObject
 {{ end }}
 {{- if document.hasSelfLink }}
     [Mandatory]
-    [HypermediaRelations(new[]{ DefaultHypermediaRelations.Self })]
+    [HypermediaRelations(new[]{ "self" })]
     public MandatoryHypermediaLink<{{ typeName }}> Self { get; set; }
 {{- end }}
 {{ for link in document.Links }}
