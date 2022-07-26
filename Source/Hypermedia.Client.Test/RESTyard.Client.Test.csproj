@@ -2,13 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <AssemblyName>Bluehands.HypermediaClient.Test</AssemblyName>
-    <PackageId>Bluehands.HypermediaClient.Test</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <RootNamespace>Bluehands.Hypermedia.Client.Test</RootNamespace>
     
     <!-- CS1591: missing documentation on public methods -->
     <NoWarn>CS1591</NoWarn>

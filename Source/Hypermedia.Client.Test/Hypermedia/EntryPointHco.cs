@@ -1,8 +1,9 @@
-﻿using Bluehands.Hypermedia.Relations;
+﻿using System;
+using Bluehands.Hypermedia.Relations;
 using RESTyard.Client.Hypermedia;
 using RESTyard.Client.Hypermedia.Attributes;
 
-namespace Bluehands.Hypermedia.Client.Test.Hypermedia
+namespace RESTyard.Client.Test.Hypermedia
 {
     [HypermediaClientObject("Entrypoint")]
     public class EntryPointHco : HypermediaClientObject

@@ -3,19 +3,17 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Bluehands.Hypermedia.Client.Extensions;
 using Bluehands.Hypermedia.Client.Extensions.SystemNetHttp;
 using Bluehands.Hypermedia.Client.Extensions.SystemTextJson;
-using Bluehands.Hypermedia.Client.Test.Hypermedia;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RESTyard.Client;
 using RESTyard.Client.Authentication;
 using RESTyard.Client.Builder;
 using RESTyard.Client.Extensions;
 using RESTyard.Client.Reader;
 using RESTyard.Client.Resolver;
+using RESTyard.Client.Test.Hypermedia;
 
-namespace Bluehands.Hypermedia.Client.Test
+namespace RESTyard.Client.Test
 {
     /// <summary>
     /// Tests used during prototyping.

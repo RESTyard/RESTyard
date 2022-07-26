@@ -1,9 +1,10 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.Client.Hypermedia;
 using RESTyard.Client.Util;
 
-namespace Bluehands.Hypermedia.Client.Test.Util
+namespace RESTyard.Client.Test.Util
 {
     [TestClass]
     public class DistinctOrderedStringCollectionTests

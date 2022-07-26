@@ -1,9 +1,10 @@
+using System;
 using System.Collections.Generic;
 using Bluehands.Hypermedia.Relations;
 using RESTyard.Client.Hypermedia;
 using RESTyard.Client.Hypermedia.Attributes;
 
-namespace Bluehands.Hypermedia.Client.Test.Hypermedia
+namespace RESTyard.Client.Test.Hypermedia
 {
     [HypermediaClientObject("CustomersQueryResult")]
     public class CustomerQueryResultHco : HypermediaClientObject
