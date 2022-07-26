@@ -16,7 +16,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi.HypermediaExtensions
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi.HypermediaExtensions.Test", "WebApi.HypermediaExtensions.Test\WebApi.HypermediaExtensions.Test.csproj", "{2BB87C7F-8EB1-4978-8E5B-DB794555D739}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hypermedia.Relations", "Hypermedia.Relations\Hypermedia.Relations.csproj", "{03004E36-3252-48C0-B2AF-23B9E7324429}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTyard.Relations", "Hypermedia.Relations\RESTyard.Relations.csproj", "{03004E36-3252-48C0-B2AF-23B9E7324429}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarShack", "CarShack\CarShack.csproj", "{89465847-B042-40A5-853B-E8DAC3160C56}"
 EndProject
@@ -24,7 +24,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hypermedia.Client", "Hyperm
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hypermedia.Client.Test", "Hypermedia.Client.Test\Hypermedia.Client.Test.csproj", "{3FD04265-F0B7-4AFC-A8E9-F4DDF7381CAF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hypermedia.MediaTypes", "Hypermedia.MediaTypes\Hypermedia.MediaTypes.csproj", "{4DE2A632-382B-4C37-8725-87EAF81E9869}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTyard.MediaTypes", "Hypermedia.MediaTypes\RESTyard.MediaTypes.csproj", "{4DE2A632-382B-4C37-8725-87EAF81E9869}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewtonsoftJson", "Hypermedia.Client.Extensions\NewtonsoftJson\NewtonsoftJson.csproj", "{5F5E8A59-5F4F-4527-A811-E527271CF258}"
 EndProject

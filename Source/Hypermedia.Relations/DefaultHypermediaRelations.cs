@@ -1,4 +1,6 @@
-﻿namespace Bluehands.Hypermedia.Relations
+﻿using System;
+
+namespace RESTyard.Relations
 {
     /// <summary>
     /// Collection of basic relations commonly used.

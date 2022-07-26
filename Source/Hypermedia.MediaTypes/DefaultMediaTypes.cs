@@ -1,4 +1,6 @@
-﻿namespace Bluehands.Hypermedia.MediaTypes
+﻿using System;
+
+namespace RESTyard.MediaTypes
 {
     public static class DefaultMediaTypes
     {
