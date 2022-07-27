@@ -3,10 +3,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Primitives;
-using RESTyard.WebApi.Extensions.Exceptions;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
+using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 
-namespace RESTyard.WebApi.Extensions.WebApi.Formatter
+namespace RESTyard.AspNetCore.WebApi.Formatter
 {
     public abstract class HypermediaLocationFormatter<T> : HypermediaOutputFormatter
     {

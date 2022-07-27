@@ -2,12 +2,12 @@
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using RESTyard.WebApi.Extensions.Exceptions;
-using RESTyard.WebApi.Extensions.Hypermedia;
-using RESTyard.WebApi.Extensions.Query;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
+using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Query;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 
-namespace RESTyard.WebApi.Extensions.WebApi.Formatter
+namespace RESTyard.AspNetCore.WebApi.Formatter
 {
     public class HypermediaQueryLocationFormatter : HypermediaOutputFormatter
     {

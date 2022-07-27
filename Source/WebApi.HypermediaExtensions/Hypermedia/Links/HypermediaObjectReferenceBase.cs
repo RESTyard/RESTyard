@@ -1,10 +1,10 @@
 using System;
 using System.Reflection;
-using RESTyard.WebApi.Extensions.Exceptions;
-using RESTyard.WebApi.Extensions.Query;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
+using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.Query;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 
-namespace RESTyard.WebApi.Extensions.Hypermedia.Links
+namespace RESTyard.AspNetCore.Hypermedia.Links
 {
     public abstract class HypermediaObjectReferenceBase
     {

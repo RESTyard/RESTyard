@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace RESTyard.WebApi.Extensions.Util.Repository
+namespace RESTyard.AspNetCore.Util.Repository
 {
     public class SortParameter<T>
         where T : struct

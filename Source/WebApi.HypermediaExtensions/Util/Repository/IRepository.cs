@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace RESTyard.WebApi.Extensions.Util.Repository
+namespace RESTyard.AspNetCore.Util.Repository
 {
     public interface IRepository<TEntity, in TKey, in TQuery>
     {

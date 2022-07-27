@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace RESTyard.WebApi.Extensions.WebApi.Formatter
+namespace RESTyard.AspNetCore.WebApi.Formatter
 {
     public class FormatterHelper
     {

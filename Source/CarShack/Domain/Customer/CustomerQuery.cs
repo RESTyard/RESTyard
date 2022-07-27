@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
-using RESTyard.WebApi.Extensions.Util.Repository;
+using RESTyard.AspNetCore.Util.Repository;
 
 namespace CarShack.Domain.Customer
 {

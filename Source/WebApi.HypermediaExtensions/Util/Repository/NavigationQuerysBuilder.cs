@@ -1,7 +1,7 @@
 ﻿using System;
-using RESTyard.WebApi.Extensions.Query;
+using RESTyard.AspNetCore.Query;
 
-namespace RESTyard.WebApi.Extensions.Util.Repository
+namespace RESTyard.AspNetCore.Util.Repository
 {
     public static class NavigationQuerysBuilder
     {

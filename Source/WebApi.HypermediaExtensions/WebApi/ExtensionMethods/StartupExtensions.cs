@@ -6,16 +6,16 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using RESTyard.WebApi.Extensions.Hypermedia.Actions;
-using RESTyard.WebApi.Extensions.JsonSchema;
-using RESTyard.WebApi.Extensions.Query;
-using RESTyard.WebApi.Extensions.Util;
-using RESTyard.WebApi.Extensions.WebApi.AttributedRoutes;
-using RESTyard.WebApi.Extensions.WebApi.Controller;
-using RESTyard.WebApi.Extensions.WebApi.Formatter;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
+using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.JsonSchema;
+using RESTyard.AspNetCore.Query;
+using RESTyard.AspNetCore.Util;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+using RESTyard.AspNetCore.WebApi.Controller;
+using RESTyard.AspNetCore.WebApi.Formatter;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 
-namespace RESTyard.WebApi.Extensions.WebApi.ExtensionMethods
+namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
 {
     public static class StartupExtensions
     {

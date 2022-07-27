@@ -1,9 +1,9 @@
 using System;
 using System.Reflection;
-using RESTyard.WebApi.Extensions.Exceptions;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
+using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 
-namespace RESTyard.WebApi.Extensions.WebApi.AttributedRoutes
+namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
 {
     public static class AttributedRouteHelper
     {

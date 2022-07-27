@@ -1,8 +1,8 @@
 using System;
-using RESTyard.WebApi.Extensions.Hypermedia;
-using RESTyard.WebApi.Extensions.Hypermedia.Links;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Links;
 
-namespace RESTyard.WebApi.Extensions.WebApi.RouteResolver
+namespace RESTyard.AspNetCore.WebApi.RouteResolver
 {
     /// <summary>
     /// Derive from this interface to generate a KeyProducer for an <see cref="HypermediaObject"/>. 

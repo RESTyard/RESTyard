@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using RESTyard.WebApi.Extensions.Hypermedia.Links;
+using RESTyard.AspNetCore.Hypermedia.Links;
 
-namespace RESTyard.WebApi.Extensions.Hypermedia.Extensions
+namespace RESTyard.AspNetCore.Hypermedia.Extensions
 {
     /// <summary>
     /// Convenience functions to add related Entities

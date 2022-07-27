@@ -6,14 +6,14 @@ using System.Linq;
 using System.Runtime.Serialization;
 using CarShack.Domain.Customer;
 using Microsoft.Extensions.DependencyInjection;
-using RESTyard.WebApi.Extensions.Exceptions;
-using RESTyard.WebApi.Extensions.Hypermedia;
-using RESTyard.WebApi.Extensions.Hypermedia.Actions;
-using RESTyard.WebApi.Extensions.Hypermedia.Attributes;
-using RESTyard.WebApi.Extensions.Hypermedia.Links;
-using RESTyard.WebApi.Extensions.Util.Enum;
-using RESTyard.WebApi.Extensions.Util.Repository;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
+using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
+using RESTyard.AspNetCore.Hypermedia.Links;
+using RESTyard.AspNetCore.Util.Enum;
+using RESTyard.AspNetCore.Util.Repository;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace CarShack.Hypermedia;
 

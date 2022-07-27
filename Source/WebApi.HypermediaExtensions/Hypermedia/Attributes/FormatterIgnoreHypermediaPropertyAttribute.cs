@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RESTyard.WebApi.Extensions.Hypermedia.Attributes
+namespace RESTyard.AspNetCore.Hypermedia.Attributes
 {
     // default propperty formatting should not contain annotated properties
     [AttributeUsage(AttributeTargets.Property)]

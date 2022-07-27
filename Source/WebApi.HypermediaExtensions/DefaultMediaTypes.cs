@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RESTyard.WebApi.Extensions
+namespace RESTyard.AspNetCore
 {
     public static class DefaultMediaTypes
     {

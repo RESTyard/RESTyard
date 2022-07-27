@@ -4,10 +4,10 @@ using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
-using RESTyard.WebApi.Extensions.Hypermedia.Links;
-using RESTyard.WebApi.Extensions.Util.Repository;
-using RESTyard.WebApi.Extensions.WebApi.AttributedRoutes;
-using RESTyard.WebApi.Extensions.WebApi.ExtensionMethods;
+using RESTyard.AspNetCore.Hypermedia.Links;
+using RESTyard.AspNetCore.Util.Repository;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 
 namespace CarShack.Controllers.Customers
 {

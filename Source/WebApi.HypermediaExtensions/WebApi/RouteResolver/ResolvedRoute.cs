@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace RESTyard.WebApi.Extensions.WebApi.RouteResolver
+namespace RESTyard.AspNetCore.WebApi.RouteResolver
 {
     public class ResolvedRoute
     {

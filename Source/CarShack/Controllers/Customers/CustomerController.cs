@@ -5,12 +5,12 @@ using CarShack.Hypermedia.Cars;
 using CarShack.Util;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using RESTyard.WebApi.Extensions.ErrorHandling;
-using RESTyard.WebApi.Extensions.Exceptions;
-using RESTyard.WebApi.Extensions.JsonSchema;
-using RESTyard.WebApi.Extensions.WebApi;
-using RESTyard.WebApi.Extensions.WebApi.AttributedRoutes;
-using RESTyard.WebApi.Extensions.WebApi.ExtensionMethods;
+using RESTyard.AspNetCore.ErrorHandling;
+using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.JsonSchema;
+using RESTyard.AspNetCore.WebApi;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 
 namespace CarShack.Controllers.Customers
 {

@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using RESTyard.WebApi.Extensions.Hypermedia.Actions;
-using RESTyard.WebApi.Extensions.Util;
+using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.Util;
 
-namespace RESTyard.WebApi.Extensions.JsonSchema
+namespace RESTyard.AspNetCore.JsonSchema
 {
     class HypermediaParameterFromBodyBinderProvider : IModelBinderProvider
     {

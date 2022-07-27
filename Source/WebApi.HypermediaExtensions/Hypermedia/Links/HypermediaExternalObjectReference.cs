@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using RESTyard.WebApi.Extensions.Query;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
+using RESTyard.AspNetCore.Query;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 
-namespace RESTyard.WebApi.Extensions.Hypermedia.Links
+namespace RESTyard.AspNetCore.Hypermedia.Links
 {
     public class HypermediaExternalObjectReference : HypermediaObjectReferenceBase
     {

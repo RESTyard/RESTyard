@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using RESTyard.WebApi.Extensions.Exceptions;
-using RESTyard.WebApi.Extensions.Hypermedia;
-using RESTyard.WebApi.Extensions.Hypermedia.Actions;
+using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Actions;
 
-namespace RESTyard.WebApi.Extensions.WebApi.RouteResolver
+namespace RESTyard.AspNetCore.WebApi.RouteResolver
 {
     public class RouteRegister : IRouteRegister
     {

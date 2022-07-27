@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Globalization;
-using RESTyard.WebApi.Extensions.Exceptions;
+using RESTyard.AspNetCore.Exceptions;
 
-namespace RESTyard.WebApi.Extensions.Util.Enum
+namespace RESTyard.AspNetCore.Util.Enum
 {
 
     // Enables WebApi to accept enum parameters which value is related to the EnumMemberAttribute.

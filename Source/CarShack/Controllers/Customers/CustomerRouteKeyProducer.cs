@@ -1,7 +1,7 @@
 ﻿using CarShack.Hypermedia;
-using RESTyard.WebApi.Extensions.Exceptions;
-using RESTyard.WebApi.Extensions.Hypermedia;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
+using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace CarShack.Controllers.Customers
 {

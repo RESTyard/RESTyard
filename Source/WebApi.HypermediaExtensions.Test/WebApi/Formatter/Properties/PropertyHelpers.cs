@@ -4,8 +4,8 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
+using RESTyard.AspNetCore.Util.Enum;
 using RESTyard.WebApi.Extensions.Test.Helpers;
-using RESTyard.WebApi.Extensions.Util.Enum;
 
 namespace RESTyard.WebApi.Extensions.Test.WebApi.Formatter.Properties
 {

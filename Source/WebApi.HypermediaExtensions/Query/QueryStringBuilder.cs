@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
-namespace RESTyard.WebApi.Extensions.Query
+namespace RESTyard.AspNetCore.Query
 {
     public class QueryStringBuilder : IQueryStringBuilder
     {

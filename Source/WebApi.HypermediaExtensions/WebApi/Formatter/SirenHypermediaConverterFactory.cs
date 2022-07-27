@@ -1,9 +1,9 @@
 using System;
-using RESTyard.WebApi.Extensions.Query;
-using RESTyard.WebApi.Extensions.WebApi.ExtensionMethods;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
+using RESTyard.AspNetCore.Query;
+using RESTyard.AspNetCore.WebApi.ExtensionMethods;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 
-namespace RESTyard.WebApi.Extensions.WebApi.Formatter
+namespace RESTyard.AspNetCore.WebApi.Formatter
 {
     internal class SirenHypermediaConverterFactory : ISirenHypermediaConverterFactory
     {

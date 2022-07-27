@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RESTyard.WebApi.Extensions.Util
+namespace RESTyard.AspNetCore.Util
 {
     public class StringReadOnlyCollectionComparer : IEqualityComparer<IReadOnlyCollection<string>>
     {

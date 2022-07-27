@@ -1,5 +1,5 @@
-﻿using RESTyard.WebApi.Extensions.Hypermedia;
-using RESTyard.WebApi.Extensions.Hypermedia.Attributes;
+﻿using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
 
 namespace CarShack.Hypermedia.Cars
 {

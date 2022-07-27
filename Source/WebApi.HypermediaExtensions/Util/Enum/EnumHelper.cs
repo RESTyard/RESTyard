@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 
-namespace RESTyard.WebApi.Extensions.Util.Enum
+namespace RESTyard.AspNetCore.Util.Enum
 {
     public static class EnumHelper
     {

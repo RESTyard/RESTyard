@@ -3,11 +3,11 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing.Template;
-using RESTyard.WebApi.Extensions.Exceptions;
-using RESTyard.WebApi.Extensions.Hypermedia;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
+using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 
-namespace RESTyard.WebApi.Extensions.WebApi.AttributedRoutes
+namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
     public class HttpGetHypermediaObject : HttpGetAttribute, IHaveRouteInfo

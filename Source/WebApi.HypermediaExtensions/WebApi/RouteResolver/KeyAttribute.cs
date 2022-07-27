@@ -1,6 +1,6 @@
 using System;
 
-namespace RESTyard.WebApi.Extensions.WebApi.RouteResolver
+namespace RESTyard.AspNetCore.WebApi.RouteResolver
 {
     /// <summary>
     /// Marks a property as (part of) the objects key. The route template to obtain the object 

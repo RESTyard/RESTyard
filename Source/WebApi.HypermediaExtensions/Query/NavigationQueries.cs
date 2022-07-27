@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace RESTyard.WebApi.Extensions.Query
+namespace RESTyard.AspNetCore.Query
 {
     public class NavigationQueries
     {

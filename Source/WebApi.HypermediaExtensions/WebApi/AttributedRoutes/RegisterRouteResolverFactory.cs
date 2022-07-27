@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
-using RESTyard.WebApi.Extensions.WebApi.ExtensionMethods;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
+using RESTyard.AspNetCore.WebApi.ExtensionMethods;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 
-namespace RESTyard.WebApi.Extensions.WebApi.AttributedRoutes
+namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
 {
     // required because theUrlHelper changes with every context.
     public class RegisterRouteResolverFactory : IRouteResolverFactory

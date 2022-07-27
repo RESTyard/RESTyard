@@ -1,8 +1,8 @@
 ﻿using System;
-using RESTyard.WebApi.Extensions.Hypermedia.Actions;
-using RESTyard.WebApi.Extensions.Query;
+using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.Query;
 
-namespace RESTyard.WebApi.Extensions.Util.Repository
+namespace RESTyard.AspNetCore.Util.Repository
 {
     /// <summary>
     /// Parameter class to specify a Query.

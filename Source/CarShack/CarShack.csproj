@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WebApi.HypermediaExtensions\RESTyard.WebApi.Extensions.csproj" />
+    <ProjectReference Include="..\WebApi.HypermediaExtensions\RESTyard.AspNetCore.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.Serialization;
-using RESTyard.WebApi.Extensions.Util.Enum;
+using RESTyard.AspNetCore.Util.Enum;
 
-namespace RESTyard.WebApi.Extensions.Util.Repository
+namespace RESTyard.AspNetCore.Util.Repository
 {
     [TypeConverter(typeof(AttributedEnumTypeConverter<SortTypes>))]
     public enum SortTypes

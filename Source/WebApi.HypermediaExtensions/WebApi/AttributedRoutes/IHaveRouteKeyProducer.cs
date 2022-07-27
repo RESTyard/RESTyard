@@ -1,7 +1,7 @@
 using System;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 
-namespace RESTyard.WebApi.Extensions.WebApi.AttributedRoutes
+namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
 {
     public interface IHaveRouteKeyProducer
     {

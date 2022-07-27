@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace RESTyard.WebApi.Extensions.Util.Extensions
+namespace RESTyard.AspNetCore.Util.Extensions
 {
     static class EnumerableExtension
     {

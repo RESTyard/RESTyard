@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Reflection;
 
-namespace RESTyard.WebApi.Extensions.Query
+namespace RESTyard.AspNetCore.Query
 {
     internal class SerializeInfo
     {

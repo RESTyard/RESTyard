@@ -1,7 +1,7 @@
 using System;
 using Microsoft.AspNetCore.Http;
 
-namespace RESTyard.WebApi.Extensions.WebApi
+namespace RESTyard.AspNetCore.WebApi
 {
     public interface IHypermediaUrlConfig
     {

@@ -3,13 +3,13 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
-using RESTyard.WebApi.Extensions.ErrorHandling;
-using RESTyard.WebApi.Extensions.JsonSchema;
-using RESTyard.WebApi.Extensions.Util;
-using RESTyard.WebApi.Extensions.WebApi.ExtensionMethods;
-using RESTyard.WebApi.Extensions.WebApi.Formatter;
+using RESTyard.AspNetCore.ErrorHandling;
+using RESTyard.AspNetCore.JsonSchema;
+using RESTyard.AspNetCore.Util;
+using RESTyard.AspNetCore.WebApi.ExtensionMethods;
+using RESTyard.AspNetCore.WebApi.Formatter;
 
-namespace RESTyard.WebApi.Extensions.WebApi.Controller
+namespace RESTyard.AspNetCore.WebApi.Controller
 {
     public class ActionParameterSchemas
     {

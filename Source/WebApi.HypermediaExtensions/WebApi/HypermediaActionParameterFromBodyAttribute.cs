@@ -1,10 +1,10 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
-using RESTyard.WebApi.Extensions.JsonSchema;
-using RESTyard.WebApi.Extensions.WebApi.ExtensionMethods;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
+using RESTyard.AspNetCore.JsonSchema;
+using RESTyard.AspNetCore.WebApi.ExtensionMethods;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 
-namespace RESTyard.WebApi.Extensions.WebApi
+namespace RESTyard.AspNetCore.WebApi
 {
     /// <summary>
     /// Explicitly marks an hpyermedia action parameter of controller method to be deserailized from body taking into account properties

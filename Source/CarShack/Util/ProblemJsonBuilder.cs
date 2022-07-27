@@ -1,4 +1,4 @@
-﻿using RESTyard.WebApi.Extensions.ErrorHandling;
+﻿using RESTyard.AspNetCore.ErrorHandling;
 
 namespace CarShack.Util
 {

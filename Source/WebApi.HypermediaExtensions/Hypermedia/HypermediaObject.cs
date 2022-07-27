@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using RESTyard.WebApi.Extensions.Hypermedia.Actions;
-using RESTyard.WebApi.Extensions.Hypermedia.Attributes;
-using RESTyard.WebApi.Extensions.Hypermedia.Links;
-using RESTyard.WebApi.Extensions.Query;
+using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
+using RESTyard.AspNetCore.Hypermedia.Links;
+using RESTyard.AspNetCore.Query;
 
-namespace RESTyard.WebApi.Extensions.Hypermedia
+namespace RESTyard.AspNetCore.Hypermedia
 {
     /// <summary>
     /// Base class for all HypermediaObjects. Can be attributed with a <see cref="HypermediaObjectAttribute" /> to provide classes and a title.

@@ -1,6 +1,6 @@
 using System;
 
-namespace RESTyard.WebApi.Extensions.WebApi.Formatter
+namespace RESTyard.AspNetCore.WebApi.Formatter
 {
     static class RouteNames
     {

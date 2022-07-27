@@ -2,7 +2,7 @@ using System;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
 
-namespace RESTyard.WebApi.Extensions.WebApi.AttributedRoutes
+namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
 {
     public class RouteMatcher
     {

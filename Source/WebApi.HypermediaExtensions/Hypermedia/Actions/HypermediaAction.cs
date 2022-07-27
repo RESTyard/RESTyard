@@ -1,7 +1,7 @@
 ﻿using System;
-using RESTyard.WebApi.Extensions.Exceptions;
+using RESTyard.AspNetCore.Exceptions;
 
-namespace RESTyard.WebApi.Extensions.Hypermedia.Actions
+namespace RESTyard.AspNetCore.Hypermedia.Actions
 {
     /// <summary>
     /// A HypermediaAction. For each concrete type a corresponding attributed route must exist.

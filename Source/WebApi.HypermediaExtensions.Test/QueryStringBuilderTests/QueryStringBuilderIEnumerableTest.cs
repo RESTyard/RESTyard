@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RESTyard.WebApi.Extensions.Query;
+using RESTyard.AspNetCore.Query;
 using RESTyard.WebApi.Extensions.Test.Helpers;
 
 namespace RESTyard.WebApi.Extensions.Test.QueryStringBuilderTests

@@ -1,6 +1,6 @@
 using System;
 
-namespace RESTyard.WebApi.Extensions.WebApi.AttributedRoutes
+namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
 {
     public interface IHaveRouteInfo
     {

@@ -2,8 +2,8 @@
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 using RESTyard.WebApi.Extensions.Test.Helpers;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
 namespace RESTyard.WebApi.Extensions.Test.WebApi.Formatter.Properties
 {

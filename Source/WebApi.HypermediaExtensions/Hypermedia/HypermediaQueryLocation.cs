@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Reflection;
-using RESTyard.WebApi.Extensions.Exceptions;
-using RESTyard.WebApi.Extensions.Query;
+using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.Query;
 
-namespace RESTyard.WebApi.Extensions.Hypermedia
+namespace RESTyard.AspNetCore.Hypermedia
 {
     public class HypermediaQueryLocation
     {

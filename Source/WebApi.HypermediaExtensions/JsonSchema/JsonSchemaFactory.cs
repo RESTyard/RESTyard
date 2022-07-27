@@ -7,15 +7,16 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NJsonSchema;
 using NJsonSchema.Generation;
-using RESTyard.WebApi.Extensions.Util;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
+using RESTyard.AspNetCore.Util;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
+
 #if NETSTANDARD2_0
 
 #elif NETCOREAPP3_1
   using System.Text.Json;
 #endif
 
-namespace RESTyard.WebApi.Extensions.JsonSchema
+namespace RESTyard.AspNetCore.JsonSchema
 {
     public static class JsonSchemaFactory
     {

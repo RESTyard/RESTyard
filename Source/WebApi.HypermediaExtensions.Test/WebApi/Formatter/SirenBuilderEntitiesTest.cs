@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using RESTyard.WebApi.Extensions.Hypermedia;
-using RESTyard.WebApi.Extensions.Hypermedia.Extensions;
-using RESTyard.WebApi.Extensions.Hypermedia.Links;
-using RESTyard.WebApi.Extensions.Query;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Extensions;
+using RESTyard.AspNetCore.Hypermedia.Links;
+using RESTyard.AspNetCore.Query;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 using RESTyard.WebApi.Extensions.Test.WebApi.Formatter.Properties;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
 namespace RESTyard.WebApi.Extensions.Test.WebApi.Formatter
 {

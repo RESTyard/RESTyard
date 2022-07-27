@@ -5,18 +5,18 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json.Linq;
-using RESTyard.WebApi.Extensions.Exceptions;
-using RESTyard.WebApi.Extensions.Hypermedia;
-using RESTyard.WebApi.Extensions.Hypermedia.Actions;
-using RESTyard.WebApi.Extensions.Hypermedia.Attributes;
-using RESTyard.WebApi.Extensions.Hypermedia.Links;
-using RESTyard.WebApi.Extensions.Query;
-using RESTyard.WebApi.Extensions.Util;
-using RESTyard.WebApi.Extensions.Util.Enum;
-using RESTyard.WebApi.Extensions.WebApi.ExtensionMethods;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
+using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
+using RESTyard.AspNetCore.Hypermedia.Links;
+using RESTyard.AspNetCore.Query;
+using RESTyard.AspNetCore.Util;
+using RESTyard.AspNetCore.Util.Enum;
+using RESTyard.AspNetCore.WebApi.ExtensionMethods;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 
-namespace RESTyard.WebApi.Extensions.WebApi.Formatter
+namespace RESTyard.AspNetCore.WebApi.Formatter
 {
     public class SirenConverter : IHypermediaJsonConverter, IHypermediaConverter
     {

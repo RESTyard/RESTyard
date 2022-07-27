@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
-using RESTyard.WebApi.Extensions.ErrorHandling;
-using RESTyard.WebApi.Extensions.Hypermedia;
-using RESTyard.WebApi.Extensions.Hypermedia.Links;
-using RESTyard.WebApi.Extensions.Query;
+using RESTyard.AspNetCore.ErrorHandling;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Links;
+using RESTyard.AspNetCore.Query;
 
-namespace RESTyard.WebApi.Extensions.WebApi.ExtensionMethods
+namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
 {
     public static class ControllerExtensions
     {

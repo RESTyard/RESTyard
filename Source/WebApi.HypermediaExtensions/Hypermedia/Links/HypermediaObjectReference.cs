@@ -1,9 +1,9 @@
 ﻿using System;
-using RESTyard.WebApi.Extensions.Exceptions;
-using RESTyard.WebApi.Extensions.Query;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
+using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.Query;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 
-namespace RESTyard.WebApi.Extensions.Hypermedia.Links
+namespace RESTyard.AspNetCore.Hypermedia.Links
 {
     /// <summary>
     /// Reference to a HypermediaObject. Use this if you already have a HypermediaObject.

@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RESTyard.WebApi.Extensions.Util.Repository;
+using RESTyard.AspNetCore;
+using RESTyard.AspNetCore.Util.Repository;
 
 namespace RESTyard.WebApi.Extensions.Test
 {

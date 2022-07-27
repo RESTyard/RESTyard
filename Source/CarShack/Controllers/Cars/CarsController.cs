@@ -2,9 +2,9 @@
 using CarShack.Hypermedia.Cars;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
-using RESTyard.WebApi.Extensions.Exceptions;
-using RESTyard.WebApi.Extensions.WebApi.AttributedRoutes;
-using RESTyard.WebApi.Extensions.WebApi.ExtensionMethods;
+using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 
 namespace CarShack.Controllers.Cars
 {

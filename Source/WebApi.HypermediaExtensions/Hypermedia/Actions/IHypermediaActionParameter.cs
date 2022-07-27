@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RESTyard.WebApi.Extensions.Hypermedia.Actions
+namespace RESTyard.AspNetCore.Hypermedia.Actions
 {
     public interface IHypermediaActionParameter
     {

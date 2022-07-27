@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using RESTyard.WebApi.Extensions.Util.Repository;
+using RESTyard.AspNetCore.Util.Repository;
 
 namespace CarShack.Util.Repository
 {

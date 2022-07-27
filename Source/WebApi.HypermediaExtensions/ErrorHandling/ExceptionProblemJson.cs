@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RESTyard.WebApi.Extensions.ErrorHandling
+namespace RESTyard.AspNetCore.ErrorHandling
 {
     public class ExceptionProblemJson : ProblemJson
     {

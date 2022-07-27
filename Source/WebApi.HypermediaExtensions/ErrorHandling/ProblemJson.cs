@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RESTyard.WebApi.Extensions.ErrorHandling
+namespace RESTyard.AspNetCore.ErrorHandling
 {
     /// <summary>
     /// Problem JSON <see href="https://tools.ietf.org/html/draft-nottingham-http-problem-03"/>

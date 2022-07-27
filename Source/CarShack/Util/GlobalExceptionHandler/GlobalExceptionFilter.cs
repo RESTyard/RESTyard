@@ -3,8 +3,8 @@ using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
-using RESTyard.WebApi.Extensions.ErrorHandling;
-using RESTyard.WebApi.Extensions.Exceptions;
+using RESTyard.AspNetCore.ErrorHandling;
+using RESTyard.AspNetCore.Exceptions;
 
 namespace CarShack.Util.GlobalExceptionHandler
 {

@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace RESTyard.WebApi.Extensions.Util
+namespace RESTyard.AspNetCore.Util
 {
     public static class TypeExtension
     {

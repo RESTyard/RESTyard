@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RESTyard.WebApi.Extensions.Exceptions
+namespace RESTyard.AspNetCore.Exceptions
 {
     public class CanNotExecuteActionException : Exception
     {

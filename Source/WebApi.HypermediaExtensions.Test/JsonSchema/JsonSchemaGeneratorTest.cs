@@ -8,13 +8,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using NJsonSchema;
-using RESTyard.WebApi.Extensions.Hypermedia;
-using RESTyard.WebApi.Extensions.Hypermedia.Actions;
-using RESTyard.WebApi.Extensions.JsonSchema;
+using RESTyard.AspNetCore;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.JsonSchema;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 using RESTyard.WebApi.Extensions.Test.Helpers;
 using RESTyard.WebApi.Extensions.Test.Hypermedia;
-using RESTyard.WebApi.Extensions.WebApi.AttributedRoutes;
-using RESTyard.WebApi.Extensions.WebApi.RouteResolver;
 
 namespace RESTyard.WebApi.Extensions.Test.JsonSchema
 {
@@ -275,7 +276,7 @@ namespace RESTyard.WebApi.Extensions.Test.JsonSchema
 
         public abstract class BaseHmo : HypermediaObject
         {
-            [RESTyard.WebApi.Extensions.WebApi.RouteResolver.Key]
+            [AspNetCore.WebApi.RouteResolver.Key]
             public string Key { get; }
 
             protected BaseHmo(string key)

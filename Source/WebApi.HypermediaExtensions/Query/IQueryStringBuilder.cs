@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RESTyard.WebApi.Extensions.Query
+namespace RESTyard.AspNetCore.Query
 {
     public interface IQueryStringBuilder
     {
