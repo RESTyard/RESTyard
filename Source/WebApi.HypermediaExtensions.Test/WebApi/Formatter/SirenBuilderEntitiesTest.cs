@@ -7,10 +7,10 @@ using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Extensions;
 using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Query;
+using RESTyard.AspNetCore.Test.WebApi.Formatter.Properties;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
-using RESTyard.WebApi.Extensions.Test.WebApi.Formatter.Properties;
 
-namespace RESTyard.WebApi.Extensions.Test.WebApi.Formatter
+namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 {
     [TestClass]
     public class SirenBuilderEntitiesTest : SirenBuilderTestBase

@@ -3,7 +3,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 
-namespace RESTyard.WebApi.Extensions.Test.WebApi.Formatter
+namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 {
     public class MockUrlHelper : IUrlHelper
     {

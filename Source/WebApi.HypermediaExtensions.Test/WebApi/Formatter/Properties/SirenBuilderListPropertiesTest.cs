@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 
-namespace RESTyard.WebApi.Extensions.Test.WebApi.Formatter.Properties
+namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 {
     [TestClass]
     public class SirenBuilderListPropertiesTest : SirenBuilderTestBase

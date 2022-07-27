@@ -8,16 +8,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using NJsonSchema;
-using RESTyard.AspNetCore;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.JsonSchema;
+using RESTyard.AspNetCore.Test.Helpers;
+using RESTyard.AspNetCore.Test.Hypermedia;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
-using RESTyard.WebApi.Extensions.Test.Helpers;
-using RESTyard.WebApi.Extensions.Test.Hypermedia;
 
-namespace RESTyard.WebApi.Extensions.Test.JsonSchema
+namespace RESTyard.AspNetCore.Test.JsonSchema
 {
     [TestClass]
     public class When_generating_json_schema_from_type_with_key_attribute : AsyncTestSpecification

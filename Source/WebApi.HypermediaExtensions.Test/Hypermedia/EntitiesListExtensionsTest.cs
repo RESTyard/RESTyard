@@ -6,7 +6,7 @@ using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Extensions;
 using RESTyard.AspNetCore.Hypermedia.Links;
 
-namespace RESTyard.WebApi.Extensions.Test.Hypermedia
+namespace RESTyard.AspNetCore.Test.Hypermedia
 {
     [TestClass]
     public class EntitiesListExtensionsTest

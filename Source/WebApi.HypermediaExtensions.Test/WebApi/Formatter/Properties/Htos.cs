@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
-using RESTyard.WebApi.Extensions.Test.Helpers;
+using RESTyard.AspNetCore.Test.Helpers;
 
-namespace RESTyard.WebApi.Extensions.Test.WebApi.Formatter.Properties
+namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 {
     public class EmptyHypermediaObject : HypermediaObject
     {

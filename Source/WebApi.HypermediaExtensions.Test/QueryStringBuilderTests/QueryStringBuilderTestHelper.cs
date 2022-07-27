@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RESTyard.WebApi.Extensions.Test.QueryStringBuilderTests
+namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
 {
     static internal class QueryStringBuilderTestHelper
     {

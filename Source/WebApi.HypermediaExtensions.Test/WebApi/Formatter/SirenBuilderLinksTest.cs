@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using RESTyard.AspNetCore;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.Util;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 
-namespace RESTyard.WebApi.Extensions.Test.WebApi.Formatter
+namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 {
     [TestClass]
     public class SirenBuilderLinksTest : SirenBuilderTestBase

@@ -1,9 +1,8 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RESTyard.AspNetCore;
 using RESTyard.AspNetCore.Util.Repository;
 
-namespace RESTyard.WebApi.Extensions.Test
+namespace RESTyard.AspNetCore.Test
 {
     [TestClass]
     public class NavigationQueryBuilderTest

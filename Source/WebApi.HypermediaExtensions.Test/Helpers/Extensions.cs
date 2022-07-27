@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.IO;
 
-namespace RESTyard.WebApi.Extensions.Test.Helpers
+namespace RESTyard.AspNetCore.Test.Helpers
 {
     public static class Extensions
     {

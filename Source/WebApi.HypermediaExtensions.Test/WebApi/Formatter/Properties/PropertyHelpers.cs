@@ -4,10 +4,10 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
+using RESTyard.AspNetCore.Test.Helpers;
 using RESTyard.AspNetCore.Util.Enum;
-using RESTyard.WebApi.Extensions.Test.Helpers;
 
-namespace RESTyard.WebApi.Extensions.Test.WebApi.Formatter.Properties
+namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 {
     public class PropertyHelpers
     {

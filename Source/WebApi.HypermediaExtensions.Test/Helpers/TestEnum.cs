@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace RESTyard.WebApi.Extensions.Test.Helpers
+namespace RESTyard.AspNetCore.Test.Helpers
 {
     public enum TestEnum
     {

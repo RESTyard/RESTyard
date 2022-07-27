@@ -4,9 +4,9 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Query;
-using RESTyard.WebApi.Extensions.Test.Helpers;
+using RESTyard.AspNetCore.Test.Helpers;
 
-namespace RESTyard.WebApi.Extensions.Test.QueryStringBuilderTests
+namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
 {
     [TestClass]
     public class QueryStringBuilderIEnumerableTest

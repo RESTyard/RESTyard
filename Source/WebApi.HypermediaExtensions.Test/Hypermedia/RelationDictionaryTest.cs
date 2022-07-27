@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Links;
 
-namespace RESTyard.WebApi.Extensions.Test.Hypermedia
+namespace RESTyard.AspNetCore.Test.Hypermedia
 {
     [TestClass]
     public class RelationDictionaryTest

@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Util;
 
-namespace RESTyard.WebApi.Extensions.Test.Hypermedia
+namespace RESTyard.AspNetCore.Test.Hypermedia
 {
     [TestClass]
     public class TypeExtensionTest
