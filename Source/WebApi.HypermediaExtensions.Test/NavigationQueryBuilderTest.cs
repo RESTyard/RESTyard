@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Util.Repository;
+using RESTyard.Relations;
 
 namespace RESTyard.AspNetCore.Test
 {

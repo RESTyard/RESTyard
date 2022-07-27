@@ -12,6 +12,7 @@ using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 using RESTyard.AspNetCore.WebApi.Formatter;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
+using RESTyard.Relations;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 {

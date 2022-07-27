@@ -6,6 +6,7 @@ using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
+using RESTyard.MediaTypes;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 {

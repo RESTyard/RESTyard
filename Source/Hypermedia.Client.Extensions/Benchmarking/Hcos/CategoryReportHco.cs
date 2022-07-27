@@ -1,5 +1,6 @@
 ﻿using RESTyard.Client.Hypermedia;
 using RESTyard.Client.Hypermedia.Attributes;
+using RESTyard.Relations;
 
 namespace Benchmarking.Hcos
 {

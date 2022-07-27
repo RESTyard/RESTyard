@@ -15,6 +15,7 @@ using RESTyard.AspNetCore.Util;
 using RESTyard.AspNetCore.Util.Enum;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
+using RESTyard.MediaTypes;
 
 namespace RESTyard.AspNetCore.WebApi.Formatter
 {

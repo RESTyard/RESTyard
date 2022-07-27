@@ -8,6 +8,7 @@ using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.Util;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
+using RESTyard.Relations;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 {

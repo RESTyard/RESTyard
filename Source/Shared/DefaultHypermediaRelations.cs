@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Extensions.Test
+namespace RESTyard.Relations
 {
     /// <summary>
     /// Collection of basic relations commonly used.

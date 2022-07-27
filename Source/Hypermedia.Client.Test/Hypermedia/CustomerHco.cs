@@ -2,6 +2,7 @@
 using RESTyard.Client.Hypermedia;
 using RESTyard.Client.Hypermedia.Attributes;
 using RESTyard.Client.Hypermedia.Commands;
+using RESTyard.Relations;
 
 namespace RESTyard.Client.Test.Hypermedia
 {

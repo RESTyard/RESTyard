@@ -65,4 +65,8 @@
     </AssemblyAttribute>
   </ItemGroup>
 
+	<ItemGroup>
+		<Compile Include="..\Shared\DefaultHypermediaRelations.cs" Link="DefaultHypermediaRelations.cs" />
+		<Compile Include="..\Shared\DefaultMediaTypes.cs" Link="DefaultMediaTypes.cs" />
+	</ItemGroup>
 </Project>

@@ -4,6 +4,7 @@ using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Query;
+using RESTyard.Relations;
 
 namespace RESTyard.AspNetCore.Hypermedia
 {

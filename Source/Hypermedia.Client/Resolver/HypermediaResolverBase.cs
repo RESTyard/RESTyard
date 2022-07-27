@@ -8,6 +8,7 @@ using RESTyard.Client.Hypermedia.Commands;
 using RESTyard.Client.ParameterSerializer;
 using RESTyard.Client.Reader;
 using RESTyard.Client.Resolver.Caching;
+using RESTyard.MediaTypes;
 
 namespace RESTyard.Client.Resolver
 {

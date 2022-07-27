@@ -1,5 +1,6 @@
 ﻿using System;
 using RESTyard.AspNetCore.Query;
+using RESTyard.Relations;
 
 namespace RESTyard.AspNetCore.Util.Repository
 {
