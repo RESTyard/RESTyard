@@ -13,7 +13,7 @@
 
     
   <ItemGroup>
-    <ProjectReference Include="..\WebApi.HypermediaExtensions\RESTyard.AspNetCore.csproj" />
+    <ProjectReference Include="..\RESTyard.AspNetCore\RESTyard.AspNetCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>

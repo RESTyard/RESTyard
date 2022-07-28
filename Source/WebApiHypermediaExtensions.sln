@@ -14,9 +14,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\TODO.md = ..\TODO.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTyard.AspNetCore", "WebApi.HypermediaExtensions\RESTyard.AspNetCore.csproj", "{36257B82-6BB5-434E-856E-A02FCBE83570}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTyard.AspNetCore", "RESTyard.AspNetCore\RESTyard.AspNetCore.csproj", "{36257B82-6BB5-434E-856E-A02FCBE83570}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTyard.AspNetCore.Test", "WebApi.HypermediaExtensions.Test\RESTyard.AspNetCore.Test.csproj", "{2BB87C7F-8EB1-4978-8E5B-DB794555D739}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTyard.AspNetCore.Test", "RESTyard.AspNetCore.Test\RESTyard.AspNetCore.Test.csproj", "{2BB87C7F-8EB1-4978-8E5B-DB794555D739}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarShack", "CarShack\CarShack.csproj", "{89465847-B042-40A5-853B-E8DAC3160C56}"
 EndProject

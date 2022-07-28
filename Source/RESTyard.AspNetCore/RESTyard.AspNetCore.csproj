@@ -61,7 +61,7 @@
   <!--Allow access for the test assembly-->
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-      <_Parameter1>WebApi.HypermediaExtensions.Test</_Parameter1>
+      <_Parameter1>RESTyard.AspNetCore.Test</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
 
