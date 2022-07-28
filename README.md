@@ -484,6 +484,9 @@ Tested for:
 
 ## Release Notes
 
+### RESTyard v2.0.0
+- Rebrand all projects to common name "RESTyard".
+
 ### WebApiHypermediaExtensions v1.10.0
 
 - Extend `HttpDeleteHypermediaAction`, `HttpPatchHypermediaAction` and `HttpPostHypermediaAction` attributes so a media type can be configured which is accepted by the action.
