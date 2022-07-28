@@ -29,8 +29,8 @@
 -}}
 #nullable enable
 using Microsoft.AspNetCore.Mvc;
-using RESTyard.WebApi.Extensions.WebApi;
-using RESTyard.WebApi.Extensions.WebApi.AttributedRoutes;
+using RESTyard.AspNetCore.WebApi;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 
 {{-
     if isNotEmpty Namespace
