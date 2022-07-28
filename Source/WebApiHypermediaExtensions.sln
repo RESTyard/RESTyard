@@ -20,29 +20,29 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTyard.AspNetCore.Test", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarShack", "CarShack\CarShack.csproj", "{89465847-B042-40A5-853B-E8DAC3160C56}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTyard.Client", "Hypermedia.Client\RESTyard.Client.csproj", "{1E4E6AC2-1E5B-443C-9782-2AD056A750D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTyard.Client", "RESTyard.Client\RESTyard.Client.csproj", "{1E4E6AC2-1E5B-443C-9782-2AD056A750D0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTyard.Client.Test", "Hypermedia.Client.Test\RESTyard.Client.Test.csproj", "{3FD04265-F0B7-4AFC-A8E9-F4DDF7381CAF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTyard.Client.Test", "RESTyard.Client.Test\RESTyard.Client.Test.csproj", "{3FD04265-F0B7-4AFC-A8E9-F4DDF7381CAF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewtonsoftJson", "Hypermedia.Client.Extensions\NewtonsoftJson\NewtonsoftJson.csproj", "{5F5E8A59-5F4F-4527-A811-E527271CF258}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewtonsoftJson", "RESTyard.Client.Extensions\NewtonsoftJson\NewtonsoftJson.csproj", "{5F5E8A59-5F4F-4527-A811-E527271CF258}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hypermedia.Client.Extensions", "Hypermedia.Client.Extensions", "{E147EF98-0984-43D1-BD4F-F23FE79E22FA}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RESTyard.Client.Extensions", "RESTyard.Client.Extensions", "{E147EF98-0984-43D1-BD4F-F23FE79E22FA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SystemTextJson", "Hypermedia.Client.Extensions\SystemTextJson\SystemTextJson.csproj", "{5BE57CD6-D776-4808-84D7-DA86EF511D84}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SystemTextJson", "RESTyard.Client.Extensions\SystemTextJson\SystemTextJson.csproj", "{5BE57CD6-D776-4808-84D7-DA86EF511D84}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SystemNetHttp", "Hypermedia.Client.Extensions\SystemNetHttp\SystemNetHttp.csproj", "{B3001627-20BB-4E03-B80A-532B07D7D859}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SystemNetHttp", "RESTyard.Client.Extensions\SystemNetHttp\SystemNetHttp.csproj", "{B3001627-20BB-4E03-B80A-532B07D7D859}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions.Test", "Hypermedia.Client.Extensions\Extensions.Test\Extensions.Test.csproj", "{4FA6CC8F-C0BA-46C2-B5F6-D2B46E5F8DEF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions.Test", "RESTyard.Client.Extensions\Extensions.Test\Extensions.Test.csproj", "{4FA6CC8F-C0BA-46C2-B5F6-D2B46E5F8DEF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTyard.Generator", "Hypermedia.ContractFirst\Hypermedia.Generator\RESTyard.Generator.csproj", "{444C814C-97AE-4090-A4DA-0E44A4AB9418}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ContractFirst", "ContractFirst", "{68F696D4-A692-4750-9915-90A2BBED2C89}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicrosoftExtensionsCaching", "Hypermedia.Client.Extensions\MicrosoftExtensionsCaching\MicrosoftExtensionsCaching.csproj", "{7C2C3EAE-35D3-4557-92F3-CBB6B545ACBF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicrosoftExtensionsCaching", "RESTyard.Client.Extensions\MicrosoftExtensionsCaching\MicrosoftExtensionsCaching.csproj", "{7C2C3EAE-35D3-4557-92F3-CBB6B545ACBF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicrosoftExtensionsCaching.Test", "Hypermedia.Client.Extensions\MicrosoftExtensionsCaching.Test\MicrosoftExtensionsCaching.Test.csproj", "{43113788-DE87-45F4-BCB6-B7ED05F813F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicrosoftExtensionsCaching.Test", "RESTyard.Client.Extensions\MicrosoftExtensionsCaching.Test\MicrosoftExtensionsCaching.Test.csproj", "{43113788-DE87-45F4-BCB6-B7ED05F813F9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarking", "Hypermedia.Client.Extensions\Benchmarking\Benchmarking.csproj", "{A605FF16-E6EF-4365-A728-AC9C97D2023F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarking", "RESTyard.Client.Extensions\Benchmarking\Benchmarking.csproj", "{A605FF16-E6EF-4365-A728-AC9C97D2023F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

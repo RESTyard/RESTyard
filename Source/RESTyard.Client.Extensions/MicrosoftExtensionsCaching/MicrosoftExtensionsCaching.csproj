@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Hypermedia.Client\RESTyard.Client.csproj" />
+    <ProjectReference Include="..\..\RESTyard.Client\RESTyard.Client.csproj" />
   </ItemGroup>
 
 </Project>

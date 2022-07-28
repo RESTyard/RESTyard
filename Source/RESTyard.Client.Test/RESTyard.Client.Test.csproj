@@ -19,9 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Hypermedia.Client.Extensions\SystemNetHttp\SystemNetHttp.csproj" PrivateAssets="All" />
-    <ProjectReference Include="..\Hypermedia.Client.Extensions\SystemTextJson\SystemTextJson.csproj" PrivateAssets="All" />
-    <ProjectReference Include="..\Hypermedia.Client\RESTyard.Client.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\RESTyard.Client.Extensions\SystemNetHttp\SystemNetHttp.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\RESTyard.Client.Extensions\SystemTextJson\SystemTextJson.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\RESTyard.Client\RESTyard.Client.csproj" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
