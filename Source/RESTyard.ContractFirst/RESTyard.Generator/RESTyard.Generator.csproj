@@ -5,11 +5,16 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RepositoryUrl>https://github.com/bluehands/WebApiHypermediaExtensions</RepositoryUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+    <VersionSuffixLocal></VersionSuffixLocal>
+    <!--When variable is set we are building a prerelease package-->
+    <VersionSuffixLocal Condition="'$(IsPreRelease)'!='' AND  '$(IsPreRelease)'">
+      $(VersionSuffix)
+    </VersionSuffixLocal>
+    <Version>0.1$(VersionSuffixLocal)</Version>
+
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>restyard-generator</ToolCommandName>
-    <VersionPrefix>0.1</VersionPrefix>
 
 	  <!-- Descriptions and information -->
 	  <Title>RESTyard Code Generation Tool</Title>
