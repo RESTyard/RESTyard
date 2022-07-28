@@ -11,7 +11,7 @@
     <VersionSuffixLocal Condition="'$(IsPreRelease)'!='' AND  '$(IsPreRelease)'">
       $(VersionSuffix)
     </VersionSuffixLocal>
-    <Version>0.1$(VersionSuffixLocal)</Version>
+    <Version>0.2$(VersionSuffixLocal)</Version>
 
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>restyard-generator</ToolCommandName>
