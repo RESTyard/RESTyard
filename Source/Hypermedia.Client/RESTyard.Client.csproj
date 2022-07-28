@@ -18,7 +18,7 @@
     <Titel>Generic Hypermedia Client</Titel>
     <PackageDescription>Type safe generic REST client which uses the Siren hypermedia format.</PackageDescription>
     <PackageTags>Client REST Siren Hypermedia</PackageTags>
-    <Authors>Mathias Reichardt; Jasper Marianczuk; Aydin Mir Mohammadi; Waldemar Tomme</Authors>
+    <Authors>Mathias Reichardt; Jasper Marianczuk; Aydin Mir Mohammadi; Waldemar Tomme; Alexander Wiedemann; Marcel Weigel</Authors>
     <Copyright>Copyright 2001-2022 RESTyard Team</Copyright>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
