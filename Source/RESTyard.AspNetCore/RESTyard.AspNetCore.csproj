@@ -15,7 +15,7 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
 
     <!-- Descriptions and information-->
-    <Titel>Web Api Hypermedia Extensions</Titel>
+    <Titel>RESTyard</Titel>
     <PackageDescription>Web Api extensions to create REST Web services using Siren as Hypermedia format</PackageDescription>
     <PackageTags>WebApi;REST;Siren;Hypermedia;ASP.NET Core;</PackageTags>
     <Authors>Mathias Reichardt; Jasper Marianczuk; Aydin Mir Mohammadi; Waldemar Tomme; Alexander Wiedemann; Marcel Weigel</Authors>
