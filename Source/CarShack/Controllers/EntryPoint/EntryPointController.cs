@@ -1,6 +1,6 @@
 ﻿using CarShack.Hypermedia;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 
 namespace CarShack.Controllers.EntryPoint
 {

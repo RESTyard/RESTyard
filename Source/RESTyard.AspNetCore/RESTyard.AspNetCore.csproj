@@ -1,0 +1,72 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--General settings-->
+
+    <VersionSuffixLocal></VersionSuffixLocal>
+    <!--When variable is set we are building a prerelease package-->
+    <VersionSuffixLocal Condition="'$(IsPreRelease)'!='' AND  '$(IsPreRelease)'">
+      $(VersionSuffix)
+    </VersionSuffixLocal>
+
+    <Version>1.10.0$(VersionSuffixLocal)</Version>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+
+    <!-- Descriptions and information-->
+    <Titel>RESTyard</Titel>
+    <PackageDescription>Web Api extensions to create REST Web services using Siren as Hypermedia format</PackageDescription>
+    <PackageTags>WebApi;REST;Siren;Hypermedia;ASP.NET Core;</PackageTags>
+    <Authors>Mathias Reichardt; Jasper Marianczuk; Aydin Mir Mohammadi; Waldemar Tomme; Alexander Wiedemann; Marcel Weigel</Authors>
+    <Copyright>Copyright 2001-2022 RESTyard Team</Copyright>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
+    <RepositoryType>Git</RepositoryType>
+    <RepositoryUrl>https://github.com/bluehands/WebApiHypermediaExtensions.git</RepositoryUrl>
+    <RepositoryBranch>$(BranchName)</RepositoryBranch>
+
+    <!-- Package specific settings -->
+    <PackageVersion>$(Version)</PackageVersion>
+    <PackageReleaseNotes>Version $(Version)</PackageReleaseNotes>
+    <IsPackable>true</IsPackable>
+
+  </PropertyGroup>
+
+  <!-- shared references, compilation flags and build options -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.26" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.1.1" />
+    <PackageReference Include="NJsonSchema" Version="9.10.50" />
+  </ItemGroup>
+
+  <!-- netcoreapp3.1 references, compilation flags and build options -->
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1'">
+    <DefineConstants>NETCOREAPP3_1</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1'">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="1.1.8" />
+  </ItemGroup>
+
+  <!-- .NET Standard 2.0 references, compilation flags and build options -->
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0'">
+    <DefineConstants>NETSTANDARD2_0</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.8" />
+  </ItemGroup>
+
+  <!--Allow access for the test assembly-->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>RESTyard.AspNetCore.Test</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+	<ItemGroup>
+		<Compile Include="..\Shared\DefaultHypermediaRelations.cs" Link="DefaultHypermediaRelations.cs" />
+		<Compile Include="..\Shared\DefaultMediaTypes.cs" Link="DefaultMediaTypes.cs" />
+	</ItemGroup>
+</Project>

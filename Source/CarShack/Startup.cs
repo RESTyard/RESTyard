@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging.Console;
 using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
 using CarShack.Util.GlobalExceptionHandler;
-using WebApi.HypermediaExtensions.WebApi.ExtensionMethods;
+using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 
 namespace CarShack
 {

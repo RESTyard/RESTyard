@@ -1,4 +1,7 @@
-# Web Api Hypermedia Extensions
+# RESTyard (formerly know as Web Api Hypermedia Extensions)
+
+**NOTE: This repository is not maintained anymore. Moved to [https://github.com/orgs/RESTyard/repositories](https://github.com/orgs/RESTyard/repositories)**
+
 This project consists of a set of Extensions for Web Api 2 Core projects. The purpose is to
 assist in building restful Web services using the [Siren Hypermedia Format](https://github.com/kevinswiber/siren) with much less coding.
 Using the Extensions it is possible to return HypermediaObjects as C# classes. Routes for HypermediaObjects and Actions are built using extended attribute routing.
@@ -10,9 +13,9 @@ For a first feel there is a demo project called [CarShack](https://github.com/bl
 To develop C# client applications there is a generic REST client. It is in an early stage at the moment: [https://github.com/bluehands/WebApiHypermediaExtensions/tree/master/Source/HypermediaClient](https://github.com/bluehands/WebApiHypermediaExtensions/tree/master/Source/HypermediaClient)
 
 ## On nuget.org
-The Extensions: [https://www.nuget.org/packages/WebApiHypermediaExtensionsCore](https://www.nuget.org/packages/WebApiHypermediaExtensionsCore)
+The Extensions: [https://www.nuget.org/packages/RESTyard.WebApi.Extensions](https://www.nuget.org/packages/RESTyard.WebApi.Extensions)
 
-The Client: [https://www.nuget.org/packages/Bluehands.Hypermedia.Client/](https://www.nuget.org/packages/Bluehands.Hypermedia.Client/)
+The Client: [https://www.nuget.org/packages/RESTyard.Client/](https://www.nuget.org/packages/RESTyard.Client/)
 
 ## UI client
 There is a partner project which aims for a generic UI client: [HypermediaUi](https://github.com/MathiasReichardt/HypermediaUi)
@@ -115,7 +118,7 @@ Entities.Add("NiceCar", new HypermediaObjectReference(new HypermediaCar("VW", 2)
 ```
 
 *Note*
-The used function is an convenience extension contained in `WebApi.HypermediaExtensions.Hypermedia.Extensions`
+The used function is an convenience extension contained in `RESTyard.AspNetCore.Hypermedia.Extensions`
 
 #### Option 2: If no instance is available or not necessary
 To allow referencing of HypermediaObjects without the need to instantiate them, for reference purpose only, there are two additional references available.

@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5</TargetFramework>
+    <OutputType>Exe</OutputType>
+
+    <!-- CS1591: missing documentation on public methods -->
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="payload.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="payload.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\RESTyard.Client\RESTyard.Client.csproj" />
+    <ProjectReference Include="..\NewtonsoftJson\NewtonsoftJson.csproj" />
+    <ProjectReference Include="..\SystemTextJson\SystemTextJson.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Hcos\" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<Compile Include="..\..\Shared\DefaultHypermediaRelations.cs" Link="DefaultHypermediaRelations.cs" />
+	</ItemGroup>
+</Project>

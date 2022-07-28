@@ -2,14 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bluehands.Hypermedia.Relations;
-using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.Hypermedia.Actions;
-using WebApi.HypermediaExtensions.Hypermedia.Attributes;
-using WebApi.HypermediaExtensions.Hypermedia.Extensions;
-using WebApi.HypermediaExtensions.Hypermedia.Links;
-using WebApi.HypermediaExtensions.Query;
-using WebApi.HypermediaExtensions.WebApi.RouteResolver;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
+using RESTyard.AspNetCore.Hypermedia.Links;
+using RESTyard.AspNetCore.Query;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
+using RESTyard.AspNetCore.Hypermedia.Extensions;
 
 namespace CarShack.Hypermedia;
 

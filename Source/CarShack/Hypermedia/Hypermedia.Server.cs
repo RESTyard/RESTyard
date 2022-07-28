@@ -4,17 +4,16 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
-using Bluehands.Hypermedia.MediaTypes;
 using CarShack.Domain.Customer;
 using Microsoft.Extensions.DependencyInjection;
-using WebApi.HypermediaExtensions.Exceptions;
-using WebApi.HypermediaExtensions.Hypermedia;
-using WebApi.HypermediaExtensions.Hypermedia.Actions;
-using WebApi.HypermediaExtensions.Hypermedia.Attributes;
-using WebApi.HypermediaExtensions.Hypermedia.Links;
-using WebApi.HypermediaExtensions.Util.Enum;
-using WebApi.HypermediaExtensions.Util.Repository;
-using WebApi.HypermediaExtensions.WebApi.RouteResolver;
+using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
+using RESTyard.AspNetCore.Hypermedia.Links;
+using RESTyard.AspNetCore.Util.Enum;
+using RESTyard.AspNetCore.Util.Repository;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace CarShack.Hypermedia;
 

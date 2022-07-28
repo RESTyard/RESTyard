@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using CarShack.Hypermedia;
 using CarShack.Util.Repository;
-using WebApi.HypermediaExtensions.Exceptions;
-using WebApi.HypermediaExtensions.Util.Repository;
+using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.Util.Repository;
 
 namespace CarShack.Domain.Customer
 {

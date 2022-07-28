@@ -1,6 +1,6 @@
-# Web Api Hypermedia Extensions Demo Project: CarShack
+# RESTyard Demo Project: CarShack
 
-Demonstrates the use of the Web Api Hypermedia Extensions for building a restful API. The server will respond with [Siren](github.com/kevinswiber/siren) as Hypermedia format. It provides a Hypermedia specification which is well suited for DDD (Domain Driven Development) style of APIs.
+Demonstrates the use of the RESTyard for building a restful API. The server will respond with [Siren](github.com/kevinswiber/siren) as Hypermedia format. It provides a Hypermedia specification which is well suited for DDD (Domain Driven Development) style of APIs.
 
 A graph of the API can be found in `/ApiMap/CarShackApiMap.png`. Nodes contain the class of the hypermedia document and edges are labeled with the symbols leading to the next document.
 
