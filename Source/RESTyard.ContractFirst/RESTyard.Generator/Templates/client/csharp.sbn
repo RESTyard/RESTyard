@@ -1,3 +1,4 @@
+
 {{-
     include "../_common.sbn"
 
@@ -11,6 +12,7 @@
 -}}
 #nullable enable
 using RESTyard.Client;
+using RESTyard.Client.Builder;
 using RESTyard.Client.Hypermedia;
 using RESTyard.Client.Hypermedia.Attributes;
 using RESTyard.Client.Hypermedia.Commands;
@@ -23,8 +25,8 @@ namespace {{ Namespace }};
 
 public class DefaultHypermediaClientBuilder
 {
-    public static HypermediaClientBuilder CreateBuilder()
-        => new HypermediaClientBuilder()
+    public static IHypermediaResolverBuilder CreateBuilder()
+        => HypermediaResolverBuilder.CreateBuilder()
             .ConfigureObjectRegister(register =>
             {
 {{- for document in Documents }}
@@ -36,8 +38,7 @@ public class DefaultHypermediaClientBuilder
 {{ for parametersType in TransferParameters ~}}
 public partial record {{ parametersType.typeName }}(
     {{- for property in parametersType.Property }}
-        {{- mapNullableType (!property.mandatory) property.type }} {{ property.name }}
-        {{- if !property.mandatory }} = default{{ end }}
+        {{- mapNullableType (!property.mandatory) property.type }} {{ property.name }}        
         {{- if !for.last }}, {{ end }}
     {{- end }});
 {{ end }}
