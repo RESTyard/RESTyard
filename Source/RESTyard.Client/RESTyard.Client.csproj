@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--General settings-->
+
+    <VersionSuffixLocal></VersionSuffixLocal>
+    <!--When variable is set we are building a prerelease package-->
+    <VersionSuffixLocal Condition="'$(IsPreRelease)'!='' AND  '$(IsPreRelease)'">
+      $(VersionSuffix)
+    </VersionSuffixLocal>
+
+    <Version>2.0.1$(VersionSuffixLocal)</Version>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+
+    <!-- Descriptions and information-->
+    <Titel>Generic Hypermedia Client</Titel>
+    <PackageDescription>Type safe generic REST client which uses the Siren hypermedia format.</PackageDescription>
+    <PackageTags>Client REST Siren Hypermedia</PackageTags>
+    <Authors>Mathias Reichardt; Jasper Marianczuk; Aydin Mir Mohammadi; Waldemar Tomme; Alexander Wiedemann; Marcel Weigel</Authors>
+    <Copyright>Copyright 2001-2022 RESTyard Team</Copyright>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
+    <RepositoryType>Git</RepositoryType>
+    <RepositoryUrl>https://github.com/bluehands/WebApiHypermediaExtensions.git</RepositoryUrl>
+    <RepositoryBranch>$(BranchName)</RepositoryBranch>
+
+    <!-- Package specific settings -->
+    <PackageVersion>$(Version)</PackageVersion>
+    <PackageReleaseNotes>Version $(Version)</PackageReleaseNotes>
+    <IsPackable>true</IsPackable>
+    <Description></Description>
+
+  </PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="..\Shared\DefaultMediaTypes.cs" Link="DefaultMediaTypes.cs" />
+	</ItemGroup>
+</Project>

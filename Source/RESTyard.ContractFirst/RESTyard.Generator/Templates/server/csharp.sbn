@@ -1,0 +1,234 @@
+{{-
+    include "../_common.sbn"
+
+    func mapNullableType
+        if $0
+            ret $1 + "?"
+        else
+            ret $1
+        end
+    end
+-}}
+#nullable enable
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
+using RESTyard.AspNetCore.Hypermedia.Extensions;
+using RESTyard.AspNetCore.Hypermedia.Links;
+using RESTyard.AspNetCore.Query;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
+{{ IncludeContent }}
+
+{{- if isNotEmpty Namespace }}
+
+namespace {{ Namespace }};
+{{- end }}
+
+{{
+    contentTypes = [ "application/vnd.siren+json" ]
+    for document in Documents
+        for link in document.Links
+            if isNotEmpty link.contentType
+                contentTypes = array.add contentTypes link.contentType
+            end
+        end
+    end
+-}}
+public static class MimeTypes
+{
+{{- for contentType in (contentTypes | array.uniq | array.sort) }}
+    public const string {{ contentType | string.handleize | string.replace '-' '_' | string.upcase }} = "{{ contentType }}";
+{{- end }}
+}
+
+{{
+    for parametersType in TransferParameters
+        interfaces = []
+        arguments = []
+        for property in parametersType.Property
+            if property.mandatory
+                arg = property.type + " " + property.name
+                arguments = array.add arguments arg
+            end
+        end
+        for property in parametersType.Property
+            if !property.mandatory
+                arg = (mapNullableType true property.type) + " " + property.name + " = default"
+                arguments = array.add arguments arg
+            end
+        end
+        if parametersType.usedForQueries
+            interfaces = array.add interfaces "IHypermediaQuery"
+        end
+        if parametersType.usedForActions
+            interfaces = array.add interfaces "IHypermediaActionParameter"
+        end
+~}}
+public partial record {{ parametersType.typeName }}(
+    {{- for arg in arguments }}
+        {{- arg }}
+        {{- if !for.last }}, {{ end }}
+    {{- end }}){{ for interface in interfaces }}{{ if for.first }} : {{ end }}{{ interface }}{{ if !for.last }}, {{ end }}{{ end }};
+{{ end }}
+{{-
+    for document in Documents
+}}
+
+{{- typeName = document.name + "Hto" }}
+[HypermediaObject(Title = "{{ document.title }}", Classes = new string[]{ {{ for class in document.Classifications }}"{{ class.class }}"{{ if !for.last }}, {{ end }}{{ end }} })]
+public partial class {{ typeName }} : {{ iff document.isQueryResult "HypermediaQueryResult" "HypermediaObject" }}
+{
+{{- keyProperty = null
+    for property in document.Properties }}
+{{ if property.isKey
+    keyProperty = property ~}}
+    [Key("{{ property.name | uncapitalize }}")]
+{{ end ~}}
+{{ if property.hidden ~}}
+    [FormatterIgnoreHypermediaProperty]
+{{ end ~}}
+    public {{ mapNullableType (!property.mandatory) property.type }} {{ property.name }} { get; set; }
+{{ end }}
+{{- for operation in document.Operations }}
+    [HypermediaAction(Name = "{{ operation.name }}", Title = "{{operation.title}}")]
+    public {{ operation.name }}Op {{ operation.name }} { get; init; }
+{{ end }}
+{{-
+    arguments = []
+    for property in document.Properties
+        arg = (mapNullableType (!property.mandatory) property.type) + " " + (property.name | uncapitalize)
+        arguments = array.add arguments arg
+    end
+    for operation in document.Operations
+        arg = operation.name + "Op " + (operation.name | uncapitalize)
+        arguments = array.add arguments arg
+    end
+    for entity in document.Entities
+        arg = "IEnumerable<HypermediaObjectReferenceBase> " + (entity.collectionName | uncapitalize)
+        if isNotEmpty entity.document
+            arg = "IEnumerable<" + entity.document + "Hto> " + (entity.collectionName | uncapitalize)
+        end
+        arguments = array.add arguments arg
+    end
+    for link in document.Links
+        if isNotEmpty link.document
+            if !link.mandatory
+                arg = "bool has" + link.rel
+                arguments = array.add arguments arg
+            end
+            if isNotEmpty link.query
+                arg = link.query + " " + (link.rel | uncapitalize) + "Query"
+                arguments = array.add arguments arg
+            end
+            arg = "object? " + (link.rel | uncapitalize) + "Key"
+            arguments = array.add arguments arg
+        else
+            arg = (mapNullableType (!link.mandatory) "HypermediaObjectReferenceBase") + " " + (link.rel | uncapitalize)
+            arguments = array.add arguments arg
+        end
+    end
+    if document.isQueryResult
+        arg = "IHypermediaQuery query"
+        arguments = array.add arguments arg
+    end
+}}
+    public {{ typeName }}(
+{{- for argument in arguments }}
+        {{ argument }}{{ if !for.last }},{{ end }}
+{{- end }}
+    ) : base({{ if document.isQueryResult }}query{{ else }}hasSelfLink: {{ document.hasSelfLink }}{{ end }})
+    {
+{{- for property in document.Properties }}
+        this.{{ property.name }} = {{ property.name | uncapitalize }};
+{{- end }}
+{{- for operation in document.Operations }}
+        this.{{ operation.name }} = {{ operation.name | uncapitalize }};
+{{- end }}
+{{-
+    for entity in document.Entities
+}}
+        Entities.AddRange("{{ entity.collectionName }}", {{ entity.collectionName | uncapitalize }});
+{{-
+    end
+}}
+{{-
+    for link in document.Links
+        linkGuard = "has" + link.rel
+        linkValue = "new HypermediaObject" + (iff (isNotEmpty link.query) "Query" "Key") + "Reference(typeof(" + link.document + "Hto), " + (iff (isNotEmpty link.query) ((link.rel | uncapitalize) + "Query, ") "") + (link.rel | uncapitalize) + "Key)"
+        if isEmpty link.document
+            linkGuard = (link.rel | uncapitalize) + " is not null"
+            linkValue = link.rel | uncapitalize
+        end
+        if link.mandatory
+}}
+        Links.Add("{{ link.rel }}", {{ linkValue }});
+{{-
+        else
+}}
+        if ({{ linkGuard }})
+        {
+            Links.Add("{{ link.rel }}", {{ linkValue }});
+        }
+{{-
+        end
+    end
+}}
+    }
+{{
+        for operation in document.Operations
+            typeParameters = []
+            actionType = ""
+            if isNotEmpty operation.parameterTypeName
+                typeParameters = array.add typeParameters operation.parameterTypeName
+            end
+            if isEmpty operation.resultDocument
+                actionType = "HypermediaAction"
+            else
+                actionType = "HypermediaFunction"
+                typeParameters = array.add typeParameters (operation.resultDocument + "Hto")
+            end
+            for type in typeParameters
+                if for.first
+                    actionType += "<"
+                end
+                actionType += type
+                if for.last
+                    actionType += ">"
+                else
+                    actionType += ", "
+                end
+            end
+}}
+    public partial class {{ operation.name }}Op : {{ actionType }}
+    {
+{{-
+            canExecuteArg = "Func<bool> canExecute" + operation.name
+
+            executeArg = ""
+            if isEmpty operation.resultDocument
+                executeArg = "Action" + (mapString operation.parameterTypeName "<%s>")
+            else
+                executeArg = "Func<" + (mapString operation.parameterTypeName "%s, ") + operation.resultDocument + "Hto>"
+            end
+            executeArg += " execute" + operation.name
+
+            parameterArg = ""
+            parameterValue = ""
+            if isNotEmpty operation.parameterTypeName
+                parameterArg += ", " + operation.parameterTypeName + "? prefilledValues = default"
+                parameterValue += ", prefilledValues";
+            end
+}}
+        public {{ operation.name }}Op({{ canExecuteArg }}, {{ executeArg }}{{ parameterArg }})
+            : base(canExecute{{ operation.name }}, execute{{ operation.name }}{{ parameterValue }}) { }
+    }
+{{
+        end
+-}}
+}
+{{
+    end
+-}}

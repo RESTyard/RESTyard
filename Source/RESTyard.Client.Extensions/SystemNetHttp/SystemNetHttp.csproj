@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- General settings -->
+    
+    <VersionSuffixLocal></VersionSuffixLocal>
+    <!--When variable is set we are building a prerelease package-->
+    <VersionSuffixLocal Condition="'$(IsPreRelease)'!='' AND  '$(IsPreRelease)'">
+      $(VersionSuffix)
+    </VersionSuffixLocal>
+    
+    <Version>2.0.1$(VersionSuffixLocal)</Version>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    
+    <!-- Descriptions and information -->
+    <Title>System.Net.Http implementation for RESTyard.Client</Title>
+    <PackageDescription>Implementations of IHypermediaResolver for RESTyard.Client using System.Net.Http</PackageDescription>
+    <PackageTags>Client REST Siren Hypermedia Extensions</PackageTags>
+    <Authors>Jasper Marianczuk; Aydin Mir Mohammadi; Waldemar Tomme; Alexander Wiedemann; Marcel Weigel</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
+    <RepositoryType>Git</RepositoryType>
+    <RepositoryUrl>https://github.com/bluehands/WebApiHypermediaExtensions.git</RepositoryUrl>
+    <RepositoryBranch>$(BranchName)</RepositoryBranch>
+    
+    <!-- Package specific settings -->
+    <PackageId>RESTyard.Client.Extensions.SystemNetHttp</PackageId>
+    <PackageVersion>$(Version)</PackageVersion>
+    <PackageReleaseNotes></PackageReleaseNotes>
+    <IsPackable>true</IsPackable>
+    <RootNamespace>RESTyard.Client.Extensions.SystemNetHttp</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\RESTyard.Client\RESTyard.Client.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,8 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
-using WebApi.HypermediaExtensions.Util.Enum;
-using WebApi.HypermediaExtensions.Util.Repository;
+using RESTyard.AspNetCore.Util.Repository;
 
 namespace CarShack.Domain.Customer
 {

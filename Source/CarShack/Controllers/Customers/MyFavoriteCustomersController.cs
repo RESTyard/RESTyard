@@ -2,8 +2,6 @@ using System.Threading.Tasks;
 using CarShack.Domain.Customer;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.HypermediaExtensions.JsonSchema;
-using WebApi.HypermediaExtensions.WebApi.AttributedRoutes;
 
 namespace CarShack.Controllers.Customers
 {

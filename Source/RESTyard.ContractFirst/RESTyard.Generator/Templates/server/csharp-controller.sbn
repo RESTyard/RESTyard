@@ -1,0 +1,64 @@
+{{-
+    include "../_common.sbn"
+
+    func mapNullableType
+        if $0
+            ret $1 + "?"
+        else
+            ret $1
+        end
+    end
+
+    func renderMethod
+}}
+    public Task<IActionResult> {{ $0 }}Async({{ iff (isNotEmpty $1) ("[HypermediaActionParameterFromBody]" + $1 + " " + ($1 | object.default "" | uncapitalize)) "" }})
+    {
+        throw new NotImplementedException();
+    }
+
+{{
+    end
+
+    func renderOperationAttribute
+        operation = $0
+        attribute = "["
+        attribute += "Http" + operation.method + "HypermediaAction("
+        attribute += ("<stub>" | string.literal) + ", typeof(" + document.name + "Hto." + operation.name + "Op))]"
+}}    {{ attribute
+    end
+-}}
+#nullable enable
+using Microsoft.AspNetCore.Mvc;
+using RESTyard.AspNetCore.WebApi;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+
+{{-
+    if isNotEmpty Namespace
+}}
+
+namespace {{ Namespace }};
+{{-
+    end
+
+    for document in Documents
+}}
+
+[Route("api/[controller]")]
+public class {{ document.name }}Controller : ControllerBase
+{
+{{-
+        if document.hasSelfLink
+}}
+    [HttpGetHypermediaObject("<stub>", typeof({{ document.name }}Hto))]{{
+            renderMethod "Get"
+        end
+
+        for operation in document.Operations
+            renderOperationAttribute operation
+            renderMethod operation.name operation.parameterTypeName
+        end
+-}}
+}
+{{-
+    end
+}}

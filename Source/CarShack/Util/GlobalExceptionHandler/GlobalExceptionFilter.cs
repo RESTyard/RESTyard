@@ -3,8 +3,8 @@ using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
-using WebApi.HypermediaExtensions.ErrorHandling;
-using WebApi.HypermediaExtensions.Exceptions;
+using RESTyard.AspNetCore.ErrorHandling;
+using RESTyard.AspNetCore.Exceptions;
 
 namespace CarShack.Util.GlobalExceptionHandler
 {

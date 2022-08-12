@@ -1,4 +1,4 @@
-﻿using WebApi.HypermediaExtensions.ErrorHandling;
+﻿using RESTyard.AspNetCore.ErrorHandling;
 
 namespace CarShack.Util
 {
