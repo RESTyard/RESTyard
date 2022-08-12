@@ -6,9 +6,9 @@
         {
             ProblemString = @"{
     ""Title"": ""SomeProblem"",
-    ""ProblemType"": ""UnitTestProblem"",
+    ""Type"": ""UnitTestProblem"",
     ""Detail"": ""This Unit Test was unexpectedly green"",
-    ""StatusCode"": 42
+    ""Status"": 42
 }";
         }
     }
