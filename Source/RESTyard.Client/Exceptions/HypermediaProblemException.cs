@@ -15,7 +15,7 @@ namespace RESTyard.Client.Exceptions
         }
 
         public HypermediaProblemException(ProblemDescription problemDescription, Exception inner = null)
-            : this(problemDescription.Title, problemDescription.ProblemType, problemDescription.Detail, problemDescription.StatusCode, inner)
+            : this(problemDescription.Title, problemDescription.Type, problemDescription.Detail, problemDescription.Status, inner)
         {
         }
 

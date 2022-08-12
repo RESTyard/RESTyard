@@ -12,7 +12,7 @@ namespace RESTyard.Client.Exceptions
         /// <summary>
         /// An absolute URI that identifies the problem type. When dereferenced, it SHOULD provide human-readable documentation for the problem type(e.g., using HTML).
         /// </summary>
-        public string ProblemType { get; set; }
+        public string Type { get; set; }
 
         /// <summary>
         /// An human readable explanation specific to this occurrence of the problem.
@@ -22,6 +22,11 @@ namespace RESTyard.Client.Exceptions
         /// <summary>
         /// The HTTP status code set by the origin server for this occurrence of the problem.
         /// </summary>
-        public int StatusCode { get; set; }
+        public int Status { get; set; }
+
+        /// <summary>
+        /// The 
+        /// </summary>
+        public string TraceId { get; set; }
     }
 }
