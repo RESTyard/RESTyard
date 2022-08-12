@@ -16,9 +16,9 @@ namespace Extensions.Test.ProblemStringReaderTests
             var canRead = ProblemReader.TryReadProblemString(ProblemString, out var description);
             canRead.Should().BeTrue();
             description.Title.Should().Be("SomeProblem");
-            description.ProblemType.Should().Be("UnitTestProblem");
+            description.Type.Should().Be("UnitTestProblem");
             description.Detail.Should().Be("This Unit Test was unexpectedly green");
-            description.StatusCode.Should().Be(42);
+            description.Status.Should().Be(42);
         }
     }
 }
