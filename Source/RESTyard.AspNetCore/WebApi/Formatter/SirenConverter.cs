@@ -268,7 +268,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 {
                     jLink.Add("type", avaialbleMediaTypes);
                 }
-
+                // todo also add classes
                 jLinks.Add(jLink);
             }
 

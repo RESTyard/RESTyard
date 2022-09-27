@@ -57,7 +57,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                     throw new HypermediaRouteException("Can not get instance for ExternalReference.");
                 }
 
-                // we assume get here since external references will be links only for now
+                // we assume GET here since external references will be links only for now
                 return new ResolvedRoute(externalReferenceObject.ExternalUri.ToString(), HttpMethod.GET, externalReferenceObject.AvailableMediaTypes);
             }     
             
@@ -75,9 +75,11 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                 return resolvedInternalRoute;
             }
 
-            if (reference is HypermediaExternalObjectReference)
+            if (reference is HypermediaExternalObjectReference hypermediaExternalObjectReference)
             {
-                throw new HypermediaRouteException("Can not get instance for HypermediaExternalObjectReference.");
+                // we assume GET here since will it be links or embedded entities only for now
+                // for links ExternalReference is simpler and offers MediaTypes
+                return new ResolvedRoute(hypermediaExternalObjectReference.Uri.ToString(), HttpMethod.GET);
             }
 
             var routeKeys = this.routeKeyFactory.GetHypermediaRouteKeys(reference);
