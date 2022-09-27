@@ -484,6 +484,10 @@ Tested for:
 
 ## Release Notes
 
+### RESTyard v2.0.XX
+
+- Fixed HypermediaExternalObjectReference could not be used as Link, this is provided for convenience. A link should be build using a ExternalReference instance.
+
 ### RESTyard v2.0.0
 - Rebrand all projects to common name "RESTyard".
 
