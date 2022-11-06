@@ -8,8 +8,7 @@ Of course there might be some edge cases or flaws. Comments, suggestions, remark
 
 For a first feel there is a demo project called [CarShack](https://github.com/bluehands/WebApiHypermediaExtensions/tree/master/Source/CarShack) which shows a great portion of the Extensions in use. It also shows how the routes were intended to be designed, although this is not enforced.
 
-To develop C# client applications there is a generic REST client. It is in an early stage at the moment: [https://github.com/bluehands/WebApiHypermediaExtensions/tree/master/Source/HypermediaClient](https://github.com/bluehands/WebApiHypermediaExtensions/tree/master/Source/HypermediaClient)
-
+To develop C# client applications there is a generic REST client. 
 ## On nuget.org
 The Extensions: [https://www.nuget.org/packages/RESTyard.WebApi.Extensions](https://www.nuget.org/packages/RESTyard.WebApi.Extensions)
 
