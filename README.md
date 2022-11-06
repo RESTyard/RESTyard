@@ -1,7 +1,5 @@
 # RESTyard (formerly know as Web Api Hypermedia Extensions)
 
-**NOTE: This repository is not maintained anymore. Moved to [https://github.com/orgs/RESTyard/repositories](https://github.com/orgs/RESTyard/repositories)**
-
 This project consists of a set of Extensions for Web Api 2 Core projects. The purpose is to
 assist in building restful Web services using the [Siren Hypermedia Format](https://github.com/kevinswiber/siren) with much less coding.
 Using the Extensions it is possible to return HypermediaObjects as C# classes. Routes for HypermediaObjects and Actions are built using extended attribute routing.
