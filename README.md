@@ -10,7 +10,7 @@ For a first feel there is a demo project called [CarShack](https://github.com/bl
 
 To develop C# client applications there is a generic REST client. 
 ## On nuget.org
-The Extensions: [https://www.nuget.org/packages/RESTyard.WebApi.Extensions](https://www.nuget.org/packages/RESTyard.WebApi.Extensions)
+The Extensions: [https://www.nuget.org/packages/RESTyard.AspNetCore](https://www.nuget.org/packages/RESTyard.AspNetCore)
 
 The Client: [https://www.nuget.org/packages/RESTyard.Client/](https://www.nuget.org/packages/RESTyard.Client/)
 
