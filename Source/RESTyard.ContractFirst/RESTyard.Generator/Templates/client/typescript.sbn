@@ -105,6 +105,8 @@ export class {{ document.name }}Hco extends HypermediaObject {
 {{-     for arg in arguments }}
         public readonly {{ arg }}{{ if !for.last }},{{ end }}
 {{-     end }}
-    ) { }
+    ) {
+        super();
+    }
 }
 {{ end }}
