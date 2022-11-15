@@ -28,7 +28,4 @@
     <Folder Include="ProblemStringReaderTests\" />
   </ItemGroup>
 
-	<ItemGroup>
-		<Compile Include="..\..\Shared\DefaultHypermediaRelations.cs" Link="DefaultHypermediaRelations.cs" />
-	</ItemGroup>
 </Project>

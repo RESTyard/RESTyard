@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RESTyard.Relations
+﻿namespace RESTyard.Util.Relations
 {
     /// <summary>
     /// Collection of basic relations commonly used.

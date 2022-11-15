@@ -5,7 +5,8 @@ using RESTyard.AspNetCore.ErrorHandling;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Query;
-using RESTyard.MediaTypes;
+using RESTyard.Util.MediaTypes;
+
 
 namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
 {

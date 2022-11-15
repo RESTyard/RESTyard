@@ -31,8 +31,4 @@
   <ItemGroup>
     <Folder Include="Hcos\" />
   </ItemGroup>
-
-	<ItemGroup>
-		<Compile Include="..\..\Shared\DefaultHypermediaRelations.cs" Link="DefaultHypermediaRelations.cs" />
-	</ItemGroup>
 </Project>

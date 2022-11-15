@@ -54,7 +54,9 @@ namespace RESTyard.Client.Test
         public async Task CallAction_CustomerMove()
         {
             var apiRoot = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint);
-            var customersAll = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
+            var customersAll = await apiRoot
+                .NavigateAsync(l => l.Customers)
+                .NavigateAsync(l => l.All);
 
             var customer = customersAll.ResultObject.Customers.First();
 

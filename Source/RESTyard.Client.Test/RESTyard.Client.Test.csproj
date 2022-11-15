@@ -22,13 +22,10 @@
     <ProjectReference Include="..\RESTyard.Client.Extensions\SystemNetHttp\SystemNetHttp.csproj" PrivateAssets="All" />
     <ProjectReference Include="..\RESTyard.Client.Extensions\SystemTextJson\SystemTextJson.csproj" PrivateAssets="All" />
     <ProjectReference Include="..\RESTyard.Client\RESTyard.Client.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\RESTyard.Util\RESTyard.Util.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
-
-	<ItemGroup>
-		<Compile Include="..\Shared\DefaultHypermediaRelations.cs" Link="DefaultHypermediaRelations.cs" />
-	</ItemGroup>
 </Project>

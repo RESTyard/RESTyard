@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RESTyard.MediaTypes
+﻿namespace RESTyard.Util.MediaTypes
 {
     public static class DefaultMediaTypes
     {
