@@ -44,8 +44,6 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             var routeNameRegisteredActionParameter = typeof(RegisteredActionParameter).Name + "_Route";
             RouteRegister.AddParameterTypeRoute(typeof(RegisteredActionParameter), routeNameRegisteredActionParameter, HttpMethod.GET);
 
-
-
             var ho = new ActionsHypermediaObject();
 
             var siren = SirenConverter.ConvertToJson(ho);
@@ -56,12 +54,25 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertHasOnlySelfLink(siren, routeName);
 
             var actionsArray = (JArray) siren["actions"];
-            Assert.AreEqual(3, actionsArray.Count);
+            Assert.AreEqual(5, actionsArray.Count);
             AssertActionBasic((JObject)siren["actions"][0], "RenamedAction", "POST", routeNameHypermediaActionNoArgument, 4,  "A Title");
             AssertActionBasic((JObject)siren["actions"][1], "ActionNoArgument", "POST", routeNameHypermediaActionNoArgument, 3);
 
             AssertActionBasic((JObject)siren["actions"][2], "ActionWithArgument", "POST", routeNameHypermediaActionWithArgument, 5);
-            AssertActionArgument((JObject) siren["actions"][2], customMediaType, "ActionParameter", "ActionParameter");
+            AssertActionArgument((JObject) siren["actions"][2], customMediaType,  nameof(ActionParameter), nameof(ActionParameter));
+            AssertDefaultValues((JObject) siren["actions"][2], ActionsHypermediaObject.ActionWithArgumentDefaultValues);
+            
+            AssertActionBasic((JObject)siren["actions"][3], "ExternalActionNoArgument", "POST", ActionsHypermediaObject.ExternalUri.ToString(), 5);
+            AssertActionArgument((JObject) siren["actions"][3], customMediaType,  nameof(ActionParameter), nameof(ActionParameter));
+            
+            AssertActionBasic((JObject)siren["actions"][4], "ExternalActionWithArgument", "DELETE", ActionsHypermediaObject.ExternalUri.ToString(), 5);
+            AssertActionArgument((JObject) siren["actions"][4], customMediaType, nameof(ActionParameter),  nameof(ActionParameter));
+            AssertDefaultValues((JObject) siren["actions"][4], ActionsHypermediaObject.ExternalActionWithArgumentDefaultValues);
+        }
+
+        private void AssertDefaultValues(JObject action, ActionParameter expecteddefaultValues)
+        {
+            Assert.Fail("Check default values");
         }
 
         private void AssertActionArgument(JObject action, string contentType, string actionParameterName, string actionParameterClass, bool classIsRoute = false)
@@ -116,33 +127,26 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             public HypermediaActionNoArgument ActionNoArgument { get; private set; }
 
             public HypermediaActionWithArgument ActionWithArgument { get; private set; }
+            
+            public ExternalActionNoArgument ExternalActionNoArgument { get; private set; }
+            
+            public ExternalActionWithArgument ExternalActionWithArgument { get; private set; }
 
 
-            [FormatterIgnoreHypermediaProperty]
-            public int ActionToRenameCallCount { get; set; }
+            public static readonly Uri  ExternalUri = new Uri("http://example.com");
 
-            [FormatterIgnoreHypermediaProperty]
-            public int ActionToIgnoreCallCount { get; set; }
-
-            [FormatterIgnoreHypermediaProperty]
-            public int ActionNotExecutableCallCount { get; set; }
-
-            [FormatterIgnoreHypermediaProperty]
-            public int ActionNoArgumentCallCount { get; set; }
-
-            [FormatterIgnoreHypermediaProperty]
-            public int ActionWithArgumentCallCount { get; set; }
-
-            [FormatterIgnoreHypermediaProperty]
-            public int ActionWithTypedArgumentCallCount { get; set; }
-
+            public static readonly ActionParameter ActionWithArgumentDefaultValues = new ActionParameter() { AInt = 3 };
+            public static readonly ActionParameter  ExternalActionWithArgumentDefaultValues = new ActionParameter{AInt = 4};
+            
             public ActionsHypermediaObject()
             {
                 ActionToRename = new HypermediaActionNoArgument(() => true);
                 ActionToIgnore = new HypermediaActionNoArgument(() => true);
                 ActionNotExecutable = new HypermediaActionNotExecutable(() => false);
                 ActionNoArgument = new HypermediaActionNoArgument(() => true);
-                ActionWithArgument = new HypermediaActionWithArgument(() => true);
+                ActionWithArgument = new HypermediaActionWithArgument(() => true, ActionWithArgumentDefaultValues);
+                ExternalActionNoArgument = new ExternalActionNoArgument(ExternalUri, HttpMethod.POST, DefaultMediaTypes.ApplicationJson);
+                ExternalActionWithArgument = new ExternalActionWithArgument(ExternalUri, HttpMethod.DELETE, DefaultMediaTypes.ApplicationJson, ExternalActionWithArgumentDefaultValues);
             }
         }
     }
@@ -173,7 +177,33 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
     public class HypermediaActionWithArgument : HypermediaAction<ActionParameter>
     {
-        public HypermediaActionWithArgument(Func<bool> canExecute) : base(canExecute)
+        public HypermediaActionWithArgument(Func<bool> canExecute, ActionParameter defaultValues) : base(canExecute, defaultValues)
+        {
+        }
+    }
+    
+    public class ExternalActionNoArgument : HypermediaExternalAction
+    {
+        public ExternalActionNoArgument(Uri externalUri,
+            HttpMethod httpMethod,
+            string mediaType) : base(() => true,
+            externalUri,
+            httpMethod,
+            mediaType)
+        {
+        }
+    }
+    
+    public class ExternalActionWithArgument : HypermediaExternalAction<ActionParameter>
+    {
+        public ExternalActionWithArgument(Uri externalUri,
+            HttpMethod httpMethod,
+            string mediaType,
+            ActionParameter defaultValues = null) : base(() => true,
+            externalUri,
+            httpMethod,
+            mediaType,
+            defaultValues)
         {
         }
     }
@@ -181,8 +211,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     public class ActionParameter : IHypermediaActionParameter
     {
         public int AInt { get; set; }
-    }
-
+    }  
+    
     public class RegisteredActionParameter : IHypermediaActionParameter
     {
         public int AInt { get; set; }
