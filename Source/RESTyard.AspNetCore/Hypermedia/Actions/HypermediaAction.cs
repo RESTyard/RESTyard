@@ -16,17 +16,17 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
 
         public HypermediaAction(Func<bool> canExecute, TParameter prefilledValues = null) : base(canExecute)
         {
-            this.PrefilledValues = prefilledValues;
+            PrefilledValues = prefilledValues;
         }
 
         public HypermediaAction(TParameter prefilledValues = null) : base(()=>true)
         {
-            this.PrefilledValues = prefilledValues;
+            PrefilledValues = prefilledValues;
         }
 
         public override object GetPrefilledParameter()
         {
-            return this.PrefilledValues;
+            return PrefilledValues;
         }
 
         public override Type ParameterType()
