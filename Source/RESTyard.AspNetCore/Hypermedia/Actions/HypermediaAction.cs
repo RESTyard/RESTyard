@@ -9,37 +9,19 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
     /// <typeparam name="TParameter">Parameter object passed to the Action.</typeparam>
     public class HypermediaAction<TParameter> : HypermediaActionBase where TParameter : class, IHypermediaActionParameter
     {
-        private readonly Action<TParameter> command;
-
         /// <summary>
         /// The action may provide pre filled values which are passed to the client so action parameters can be filled with provided values.
         /// </summary>
         public TParameter PrefilledValues { protected set;  get; }
 
-        public HypermediaAction(Func<bool> canExecute, Action<TParameter> command = null, TParameter prefilledValues = null) : base(canExecute)
+        public HypermediaAction(Func<bool> canExecute, TParameter prefilledValues = null) : base(canExecute)
         {
-            this.command = command;
             this.PrefilledValues = prefilledValues;
         }
 
         public HypermediaAction(TParameter prefilledValues = null) : base(()=>true)
         {
             this.PrefilledValues = prefilledValues;
-        }
-
-        public void Execute(TParameter parameter)
-        {
-            if (!CanExecute())
-            {
-                throw new CanNotExecuteActionException("Can not execute.");
-            }
-
-            if (command == null)
-            {
-                throw new NoActionSetException($"No Action set: '{GetType()}'");
-            }
-
-            command(parameter);
         }
 
         public override object GetPrefilledParameter()
@@ -58,26 +40,8 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
     /// </summary>
     public abstract class HypermediaAction : HypermediaActionBase
     {
-        private readonly Action command;
-
-        protected HypermediaAction(Func<bool> canExecute, Action command) : base(canExecute)
+        protected HypermediaAction(Func<bool> canExecute) : base(canExecute)
         {
-            this.command = command;
-        }
-
-        public void Execute()
-        {
-            if (!CanExecute())
-            {
-                throw new CanNotExecuteActionException("Can not execute.");
-            }
-
-            if (command == null)
-            {
-                throw new NoActionSetException($"No Action set: '{GetType()}'");
-            }
-
-            command();
         }
 
         public override object GetPrefilledParameter()

@@ -41,12 +41,6 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             var customMediaType = "custome/mediatype";
             RouteRegister.AddActionRoute(typeof(HypermediaActionWithArgument), routeNameHypermediaActionWithArgument, HttpMethod.POST, customMediaType);
 
-            var routeNameHypermediaActionWithTypedArgument = typeof(HypermediaFunctionWithTypedArgument).Name + "_Route";
-            RouteRegister.AddActionRoute(typeof(HypermediaFunctionWithTypedArgument), routeNameHypermediaActionWithTypedArgument, HttpMethod.POST);
-
-            var routeNameHypermediaActionFuncNoArgument = typeof(HypermediaFunctionNoArgument).Name + "_Route";
-            RouteRegister.AddActionRoute(typeof(HypermediaFunctionNoArgument), routeNameHypermediaActionFuncNoArgument, HttpMethod.POST);
-
             var routeNameRegisteredActionParameter = typeof(RegisteredActionParameter).Name + "_Route";
             RouteRegister.AddParameterTypeRoute(typeof(RegisteredActionParameter), routeNameRegisteredActionParameter, HttpMethod.GET);
 
@@ -62,17 +56,12 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertHasOnlySelfLink(siren, routeName);
 
             var actionsArray = (JArray) siren["actions"];
-            Assert.AreEqual(actionsArray.Count, 5);
+            Assert.AreEqual(3, actionsArray.Count);
             AssertActionBasic((JObject)siren["actions"][0], "RenamedAction", "POST", routeNameHypermediaActionNoArgument, 4,  "A Title");
             AssertActionBasic((JObject)siren["actions"][1], "ActionNoArgument", "POST", routeNameHypermediaActionNoArgument, 3);
 
             AssertActionBasic((JObject)siren["actions"][2], "ActionWithArgument", "POST", routeNameHypermediaActionWithArgument, 5);
             AssertActionArgument((JObject) siren["actions"][2], customMediaType, "ActionParameter", "ActionParameter");
-
-            AssertActionBasic((JObject)siren["actions"][3], "FunctionWithTypedArgument", "POST", routeNameHypermediaActionWithTypedArgument, 5);
-            AssertActionArgument((JObject)siren["actions"][3], DefaultMediaTypes.ApplicationJson, "RegisteredActionParameter", routeNameRegisteredActionParameter, true);
-
-            AssertActionBasic((JObject)siren["actions"][4], "FunctionNoArgument", "POST", routeNameHypermediaActionFuncNoArgument, 3);
         }
 
         private void AssertActionArgument(JObject action, string contentType, string actionParameterName, string actionParameterClass, bool classIsRoute = false)
@@ -128,9 +117,6 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
             public HypermediaActionWithArgument ActionWithArgument { get; private set; }
 
-            public HypermediaFunctionWithTypedArgument FunctionWithTypedArgument { get; private set; }
-
-            public HypermediaFunctionNoArgument FunctionNoArgument { get; private set; }
 
             [FormatterIgnoreHypermediaProperty]
             public int ActionToRenameCallCount { get; set; }
@@ -152,25 +138,18 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
             public ActionsHypermediaObject()
             {
-                ActionToRename = new HypermediaActionNoArgument(() => true, () => ActionToRenameCallCount++);
-                ActionToIgnore = new HypermediaActionNoArgument(() => true, () => ActionToIgnoreCallCount++);
-                ActionNotExecutable = new HypermediaActionNotExecutable(() => false, () => ActionNotExecutableCallCount++);
-                ActionNoArgument = new HypermediaActionNoArgument(() => true, () => ActionNoArgumentCallCount++);
-                ActionWithArgument = new HypermediaActionWithArgument(() => true, argument => ActionWithArgumentCallCount++);
-                FunctionWithTypedArgument = new HypermediaFunctionWithTypedArgument(() => true, argument =>
-                {
-                    ActionWithTypedArgumentCallCount++;
-                    return true;
-                });
-
-                FunctionNoArgument = new HypermediaFunctionNoArgument(() => true);
+                ActionToRename = new HypermediaActionNoArgument(() => true);
+                ActionToIgnore = new HypermediaActionNoArgument(() => true);
+                ActionNotExecutable = new HypermediaActionNotExecutable(() => false);
+                ActionNoArgument = new HypermediaActionNoArgument(() => true);
+                ActionWithArgument = new HypermediaActionWithArgument(() => true);
             }
         }
     }
 
     public class HypermediaActionNotExecutable : HypermediaAction
     {
-        public HypermediaActionNotExecutable(Func<bool> canExecute, Action command) : base(canExecute, command)
+        public HypermediaActionNotExecutable(Func<bool> canExecute) : base(canExecute)
         {
         }
 
@@ -182,7 +161,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
     public class HypermediaActionNoArgument : HypermediaAction
     {
-        public HypermediaActionNoArgument(Func<bool> canExecute, Action command) : base(canExecute, command)
+        public HypermediaActionNoArgument(Func<bool> canExecute) : base(canExecute)
         {
         }
 
@@ -194,21 +173,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
     public class HypermediaActionWithArgument : HypermediaAction<ActionParameter>
     {
-        public HypermediaActionWithArgument(Func<bool> canExecute, Action<ActionParameter> command = null) : base(canExecute, command)
-        {
-        }
-    }
-
-    public class HypermediaFunctionNoArgument : HypermediaFunction<bool>
-    {
-        public HypermediaFunctionNoArgument(Func<bool> canExecute, Func<bool> command = null) : base(canExecute, command)
-        {
-        }
-    }
-
-    public class HypermediaFunctionWithTypedArgument : HypermediaFunction<RegisteredActionParameter, bool>
-    {
-        public HypermediaFunctionWithTypedArgument(Func<bool> canExecute, Func<RegisteredActionParameter, bool> command = null) : base(canExecute, command)
+        public HypermediaActionWithArgument(Func<bool> canExecute) : base(canExecute)
         {
         }
     }
