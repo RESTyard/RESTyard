@@ -45,7 +45,6 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
         ///     This type will be used to create a n instance of the producer and generate the key object used in a UrlHelper to
         ///     determine the final URL.
         /// </param>
-        /// <param name="acceptedMediaType">The media type which is acceptable for this action.</param>
         public HttpMethodHypermediaAction(
             IEnumerable<string> httpMethods,
             string template,
