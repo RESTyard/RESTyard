@@ -42,11 +42,6 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
             command(parameter);
         }
 
-        public override bool HasParameter()
-        {
-            return true;
-        }
-
         public override object GetPrefilledParameter()
         {
             return this.PrefilledValues;
@@ -83,11 +78,6 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
             }
 
             command();
-        }
-
-        public override bool HasParameter()
-        {
-            return false;
         }
 
         public override object GetPrefilledParameter()

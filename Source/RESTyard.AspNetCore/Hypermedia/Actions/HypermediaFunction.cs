@@ -51,11 +51,6 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
             return command(parameter);
         }
 
-        public override bool HasParameter()
-        {
-            return true;
-        }
-
         public override object GetPrefilledParameter()
         {
             return this.PrefilledValues;
@@ -68,7 +63,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
     }
 
     /// <summary>
-    /// A HypemediaFunction which has no parameters.
+    /// A HypermediaFunction which has no parameters.
     /// </summary>
     /// <typeparam name="TReturn">The return type</typeparam>
     public class HypermediaFunction<TReturn> : HypermediaActionBase
@@ -93,11 +88,6 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
             }
 
             return command();
-        }
-
-        public override bool HasParameter()
-        {
-            return false;
         }
 
         public override object GetPrefilledParameter()
