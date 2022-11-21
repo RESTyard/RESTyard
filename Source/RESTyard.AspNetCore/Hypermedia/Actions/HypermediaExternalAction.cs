@@ -18,18 +18,18 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
         public HypermediaExternalAction(Func<bool> canExecute,
             Uri externalUri,
             HttpMethod httpMethod,
-            string mediaType = DefaultMediaTypes.ApplicationJson,
+            string acceptedMediaType = DefaultMediaTypes.ApplicationJson,
             TParameter prefilledValues = null) 
-            : base(canExecute, externalUri, httpMethod, mediaType)
+            : base(canExecute, externalUri, httpMethod, acceptedMediaType)
         {
             PrefilledValues = prefilledValues;
         }
 
         public HypermediaExternalAction(Uri externalUri,
             HttpMethod httpMethod,
-            string mediaType = DefaultMediaTypes.ApplicationJson,
+            string acceptedMediaType = DefaultMediaTypes.ApplicationJson,
             TParameter prefilledValues = null)
-            : base(() => true, externalUri, httpMethod, mediaType)
+            : base(() => true, externalUri, httpMethod, acceptedMediaType)
         {
             PrefilledValues = prefilledValues;
         }
@@ -52,14 +52,12 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
     {
         protected HypermediaExternalAction(Func<bool> canExecute,
             Uri externalUri,
-            HttpMethod httpMethod,
-            string mediaType = DefaultMediaTypes.ApplicationJson) 
-            : base(canExecute, externalUri, httpMethod, mediaType) { }
+            HttpMethod httpMethod) 
+            : base(canExecute, externalUri, httpMethod) { }
 
         protected HypermediaExternalAction(Uri externalUri,
-            HttpMethod httpMethod,
-            string mediaType = DefaultMediaTypes.ApplicationJson)
-            : base(() => true, externalUri, httpMethod, mediaType) { }
+            HttpMethod httpMethod)
+            : base(() => true, externalUri, httpMethod) { }
 
         public override object GetPrefilledParameter()
         {
