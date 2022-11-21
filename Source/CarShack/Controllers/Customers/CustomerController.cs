@@ -66,7 +66,7 @@ namespace CarShack.Controllers.Customers
                 var hypermediaCustomer = customer.ToHto();
                 
                 // Check can execute here since we need to call business logic and not rely on previously checked value from HTO passed to caller
-                if (!customer.IsFavorite)
+                if (customer.IsFavorite)
                 {
                     return this.CanNotExecute();
                 }
