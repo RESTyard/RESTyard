@@ -64,7 +64,14 @@ namespace CarShack.Controllers.Customers
             {
                 var customer = await customerRepository.GetEnitityByKeyAsync(favoriteCustomer.CustomerId).ConfigureAwait(false);
                 var hypermediaCustomer = customer.ToHto();
-                hypermediaCustomer.MarkAsFavorite.Execute(favoriteCustomer);
+                
+                // Check can execute here since we need to call business logic and not rely on previously checked value from HTO passed to caller
+                if (!customer.IsFavorite)
+                {
+                    return this.CanNotExecute();
+                }
+                
+                DoMarkAsFavorite(hypermediaCustomer, customer); 
                 return Ok();
             }
             catch (EntityNotFoundException)
@@ -133,7 +140,8 @@ namespace CarShack.Controllers.Customers
             {
                 var customer = await customerRepository.GetEnitityByKeyAsync(key).ConfigureAwait(false);
                 var hypermediaCustomer = customer.ToHto();
-                hypermediaCustomer.CustomerMove.Execute(newAddress);
+                // Can execute logic is NOT checked, but is always true
+                DoMove(hypermediaCustomer, customer, newAddress);
                 return Ok();
             }
             catch (EntityNotFoundException)
@@ -185,6 +193,23 @@ namespace CarShack.Controllers.Customers
                 };
                 return this.UnprocessableEntity(problem);
             }
+        }
+        
+        private static void DoMarkAsFavorite(HypermediaCustomerHto hto, Customer customer)
+        {
+            customer.IsFavorite = true;
+            hto.IsFavorite = true;
+        }
+        
+        private static void DoMove(HypermediaCustomerHto hto, Customer customer, NewAddress newAddress)
+        {
+            // semantic validation is busyness logic
+            if (string.IsNullOrEmpty(newAddress.Address))
+                throw new ActionParameterValidationException("New customer address may not be null or empty.");
+
+            // call busyness logic here
+            customer.Address = newAddress.Address;
+            hto.Address = customer.Address;
         }
 
         #endregion

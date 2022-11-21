@@ -103,16 +103,16 @@ public partial class HypermediaCustomersRootHto : HypermediaObject
         Links.Add("GreatSite", greatSite);
     }
 
-    public class CreateCustomerOp : HypermediaFunction<CreateCustomerParameters, HypermediaCustomerHto>
+    public class CreateCustomerOp : HypermediaAction<CreateCustomerParameters>
     {
-        public CreateCustomerOp(Func<bool> canExecuteCreateCustomer, Func<CreateCustomerParameters, HypermediaCustomerHto> executeCreateCustomer, CreateCustomerParameters? prefilledValues = default)
-            : base(canExecuteCreateCustomer, executeCreateCustomer, prefilledValues) { }
+        public CreateCustomerOp(Func<bool> canExecuteCreateCustomer, CreateCustomerParameters? prefilledValues = default)
+            : base(canExecuteCreateCustomer, prefilledValues) { }
     }
 
     public class CreateQueryOp : HypermediaAction<CustomerQuery>
     {
-        public CreateQueryOp(Func<bool> canExecuteCreateQuery, Action<CustomerQuery> executeCreateQuery, CustomerQuery? prefilledValues = default)
-            : base(canExecuteCreateQuery, executeCreateQuery, prefilledValues) { }
+        public CreateQueryOp(Func<bool> canExecuteCreateQuery, CustomerQuery? prefilledValues = default)
+            : base(canExecuteCreateQuery, prefilledValues) { }
     }
 }
 
@@ -167,26 +167,26 @@ public partial class HypermediaCustomerHto : HypermediaObject
 
     public class CustomerMoveOp : HypermediaAction<NewAddress>
     {
-        public CustomerMoveOp(Func<bool> canExecuteCustomerMove, Action<NewAddress> executeCustomerMove, NewAddress? prefilledValues = default)
-            : base(canExecuteCustomerMove, executeCustomerMove, prefilledValues) { }
+        public CustomerMoveOp(Func<bool> canExecuteCustomerMove, NewAddress? prefilledValues = default)
+            : base(canExecuteCustomerMove, prefilledValues) { }
     }
 
     public class CustomerRemoveOp : HypermediaAction
     {
-        public CustomerRemoveOp(Func<bool> canExecuteCustomerRemove, Action executeCustomerRemove)
-            : base(canExecuteCustomerRemove, executeCustomerRemove) { }
+        public CustomerRemoveOp(Func<bool> canExecuteCustomerRemove)
+            : base(canExecuteCustomerRemove) { }
     }
 
     public class MarkAsFavoriteOp : HypermediaAction<MarkAsFavoriteParameters>
     {
-        public MarkAsFavoriteOp(Func<bool> canExecuteMarkAsFavorite, Action<MarkAsFavoriteParameters> executeMarkAsFavorite, MarkAsFavoriteParameters? prefilledValues = default)
-            : base(canExecuteMarkAsFavorite, executeMarkAsFavorite, prefilledValues) { }
+        public MarkAsFavoriteOp(Func<bool> canExecuteMarkAsFavorite, MarkAsFavoriteParameters? prefilledValues = default)
+            : base(canExecuteMarkAsFavorite, prefilledValues) { }
     }
 
     public class BuyCarOp : HypermediaAction<BuyCarParameters>
     {
-        public BuyCarOp(Func<bool> canExecuteBuyCar, Action<BuyCarParameters> executeBuyCar, BuyCarParameters? prefilledValues = default)
-            : base(canExecuteBuyCar, executeBuyCar, prefilledValues) { }
+        public BuyCarOp(Func<bool> canExecuteBuyCar, BuyCarParameters? prefilledValues = default)
+            : base(canExecuteBuyCar, prefilledValues) { }
     }
 }
 

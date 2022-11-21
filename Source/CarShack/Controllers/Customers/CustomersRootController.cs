@@ -82,10 +82,19 @@ namespace CarShack.Controllers.Customers
                 return this.Problem(ProblemJsonBuilder.CreateBadParameters());
             }
 
-            var createdCustomer = await customersRoot.CreateCustomer.ExecuteAsync(createCustomerParameters).ConfigureAwait(false);
+            var createdCustomer = await CreateCustomer(createCustomerParameters);
 
             // Will create a Location header with a URI to the result.
             return this.Created(createdCustomer);
+        }
+        
+        private async Task<HypermediaCustomerHto> CreateCustomer(CreateCustomerParameters createCustomerParameters)
+        {
+          
+                var customer = CustomerService.CreateRandomCustomer();
+                customer.Name = createCustomerParameters.Name;
+                await customerRepository.AddEntityAsync(customer).ConfigureAwait(false);
+                return customer.ToHto();
         }
 #endregion
     }

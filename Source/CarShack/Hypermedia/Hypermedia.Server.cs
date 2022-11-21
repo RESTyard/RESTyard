@@ -91,16 +91,10 @@ public partial class HypermediaEntrypointHto
 public partial class HypermediaCustomersRootHto
 {
     [ActivatorUtilitiesConstructor]
-    public HypermediaCustomersRootHto(ICustomerRepository customerRepository)
+    public HypermediaCustomersRootHto()
         : this(
-            new CreateCustomerOp(() => true, arg =>
-            {
-                var customer = CustomerService.CreateRandomCustomer();
-                customer.Name = arg.Name;
-                customerRepository.AddEntityAsync(customer).ConfigureAwait(false).GetAwaiter().GetResult();
-                return customer.ToHto();
-            }),
-            new CreateQueryOp(() => true, _ => { }, new CustomerQuery
+            new CreateCustomerOp(() => true),
+            new CreateQueryOp(() => true,  new CustomerQuery
             {
                 Filter = new CustomerFilter
                 {
@@ -123,6 +117,8 @@ public partial class HypermediaCustomersRootHto
             new HypermediaObjectReference(new ExternalReference(new Uri("http://www.example.com/")).WithAvailableMediaType("text/html")))
     {
     }
+
+   
 }
 
 public partial class HypermediaCarsRootHto
@@ -147,30 +143,16 @@ public partial class HypermediaCustomerHto
             customer.Name,
             customer.Address,
             customer.IsFavorite,
-            new CustomerMoveOp(() => true, address => DoMove(hto!, customer, address)),
-            new CustomerRemoveOp(() => true, () => { }),
-            new MarkAsFavoriteOp(() => !hto!.IsFavorite, p => DoMarkAsFavorite(hto!, customer, p)),
+            new CustomerMoveOp(() => true),
+            new CustomerRemoveOp(() => true),
+            new MarkAsFavoriteOp(() => !hto!.IsFavorite),
             new BuyCarOp(() => true, default!));
         return hto;
     }
 
-    private static void DoMarkAsFavorite(HypermediaCustomerHto hto, Customer customer,
-        MarkAsFavoriteParameters markAsFavoriteParameters)
-    {
-        customer.IsFavorite = true;
-        hto.IsFavorite = true;
-    }
 
-    private static void DoMove(HypermediaCustomerHto hto, Customer customer, NewAddress newAddress)
-    {
-        // semantic validation is busyness logic
-        if (string.IsNullOrEmpty(newAddress.Address))
-            throw new ActionParameterValidationException("New customer address may not be null or empty.");
 
-        // call busyness logic here
-        customer.Address = newAddress.Address;
-        hto.Address = customer.Address;
-    }
+
 }
 
 public partial class HypermediaCarHto
