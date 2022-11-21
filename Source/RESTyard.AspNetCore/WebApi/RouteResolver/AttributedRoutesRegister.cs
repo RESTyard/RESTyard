@@ -52,6 +52,10 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                         this.AddActionRoute(httpPostHypermediaAction.RouteType, httpPostHypermediaAction.Name, HttpMethod.POST, httpPostHypermediaAction.AcceptedMediaType);
                         AddRouteKeyProducer(method, httpPostHypermediaAction);
                         break;
+                    case HttpPutHypermediaAction httpPutHypermediaAction:
+                        this.AddActionRoute(httpPutHypermediaAction.RouteType, httpPutHypermediaAction.Name, HttpMethod.PUT, httpPutHypermediaAction.AcceptedMediaType);
+                        AddRouteKeyProducer(method, httpPutHypermediaAction);
+                        break;
                     case HttpDeleteHypermediaAction httpDeleteHypermediaAction:
                         this.AddActionRoute(httpDeleteHypermediaAction.RouteType, httpDeleteHypermediaAction.Name, HttpMethod.DELETE, httpDeleteHypermediaAction.AcceptedMediaType);
                         AddRouteKeyProducer(method, httpDeleteHypermediaAction);
@@ -132,6 +136,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
         {
             var attributeType = a.GetType();
             return attributeType == typeof(HttpGetHypermediaObject)
+                   || attributeType == typeof(HttpPutHypermediaAction)
                    || attributeType == typeof(HttpPostHypermediaAction)
                    || attributeType == typeof(HttpDeleteHypermediaAction)
                    || attributeType == typeof(HttpPatchHypermediaAction)

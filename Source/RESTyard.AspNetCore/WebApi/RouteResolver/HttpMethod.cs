@@ -12,6 +12,8 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
         
         DELETE = 3,
         
-        PATCH = 4
+        PATCH = 4,
+        
+        PUT = 5
     }
 }
