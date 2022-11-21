@@ -246,6 +246,19 @@ public ActionResult CreateCustomerParametersType()
 
 Also see See: [extracting keys from action parameter URLs](#extracting-keys-from-action-parameter-urls)
 
+### Actions with prefilled values
+
+Actions supply contain prefilled values so a form is already filled with server provided content. Actions with parameters have a optional parameter:
+
+```csharp
+public class ActionWithArgument : HypermediaAction<ActionParameter>
+{
+    public ActionWithArgument(Func<bool> canExecute, ActionParameter prefilledValues) : base(canExecute, prefilledValues)
+    {
+    }
+}
+```
+
 ### Actions with acceptable media type
 
 The action attributes allow to specify a media type so it can be transmitted that a client should send the data in a acceptable format
@@ -253,11 +266,39 @@ The action attributes allow to specify a media type so it can be transmitted tha
 - `HttpPostHypermediaAction`
 - `HttpDeleteHypermediaAction`
 - `HttpPatchHypermediaAction`
+- `HttpPutHypermediaAction`
 
 ```csharp
 [HttpPostHypermediaAction("my/route/template", typeof(MyOperation), AcceptedMediaType = "multipart/form-data"))]
 ```
 Will be rendered to siren as `type` on the action. Default is `application/json`.
+
+### Calling external APIs using Actions
+
+If it is necessary to call a external API and expose that call as an action there is `HypermediaExternalAction<TParameter>` nad `HypermediaExternalAction` to be used as base for ActionTypes.
+
+```csharp
+public class ExternalActionNoParameters :HypermediaExternalAction
+{
+    public ExternalActionNoParameters(Uri externalUri, HttpMethod httpMethod) 
+        : base(() => true, externalUri, httpMethod) { }
+}
+
+public class ExternalActionWitParameter :HypermediaExternalAction<ExternalActionParameters>
+{
+    public ExternalActionWitParameter(Uri externalUri,
+        HttpMethod httpMethod) 
+        : base(() => true,
+        externalUri,
+        httpMethod,
+        "myCustom/mediaType",
+        new ExternalActionParameters(3)) { }
+}
+
+// usage in HTO:
+public ExternalActionNoParameters ExternalActionNoParametersNoParametersTest { get; init; } = new ExternalActionNoParameters(new Uri("http://www.example1.com"), HttpMethod.POST);
+public ExternalActionWitParameter ExternalActionWitParameterTestOp { get; init; }= new ExternalActionWitParameter(new Uri("http://www.example2.com"), HttpMethod.DELETE);
+```
 
 ### Routes with a placeholder in the route template
 For access to entities a route template may contain placeholder variables like _key_ in the example below.
@@ -481,9 +522,13 @@ Tested for:
 
 ## Release Notes
 
-### RESTyard v2.0.XX
+### RESTyard v3.0.0
 
 - Fixed HypermediaExternalObjectReference could not be used as Link, this is provided for convenience. A link should be build using a ExternalReference instance.
+- Add `HypermediaExternalAction<TParameter>`and `HypermediaExternalAction` to allow calling external endpoints as actions.
+- Removed the possibility to pass a execute lambda to `HypermediaActions` since this was violating layers in architecture. The HTO should not be concerned with logic execution. 
+- Add new HTTP method available for operations:
+  - PUT
 
 ### RESTyard v2.0.0
 - Rebrand all projects to common name "RESTyard".
