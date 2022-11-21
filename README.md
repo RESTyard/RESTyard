@@ -524,6 +524,7 @@ Tested for:
 
 ### RESTyard v3.0.0
 
+- Moved projects to .net 6
 - Fixed HypermediaExternalObjectReference could not be used as Link, this is provided for convenience. A link should be build using a ExternalReference instance.
 - Add `HypermediaExternalAction<TParameter>`and `HypermediaExternalAction` to allow calling external endpoints as actions.
 - Removed the possibility to pass a execute lambda to `HypermediaActions` since this was violating layers in architecture. The HTO should not be concerned with logic execution. 

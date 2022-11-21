@@ -168,7 +168,7 @@ namespace CarShack.Controllers.Customers
         [HttpDeleteHypermediaAction("{key:int}", 
             typeof(HypermediaCustomerHto.CustomerRemoveOp), 
             typeof(CustomerRouteKeyProducer))]
-        public async Task<ActionResult> RemoveCustomer(int key)
+        public ActionResult RemoveCustomer(int key)
         {
             try
             {
@@ -218,9 +218,9 @@ namespace CarShack.Controllers.Customers
         // Provide type information for Action parameters. Does not depend on a specific customer. Optional when using
         // MvcOptionsExtension.AutoDeliverActionParameterSchemas
         [HttpGetHypermediaActionParameterInfo("NewAddressType", typeof(NewAddress))]
-        public async Task<ActionResult> NewAddressType()
+        public ActionResult NewAddressType()
         {
-            var schema = await JsonSchemaFactory.Generate(typeof(NewAddress)).ConfigureAwait(false);
+            var schema = JsonSchemaFactory.Generate(typeof(NewAddress));
             return Ok(schema);
         }
         #endregion

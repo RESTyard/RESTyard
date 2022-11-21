@@ -21,11 +21,12 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
     [TestClass]
     public class When_generating_json_schema_from_type_with_key_attribute : AsyncTestSpecification
     {
-        JsonSchema4 schema;
+        NJsonSchema.JsonSchema schema;
 
-        protected override async Task When()
+        protected override Task When()
         {
-            schema = await JsonSchemaFactory.GenerateSchemaAsync(typeof(MyParameter)).ConfigureAwait(false);
+            schema = JsonSchemaFactory.GenerateSchemaAsync(typeof(MyParameter));
+            return Task.CompletedTask;
         }
 
         [TestMethod]
@@ -56,11 +57,12 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
     [TestClass]
     public class When_generating_json_schema_from_type_with_multiple_key_attributes : AsyncTestSpecification
     {
-        JsonSchema4 schema;
+        NJsonSchema.JsonSchema schema;
 
-        protected override async Task When()
+        protected override Task When()
         {
-            schema = await JsonSchemaFactory.GenerateSchemaAsync(typeof(MyParameter)).ConfigureAwait(false);
+            schema = JsonSchemaFactory.GenerateSchemaAsync(typeof(MyParameter));
+            return Task.CompletedTask;
         }
 
         [TestMethod]
@@ -104,7 +106,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
 
     public static class SchemaAssertionExtension
     {
-        public static void RequiredUriPropertyShouldExist(this JsonSchema4 schema, string propertyName)
+        public static void RequiredUriPropertyShouldExist(this NJsonSchema.JsonSchema schema, string propertyName)
         {
             schema.Properties.Should().ContainKey(propertyName);
             schema.RequiredProperties.Should().Contain(propertyName);
@@ -298,7 +300,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
             }
         }
 
-        public class MyController : Controller
+        public class MyController : ControllerBase
         {
             [HttpGetHypermediaObject("Route/To/Hmo1/{key}", typeof(DerivedHmo1))]
             public DerivedHmo1 GetDerivedHmo1(string key)

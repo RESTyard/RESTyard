@@ -20,7 +20,7 @@ namespace RESTyard.AspNetCore.WebApi.Controller
             var actionParameterTypes = applicationModel.ActionParameterTypes.Values.Select(_ => _.Type);
             schemaByTypeName = actionParameterTypes.ToImmutableDictionary(
                 t => t.BeautifulName(),
-                t => JsonSchemaFactory.Generate(t).GetAwaiter().GetResult(),
+                JsonSchemaFactory.Generate,
                 hypermediaOptions.CaseSensitiveParameterMatching ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase
             );
         }
@@ -32,7 +32,7 @@ namespace RESTyard.AspNetCore.WebApi.Controller
     }
 
     [Route("ActionParameterTypes")]
-    public class ActionParameterTypes : Microsoft.AspNetCore.Mvc.Controller
+    public class ActionParameterTypes : ControllerBase
     {
         readonly ActionParameterSchemas schemaByTypeName;
 

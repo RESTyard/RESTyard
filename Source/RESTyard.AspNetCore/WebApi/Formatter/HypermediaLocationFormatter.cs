@@ -1,9 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Primitives;
 using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.Util.Extensions;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace RESTyard.AspNetCore.WebApi.Formatter
@@ -41,7 +41,8 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             var location = GetLocation(routeResolver, item);
             var response = context.HttpContext.Response;
             response.Headers["Location"] = location;
-
+            
+                
             SetResponseValues(response, item);
 
             await Task.FromResult(0);

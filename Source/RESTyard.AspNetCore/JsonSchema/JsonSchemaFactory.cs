@@ -4,45 +4,34 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using NJsonSchema;
 using NJsonSchema.Generation;
 using RESTyard.AspNetCore.Util;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 
-#if NETSTANDARD2_0
-
-#elif NETCOREAPP3_1
   using System.Text.Json;
-#endif
 
 namespace RESTyard.AspNetCore.JsonSchema
 {
     public static class JsonSchemaFactory
     {
-        static readonly JsonSchemaGeneratorSettings s_JsonSchemaGeneratorSettings = new JsonSchemaGeneratorSettings
+        static readonly JsonSchemaGeneratorSettings JsonSchemaGeneratorSettings = new JsonSchemaGeneratorSettings
         {
             FlattenInheritanceHierarchy = true,
             DefaultEnumHandling = EnumHandling.String,
         };
+        public static object Generate(Type type)
 
-        public static async Task<object> Generate(Type type)
         {
-            var schema = await GenerateSchemaAsync(type).ConfigureAwait(false);
+            var schema = GenerateSchemaAsync(type);
             var schemaData = schema.ToJson();
 
-#if NETSTANDARD2_0
-            return JsonConvert.DeserializeObject(schemaData);
-#elif NETCOREAPP3_1
             return JsonDocument.Parse(schemaData);
-// #else
-//             return JsonConvert.DeserializeObject(schemaData);
-#endif
         }
 
-        public static async Task<JsonSchema4> GenerateSchemaAsync(Type type)
+        public static NJsonSchema.JsonSchema GenerateSchemaAsync(Type type)
         {
-            var schema = await JsonSchema4.FromTypeAsync(type, s_JsonSchemaGeneratorSettings).ConfigureAwait(false);
+            var schema = NJsonSchema.JsonSchema.FromType(type, JsonSchemaGeneratorSettings);
             var keyProperties = type.GetKeyFromUriProperties();
 
             foreach (var keyProperty in keyProperties)
@@ -59,7 +48,7 @@ namespace RESTyard.AspNetCore.JsonSchema
                 }
 
                 var isRequired = propertyGroup.Any(p => p.Property.GetCustomAttribute<RequiredAttribute>() != null);
-                var property = new NJsonSchema.JsonProperty { Type = JsonObjectType.String, Format = JsonFormatStrings.Uri };
+                var property = new JsonSchemaProperty { Type = JsonObjectType.String, Format = JsonFormatStrings.Uri };
                 //schema factory sets minlegth of required uri properties, so do it here as well
                 if (isRequired)
                     property.MinLength = 1;
@@ -69,13 +58,13 @@ namespace RESTyard.AspNetCore.JsonSchema
             return schema;
         }
 
-        static void RemoveProperty(JsonSchema4 schema, string propertyName)
+        static void RemoveProperty(NJsonSchema.JsonSchema schema, string propertyName)
         {
             schema.Properties.Remove(propertyName);
             schema.RequiredProperties.Remove(propertyName);
         }
 
-        static void AddProperty(JsonSchema4 schema, string propertyName, NJsonSchema.JsonProperty property, bool isRequired)
+        static void AddProperty(NJsonSchema.JsonSchema schema, string propertyName, JsonSchemaProperty property, bool isRequired)
         {
             schema.Properties.Add(propertyName, property);
             if (isRequired)
