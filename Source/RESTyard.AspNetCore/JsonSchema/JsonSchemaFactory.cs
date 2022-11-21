@@ -35,6 +35,8 @@ namespace RESTyard.AspNetCore.JsonSchema
             return JsonConvert.DeserializeObject(schemaData);
 #elif NETCOREAPP3_1
             return JsonDocument.Parse(schemaData);
+#else
+            return JsonConvert.DeserializeObject(schemaData);
 #endif
         }
 
