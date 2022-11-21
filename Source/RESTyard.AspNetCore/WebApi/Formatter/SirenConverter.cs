@@ -26,6 +26,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
         private readonly IQueryStringBuilder queryStringBuilder;
         private readonly IHypermediaRouteResolver routeResolver;
         private readonly HypermediaConverterConfiguration configuration;
+        private static readonly Type HypermediaActionBaseType = typeof(HypermediaActionBase).GetTypeInfo();
 
         public SirenConverter(IHypermediaRouteResolver routeResolver, IQueryStringBuilder queryStringBuilder, HypermediaConverterConfiguration configuration = null)
         {
@@ -88,36 +89,45 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
         private void AddActions(HypermediaObject hypermediaObject, JObject sirenJson)
         {
-            var properties = hypermediaObject.GetType().GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var properties = hypermediaObject
+                .GetType()
+                .GetTypeInfo()
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(property => !PropertyHasIgnoreAttribute(property))
+                .Where(IsHypermediaAction);
 
             var jActions = new JArray();
 
             foreach (var property in properties)
             {
-                if (PropertyHasIgnoreAttribute(property))
-                {
-                    continue;
-                }
-                if (!IsHypermediaAction(property))
-                {
-                    continue;
-                }
-
                 var action = property.GetValue(hypermediaObject);
                 var actionBase = (HypermediaActionBase)action;
 
                 if (actionBase.CanExecute())
                 {
-                    var jAction = new JObject();
-                    var resolvedRoute = this.routeResolver.ActionToRoute(hypermediaObject, actionBase);
-                    AddGeneralSirenActionProperties(jAction, property, resolvedRoute);
-                    AddActionParameters(actionBase, jAction, resolvedRoute.AcceptableMediaType);
-
-                    jActions.Add(jAction);
+                    AddActionSirenContent(hypermediaObject, action, actionBase, property, jActions);
                 }
             }
 
             sirenJson.Add("actions", jActions);
+        }
+
+        private void AddActionSirenContent(HypermediaObject hypermediaObject, object action, HypermediaActionBase actionBase, PropertyInfo property, JArray jActions)
+        {
+            var jAction = new JObject();
+            ResolvedRoute resolvedRoute;
+            if (action is HypermediaExternalActionBase externalActionBase)
+            {
+                resolvedRoute = new ResolvedRoute(externalActionBase.ExternalUri.ToString(), externalActionBase.HttpMethod, acceptableMediaType: externalActionBase.AcceptedMediaType);
+            } else
+            {
+                resolvedRoute = this.routeResolver.ActionToRoute(hypermediaObject, actionBase);
+            }
+           
+            AddGeneralSirenActionProperties(jAction, property, resolvedRoute);
+            AddActionParameters(actionBase, jAction, resolvedRoute.AcceptableMediaType);
+
+            jActions.Add(jAction);
         }
 
         private void AddGeneralSirenActionProperties(
@@ -201,7 +211,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
         private static bool IsHypermediaAction(PropertyInfo property)
         {
-            return typeof(HypermediaActionBase).GetTypeInfo().IsAssignableFrom(property.PropertyType);
+            return HypermediaActionBaseType.IsAssignableFrom(property.PropertyType);
         }
 
         private void SirenAddEntities(HypermediaObject hypermediaObject, JObject sirenJson)
