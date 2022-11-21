@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -35,8 +36,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
             TestUrlConfig = new HypermediaUrlConfig()
             {
-                Host = new HostString("MyHost", 1234),
-                Scheme = "Scheme"
+                Host = new HostString("myhost", 1234),
+                Scheme = "scheme"
             };
 
             UrlHelper = new MockUrlHelper();
@@ -99,23 +100,32 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         public static void AssertRoute(string route, string expectedRouteName, string keyObjectString = null, string queryString = null)
         {
             var segments = route.Split('/', '?');
-            Assert.AreEqual(TestUrlConfig.Scheme, segments[0]);
-            Assert.AreEqual(TestUrlConfig.Host.ToString(), segments[1]);
-            Assert.AreEqual(expectedRouteName, segments[2]);
+            var routAsUri = new Uri(route);
+            Assert.AreEqual(TestUrlConfig.Scheme,routAsUri.Scheme);
+            Assert.AreEqual(TestUrlConfig.Host.ToString(), routAsUri.Host + ":" + routAsUri.Port);
+            Assert.AreEqual(expectedRouteName, GetPathWithoutQuery(routAsUri));
 
             if (keyObjectString != null && queryString != null)
             {
-                Assert.AreEqual(keyObjectString, segments[3]);
-                Assert.AreEqual(queryString, "?" + segments[4]);
+                Assert.AreEqual(keyObjectString, segments[4]);
+                Assert.AreEqual(queryString, "?" + segments[5]);
             }
             else if (queryString != null)
             {
-                Assert.AreEqual(queryString, "?" + segments[3]);
+                Assert.AreEqual(queryString, "?" + segments[4]);
             }
             else if (keyObjectString != null)
             {
-                Assert.AreEqual(keyObjectString, segments[3]);
+                Assert.AreEqual(keyObjectString, segments[4]);
             }
+        }
+
+        private static string GetPathWithoutQuery(Uri routAsUri)
+        {
+            var indexOfQuery = routAsUri.AbsolutePath.IndexOf("?", StringComparison.Ordinal);
+            var indexOfKeyObject = routAsUri.AbsolutePath.IndexOf("%", StringComparison.Ordinal)-2;
+            var cutOfIndex = Math.Max(indexOfQuery, indexOfKeyObject);
+            return routAsUri.AbsolutePath.Substring(1,  cutOfIndex > 0 ? cutOfIndex : routAsUri.AbsolutePath.Length-1);
         }
 
         public static void AssertHasLink(JArray linksArray, string linkRelation, string routeNameLinking)

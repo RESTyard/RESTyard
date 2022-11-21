@@ -24,7 +24,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
         public string RouteUrl(UrlRouteContext routeContext)
         {
-            var result = $"{routeContext.Protocol}/{routeContext.Host}/{routeContext.RouteName}";
+            var result = $"{routeContext.Protocol}://{routeContext.Host}/{routeContext.RouteName}";
             if (routeContext.Values?.GetType().GetTypeInfo().GetProperties().Length != 0)
             {
                 result += $"/{routeContext.Values}";
