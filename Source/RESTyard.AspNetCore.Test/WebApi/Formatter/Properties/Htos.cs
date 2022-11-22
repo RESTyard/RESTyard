@@ -77,6 +77,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         public IEnumerable<Nested> AObjectList { get; set; }
 
         public IEnumerable<IEnumerable<int>> ListOfLists { get; set; }
+        
+        public IEnumerable<object> ListOfDownCastObjects { get; set; }
     }
 
     public class Nested

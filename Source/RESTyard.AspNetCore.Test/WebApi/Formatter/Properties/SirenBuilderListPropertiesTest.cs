@@ -70,6 +70,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             ho.AValueList = new List<int>();
             ho.ANullableList = new List<int?>();
             ho.AReferenceList = new List<string>();
+            ho.ListOfDownCastObjects = new List<object>();
 
             var siren = SirenConverter.ConvertToJson(ho);
 
@@ -105,6 +106,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
                 new List<int> { 3,4,5},
                 new List<int> { 6,7,8}
             };
+            ho.ListOfDownCastObjects = new List<object> {"Text", 5, new Nested(3)};
 
             var siren = SirenConverter.ConvertToJson(ho);
 
@@ -119,6 +121,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 
             AssertObjectList(ho, siren);
             AssertListOfLists(ho, siren);
+            AssertListOfDownCastObjects(ho, siren);
         }
 
         private static void AssertListOfLists(HypermediaObjectWithListProperties ho, JObject siren)
@@ -151,6 +154,16 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
                 Assert.AreEqual(nested.AInt, siren["properties"]["AObjectList"][index].Value<JObject>()[nameof(Nested.AInt)].Value<int>());
                 index++;
             }
+        }
+       
+        private static void AssertListOfDownCastObjects(HypermediaObjectWithListProperties ho, JObject siren)
+        {
+            Assert.AreEqual(ho.ListOfDownCastObjects.Count(), siren["properties"]["ListOfDownCastObjects"].Count());
+            var index = 0;
+            
+            Assert.AreEqual("Text", siren["properties"]["ListOfDownCastObjects"][0].Value<string>());
+            Assert.AreEqual(5, siren["properties"]["ListOfDownCastObjects"][1].Value<int>());
+            Assert.AreEqual(3, siren["properties"]["ListOfDownCastObjects"][2].Value<JObject>()[nameof(Nested.AInt)].Value<int>());
         }
     }
     
