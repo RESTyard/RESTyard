@@ -21,7 +21,7 @@ namespace RESTyard.AspNetCore.Hypermedia
         public HypermediaObjectReferenceBase Reference { get; set; }
 
         /// <summary>
-        /// Cretaes a RelatedEntity.
+        /// Creates a RelatedEntity.
         /// </summary>
         /// <param name="relations">List of relations as string, should at least contain one relation.</param>
         /// <param name="reference">Reference to the related Entity.</param>

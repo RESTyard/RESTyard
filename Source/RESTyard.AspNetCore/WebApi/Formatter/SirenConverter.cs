@@ -419,6 +419,10 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
             var itemType = enumerableType.IsArray ? enumerableType.GetElementType() : enumerableType.GenericTypeArguments.Single();
             var itemTypeInfo = itemType.GetTypeInfo();
+            
+            // check for polymorphic serialization which is solved in net 6 and lower by using object as item type
+            // in this case we need to get the type every time
+            var getTypeForEachItem = itemType == typeof(object);
 
             var result = new JArray();
             foreach (var item in ienumerable)
@@ -429,6 +433,11 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                     continue;
                 }
 
+                if (getTypeForEachItem)
+                {
+                    itemType = item.GetType();
+                    itemTypeInfo = itemType.GetTypeInfo();
+                }
                 result.Add(ValueToJToken(item, itemType, itemTypeInfo));
             }
 
