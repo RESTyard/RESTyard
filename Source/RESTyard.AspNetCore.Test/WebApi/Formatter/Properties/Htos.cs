@@ -62,6 +62,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         public decimal ADecimal { get; set; }
         public int? ANullableInt { get; set; }
         public Uri AnUri { get; set; }
+        
+        public Type AType { get; set; }
     }
 
     public class HypermediaObjectWithListProperties : HypermediaObject

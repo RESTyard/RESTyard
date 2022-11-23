@@ -300,7 +300,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             sirenJson.Add("properties", SerializeObjectProperties(hypermediaObject));
         }
 
-        private void AddProperty(object hypermediaObject, PropertyInfo publicProperty, JObject jProperties)
+        private void AddProperty(object propertyObject, PropertyInfo publicProperty, JObject jProperties)
         {
             if (PropertyHasIgnoreAttribute(publicProperty))
             {
@@ -315,7 +315,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             var propertyTypeInfo = propertyType.GetTypeInfo();
 
             var propertyName = GetPropertyName(publicProperty);
-            var value = publicProperty.GetValue(hypermediaObject);
+            var value = publicProperty.GetValue(propertyObject);
 
             var jvalue = ValueToJToken(value, propertyType, propertyTypeInfo);
             if (jvalue != null || this.configuration.WriteNullProperties)
@@ -369,6 +369,11 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             if (IsIEnumerable(value, propertyType, out var ienumerable))
             {
                 return SerializeEnumerable(ienumerable);
+            }
+
+            if ( propertyType == typeof(Type))
+            {
+                return ((Type)value).FullName;
             }
 
             // check last so special types can be handled first

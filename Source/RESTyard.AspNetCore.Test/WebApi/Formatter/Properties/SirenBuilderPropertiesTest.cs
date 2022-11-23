@@ -181,6 +181,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
                 AnUri = new Uri("http://localhost/myuri"),
                 ADecimal = 12345,
                 ANullableInt = 10,
+                AType = typeof(int)
             };
             var siren = SirenConverter.ConvertToJson(ho);
 

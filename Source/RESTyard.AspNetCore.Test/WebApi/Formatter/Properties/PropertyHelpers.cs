@@ -28,6 +28,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             CompareNotNullProperties(propertiesObject, ho);
 
             Assert.AreEqual(ho.AnUri?.ToString(), propertiesObject[nameof(PropertyHypermediaObject.AnUri)].Value<string>());
+            Assert.AreEqual(ho.AType?.FullName, propertiesObject[nameof(PropertyHypermediaObject.AType)].Value<string>());
             Assert.AreEqual(ho.AString, propertiesObject[nameof(PropertyHypermediaObject.AString)].Value<string>());
             Assert.AreEqual(ho.ANullableInt, propertiesObject[nameof(PropertyHypermediaObject.ANullableInt)]);
             Assert.AreEqual(ho.ANullableEnum?.ToString(), propertiesObject[nameof(PropertyHypermediaObject.ANullableEnum)].Value<string>());
@@ -57,11 +58,12 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             var propertyInfos = typeof(PropertyHypermediaObject).GetProperties()
                 .Where(p => p.Name != "Entities" && p.Name != "Links")
                 .ToList();
-            Assert.AreEqual(propertiesObject.Properties().Count(), propertyInfos.Count - 4);
+            Assert.AreEqual(propertiesObject.Properties().Count(), propertyInfos.Count - 5);
 
             CompareNotNullProperties(propertiesObject, ho);
 
             Assert.IsNull(propertiesObject[nameof(PropertyHypermediaObject.AnUri)]);
+            Assert.IsNull(propertiesObject[nameof(PropertyHypermediaObject.AType)]);
             Assert.IsNull(propertiesObject[nameof(PropertyHypermediaObject.AString)]);
             Assert.IsNull(propertiesObject[nameof(PropertyHypermediaObject.ANullableInt)]);
             Assert.IsNull(propertiesObject[nameof(PropertyHypermediaObject.ANullableEnum)]);
