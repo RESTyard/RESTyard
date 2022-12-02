@@ -7,8 +7,8 @@ using RESTyard.AspNetCore.WebApi.RouteResolver;
 namespace RESTyard.AspNetCore.WebApi
 {
     /// <summary>
-    /// Explicitly marks an hpyermedia action parameter of controller method to be deserailized from body taking into account properties
-    /// attributed with <see cref="KeyFromUriAttribute" />. This is not neccessary if <see cref="StartupExtensions.AddHypermediaParameterBinders"/>
+    /// Explicitly marks an hypermedia action parameter of controller method to be deserialized from body taking into account properties
+    /// attributed with <see cref="KeyFromUriAttribute" />. This is not necessary if <see cref="StartupExtensions.AddHypermediaParameterBinders"/>
     /// if called with forAttributedActionParametersOnly=false.
     /// </summary>
     public class HypermediaActionParameterFromBodyAttribute : ModelBinderAttribute

@@ -87,7 +87,7 @@ namespace RESTyard.AspNetCore.JsonSchema
                 .GetProperties()
                 .Select(p => new { p, att = p.GetCustomAttribute<KeyFromUriAttribute>() })
                 .Where(p => p.att != null)
-                .Select(_ => new KeyFromUriProperty(_.att.ReferencedHypermediaObjectType, _.p, _.att.SchemaProperyName, _.att.RouteTemplateParameterName))
+                .Select(_ => new KeyFromUriProperty(_.att.ReferencedHypermediaObjectType, _.p, _.att.SchemaPropertyName, _.att.RouteTemplateParameterName))
                 .ToImmutableArray();
         }
     }
