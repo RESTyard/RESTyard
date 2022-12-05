@@ -78,9 +78,10 @@ namespace RESTyard.AspNetCore.JsonSchema
                 return;
             }
 
-            if (bindingContext.ActionContext.HttpContext.Request.Method != HttpMethods.Post && bindingContext.ActionContext.HttpContext.Request.Method != HttpMethods.Patch)
+            var requestMethod = bindingContext.ActionContext.HttpContext.Request.Method;
+            if (requestMethod != HttpMethods.Post && requestMethod != HttpMethods.Patch && requestMethod != HttpMethods.Put)
             {
-                bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Invalid http method {bindingContext.ActionContext.HttpContext.Request.Method} expected Post or Patch");
+                bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Invalid http method {requestMethod} expected Post, Put or Patch");
                 return;
             }
 
