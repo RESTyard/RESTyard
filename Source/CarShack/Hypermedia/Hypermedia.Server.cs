@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 using CarShack.Domain.Customer;
 using Microsoft.Extensions.DependencyInjection;
 using RESTyard.AspNetCore.Exceptions;
@@ -81,10 +82,50 @@ public record MarkAsFavoriteParameters
 
 public partial class HypermediaEntrypointHto
 {
+   // public ExternalActionNoParametersTestOp ExternalActionNoParametersNoParametersTest { get; init; } = new ExternalActionNoParametersTestOp(new Uri("http://www.example1.com"), HttpMethod.POST);
+   // public ExternalActionWitParameterTestOp ExternalActionWitParameterTestOp { get; init; }= new ExternalActionWitParameterTestOp(new Uri("http://www.example2.com"), HttpMethod.DELETE);
+    
+    //public List<object> Foo { get; set; } = new List<object>();
+
+    public Type MyType { get; set; } = typeof(HypermediaEntrypointHto);
+    
+    
     [ActivatorUtilitiesConstructor]
     public HypermediaEntrypointHto(HypermediaCustomersRootHto customersRoot, HypermediaCarsRootHto carsRoot)
         : this(new HypermediaObjectReference(customersRoot), new HypermediaObjectReference(carsRoot))
     {
+        //Foo = new List<object>() { 5, "wow" };
+    }
+}
+
+public class ExternalActionNoParametersTestOp :HypermediaExternalAction
+{
+    public ExternalActionNoParametersTestOp(Uri externalUri, HttpMethod httpMethod) 
+        : base(() => true, externalUri, httpMethod)
+    {
+    }
+}
+
+public class ExternalActionWitParameterTestOp :HypermediaExternalAction<ExternalActionParameters>
+{
+    public ExternalActionWitParameterTestOp(Uri externalUri,
+        HttpMethod httpMethod) 
+        : base(() => true,
+        externalUri,
+        httpMethod,
+        "application/json",
+        new ExternalActionParameters(3))
+    {
+    }
+}
+
+public class ExternalActionParameters : IHypermediaActionParameter
+{
+    public int AInt { get; } = 4 ;
+
+    public ExternalActionParameters(int aInt)
+    {
+        AInt = aInt;
     }
 }
 

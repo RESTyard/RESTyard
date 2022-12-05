@@ -31,7 +31,7 @@ namespace RESTyard.AspNetCore.JsonSchema
             keyFromUriProperties = type
                 .GetKeyFromUriProperties()
                 .GroupBy(k => k.SchemaPropertyName)
-                .Select(_ => new KeyPropertiesOfSchema(_.Key, _, getRouteTemplateForType))
+                .Select(_ => new KeyPropertiesOfSchema(_.Key, _, getRouteTemplateForType, _.First().NestingPropertyNames))
                 .ToImmutableArray();
         }
 
@@ -55,7 +55,7 @@ namespace RESTyard.AspNetCore.JsonSchema
             foreach (var schemaPropertyGroup in keyFromUriProperties)
             {
                 var uriPropertyName = schemaPropertyGroup.SchemaPropertyName;
-                if (!raw.TryGetValue(uriPropertyName, out var uriToken))
+                if (!raw.TryGetNestedValue(uriPropertyName, schemaPropertyGroup.NestingPropertyNameSpace, out var uriToken))
                 {
                     if (!schemaPropertyGroup.IsRequired)
                         continue;
@@ -84,12 +84,11 @@ namespace RESTyard.AspNetCore.JsonSchema
                     }
                 }
 
-                raw.Remove(uriPropertyName);
+                raw.RemoveNested(uriPropertyName, schemaPropertyGroup.NestingPropertyNameSpace);
                 foreach (var keyFromUriProperty in schemaPropertyGroup.Properties)
                 {
                     var parameterValue = (string)values[keyFromUriProperty.ResolvedRouteTemplateParameterName];
-                    raw.Add(new JProperty(keyFromUriProperty.Property.Name,
-                        parameterValue));
+                    raw.SetNestedValue(keyFromUriProperty.Property.Name, keyFromUriProperty.NestingPropertyNames, parameterValue);
                 }
             }
 
@@ -104,14 +103,20 @@ namespace RESTyard.AspNetCore.JsonSchema
         class KeyPropertiesOfSchema
         {
             public string SchemaPropertyName { get; }
+            public ImmutableArray<string> NestingPropertyNameSpace { get; }
             public Type TargetType { get; }
             public bool IsRequired { get; }
             public ImmutableArray<TemplateMatcher> TemplateMatchers { get; }
             public ImmutableArray<KeyFromUriProperty> Properties { get; }
 
-            public KeyPropertiesOfSchema(string schemaPropertyName, IEnumerable<KeyFromUriProperty> properties, Func<Type, ImmutableArray<string>> getTemplates)
+            public KeyPropertiesOfSchema(
+                string schemaPropertyName,
+                IEnumerable<KeyFromUriProperty> properties,
+                Func<Type, ImmutableArray<string>> getTemplates,
+                ImmutableArray<string> nestingPropertyNameSpace)
             {
                 SchemaPropertyName = schemaPropertyName;
+                NestingPropertyNameSpace = nestingPropertyNameSpace;
                 Properties = properties.ToImmutableArray();
                 TargetType = Properties.Select(p => p.TargetType).Distinct().Single();
                 IsRequired = Properties.Any(p => p.Property.GetCustomAttribute<RequiredAttribute>() != null);
@@ -136,7 +141,7 @@ namespace RESTyard.AspNetCore.JsonSchema
                             throw new HypermediaException($"Different template parameter names used in routes to objects with same base type '{TargetType.BeautifulName()}': {string.Join(",", templateParameterNames)}");
                         }
 
-                        Properties = ImmutableArray.Create(new KeyFromUriProperty(property.TargetType, property.Property, property.SchemaPropertyName, templateParameterNames[0]));
+                        Properties = ImmutableArray.Create(new KeyFromUriProperty(property.TargetType, property.Property, property.SchemaPropertyName, templateParameterNames[0], NestingPropertyNameSpace));
                     }
                 }
 
