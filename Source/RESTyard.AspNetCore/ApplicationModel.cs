@@ -152,28 +152,27 @@ namespace RESTyard.AspNetCore
 
             public ControllerType(Type type, Func<ControllerType, IEnumerable<ControllerMethod>> methods)
             {
-                RouteTemplate = type.GetTypeInfo().GetCustomAttribute<RouteAttribute>()?.Template;
+                var routeTemplate = type.GetTypeInfo().GetCustomAttribute<RouteAttribute>()?.Template;
+                RouteTemplate = FillControllerTokenInRouteTemplate(routeTemplate, type);
                 Type = type;
                 Methods = methods(this).ToImmutableList();
-
-                FillControllerTokenInRouteTemplate();
             }
 
-            private string FillControllerTokenInRouteTemplate()
+            private static string FillControllerTokenInRouteTemplate(string routeTemplate, Type controllerType)
             {
-                if (string.IsNullOrWhiteSpace(RouteTemplate))
+                if (string.IsNullOrWhiteSpace(routeTemplate))
                 {
                     return string.Empty;
                 }
 
-                if (!RouteTemplate.Contains("[controller]") && !RouteTemplate.Contains("[Controller]"))
+                if (!routeTemplate.Contains("[controller]") && !routeTemplate.Contains("[Controller]"))
                 {
-                    return RouteTemplate;
+                    return routeTemplate;
                 }
 
-                var controllerNameReplacement = RemoveControllerFromName(Type.Name);
+                var controllerNameReplacement = RemoveControllerFromName(controllerType.Name);
 
-                return RouteTemplate.Replace("[controller]", controllerNameReplacement).Replace("[Controller]", controllerNameReplacement);
+                return routeTemplate.Replace("[controller]", controllerNameReplacement).Replace("[Controller]", controllerNameReplacement);
             }
 
             private static string RemoveControllerFromName(string controllerTypeName)

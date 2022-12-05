@@ -532,6 +532,7 @@ Tested for:
   - PUT
 - Fix serializing HTO properties which are using polymorphic serialization by e.g. casting `List<MyObjectBase>` to `List<object>`. For Enumerables of type `<object>` each item is inspected now.
 - Fix serializing a property of Type. It is now serialized as the full name of the type.
+- Fix `[KeyFromUri]` did not work if url contained a controller token: `[controller]`
 
 ### RESTyard v2.0.0
 - Rebrand all projects to common name "RESTyard".
