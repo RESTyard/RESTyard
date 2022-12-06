@@ -5,10 +5,11 @@ using System.Linq;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
+using RESTyard.AspNetCore.Hypermedia.Extensions;
 using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
-using RESTyard.AspNetCore.Hypermedia.Extensions;
+
 
 namespace CarShack.Hypermedia;
 
@@ -103,13 +104,13 @@ public partial class HypermediaCustomersRootHto : HypermediaObject
         Links.Add("GreatSite", greatSite);
     }
 
-    public class CreateCustomerOp : HypermediaAction<CreateCustomerParameters>
+    public partial class CreateCustomerOp : HypermediaAction<CreateCustomerParameters>
     {
         public CreateCustomerOp(Func<bool> canExecuteCreateCustomer, CreateCustomerParameters? prefilledValues = default)
             : base(canExecuteCreateCustomer, prefilledValues) { }
     }
 
-    public class CreateQueryOp : HypermediaAction<CustomerQuery>
+    public partial class CreateQueryOp : HypermediaAction<CustomerQuery>
     {
         public CreateQueryOp(Func<bool> canExecuteCreateQuery, CustomerQuery? prefilledValues = default)
             : base(canExecuteCreateQuery, prefilledValues) { }
@@ -165,25 +166,25 @@ public partial class HypermediaCustomerHto : HypermediaObject
         this.BuyCar = buyCar;
     }
 
-    public class CustomerMoveOp : HypermediaAction<NewAddress>
+    public partial class CustomerMoveOp : HypermediaAction<NewAddress>
     {
         public CustomerMoveOp(Func<bool> canExecuteCustomerMove, NewAddress? prefilledValues = default)
             : base(canExecuteCustomerMove, prefilledValues) { }
     }
 
-    public class CustomerRemoveOp : HypermediaAction
+    public partial class CustomerRemoveOp : HypermediaAction
     {
         public CustomerRemoveOp(Func<bool> canExecuteCustomerRemove)
             : base(canExecuteCustomerRemove) { }
     }
 
-    public class MarkAsFavoriteOp : HypermediaAction<MarkAsFavoriteParameters>
+    public partial class MarkAsFavoriteOp : HypermediaAction<MarkAsFavoriteParameters>
     {
         public MarkAsFavoriteOp(Func<bool> canExecuteMarkAsFavorite, MarkAsFavoriteParameters? prefilledValues = default)
             : base(canExecuteMarkAsFavorite, prefilledValues) { }
     }
 
-    public class BuyCarOp : HypermediaAction<BuyCarParameters>
+    public partial class BuyCarOp : HypermediaAction<BuyCarParameters>
     {
         public BuyCarOp(Func<bool> canExecuteBuyCar, BuyCarParameters? prefilledValues = default)
             : base(canExecuteBuyCar, prefilledValues) { }
