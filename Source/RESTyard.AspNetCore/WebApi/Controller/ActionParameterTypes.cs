@@ -49,7 +49,7 @@ namespace RESTyard.AspNetCore.WebApi.Controller
             {
                 return this.Problem(new ProblemJson
                 {
-                    ProblemType = $"Unknwon parameter type name: '{parameterTypeName}'",
+                    ProblemType = $"Unknown parameter type name: '{parameterTypeName}'",
                     StatusCode = (int)HttpStatusCode.NotFound,
                     Title = "Unknown action parameter type"
                 });
