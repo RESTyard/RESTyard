@@ -36,7 +36,7 @@ namespace RESTyard.AspNetCore.JsonSchema
 
             foreach (var keyProperty in keyProperties)
             {
-                RemoveProperty(schema, keyProperty.Property.Name);
+                RemoveProperty(schema, keyProperty.Property.Name, keyProperty.NestingPropertyNames);
             }
 
             foreach (var propertyGroup in keyProperties.GroupBy(p => p.SchemaPropertyName))
@@ -49,44 +49,62 @@ namespace RESTyard.AspNetCore.JsonSchema
 
                 var isRequired = propertyGroup.Any(p => p.Property.GetCustomAttribute<RequiredAttribute>() != null);
                 var property = new JsonSchemaProperty { Type = JsonObjectType.String, Format = JsonFormatStrings.Uri };
-                //schema factory sets minlegth of required uri properties, so do it here as well
-                if (isRequired) {
+                //schema factory sets minlength of required uri properties, so do it here as well
+                if (isRequired)
+                {
                     property.MinLength = 1;
                 }
+
                 AddProperty(schema, schemaPropertyName, property, isRequired, propertyGroup.First().NestingPropertyNames);
             }
 
             return schema;
         }
 
-        static void RemoveProperty(NJsonSchema.JsonSchema schema, string propertyName)
+        static void RemoveProperty(NJsonSchema.JsonSchema schema, string propertyName, ImmutableArray<string> nestingPropertyNames)
         {
-            schema.Properties.Remove(propertyName);
-            schema.RequiredProperties.Remove(propertyName);
+            var resolvedSchema = nestingPropertyNames.Any() ? GetSchemaForNestedObject(schema, propertyName, nestingPropertyNames) : schema;
+
+            resolvedSchema.Properties.Remove(propertyName);
+            resolvedSchema.RequiredProperties.Remove(propertyName);
         }
 
         static void AddProperty(NJsonSchema.JsonSchema schema, string propertyName, JsonSchemaProperty property, bool isRequired, ImmutableArray<string> nestingPropertyNames)
         {
-            // navigate nesting
-            var currentSchemaPosition = schema.Properties; 
-            foreach (var nestingPropertyName in nestingPropertyNames)
-            {
+            var resolvedSchema = nestingPropertyNames.Any() ? GetSchemaForNestedObject(schema, propertyName, nestingPropertyNames) : schema;
 
-                var jsonSchemaProperty = currentSchemaPosition[nestingPropertyName];
-                if (jsonSchemaProperty == null)
-                {
-                    throw new Exception($"Can not extend schema with propery: {propertyName} because can not navigate to nested property.");
-                }
-                
-                currentSchemaPosition = jsonSchemaProperty.Properties;
-            }
-            
-            
-            currentSchemaPosition.Add(propertyName, property);
+            resolvedSchema.Properties.Add(propertyName, property);
             if (isRequired)
             {
-                schema.RequiredProperties.Add(propertyName);
+                resolvedSchema.RequiredProperties.Add(propertyName);
             }
+        }
+
+        private static NJsonSchema.JsonSchema GetSchemaForNestedObject(NJsonSchema.JsonSchema schema, string propertyName, ImmutableArray<string> nestingPropertyNames)
+        {
+            // navigate nesting to find deepest object
+            var currentSchema = schema;
+            foreach (var nestingPropertyName in nestingPropertyNames)
+            {
+                var jsonSchemaProperty = currentSchema.Properties[nestingPropertyName];
+                if (jsonSchemaProperty == null)
+                {
+                    throw new Exception($"Can not extend schema with property: {propertyName} because can not navigate to nested property.");
+                }
+
+                currentSchema = jsonSchemaProperty;
+            }
+
+            // get definition for nested type form base schema
+            var result = schema.Definitions.Values
+                .Where(s =>
+                {
+                    var actualTypeSchema = currentSchema.ParentSchema.Properties[nestingPropertyNames.Last()].ActualTypeSchema;
+                    return s == actualTypeSchema;
+                })
+                .Single();
+
+            return result;
         }
 
         public class JsonSchemaGenerationException : Exception
@@ -99,7 +117,7 @@ namespace RESTyard.AspNetCore.JsonSchema
     {
         public static ImmutableArray<KeyFromUriProperty> GetKeyFromUriProperties(this Type type)
         {
-            var typesWithPotentialProperties =  GetTypeInfoWithNestedTypes(type, ImmutableArray<string>.Empty);
+            var typesWithPotentialProperties = GetTypeInfoWithNestedTypes(type, ImmutableArray<string>.Empty);
             var result = new List<KeyFromUriProperty>();
             foreach (var typeWithPotentialProperty in typesWithPotentialProperties)
             {
