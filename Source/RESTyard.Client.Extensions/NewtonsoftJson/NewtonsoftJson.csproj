@@ -23,6 +23,7 @@
 		<RepositoryType>Git</RepositoryType>
 		<RepositoryUrl>https://github.com/bluehands/WebApiHypermediaExtensions.git</RepositoryUrl>
 		<RepositoryBranch>$(BranchName)</RepositoryBranch>
+		<PackageIcon>Ry-Icon_128x128.png</PackageIcon>
 
 		<!-- Package specific settings -->
 		<PackageId>RESTyard.Client.Extensions.NewtonsoftJson</PackageId>
@@ -32,6 +33,11 @@
 		<RootNamespace>RESTyard.Client.Extensions.NewtonsoftJson</RootNamespace>
 	</PropertyGroup>
 
+	<!-- package image -->
+	<ItemGroup>
+		<None Include=".\Images\Ry-Icon_128x128.png" Pack="true" PackagePath="\"/>
+	</ItemGroup>
+	
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 	</ItemGroup>

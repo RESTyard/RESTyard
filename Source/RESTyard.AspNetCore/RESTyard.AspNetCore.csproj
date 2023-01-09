@@ -26,6 +26,7 @@
     <RepositoryType>Git</RepositoryType>
     <RepositoryUrl>https://github.com/bluehands/WebApiHypermediaExtensions.git</RepositoryUrl>
     <RepositoryBranch>$(BranchName)</RepositoryBranch>
+    <PackageIcon>Ry-Icon_128x128.png</PackageIcon>
 
     <!-- Package specific settings -->
     <PackageVersion>$(Version)</PackageVersion>
@@ -33,6 +34,11 @@
     <IsPackable>true</IsPackable>
 
   </PropertyGroup>
+
+  <!-- package image -->
+  <ItemGroup>
+    <None Include=".\Images\Ry-Icon_128x128.png" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 
   <!-- shared references, compilation flags and build options -->
   <ItemGroup>

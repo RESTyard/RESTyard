@@ -23,6 +23,7 @@
     <RepositoryType>Git</RepositoryType>
     <RepositoryUrl>https://github.com/bluehands/WebApiHypermediaExtensions.git</RepositoryUrl>
     <RepositoryBranch>$(BranchName)</RepositoryBranch>
+    <PackageIcon>Ry-Icon_128x128.png</PackageIcon>
     
     <!-- Package specific settings -->
     <PackageId>RESTyard.Client.Extensions.SystemNetHttp</PackageId>
@@ -32,6 +33,11 @@
     <RootNamespace>RESTyard.Client.Extensions.SystemNetHttp</RootNamespace>
   </PropertyGroup>
 
+  <!-- package image -->
+  <ItemGroup>
+    <None Include=".\Images\Ry-Icon_128x128.png" Pack="true" PackagePath="\"/>
+  </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
