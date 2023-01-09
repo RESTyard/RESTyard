@@ -522,12 +522,13 @@ Tested for:
 
 ## Release Notes
 
-### RESTyard v3.0.0
+### RESTyard v3.0.3
 
 - Moved projects to .net 6
 - Fixed HypermediaExternalObjectReference could not be used as Link, this is provided for convenience. A link should be build using a ExternalReference instance.
 - Add `HypermediaExternalAction<TParameter>`and `HypermediaExternalAction` to allow calling external endpoints as actions.
-- Removed the possibility to pass a execute lambda to `HypermediaActions` since this was violating layers in architecture. The HTO should not be concerned with logic execution. 
+- Removed the possibility to pass a execute lambda to `HypermediaActions` since this was violating layers in architecture. The HTO should not be concerned with logic execution.
+  This lead to also removing HypermediaFunctions since HTOs do not execute logic, we do not need to provide means to return values. Therefor removed. 
 - Add new HTTP method available for operations:
   - PUT
 - Fix serializing HTO properties which are using polymorphic serialization by e.g. casting `List<MyObjectBase>` to `List<object>`. For Enumerables of type `<object>` each item is inspected now.
