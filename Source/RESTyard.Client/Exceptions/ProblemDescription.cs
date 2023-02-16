@@ -12,7 +12,10 @@ namespace RESTyard.Client.Exceptions
         /// <summary>
         /// An absolute URI that identifies the problem type. When dereferenced, it SHOULD provide human-readable documentation for the problem type(e.g., using HTML).
         /// </summary>
-        public string Type { get; set; }
+        public string ProblemType { get; set; }
+
+        [Obsolete($"use {nameof(ProblemType)} instead")]
+        public string Type { get => this.ProblemType; set => this.ProblemType = value; }
 
         /// <summary>
         /// An human readable explanation specific to this occurrence of the problem.
