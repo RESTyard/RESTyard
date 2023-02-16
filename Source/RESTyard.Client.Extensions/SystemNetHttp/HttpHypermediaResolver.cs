@@ -165,6 +165,17 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             var (hasProblemDescription, problemDescription) = await this.TryReadProblemStringAsync(responseMessage);
             if (hasProblemDescription)
             {
+                if (problemDescription.Status is not null)
+                {
+                    var httpStatus = (HttpStatusCode)problemDescription.Status;
+                    switch (httpStatus)
+                    {
+                        case HttpStatusCode.NotFound:
+                            throw new ResourceNotFound(problemDescription, innerException);
+                        case HttpStatusCode.InternalServerError:
+                            throw new ServerError(problemDescription, innerException);
+                    }
+                }
                 throw new HypermediaProblemException(problemDescription, innerException);
             }
 
@@ -172,7 +183,7 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             throw new RequestNotSuccessfulException(message, (int)responseMessage.StatusCode, innerException);
         }
 
-        private async Task<(bool hasProblemDescription, ProblemDescription problemDescription)> TryReadProblemStringAsync(HttpResponseMessage response)
+        private async Task<(bool hasProblemDescription, ProblemDetails problemDescription)> TryReadProblemStringAsync(HttpResponseMessage response)
         {
             if (response.Content == null)
             {

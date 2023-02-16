@@ -7,7 +7,7 @@ namespace RESTyard.Client.Exceptions
     /// </summary>
     public class ServerError : HypermediaProblemException
     {
-        public ServerError(ProblemDescription problemDescription, Exception inner = null)
+        public ServerError(ProblemDetails problemDescription, Exception inner = null)
             : base(problemDescription, inner)
         {
         }

@@ -7,7 +7,7 @@ namespace RESTyard.Client.Exceptions
     /// </summary>
     public class MissingPermissions : HypermediaProblemException
     {
-        public MissingPermissions(ProblemDescription problemDescription, Exception inner = null)
+        public MissingPermissions(ProblemDetails problemDescription, Exception inner = null)
             : base(problemDescription, inner)
         {
         }

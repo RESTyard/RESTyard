@@ -7,7 +7,7 @@ namespace RESTyard.Client.Exceptions
     /// </summary>
     public class OperationTimeout : HypermediaProblemException
     {
-        public OperationTimeout(ProblemDescription problemDescription, Exception inner = null)
+        public OperationTimeout(ProblemDetails problemDescription, Exception inner = null)
             : base(problemDescription, inner)
         {
         }

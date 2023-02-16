@@ -7,12 +7,12 @@ namespace RESTyard.Client.Extensions.NewtonsoftJson
 {
     public class NewtonsoftJsonProblemStringReader : IProblemStringReader
     {
-        public bool TryReadProblemString(string problemString, out ProblemDescription problemDescription)
+        public bool TryReadProblemString(string problemString, out ProblemDetails problemDescription)
         {
             problemDescription = null;
             try
             {
-                problemDescription = JsonConvert.DeserializeObject<ProblemDescription>(problemString);
+                problemDescription = JsonConvert.DeserializeObject<ProblemDetails>(problemString);
             }
             catch (Exception)
             {

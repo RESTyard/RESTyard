@@ -3,24 +3,18 @@
 namespace RESTyard.Client.Exceptions
 {
     /// <summary>
-    /// If the request is not successful (http status code != 2xx) this exception is thrown.
+    /// If the request is not successful this exception is thrown.
     /// </summary>
     public class RequestNotSuccessfulException : Exception
     {
-        public RequestNotSuccessfulException(string title, int statusCode, Exception inner = null) : base(title, inner)
+        public RequestNotSuccessfulException(string title, int? status, Exception inner = null) : base(title, inner)
         {
-            this.Title = title;
-            this.StatusCode = statusCode;
+            this.Status = status;
         }
 
         /// <summary>
-        /// A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localisation.
+        /// The status code set by the origin server for this occurrence of the problem.
         /// </summary>
-        public string Title { get; }
-
-        /// <summary>
-        /// The HTTP status code set by the origin server for this occurrence of the problem.
-        /// </summary>
-        public int StatusCode { get; set; }
+        public int? Status { get; set; }
     }
 }
