@@ -1,6 +1,6 @@
 ﻿using System;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,9 +11,9 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
     {
         private static readonly IUrlHelperFactory urlHelperFactory = new UrlHelperFactory();
 
-        public static IUrlHelper GetUrlHelperForCurrentContext(OutputFormatterWriteContext context)
+        public static IUrlHelper GetUrlHelperForCurrentContext(HttpContext httpContext)
         {
-            var requestServices = context.HttpContext.RequestServices;
+            var requestServices = httpContext.RequestServices;
             var actionContext = requestServices.GetRequiredService<IActionContextAccessor>().ActionContext;
             
             return urlHelperFactory.GetUrlHelper(actionContext);

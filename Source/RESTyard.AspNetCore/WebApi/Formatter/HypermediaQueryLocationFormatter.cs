@@ -40,7 +40,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 throw new HypermediaFormatterException($"Formatter expected a {typeof(HypermediaQueryLocation).Name}  but is not.");
             }
 
-            var routeResolver = CreateRouteResolver(context);
+            var routeResolver = CreateRouteResolver(context.HttpContext);
             var location = routeResolver.TypeToRoute(hypermediaQueryLocation.QueryType);
 
             var queryString = queryStringBuilder.CreateQueryString(hypermediaQueryLocation.QueryParameter);

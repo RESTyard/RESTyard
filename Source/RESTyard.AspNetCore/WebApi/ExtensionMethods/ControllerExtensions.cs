@@ -5,6 +5,7 @@ using RESTyard.AspNetCore.ErrorHandling;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Query;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 using RESTyard.MediaTypes;
 
 namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
@@ -72,9 +73,9 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         /// <param name="controller"></param>
         /// <param name="problemDetails">Optional ProblemJson as defined in https://tools.ietf.org/html/rfc7807.</param>
         /// <returns></returns>
-        public static ActionResult UnprocessableEntity(this ControllerBase controller, ProblemDetails problemDetails = null)
+        public static ActionResult UnprocessableEntity(this ControllerBase controller)
         {
-            problemDetails ??= new ProblemDetails
+            var problemDetails = new ProblemDetails
             {
                 Title = "Can not use provided object",
                 Detail = "",
@@ -95,9 +96,9 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         /// <param name="controller"></param>
         /// <param name="problemDetails">Optional ProblemJson as defined in https://tools.ietf.org/html/rfc7807</param>
         /// <returns></returns>
-        public static ActionResult CanNotExecute(this ControllerBase controller, ProblemDetails problemDetails = null)
+        public static ActionResult CanNotExecute(this ControllerBase controller)
         {
-            problemDetails ??= new ProblemDetails
+            var problemDetails = new ProblemDetails
             {
                 Title = "Can not execute Action",
                 Detail = "",
@@ -105,6 +106,25 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
                 Status = (int)HttpStatusCode.BadRequest,
             };
 
+            return controller.Problem(problemDetails);
+        }
+
+        public static ActionResult EntityAlreadyExists(
+            this ControllerBase controller,
+            IHypermediaReferenceRouteProvider referenceRouteProvider,
+            HypermediaObjectReferenceBase htoReferenceBase)
+        {
+            var problemDetails = new ProblemDetails()
+            {
+                Title = "Entity already exists",
+                Detail = "",
+                Type = "WebApi.HypermediaExtensions.Hypermedia.EntityAlreadyExists",
+                Status = (int)HttpStatusCode.BadRequest,
+                Extensions =
+                {
+                    { "Location", referenceRouteProvider.GetRouteUri(controller.HttpContext, htoReferenceBase) },
+                },
+            };
             return controller.Problem(problemDetails);
         }
     }

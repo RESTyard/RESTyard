@@ -1,14 +1,15 @@
 ﻿using System;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
 using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace RESTyard.AspNetCore.WebApi.Formatter
 {
-    public class HypermediaEntityLocationFormatter : HypermediaLocationFormatter<HypermediaEntityLocation>
+    public class HypermediaEntityLocationFormatter : HypermediaLocationFormatter<HypermediaEntityLocation>, IHypermediaReferenceRouteProvider
     {
-        public HypermediaEntityLocationFormatter(IRouteResolverFactory routeResolverFactory,
+        public HypermediaEntityLocationFormatter(
+            IRouteResolverFactory routeResolverFactory,
             IRouteKeyFactory routeKeyFactory,
             IHypermediaUrlConfig defaultHypermediaUrlConfig)
             : base(routeResolverFactory, routeKeyFactory, defaultHypermediaUrlConfig)
@@ -20,7 +21,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             response.StatusCode = (int) item.HttpStatusCode;
         }
 
-        protected override StringValues GetLocation(IHypermediaRouteResolver routeResolver, HypermediaEntityLocation item)
+        protected override string GetLocation(IHypermediaRouteResolver routeResolver, HypermediaEntityLocation item)
         {
             return routeResolver.ReferenceToRoute(item.EntityRef).Url;
         }
@@ -28,6 +29,12 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
         protected override HypermediaEntityLocation GetObject(object locationObject)
         {
             return locationObject as HypermediaEntityLocation;
+        }
+
+        public string GetRouteUri(HttpContext context, HypermediaObjectReferenceBase referenceBase)
+        {
+            var routeResolver = this.CreateRouteResolver(context);
+            return routeResolver.ReferenceToRoute(referenceBase).Url;
         }
     }
 }

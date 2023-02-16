@@ -39,6 +39,8 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
             serviceCollection.AddSingleton<ISirenHypermediaConverterFactory, SirenHypermediaConverterFactory>();
             serviceCollection.AddSingleton<HypermediaQueryLocationFormatter>();
             serviceCollection.AddSingleton<HypermediaEntityLocationFormatter>();
+            serviceCollection.AddSingleton<IHypermediaReferenceRouteProvider>(provider =>
+                provider.GetRequiredService<HypermediaEntityLocationFormatter>());
             serviceCollection.AddSingleton<SirenHypermediaFormatter>();
             
             if (hypermediaOptions.AutoDeliverJsonSchemaForActionParameterTypes)

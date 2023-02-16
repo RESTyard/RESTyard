@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 
@@ -21,10 +22,10 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             DefaultHypermediaUrlConfig = defaultHypermediaUrlConfig ?? new HypermediaUrlConfig();
         }
 
-        protected virtual IHypermediaRouteResolver CreateRouteResolver(OutputFormatterWriteContext context)
+        protected virtual IHypermediaRouteResolver CreateRouteResolver(HttpContext httpContext)
         {
-            var hypermediaUrlConfig = new HypermediaUrlConfigBuilder(DefaultHypermediaUrlConfig, context.HttpContext.Request);
-            var urlHelper = FormatterHelper.GetUrlHelperForCurrentContext(context);
+            var hypermediaUrlConfig = new HypermediaUrlConfigBuilder(DefaultHypermediaUrlConfig, httpContext.Request);
+            var urlHelper = FormatterHelper.GetUrlHelperForCurrentContext(httpContext);
             var routeResolver = RouteResolverFactory.CreateRouteResolver(urlHelper, RouteKeyFactory, hypermediaUrlConfig);
             return routeResolver;
         }

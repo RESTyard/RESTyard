@@ -54,7 +54,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             }
 
             // context influences how routes are resolved
-            var routeResolver = CreateRouteResolver(context);
+            var routeResolver = CreateRouteResolver(context.HttpContext);
             var converter = sirenHypermediaConverterFactory.CreateSirenConverter(routeResolver);
             var sirenJson = converter.ConvertToString(hypermediaObject);
 
