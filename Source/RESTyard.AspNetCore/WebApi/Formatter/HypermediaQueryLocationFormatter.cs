@@ -14,10 +14,8 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
         public HypermediaQueryLocationFormatter(
             IRouteResolverFactory routeResolverFactory,
-            IRouteKeyFactory routeKeyFactory,
-            IQueryStringBuilder queryStringBuilder,
-            IHypermediaUrlConfig defaultHypermediaUrlConfig)
-            : base(routeResolverFactory, routeKeyFactory, defaultHypermediaUrlConfig)
+            IQueryStringBuilder queryStringBuilder)
+            : base(routeResolverFactory)
         {
             this.queryStringBuilder = queryStringBuilder;
         }
@@ -40,7 +38,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 throw new HypermediaFormatterException($"Formatter expected a {typeof(HypermediaQueryLocation).Name}  but is not.");
             }
 
-            var routeResolver = CreateRouteResolver(context);
+            var routeResolver = CreateRouteResolver(context.HttpContext);
             var location = routeResolver.TypeToRoute(hypermediaQueryLocation.QueryType);
 
             var queryString = queryStringBuilder.CreateQueryString(hypermediaQueryLocation.QueryParameter);

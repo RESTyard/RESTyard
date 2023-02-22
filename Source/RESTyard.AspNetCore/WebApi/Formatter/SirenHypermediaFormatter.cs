@@ -16,10 +16,8 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
         public SirenHypermediaFormatter(
             IRouteResolverFactory routeResolverFactory,
-            IRouteKeyFactory routeKeyFactory,
-            ISirenHypermediaConverterFactory sirenHypermediaConverterFactory,
-            IHypermediaUrlConfig defaultHypermediaUrlConfig)
-            : base(routeResolverFactory, routeKeyFactory, defaultHypermediaUrlConfig)
+            ISirenHypermediaConverterFactory sirenHypermediaConverterFactory)
+            : base(routeResolverFactory)
         {
             this.sirenHypermediaConverterFactory = sirenHypermediaConverterFactory;
         }
@@ -54,7 +52,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             }
 
             // context influences how routes are resolved
-            var routeResolver = CreateRouteResolver(context);
+            var routeResolver = CreateRouteResolver(context.HttpContext);
             var converter = sirenHypermediaConverterFactory.CreateSirenConverter(routeResolver);
             var sirenJson = converter.ConvertToString(hypermediaObject);
 

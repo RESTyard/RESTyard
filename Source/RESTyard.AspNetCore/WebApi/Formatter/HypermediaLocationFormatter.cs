@@ -11,10 +11,8 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
     public abstract class HypermediaLocationFormatter<T> : HypermediaOutputFormatter
     {
         protected HypermediaLocationFormatter(
-            IRouteResolverFactory routeResolverFactory,
-            IRouteKeyFactory routeKeyFactory,
-            IHypermediaUrlConfig defaultHypermediaUrlConfig)
-            : base(routeResolverFactory, routeKeyFactory, defaultHypermediaUrlConfig)
+            IRouteResolverFactory routeResolverFactory)
+            : base(routeResolverFactory)
         {
         }
 
@@ -36,7 +34,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 throw new HypermediaFormatterException($"Formatter expected a {typeof(T).Name}  but is not.");
             }
 
-            var routeResolver = CreateRouteResolver(context);
+            var routeResolver = CreateRouteResolver(context.HttpContext);
 
             var location = GetLocation(routeResolver, item);
             var response = context.HttpContext.Response;
@@ -45,12 +43,12 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 
             SetResponseValues(response, item);
 
-            await Task.FromResult(0);
+            await Task.CompletedTask;
         }
 
         protected abstract void SetResponseValues(HttpResponse response, T item);
 
-        protected abstract StringValues GetLocation(IHypermediaRouteResolver routeResolver, T item);
+        protected abstract string GetLocation(IHypermediaRouteResolver routeResolver, T item);
         
         protected abstract T GetObject(object locationObject);
     }

@@ -5,6 +5,7 @@ using RESTyard.AspNetCore.ErrorHandling;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Query;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 using RESTyard.MediaTypes;
 
 namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
@@ -46,59 +47,73 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         }
 
         /// <summary>
-        /// Return a ProblemJson. Status code wil be set according to the ProbkemJson.
+        /// Return a ProblemJson as defined in https://tools.ietf.org/html/rfc7807. Status code will be set according to the ProblemDetails.
         /// </summary>
         /// <param name="controller"></param>
-        /// <param name="problemJson">The Problem description.</param>
-        /// <returns></returns>
-        public static ActionResult Problem(this ControllerBase controller, ProblemJson problemJson)
+        /// <param name="problemDetails">The Problem details.</param>
+        public static ActionResult Problem(this ControllerBase controller, ProblemDetails problemDetails)
         {
-            var objectResult = new ObjectResult(problemJson) {StatusCode = problemJson.StatusCode};
+            var objectResult = new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
             objectResult.ContentTypes.Add(DefaultMediaTypes.ProblemJson);
             return objectResult;
         }
 
         /// <summary>
-        /// Indicates that the provided ActionParameters were tecnicaly correct but the internal validation (in the bussiness logic) did not accept the parameters. 
+        /// Indicates that the provided ActionParameters were technically correct but the internal validation (in the business logic) did not accept the parameters. 
         /// </summary>
         /// <param name="controller"></param>
-        /// <param name="problemJson">Optional Problem Json.</param>
+        /// <param name="problemDetails">Optional ProblemJson as defined in https://tools.ietf.org/html/rfc7807.</param>
         /// <returns></returns>
-        public static ActionResult UnprocessableEntity(this ControllerBase controller, ProblemJson problemJson = null)
+        public static ActionResult UnprocessableEntity(this ControllerBase controller)
         {
-            if (problemJson == null)
+            var problemDetails = new ProblemDetails
             {
-                problemJson = new ProblemJson
-                {
-                    Title = "Can not use provided object",
-                    Detail = "",
-                    ProblemType = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
-                    StatusCode = 422 // Unprocessable Entity
-                };
-            }
-            return new ObjectResult(problemJson) { StatusCode = problemJson.StatusCode };
+                Title = "Can not use provided object",
+                Detail = "",
+                Type = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
+                Status = (int)HttpStatusCode.UnprocessableEntity,
+            };
+
+            return controller.Problem(problemDetails);
         }
 
         /// <summary>
-        /// The action which was requested can not be executed. Migth have changed state since received the Hypermedia.
+        /// The action which was requested can not be executed. Might have changed state since received the Hypermedia.
         /// </summary>
         /// <param name="controller"></param>
-        /// <param name="problemJson"></param>
+        /// <param name="problemDetails">Optional ProblemJson as defined in https://tools.ietf.org/html/rfc7807</param>
         /// <returns></returns>
-        public static ActionResult CanNotExecute(this ControllerBase controller, ProblemJson problemJson = null)
+        public static ActionResult CanNotExecute(this ControllerBase controller)
         {
-            if (problemJson == null)
+            var problemDetails = new ProblemDetails
             {
-                problemJson = new ProblemJson
-                {
-                    Title = "Can not execute Action",
-                    Detail = "",
-                    ProblemType = "WebApi.HypermediaExtensions.Hypermedia.ActionNotAvailable",
-                    StatusCode = 400
-                };
-            }
+                Title = "Can not execute Action",
+                Detail = "",
+                Type = "WebApi.HypermediaExtensions.Hypermedia.ActionNotAvailable",
+                Status = (int)HttpStatusCode.BadRequest,
+            };
 
-            return new ObjectResult(problemJson) { StatusCode = problemJson.StatusCode };
+            return controller.Problem(problemDetails);
+        }
+
+        public static ActionResult EntityAlreadyExists(
+            this ControllerBase controller,
+            IRouteResolverFactory routeResolverFactory,
+            HypermediaObjectReferenceBase htoReferenceBase)
+        {
+            var routeResolver = routeResolverFactory.CreateRouteResolver(controller.HttpContext);
+            var problemDetails = new ProblemDetails()
+            {
+                Title = "Entity already exists",
+                Detail = "",
+                Type = "WebApi.HypermediaExtensions.Hypermedia.EntityAlreadyExists",
+                Status = (int)HttpStatusCode.BadRequest,
+                Extensions =
+                {
+                    { "Location", routeResolver.ReferenceToRoute(htoReferenceBase).Url },
+                },
+            };
+            return controller.Problem(problemDetails);
         }
     }
 }

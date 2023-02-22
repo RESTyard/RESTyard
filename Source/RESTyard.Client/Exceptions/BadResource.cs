@@ -7,7 +7,7 @@ namespace RESTyard.Client.Exceptions
     /// </summary>
     public class BadResource : HypermediaProblemException
     {
-        public BadResource(ProblemDescription problemDescription, Exception inner = null)
+        public BadResource(ProblemDetails problemDescription, Exception inner = null)
             : base(problemDescription, inner)
         {
         }

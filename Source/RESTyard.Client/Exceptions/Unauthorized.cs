@@ -7,7 +7,7 @@ namespace RESTyard.Client.Exceptions
     /// </summary>
     public class Unauthorized : HypermediaProblemException
     {
-        public Unauthorized(ProblemDescription problemDescription, Exception inner = null)
+        public Unauthorized(ProblemDetails problemDescription, Exception inner = null)
             : base(problemDescription, inner)
         {
         }

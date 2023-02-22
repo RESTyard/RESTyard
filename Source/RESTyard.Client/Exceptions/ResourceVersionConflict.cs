@@ -7,7 +7,7 @@ namespace RESTyard.Client.Exceptions
     /// </summary>
     public class ResourceVersionConflict : HypermediaProblemException
     {
-        public ResourceVersionConflict(ProblemDescription problemDescription, Exception inner = null)
+        public ResourceVersionConflict(ProblemDetails problemDescription, Exception inner = null)
             : base(problemDescription, inner)
         {
         }

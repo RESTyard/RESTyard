@@ -47,10 +47,10 @@ namespace RESTyard.AspNetCore.WebApi.Controller
         {
             if (!schemaByTypeName.TryGetValue(parameterTypeName, out var schema))
             {
-                return this.Problem(new ProblemJson
+                return this.Problem(new ProblemDetails()
                 {
-                    ProblemType = $"Unknown parameter type name: '{parameterTypeName}'",
-                    StatusCode = (int)HttpStatusCode.NotFound,
+                    Type = $"Unknown parameter type name: '{parameterTypeName}'",
+                    Status = (int)HttpStatusCode.NotFound,
                     Title = "Unknown action parameter type"
                 });
             }
