@@ -9,24 +9,16 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
     public abstract class HypermediaOutputFormatter : IOutputFormatter
     {
         protected readonly IRouteResolverFactory RouteResolverFactory;
-        protected readonly IRouteKeyFactory RouteKeyFactory;
-        protected readonly IHypermediaUrlConfig DefaultHypermediaUrlConfig;
 
         protected HypermediaOutputFormatter(
-            IRouteResolverFactory routeResolverFactory,
-            IRouteKeyFactory routeKeyFactory,
-            IHypermediaUrlConfig defaultHypermediaUrlConfig = null)
+            IRouteResolverFactory routeResolverFactory)
         {
             RouteResolverFactory = routeResolverFactory;
-            RouteKeyFactory = routeKeyFactory;
-            DefaultHypermediaUrlConfig = defaultHypermediaUrlConfig ?? new HypermediaUrlConfig();
         }
 
         protected virtual IHypermediaRouteResolver CreateRouteResolver(HttpContext httpContext)
         {
-            var hypermediaUrlConfig = new HypermediaUrlConfigBuilder(DefaultHypermediaUrlConfig, httpContext.Request);
-            var urlHelper = FormatterHelper.GetUrlHelperForCurrentContext(httpContext);
-            var routeResolver = RouteResolverFactory.CreateRouteResolver(urlHelper, RouteKeyFactory, hypermediaUrlConfig);
+            var routeResolver = RouteResolverFactory.CreateRouteResolver(httpContext);
             return routeResolver;
         }
 

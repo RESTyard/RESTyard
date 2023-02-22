@@ -11,10 +11,8 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
     public abstract class HypermediaLocationFormatter<T> : HypermediaOutputFormatter
     {
         protected HypermediaLocationFormatter(
-            IRouteResolverFactory routeResolverFactory,
-            IRouteKeyFactory routeKeyFactory,
-            IHypermediaUrlConfig defaultHypermediaUrlConfig)
-            : base(routeResolverFactory, routeKeyFactory, defaultHypermediaUrlConfig)
+            IRouteResolverFactory routeResolverFactory)
+            : base(routeResolverFactory)
         {
         }
 

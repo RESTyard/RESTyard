@@ -14,10 +14,8 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
         public HypermediaQueryLocationFormatter(
             IRouteResolverFactory routeResolverFactory,
-            IRouteKeyFactory routeKeyFactory,
-            IQueryStringBuilder queryStringBuilder,
-            IHypermediaUrlConfig defaultHypermediaUrlConfig)
-            : base(routeResolverFactory, routeKeyFactory, defaultHypermediaUrlConfig)
+            IQueryStringBuilder queryStringBuilder)
+            : base(routeResolverFactory)
         {
             this.queryStringBuilder = queryStringBuilder;
         }

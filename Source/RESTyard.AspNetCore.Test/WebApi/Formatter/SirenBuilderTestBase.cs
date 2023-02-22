@@ -46,10 +46,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         protected void TestInitBase()
         {
             RouteRegister = new RouteRegister();
-            RouteResolverFactory = new RegisterRouteResolverFactory(RouteRegister, new HypermediaExtensionsOptions());
             RouteKeyFactory = new RouteKeyFactory(RouteRegister);
+            RouteResolverFactory = new RegisterRouteResolverFactory(RouteRegister, new HypermediaExtensionsOptions(), RouteKeyFactory, TestUrlConfig);
 
-            RouteResolver = RouteResolverFactory.CreateRouteResolver(UrlHelper, RouteKeyFactory, TestUrlConfig);
+            RouteResolver = RouteResolverFactory.CreateRouteResolver(UrlHelper);
             SirenConverter = CreateSirenConverter();
             SirenConverterNoNullProperties = CreateSirenConverter(new HypermediaConverterConfiguration{ WriteNullProperties = false });
         }

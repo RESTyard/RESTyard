@@ -16,10 +16,8 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
         public SirenHypermediaFormatter(
             IRouteResolverFactory routeResolverFactory,
-            IRouteKeyFactory routeKeyFactory,
-            ISirenHypermediaConverterFactory sirenHypermediaConverterFactory,
-            IHypermediaUrlConfig defaultHypermediaUrlConfig)
-            : base(routeResolverFactory, routeKeyFactory, defaultHypermediaUrlConfig)
+            ISirenHypermediaConverterFactory sirenHypermediaConverterFactory)
+            : base(routeResolverFactory)
         {
             this.sirenHypermediaConverterFactory = sirenHypermediaConverterFactory;
         }

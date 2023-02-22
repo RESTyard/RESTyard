@@ -27,11 +27,11 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
         private readonly TypeInfo externalReferenceTypeInfo = typeof(ExternalReference).GetTypeInfo();
         private readonly TypeInfo internalReferenceTypeInfo = typeof(InternalReference).GetTypeInfo();
 
-        public RegisterRouteResolver(IUrlHelper urlHelper, IRouteKeyFactory routeKeyFactory, IRouteRegister routeRegister, HypermediaExtensionsOptions hypermediaOptions, IHypermediaUrlConfig hypermediaUrlConfig = null)
+        public RegisterRouteResolver(IUrlHelper urlHelper, IRouteKeyFactory routeKeyFactory, IRouteRegister routeRegister, HypermediaExtensionsOptions hypermediaOptions, IHypermediaUrlConfig hypermediaUrlConfig)
         {
             this.RouteRegister = routeRegister;
             this.urlHelper = urlHelper;
-            this.hypermediaUrlConfig = hypermediaUrlConfig ?? new HypermediaUrlConfig();
+            this.hypermediaUrlConfig = hypermediaUrlConfig;
             this.routeKeyFactory = routeKeyFactory;
             this.returnDefaultRouteForUnknownHto = hypermediaOptions.ReturnDefaultRouteForUnknownHto;
             this.defaultRouteSegmentForUnknownHto = hypermediaOptions.DefaultRouteSegmentForUnknownHto;

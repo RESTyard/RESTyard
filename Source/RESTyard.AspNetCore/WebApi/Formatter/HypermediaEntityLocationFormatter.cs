@@ -6,13 +6,11 @@ using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace RESTyard.AspNetCore.WebApi.Formatter
 {
-    public class HypermediaEntityLocationFormatter : HypermediaLocationFormatter<HypermediaEntityLocation>, IHypermediaReferenceRouteProvider
+    public class HypermediaEntityLocationFormatter : HypermediaLocationFormatter<HypermediaEntityLocation>
     {
         public HypermediaEntityLocationFormatter(
-            IRouteResolverFactory routeResolverFactory,
-            IRouteKeyFactory routeKeyFactory,
-            IHypermediaUrlConfig defaultHypermediaUrlConfig)
-            : base(routeResolverFactory, routeKeyFactory, defaultHypermediaUrlConfig)
+            IRouteResolverFactory routeResolverFactory)
+            : base(routeResolverFactory)
         {
         }
 
@@ -29,12 +27,6 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
         protected override HypermediaEntityLocation GetObject(object locationObject)
         {
             return locationObject as HypermediaEntityLocation;
-        }
-
-        public string GetRouteUri(HttpContext context, HypermediaObjectReferenceBase referenceBase)
-        {
-            var routeResolver = this.CreateRouteResolver(context);
-            return routeResolver.ReferenceToRoute(referenceBase).Url;
         }
     }
 }

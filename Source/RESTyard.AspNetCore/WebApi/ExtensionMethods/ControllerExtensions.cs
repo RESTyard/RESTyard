@@ -91,7 +91,7 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
             => throw new NotImplementedException();
 
         /// <summary>
-        /// The action which was requested can not be executed. Migth have changed state since received the Hypermedia.
+        /// The action which was requested can not be executed. Might have changed state since received the Hypermedia.
         /// </summary>
         /// <param name="controller"></param>
         /// <param name="problemDetails">Optional ProblemJson as defined in https://tools.ietf.org/html/rfc7807</param>
@@ -111,9 +111,10 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
 
         public static ActionResult EntityAlreadyExists(
             this ControllerBase controller,
-            IHypermediaReferenceRouteProvider referenceRouteProvider,
+            IRouteResolverFactory routeResolverFactory,
             HypermediaObjectReferenceBase htoReferenceBase)
         {
+            var routeResolver = routeResolverFactory.CreateRouteResolver(controller.HttpContext);
             var problemDetails = new ProblemDetails()
             {
                 Title = "Entity already exists",
@@ -122,7 +123,7 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
                 Status = (int)HttpStatusCode.BadRequest,
                 Extensions =
                 {
-                    { "Location", referenceRouteProvider.GetRouteUri(controller.HttpContext, htoReferenceBase) },
+                    { "Location", routeResolver.ReferenceToRoute(htoReferenceBase).Url },
                 },
             };
             return controller.Problem(problemDetails);
