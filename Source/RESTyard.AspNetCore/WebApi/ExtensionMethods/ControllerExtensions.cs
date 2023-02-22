@@ -46,11 +46,6 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
             return controller.Ok(new HypermediaQueryLocation(queryType, queryParameter));
         }
 
-        [Obsolete("Use the version with ProblemDetails instead")]
-        public static ActionResult Problem(this ControllerBase controller, ProblemJson problemJson)
-            => throw new NotImplementedException();
-
-
         /// <summary>
         /// Return a ProblemJson as defined in https://tools.ietf.org/html/rfc7807. Status code will be set according to the ProblemDetails.
         /// </summary>
@@ -62,10 +57,6 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
             objectResult.ContentTypes.Add(DefaultMediaTypes.ProblemJson);
             return objectResult;
         }
-
-        [Obsolete("use the version with ProblemDetails instead")]
-        public static ActionResult UnprocessableEntity(this ControllerBase controller, ProblemJson problemJson)
-            => throw new NotImplementedException();
 
         /// <summary>
         /// Indicates that the provided ActionParameters were technically correct but the internal validation (in the business logic) did not accept the parameters. 
@@ -85,10 +76,6 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
 
             return controller.Problem(problemDetails);
         }
-
-        [Obsolete("use the version with ProblemDetails instead")]
-        public static ActionResult CanNotExecute(this ControllerBase controller, ProblemJson problemJson)
-            => throw new NotImplementedException();
 
         /// <summary>
         /// The action which was requested can not be executed. Might have changed state since received the Hypermedia.
