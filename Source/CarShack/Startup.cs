@@ -49,12 +49,6 @@ namespace CarShack
             var builder = services.AddMvcCore(
                 options =>
                 {
-                    options.OutputFormatters.Clear();
-                    options.OutputFormatters.Add(new SystemTextJsonOutputFormatter(
-                        new JsonSerializerOptions
-                        {
-                            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                        }));
                     options.Filters.Add(new GlobalExceptionFilter(null));
                     options.EnableEndpointRouting = false;
                 });

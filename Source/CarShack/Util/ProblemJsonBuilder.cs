@@ -1,30 +1,32 @@
-﻿using RESTyard.AspNetCore.ErrorHandling;
+﻿using System.Net;
+using Microsoft.AspNetCore.Mvc;
+using RESTyard.AspNetCore.ErrorHandling;
 
 namespace CarShack.Util
 {
     public static class ProblemJsonBuilder
     {
-        public static ProblemJson CreateEntityNotFound()
+        public static ProblemDetails CreateEntityNotFound()
         {
-            var problem = new ProblemJson
+            var problem = new ProblemDetails()
             {
                 Title = "Entity not found",
                 Detail = string.Empty,
-                ProblemType = "CarShack.EntityNotFound",
-                StatusCode = 404
+                Type = "CarShack.EntityNotFound",
+                Status = (int)HttpStatusCode.NotFound,
             };
 
             return problem;
         }
 
-        public static ProblemJson CreateBadParameters()
+        public static ProblemDetails CreateBadParameters()
         {
-            var problem = new ProblemJson
+            var problem = new ProblemDetails
             {
                 Title = "Bad Parameters",
                 Detail = "Review parameter schema.",
-                ProblemType = "CarShack.BadParameters",
-                StatusCode = 400
+                Type = "CarShack.BadParameters",
+                Status = (int)HttpStatusCode.BadRequest,
             };
 
             return problem;

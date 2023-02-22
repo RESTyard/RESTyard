@@ -5,6 +5,7 @@ namespace RESTyard.AspNetCore.ErrorHandling
     /// <summary>
     /// Problem JSON <see href="https://tools.ietf.org/html/draft-nottingham-http-problem-03"/>
     /// </summary>
+    [Obsolete($"use {nameof(Microsoft)}.{nameof(Microsoft.AspNetCore)}.{nameof(Microsoft.AspNetCore.Mvc)}.{nameof(Microsoft.AspNetCore.Mvc.ProblemDetails)} instead")]
     public class ProblemJson
     {
         /// <summary>

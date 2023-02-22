@@ -5,10 +5,10 @@
         public virtual void Initializer()
         {
             ProblemString = @"{
-    ""Title"": ""SomeProblem"",
-    ""Type"": ""UnitTestProblem"",
-    ""Detail"": ""This Unit Test was unexpectedly green"",
-    ""Status"": 42
+    ""title"": ""SomeProblem"",
+    ""type"": ""UnitTestProblem"",
+    ""detail"": ""This Unit Test was unexpectedly green"",
+    ""status"": 42
 }";
         }
     }

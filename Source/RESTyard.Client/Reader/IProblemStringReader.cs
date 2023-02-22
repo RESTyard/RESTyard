@@ -5,6 +5,6 @@ namespace RESTyard.Client.Reader
 {
     public interface IProblemStringReader
     {
-        bool TryReadProblemString(string problemString, out ProblemDescription problemDescription);
+        bool TryReadProblemString(string problemString, out ProblemDetails problemDescription);
     }
 }
