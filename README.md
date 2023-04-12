@@ -273,6 +273,29 @@ The action attributes allow to specify a media type so it can be transmitted tha
 ```
 Will be rendered to siren as `type` on the action. Default is `application/json`.
 
+### File upload actions
+
+Use the `FileUploadHypermediaAction` to specify a file upload. Pass `FileUploadConfiguration` to send information to the client about allowed behaviour.
+
+Controller example:
+
+```csharp
+// controller
+[HttpPostHypermediaAction("UploadImage", typeof(UploadCarImageOp), AcceptedMediaType = DefaultMediaTypes.MultipartFormData)]
+public async Task<IActionResult> UploadCarImage()
+{
+//...
+}
+
+// action definition
+public class UploadCarImageOp : FileUploadHypermediaAction
+{
+    public UploadCarImageOp(Func<bool> canExecute, FileUploadConfiguration fileUploadConfiguration = null) : base(canExecute, fileUploadConfiguration)
+    {
+    }
+}
+````
+
 ### Calling external APIs using Actions
 
 If it is necessary to call a external API and expose that call as an action there is `HypermediaExternalAction<TParameter>` nad `HypermediaExternalAction` to be used as base for ActionTypes.
@@ -521,6 +544,21 @@ Tested for:
 - Nullable
 
 ## Release Notes
+
+### RESTyard v4.1.0
+
+- New Action available `FileUploadHypermediaAction`
+  - Allows to specify a action which allows file upload
+  - Configuration allows for: 
+    - File size limit
+    - File type
+    - single or multiple file upload
+  - Siren will have an action containing a single field with configuration values
+
+- Actions now have a filled class which indicates the class of the action:
+  - `ParameterLessAction`
+  - `ParameterAction`
+  - `FileUploadAction`
 
 ### RESTyard v3.0.3
 
