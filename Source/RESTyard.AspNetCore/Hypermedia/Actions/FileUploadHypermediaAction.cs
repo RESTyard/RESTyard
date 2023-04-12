@@ -22,6 +22,6 @@ public abstract class FileUploadHypermediaAction : HypermediaActionBase
 
     public override Type ParameterType()
     {
-        return null;
+        return typeof(FileUploadConfiguration);
     }
 }
