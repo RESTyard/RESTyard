@@ -37,12 +37,12 @@
 
   <!-- package image -->
   <ItemGroup>
-    <None Include=".\Images\Ry-Icon_128x128.png" Pack="true" PackagePath="\"/>
+    <None Include=".\Images\Ry-Icon_128x128.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <!-- shared references, compilation flags and build options -->
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="NJsonSchema" Version="10.8.0" />
   </ItemGroup>
 
