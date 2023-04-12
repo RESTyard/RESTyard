@@ -50,7 +50,7 @@ namespace CarShack.Controllers.Cars
         }
 
         [HttpPostHypermediaAction("UploadImage", typeof(UploadCarImageOp), AcceptedMediaType = DefaultMediaTypes.MultipartFormData)]
-        public async Task<IActionResult> UploadCarImage(string brand, int id)
+        public async Task<IActionResult> UploadCarImage()
         {
             // todo file size check and limit
             var request = HttpContext.Request;
@@ -71,7 +71,7 @@ namespace CarShack.Controllers.Cars
                 {
                     Title = "File upload malformed",
                     Detail = $"File upload must be form-data and with boundary",
-                    Status = StatusCodes.Status400BadRequest
+                    Status = StatusCodes.Status415UnsupportedMediaType
                 });
             }
 
@@ -82,6 +82,17 @@ namespace CarShack.Controllers.Cars
             }
 
             var payloadFile = files[0];
+            var maxFileSize = 1024*1024*4;
+            if (payloadFile.Length > maxFileSize)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, new ProblemDetails
+                {
+                    Title = "File too big",
+                    Detail = $"File must be <={maxFileSize}",
+                    Status = StatusCodes.Status400BadRequest
+                });
+                
+            }
             var originalFilename = payloadFile.FileName;
             // Don't trust any file name, file extension, and file data from the request unless you trust them completely
             // Otherwise, it is very likely to cause problems such as virus uploading, disk filling, etc
