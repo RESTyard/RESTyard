@@ -25,5 +25,5 @@ public record FileUploadConfiguration
     /// </list>
     /// Default is empty indicating no limitation.
     /// </summary>
-    public List<string> Accepted { get; set; } = new();
+    public List<string> Accept { get; set; } = new();
 }

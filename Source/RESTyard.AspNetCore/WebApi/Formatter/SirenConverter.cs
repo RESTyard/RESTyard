@@ -203,9 +203,9 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 { "type", InputTypeFile }
             };
 
-            if (fileUploadConfiguration.Accepted.Any())
+            if (fileUploadConfiguration.Accept.Any())
             {
-                jfield.Add(new JProperty("accept", string.Join(", ", fileUploadConfiguration.Accepted)));
+                jfield.Add(new JProperty("accept", string.Join(", ", fileUploadConfiguration.Accept)));
             }
 
             if (fileUploadConfiguration.MaxFileSizeBytes >= 0)

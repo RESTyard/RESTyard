@@ -176,7 +176,7 @@ public partial class HypermediaCarsRootHto
     {
         UploadCarImage = new UploadCarImageOp(() => true, new FileUploadConfiguration
         {
-            Accepted = new List<string> { ".jpg", "image/png", "image/*" },
+            Accept = new List<string> { ".jpg", "image/png", "image/*" },
             AllowMultiple = false,
             MaxFileSizeBytes = 1024 * 1024 * 4
         });
