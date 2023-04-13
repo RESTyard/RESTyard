@@ -89,7 +89,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             fileUploadAction.Should().NotBeNull();
             fileUploadAction!["type"]!.Value<string>().Should().Be("file");
             fileUploadAction!["accept"]!.Value<string>().Should().Be(string.Join(", ", fileUploadConfiguration.Accept));
-            fileUploadAction!["maxfilesizebytes"]!.Value<long>().Should().Be(fileUploadConfiguration.MaxFileSizeBytes);
+            fileUploadAction!["maxFileSizeBytes"]!.Value<long>().Should().Be(fileUploadConfiguration.MaxFileSizeBytes);
+            fileUploadAction!["allowMultiple"]!.Value<bool>().Should().Be(fileUploadConfiguration.AllowMultiple);
         }
 
         private void AssertDefaultValues(JObject action, ActionParameter expectedDefaultValues)

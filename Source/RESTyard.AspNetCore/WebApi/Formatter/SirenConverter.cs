@@ -210,7 +210,12 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
             if (fileUploadConfiguration.MaxFileSizeBytes >= 0)
             {
-                jfield.Add(new JProperty("maxfilesizebytes", fileUploadConfiguration.MaxFileSizeBytes));
+                jfield.Add(new JProperty("maxFileSizeBytes", fileUploadConfiguration.MaxFileSizeBytes));
+            }
+            
+            if (fileUploadConfiguration.AllowMultiple)
+            {
+                jfield.Add(new JProperty("allowMultiple", true));
             }
             
             jAction.Add("class", new JArray { ActionClasses.FileUploadActionClass });
