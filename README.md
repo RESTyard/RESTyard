@@ -275,7 +275,7 @@ Will be rendered to siren as `type` on the action. Default is `application/json`
 
 ### File upload actions
 
-Use the `FileUploadHypermediaAction` to specify a file upload. Pass `FileUploadConfiguration` to send information to the client about allowed behaviour.
+Use the `FileUploadHypermediaAction` or `ExternalFileUploadHypermediaAction` to specify a file upload. Pass `FileUploadConfiguration` to send information to the client about allowed behaviour.
 
 Controller example:
 
