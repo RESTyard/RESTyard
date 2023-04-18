@@ -191,7 +191,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
         {
             const string InputTypeFile = "file";
             
-            if (hypermediaAction is not FileUploadHypermediaAction fileUploadAction)
+            if (hypermediaAction is not IFileUploadConfiguration fileUploadAction)
             {
                 throw new Exception($"Parameter indicates file upload action but action type does not match: {hypermediaAction.GetType()}. Can not create action description.");
             }

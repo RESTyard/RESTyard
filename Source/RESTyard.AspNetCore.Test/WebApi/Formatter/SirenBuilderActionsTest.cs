@@ -16,7 +16,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     [TestClass]
     public class SirenBuilderActionsTest : SirenBuilderTestBase
     {
-        private const string CustomMediaType = "custome/mediatype";
+        private const string CustomMediaType = "custom/mediatype";
 
         [ClassInitialize]
         public static void ClassInit(TestContext context)
@@ -51,7 +51,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             
             var routeNameFileUpload = nameof(FileUploadAction) + "_Route";
             RouteRegister.AddActionRoute(typeof(FileUploadAction), routeNameFileUpload, HttpMethod.POST, DefaultMediaTypes.MultipartFormData);
-
+            
             var ho = new ActionsHypermediaObject();
 
             var siren = SirenConverter.ConvertToJson(ho);
@@ -62,7 +62,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertHasOnlySelfLink(siren, routeName);
 
             var actionsArray = (JArray) siren["actions"];
-            Assert.AreEqual(6, actionsArray!.Count);
+            Assert.AreEqual(7, actionsArray!.Count);
             AssertActionBasic((JObject)siren["actions"]![0], "RenamedAction", "POST", routeNameHypermediaActionNoArgument, 5,  ActionClasses.ParameterLessActionClass, "A Title");
             AssertActionBasic((JObject)siren["actions"][1], "ActionNoArgument", "POST", routeNameHypermediaActionNoArgument, 4,  ActionClasses.ParameterLessActionClass);
 
@@ -70,19 +70,22 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertActionArgument((JObject) siren["actions"][2], CustomMediaType,  nameof(ActionParameter), nameof(ActionParameter),hasDefaultValues:true);
             AssertDefaultValues((JObject) siren["actions"][2], ActionsHypermediaObject.ActionWithArgumentDefaultValues);
             
-            AssertActionBasic((JObject)siren["actions"][3], nameof(ExternalActionNoArgument), "POST", "ExternalAction", 4,  ActionClasses.ParameterLessActionClass);
+            AssertActionBasic((JObject)siren["actions"][3], nameof(ExternalActionNoArgument), "POST", "ExternalActionRoute", 4,  ActionClasses.ParameterLessActionClass);
             
-            AssertActionBasic((JObject)siren["actions"][4], nameof(ExternalActionWithArgument), "DELETE", "ExternalAction", 6,  ActionClasses.ParameterActionClass);
+            AssertActionBasic((JObject)siren["actions"][4], nameof(ExternalActionWithArgument), "DELETE", "ExternalActionRoute", 6,  ActionClasses.ParameterActionClass);
             AssertActionArgument((JObject) siren["actions"][4], CustomMediaType, nameof(ActionParameter),  nameof(ActionParameter),hasDefaultValues:true);
             AssertDefaultValues((JObject) siren["actions"][4], ActionsHypermediaObject.ExternalActionWithArgumentDefaultValues);
             
             AssertActionBasic((JObject)siren["actions"][5], nameof(FileUploadAction), "POST", routeNameFileUpload, 6,  ActionClasses.FileUploadActionClass);
-            AssertFileUploadAction((JObject)siren["actions"][5], ho.FileUploadAction.FileUploadConfiguration);
+            AssertFileUploadAction((JObject)siren["actions"][5], ho.FileUploadAction.FileUploadConfiguration, DefaultMediaTypes.MultipartFormData);
+            
+            AssertActionBasic((JObject)siren["actions"][6], nameof(ExternalFileUploadAction), "POST", "ExternalActionRoute", 6,  ActionClasses.FileUploadActionClass);
+            AssertFileUploadAction((JObject)siren["actions"][6], ho.FileUploadAction.FileUploadConfiguration, CustomMediaType);
         }
 
-        private void AssertFileUploadAction(JObject action, FileUploadConfiguration fileUploadConfiguration)
+        private void AssertFileUploadAction(JObject action, FileUploadConfiguration fileUploadConfiguration, string type)
         {
-            action["type"].Value<string>().Should().Be(DefaultMediaTypes.MultipartFormData);
+            action["type"].Value<string>().Should().Be(type);
             var fields = action["fields"];
             fields.Count().Should().Be(1);
             var fileUploadAction = fields[0];
@@ -170,9 +173,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             public ExternalActionWithArgument ExternalActionWithArgument { get; private set; }
             
             public FileUploadAction FileUploadAction { get; private set; }
+            public ExternalFileUploadAction ExternalFileUploadAction { get; private set; }
 
 
-            public static readonly Uri  ExternalUri = new Uri(TestUrlConfig.Scheme +"://" + TestUrlConfig.Host + "/ExternalAction");
+            public static readonly Uri  ExternalUri = new Uri(TestUrlConfig.Scheme +"://" + TestUrlConfig.Host + "/ExternalActionRoute");
 
             public static readonly ActionParameter ActionWithArgumentDefaultValues = new ActionParameter() { AInt = 3 };
             public static readonly ActionParameter  ExternalActionWithArgumentDefaultValues = new ActionParameter{AInt = 4};
@@ -187,6 +191,17 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
                 ExternalActionNoArgument = new ExternalActionNoArgument(ExternalUri, HttpMethod.POST);
                 ExternalActionWithArgument = new ExternalActionWithArgument(ExternalUri, HttpMethod.DELETE, CustomMediaType, ExternalActionWithArgumentDefaultValues);
                 FileUploadAction = new FileUploadAction(() => true, 
+                    new FileUploadConfiguration
+                    {
+                        MaxFileSizeBytes = 14,
+                        Accept = new List<string>{".png", ".jpg"},
+                        AllowMultiple = true
+                    });     
+                ExternalFileUploadAction = new ExternalFileUploadAction(
+                    () => true,
+                    ExternalUri,
+                    HttpMethod.POST,
+                    CustomMediaType,
                     new FileUploadConfiguration
                     {
                         MaxFileSizeBytes = 14,
@@ -231,6 +246,18 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     public class FileUploadAction : FileUploadHypermediaAction
     {
         public FileUploadAction(Func<bool> canExecute, FileUploadConfiguration fileUploadConfiguration = null) : base(canExecute, fileUploadConfiguration)
+        {
+        }
+    }
+    
+    public class ExternalFileUploadAction : ExternalFileUploadHypermediaAction
+    {
+        public ExternalFileUploadAction(
+            Func<bool> canExecute,
+            Uri externalUri,
+            HttpMethod httpMethod,
+            string acceptedMediaType,
+            FileUploadConfiguration fileUploadConfiguration = null) : base(canExecute, externalUri, httpMethod, acceptedMediaType, fileUploadConfiguration)
         {
         }
     }

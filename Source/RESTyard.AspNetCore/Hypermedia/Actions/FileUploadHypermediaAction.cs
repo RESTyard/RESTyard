@@ -6,11 +6,16 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions;
 /// A HypermediaAction which represents a file upload.
 /// For each concrete type a corresponding attributed route must exist.
 /// </summary>
-public abstract class FileUploadHypermediaAction : HypermediaActionBase
+public abstract class FileUploadHypermediaAction : HypermediaActionBase, IFileUploadConfiguration
 {
     public FileUploadConfiguration FileUploadConfiguration { get; set; }
     
     protected FileUploadHypermediaAction(Func<bool> canExecute, FileUploadConfiguration fileUploadConfiguration = null) : base(canExecute)
+    {
+        FileUploadConfiguration = fileUploadConfiguration ?? new FileUploadConfiguration();
+    }
+    
+    protected FileUploadHypermediaAction(FileUploadConfiguration fileUploadConfiguration = null) : base(() => true)
     {
         FileUploadConfiguration = fileUploadConfiguration ?? new FileUploadConfiguration();
     }
