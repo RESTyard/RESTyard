@@ -11,6 +11,7 @@
     end
 -}}
 #nullable enable
+using System.Collections.Generic;
 using RESTyard.Client;
 using RESTyard.Client.Builder;
 using RESTyard.Client.Hypermedia;
@@ -66,6 +67,13 @@ public partial class {{ typeName }} : HypermediaClientObject
 {{- end }}
     [HypermediaRelations(new[]{ "{{ link.rel }}" })]
     public {{ mapNullableType (!link.mandatory) ("MandatoryHypermediaLink<" + link.document + "Hco>") }} {{ link.rel | string.capitalize }} { get; set; }
+{{ end }}
+{{-
+    for entity in document.Entities
+        entityType = iff (isNotEmpty entity.document) (entity.document + "Hco") "TODO"
+}}
+    [HypermediaRelations(new[]{ "{{ entity.collectionName }}" })]
+    public List<{{ entityType }}> {{ entity.collectionName | string.capitalize }} { get; set; } = default!;
 {{ end }}
 {{- for operation in document.Operations }}
     [HypermediaCommand("{{ operation.name }}")]
