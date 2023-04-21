@@ -20,4 +20,19 @@ func iff
         ret $2
     end
 end
+
+func isVisibleProperty
+    ret !$0.hidden
+end
+
+func checkProperties
+    typeName = $0
+    properties = $1
+
+    for property in properties
+        if property.mandatory && property.hidden
+            warning ("Mandatory property should not be hidden. (" + typeName + "." + property.name + ")")
+        end
+    end
+end
 -}}

@@ -37,7 +37,8 @@ public class DefaultHypermediaClientBuilder
 
 {{ for parametersType in TransferParameters ~}}
 public partial record {{ parametersType.typeName }}(
-    {{- for property in parametersType.Property }}
+    {{- checkProperties parametersType.typeName parametersType.Property }}
+    {{- for property in parametersType.Property | array.filter @isVisibleProperty }}
         {{- mapNullableType (!property.mandatory) property.type }} {{ property.name }}        
         {{- if !for.last }}, {{ end }}
     {{- end }});
@@ -47,10 +48,11 @@ public partial record {{ parametersType.typeName }}(
 [HypermediaClientObject({{ for class in document.Classifications }}"{{ class.class }}"{{ if !for.last }}, {{ end }}{{ end }})]
 public partial class {{ typeName }} : HypermediaClientObject
 {
-{{- for property in document.Properties }}
-{{- if property.mandatory }}
+{{- checkProperties typeName document.Properties }}
+{{- for property in document.Properties | array.filter @isVisibleProperty }}
+{{-     if property.mandatory }}
     [Mandatory]
-{{- end }}
+{{-     end }}
     public {{ mapNullableType (!property.mandatory) property.type }} {{ property.name }} { get; set; }
 {{ end }}
 {{- if document.hasSelfLink }}
