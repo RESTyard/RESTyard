@@ -40,7 +40,7 @@ public class DefaultHypermediaClientBuilder
 public partial record {{ parametersType.typeName }}(
     {{- checkProperties parametersType.typeName parametersType.Property }}
     {{- for property in parametersType.Property | array.filter @isVisibleProperty }}
-        {{- mapNullableType (!property.mandatory) property.type }} {{ property.name }}        
+        {{- mapNullableType (!property.mandatory) property.type }} {{ property.name }}
         {{- if !for.last }}, {{ end }}
     {{- end }});
 {{ end }}
@@ -54,19 +54,19 @@ public partial class {{ typeName }} : HypermediaClientObject
 {{-     if property.mandatory }}
     [Mandatory]
 {{-     end }}
-    public {{ mapNullableType (!property.mandatory) property.type }} {{ property.name }} { get; set; }
+    public {{ mapNullableType (!property.mandatory) property.type }} {{ property.name }} { get; set; } = default!;
 {{ end }}
 {{- if document.hasSelfLink }}
     [Mandatory]
     [HypermediaRelations(new[]{ "self" })]
-    public MandatoryHypermediaLink<{{ typeName }}> Self { get; set; }
+    public MandatoryHypermediaLink<{{ typeName }}> Self { get; set; } = default!;
 {{- end }}
 {{ for link in document.Links }}
 {{- if link.mandatory }}
     [Mandatory]
 {{- end }}
     [HypermediaRelations(new[]{ "{{ link.rel }}" })]
-    public {{ mapNullableType (!link.mandatory) ("MandatoryHypermediaLink<" + link.document + "Hco>") }} {{ link.rel | string.capitalize }} { get; set; }
+    public {{ mapNullableType (!link.mandatory) ("MandatoryHypermediaLink<" + link.document + "Hco>") }} {{ link.rel | string.capitalize }} { get; set; } = default!;
 {{ end }}
 {{-
     for entity in document.Entities
