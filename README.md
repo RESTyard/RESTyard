@@ -331,6 +331,7 @@ To properly fill the placeholder variables for such routes a `KeyProducer` is re
 #### Use attributes to indicate keys
 Use the `Key` attribute to indicate which properties of the HTO should be used to fill the route template variables.
 If there is only one variable to fill it is enough to put the attribute above the desired HTO property.
+*Note*: A `HttpGetHypermediaObject` route must exists for the resolution to be added.
 
 Example:
 The route template: `[HttpGetHypermediaObject("{key:int}", typeof(MyHypermediaObject))]`
