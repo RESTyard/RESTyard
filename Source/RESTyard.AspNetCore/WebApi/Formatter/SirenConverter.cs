@@ -166,6 +166,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
         {
             if (!hypermediaAction.HasParameter())
             {
+                jAction.Add("class", new JArray { ActionClasses.ParameterLessActionClass });
                 return;
             }
             
@@ -177,15 +178,64 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
         {
             var parameterType = hypermediaAction.ParameterType();
 
+            if (parameterType == typeof(FileUploadConfiguration))
+            {
+                AddFileUploadActionDescription(jAction, hypermediaAction);
+            } else
+            {
+                AddJsonParameterActionDescription(jAction, hypermediaAction, parameterType);    
+            }
+        }
+
+        private void AddFileUploadActionDescription(JObject jAction, HypermediaActionBase hypermediaAction)
+        {
+            const string InputTypeFile = "file";
+            
+            if (hypermediaAction is not IFileUploadConfiguration fileUploadAction)
+            {
+                throw new Exception($"Parameter indicates file upload action but action type does not match: {hypermediaAction.GetType()}. Can not create action description.");
+            }
+
+            var fileUploadConfiguration = fileUploadAction.FileUploadConfiguration;
             var jfield = new JObject
             {
-                {"name", parameterType.BeautifulName() },
-                {"type", DefaultMediaTypes.ApplicationJson}
+                { "name", "UploadFiles"},
+                { "type", InputTypeFile }
+            };
+
+            if (fileUploadConfiguration.Accept.Any())
+            {
+                jfield.Add(new JProperty("accept", string.Join(",", fileUploadConfiguration.Accept)));
+            }
+
+            if (fileUploadConfiguration.MaxFileSizeBytes >= 0)
+            {
+                jfield.Add(new JProperty("maxFileSizeBytes", fileUploadConfiguration.MaxFileSizeBytes));
+            }
+            
+            if (fileUploadConfiguration.AllowMultiple)
+            {
+                jfield.Add(new JProperty("allowMultiple", true));
+            }
+            
+            jAction.Add("class", new JArray { ActionClasses.FileUploadActionClass });
+            jAction.Add("fields", new JArray { jfield });
+        }
+
+        private void AddJsonParameterActionDescription(JObject jAction, HypermediaActionBase hypermediaAction, Type parameterType)
+        {
+            jAction.Add("class", new JArray { ActionClasses.ParameterActionClass });
+            
+            var jfield = new JObject
+            {
+                { "name", parameterType.BeautifulName() },
+                { "type", DefaultMediaTypes.ApplicationJson }
             };
 
             if (!routeResolver.TryGetRouteByType(parameterType, out var classRoute))
             {
-                var generatedRouteUrl = routeResolver.RouteUrl(RouteNames.ActionParameterTypes, new { parameterTypeName = parameterType.BeautifulName() });
+                var generatedRouteUrl = routeResolver.RouteUrl(RouteNames.ActionParameterTypes,
+                    new { parameterTypeName = parameterType.BeautifulName() });
                 jfield.Add("class", new JArray { generatedRouteUrl });
             }
             else
@@ -194,7 +244,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             }
 
             AddPrefilledValue(jfield, hypermediaAction);
-
+            
             jAction.Add("fields", new JArray { jfield });
         }
 

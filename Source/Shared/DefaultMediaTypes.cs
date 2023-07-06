@@ -9,5 +9,9 @@ namespace RESTyard.MediaTypes
         public const string Siren = "application/vnd.siren+json";
 
         public const string ProblemJson = "application/problem+json";
+        
+        public const string MultipartFormData = "multipart/form-data";
+        
+        public const string OctetStream = "application/octet-stream";
     }
 }
