@@ -116,6 +116,28 @@ namespace RESTyard.Client.Test
             var allFluent2 = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
             var optionalFluent = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All).NavigateAsync(l => l.Next);
         }
+        
+        [TestMethod]
+        public async Task FileUpload()
+        {
+            var apiRoot = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint);
+            var cars = await apiRoot
+                .NavigateAsync(l => l.Cars);
+            
+            cars.ResultObject.UploadCarImage.ExecuteAsync<>()
+
+            var customer = cars.ResultObject.Customers.First();
+            if (!customer.MarkAsFavorite.CanExecute)
+            {
+                Assert.Inconclusive("Action can not be run on server, not offered.");
+            }
+
+            var actionResult = await customer.MarkAsFavorite.ExecuteAsync(new FavoriteCustomer{ Customer = customer.Self.Uri.ToString() }, this.Resolver); 
+
+            customer = await customer.Self.ResolveAsync();
+            Assert.IsTrue(actionResult.Success);
+            Assert.IsTrue(customer.IsFavorite);
+        }
 
         private static void ConfigureHypermediaObjectRegister(IHypermediaObjectRegister register)
         {

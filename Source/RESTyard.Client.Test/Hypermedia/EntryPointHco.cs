@@ -9,11 +9,15 @@ namespace RESTyard.Client.Test.Hypermedia
     public class EntryPointHco : HypermediaClientObject
     {
         [Mandatory]
-        [HypermediaRelations(new [] { DefaultHypermediaRelations.Self })]
+        [HypermediaRelations(DefaultHypermediaRelations.Self)]
         public MandatoryHypermediaLink<EntryPointHco> Self { get; set; }
 
         [Mandatory]
-        [HypermediaRelations(new[] { "CustomersRoot" })]
+        [HypermediaRelations("CustomersRoot")]
         public MandatoryHypermediaLink<CustomersRootHco> Customers { get; set; }
+        
+        [Mandatory]
+        [HypermediaRelations("CarsRoot")]
+        public MandatoryHypermediaLink<CarsRootHco> Cars { get; set; }
     }
 }

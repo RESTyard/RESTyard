@@ -71,5 +71,23 @@ namespace RESTyard.Client.Extensions
                 parameters);
             return result;
         }
+        
+        public static async Task<HypermediaCommandResult> ExecuteAsync(
+            this IHypermediaClientFileUploadAction action,
+            string fileContent, // todo make stream
+            IHypermediaResolver resolver)
+        {
+            if (!action.CanExecute)
+            {
+                throw new Exception("Can not execute Action.");
+            }
+
+            var result = await resolver.ResolveActionAsync(
+                action.Uri,
+                action.Method,
+                action.ParameterDescriptions,
+                parameters);
+            return result;
+        }
     }
 }
