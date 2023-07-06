@@ -15,7 +15,8 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
         /// </summary>
         public TParameter PrefilledValues { protected set;  get; }
 
-        public HypermediaExternalAction(Func<bool> canExecute,
+        public HypermediaExternalAction(
+            Func<bool> canExecute,
             Uri externalUri,
             HttpMethod httpMethod,
             string acceptedMediaType = DefaultMediaTypes.ApplicationJson,
@@ -25,7 +26,8 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
             PrefilledValues = prefilledValues;
         }
 
-        public HypermediaExternalAction(Uri externalUri,
+        public HypermediaExternalAction(
+            Uri externalUri,
             HttpMethod httpMethod,
             string acceptedMediaType = DefaultMediaTypes.ApplicationJson,
             TParameter prefilledValues = null)
@@ -50,12 +52,14 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
     /// </summary>
     public abstract class HypermediaExternalAction : HypermediaExternalActionBase
     {
-        protected HypermediaExternalAction(Func<bool> canExecute,
+        protected HypermediaExternalAction(
+            Func<bool> canExecute,
             Uri externalUri,
             HttpMethod httpMethod) 
             : base(canExecute, externalUri, httpMethod) { }
 
-        protected HypermediaExternalAction(Uri externalUri,
+        protected HypermediaExternalAction(
+            Uri externalUri,
             HttpMethod httpMethod)
             : base(() => true, externalUri, httpMethod) { }
 

@@ -273,6 +273,29 @@ The action attributes allow to specify a media type so it can be transmitted tha
 ```
 Will be rendered to siren as `type` on the action. Default is `application/json`.
 
+### File upload actions
+
+Use the `FileUploadHypermediaAction` or `ExternalFileUploadHypermediaAction` to specify a file upload. Pass `FileUploadConfiguration` to send information to the client about allowed behaviour.
+
+Controller example:
+
+```csharp
+// controller
+[HttpPostHypermediaAction("UploadImage", typeof(UploadCarImageOp), AcceptedMediaType = DefaultMediaTypes.MultipartFormData)]
+public async Task<IActionResult> UploadCarImage()
+{
+//...
+}
+
+// action definition
+public class UploadCarImageOp : FileUploadHypermediaAction
+{
+    public UploadCarImageOp(Func<bool> canExecute, FileUploadConfiguration fileUploadConfiguration = null) : base(canExecute, fileUploadConfiguration)
+    {
+    }
+}
+````
+
 ### Calling external APIs using Actions
 
 If it is necessary to call a external API and expose that call as an action there is `HypermediaExternalAction<TParameter>` nad `HypermediaExternalAction` to be used as base for ActionTypes.
@@ -308,6 +331,7 @@ To properly fill the placeholder variables for such routes a `KeyProducer` is re
 #### Use attributes to indicate keys
 Use the `Key` attribute to indicate which properties of the HTO should be used to fill the route template variables.
 If there is only one variable to fill it is enough to put the attribute above the desired HTO property.
+*Note*: A `HttpGetHypermediaObject` route must exists for the resolution to be added.
 
 Example:
 The route template: `[HttpGetHypermediaObject("{key:int}", typeof(MyHypermediaObject))]`
@@ -521,6 +545,21 @@ Tested for:
 - Nullable
 
 ## Release Notes
+
+### RESTyard v4.1.0
+
+- New Actions available `FileUploadHypermediaAction` and `ExternalFileUploadHypermediaAction`
+  - Allows to specify a action which allows file upload
+  - Configuration allows for: 
+    - File size limit
+    - File type
+    - single or multiple file upload
+  - Siren will have an action containing a single field with configuration values
+
+- Actions now have a filled class which indicates the class of the action:
+  - `ParameterLessAction`
+  - `ParameterAction`
+  - `FileUploadAction`
 
 ### RESTyard v3.0.3
 
