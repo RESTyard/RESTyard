@@ -48,6 +48,7 @@ public static class MimeTypes
     for parametersType in TransferParameters
         interfaces = []
         arguments = []
+        checkProperties parametersType.typeName parametersType.Property
         for property in parametersType.Property
             if property.mandatory
                 arg = property.type + " " + property.name
@@ -82,6 +83,7 @@ public partial record {{ parametersType.typeName }}(
 public partial class {{ typeName }} : {{ iff document.isQueryResult "HypermediaQueryResult" "HypermediaObject" }}
 {
 {{- keyProperty = null
+    checkProperties typeName document.Properties
     for property in document.Properties }}
 {{ if property.isKey
     keyProperty = property ~}}

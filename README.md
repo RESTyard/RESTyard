@@ -548,7 +548,7 @@ Tested for:
 
 ### RESTyard v4.1.0
 
-- New Action available `FileUploadHypermediaAction`
+- New Actions available `FileUploadHypermediaAction` and `ExternalFileUploadHypermediaAction`
   - Allows to specify a action which allows file upload
   - Configuration allows for: 
     - File size limit
