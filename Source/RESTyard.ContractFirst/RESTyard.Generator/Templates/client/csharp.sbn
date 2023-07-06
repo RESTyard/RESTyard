@@ -11,6 +11,9 @@
     end
 -}}
 #nullable enable
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using RESTyard.Client;
 using RESTyard.Client.Builder;
 using RESTyard.Client.Hypermedia;
@@ -35,17 +38,24 @@ public class DefaultHypermediaClientBuilder
             });
 }
 
-{{ for parametersType in TransferParameters ~}}
+{{
+    for parametersType in TransferParameters 
+        mandatoryArguments = gatherMandatoryParameterArguments parametersType
+        optionalArguments = gatherOptionalParameterArguments parametersType
+        mandatoryParentArguments = gatherMandatoryParameterParentArguments TransferParameters parametersType
+        optionalParentArguments = gatherOptionalParameterParentArguments TransferParameters parametersType
+        allArguments = mandatoryParentArguments | array.concat mandatoryArguments | array.concat optionalParentArguments | array.concat optionalArguments
+~}}
 public partial record {{ parametersType.typeName }}(
-    {{- for property in parametersType.Property }}
-        {{- mapNullableType (!property.mandatory) property.type }} {{ property.name }}        
+    {{- for arg in allArguments }}
+        {{- arg }}
         {{- if !for.last }}, {{ end }}
-    {{- end }});
+    {{- end }}){{ if isNotEmpty parametersType.parentType }} : {{parametersType.parentType}}({{ for arg in mandatoryParentArguments }}{{ arg | string.split ' ' | array.last }}{{- if !for.last }}, {{ end }}{{ end }}{{ if (array.size mandatoryParentArguments) != 0 && (array.size optionalParentArguments) != 0 }}, {{ end }}{{ for arg in optionalParentArguments }}{{ arg | string.split ' ' | array.offset 1 | array.first }}{{- if !for.last }}, {{ end }}{{ end }}){{ end }};
 {{ end }}
 {{- for document in Documents }}
 {{- typeName = document.name + "Hco" }}
 [HypermediaClientObject({{ for class in document.Classifications }}"{{ class.class }}"{{ if !for.last }}, {{ end }}{{ end }})]
-public partial class {{ typeName }} : HypermediaClientObject
+public partial class {{ typeName }} : {{ if isNotEmpty document.parentDocument }}{{ document.parentDocument + "Hco" }}{{ else }}HypermediaClientObject{{ end }}
 {
 {{- for property in document.Properties }}
 {{- if property.mandatory }}
@@ -56,7 +66,7 @@ public partial class {{ typeName }} : HypermediaClientObject
 {{- if document.hasSelfLink }}
     [Mandatory]
     [HypermediaRelations(new[]{ "self" })]
-    public MandatoryHypermediaLink<{{ typeName }}> Self { get; set; }
+    public {{ if isNotEmpty document.parentDocument }}new {{ end }}MandatoryHypermediaLink<{{ typeName }}> Self { get; set; }
 {{- end }}
 {{ for link in document.Links }}
 {{- if link.mandatory }}

@@ -73,10 +73,60 @@ func gatherParentArguments
 end
 
 func findParent
-    for document in $0
-        if document.name == $1
-            ret document
+    for docTempVal in $0
+        if docTempVal.name == $1
+            ret docTempVal
         end
     end
 end
+
+func gatherMandatoryParameterArguments
+    argumentsRetVal = []
+    for property in $0.Property
+        if property.mandatory
+            arg = property.type + " " + property.name
+            argumentsRetVal = array.add argumentsRetVal arg
+        end
+    end
+    ret argumentsRetVal
+end
+func gatherOptionalParameterArguments
+    argumentsRetVal = []
+    for property in $0.Property
+        if !property.mandatory
+            arg = (mapNullableType true property.type) + " " + property.name + " = default"
+            argumentsRetVal = array.add argumentsRetVal arg
+        end
+    end
+    ret argumentsRetVal
+end
+
+func gatherMandatoryParameterParentArguments
+    parentArgumentsRetVal = []
+    currentTransferParameters = $1
+    while isNotEmpty currentTransferParameters.parentType
+        currentTransferParameters = findParentParameters $0 currentTransferParameters.parentType
+        parentArgumentsRetVal = array.concat (gatherMandatoryParameterArguments currentTransferParameters) parentArgumentsRetVal
+    end
+    ret parentArgumentsRetVal
+end
+
+func gatherOptionalParameterParentArguments
+    parentArgumentsRetVal = []
+    currentTransferParameters = $1
+    while isNotEmpty currentTransferParameters.parentType
+        currentTransferParameters = findParentParameters $0 currentTransferParameters.parentType
+        parentArgumentsRetVal = array.concat (gatherOptionalParameterArguments currentTransferParameters) parentArgumentsRetVal
+    end
+    ret parentArgumentsRetVal
+end
+
+func findParentParameters
+    for parameters in $0
+        if parameters.typeName == $1
+            ret parameters
+        end
+    end
+end
+
 -}}

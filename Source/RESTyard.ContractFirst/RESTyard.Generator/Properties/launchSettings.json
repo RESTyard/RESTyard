@@ -2,11 +2,11 @@
   "profiles": {
     "Generate C# Client": {
       "commandName": "Project",
-      "commandLineArgs": "--schema-file ../../../../Sample.xml --type client --language csharp --output-file ../../../../Hypermedia.Generator.Demo.Client/Hypermedia.Client.g.cs --namespace Hypermedia.Generator.Demo.Client"
+      "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --type client --language csharp --output-file ../../../../../RESTyard.Client.Test/Hypermedia/Hypermedia.Client.g.cs --namespace RESTyard.Client.Test.Hypermedia"
     },
     "Generate TS Client": {
       "commandName": "Project",
-      "commandLineArgs": "--schema-file ../../../../Sample.xml --type client --language typescript --output-file ../../../../Hypermedia.Generator.Demo.Server/wwwroot/Hypermedia.Client.g.ts --include-file ../../../../include.ts"
+      "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --type client --language typescript --output-file ../../../../Hypermedia.Generator.Demo.Server/wwwroot/Hypermedia.Client.g.ts --include-file ../../../../include.ts"
     },
     "Generate Server": {
       "commandName": "Project",

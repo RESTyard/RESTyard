@@ -47,19 +47,12 @@ public static class MimeTypes
 {{
     for parametersType in TransferParameters
         interfaces = []
-        arguments = []
-        for property in parametersType.Property
-            if property.mandatory
-                arg = property.type + " " + property.name
-                arguments = array.add arguments arg
-            end
-        end
-        for property in parametersType.Property
-            if !property.mandatory
-                arg = (mapNullableType true property.type) + " " + property.name + " = default"
-                arguments = array.add arguments arg
-            end
-        end
+        mandatoryArguments = gatherMandatoryParameterArguments parametersType
+        optionalArguments = gatherOptionalParameterArguments parametersType
+        mandatoryParentArguments = gatherMandatoryParameterParentArguments TransferParameters parametersType
+        optionalParentArguments = gatherOptionalParameterParentArguments TransferParameters parametersType
+        allArguments = mandatoryParentArguments | array.concat mandatoryArguments | array.concat optionalParentArguments | array.concat optionalArguments
+
         if parametersType.usedForQueries
             interfaces = array.add interfaces "IHypermediaQuery"
         end
@@ -68,10 +61,10 @@ public static class MimeTypes
         end
 ~}}
 public partial record {{ parametersType.typeName }}(
-    {{- for arg in arguments }}
+    {{- for arg in allArguments }}
         {{- arg }}
         {{- if !for.last }}, {{ end }}
-    {{- end }}){{ for interface in interfaces }}{{ if for.first }} : {{ end }}{{ interface }}{{ if !for.last }}, {{ end }}{{ end }};
+    {{- end }}){{ if isNotEmpty parametersType.parentType }} : {{parametersType.parentType}}({{ for arg in mandatoryParentArguments }}{{ arg | string.split ' ' | array.last }}{{- if !for.last }}, {{ end }}{{ end }}{{ if (array.size mandatoryParentArguments) != 0 && (array.size optionalParentArguments) != 0 }}, {{ end }}{{ for arg in optionalParentArguments }}{{ arg | string.split ' ' | array.offset 1 | array.first }}{{- if !for.last }}, {{ end }}{{ end }}){{ end }}{{ for interface in interfaces }}{{ if for.first }}{{ if isNotEmpty parametersType.parentType }}, {{ else }} : {{ end }}{{ end }}{{ interface }}{{ if !for.last }}, {{ end }}{{ end }};
 {{ end }}
 {{-
     for document in Documents
