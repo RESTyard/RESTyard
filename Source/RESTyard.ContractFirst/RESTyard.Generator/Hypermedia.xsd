@@ -41,6 +41,7 @@
 		<xs:attribute type="xs:string" name="title" use="optional"/>
 		<xs:attribute type="xs:boolean" name="isQueryResult" use="optional"/>
 		<xs:attribute type="xs:boolean" name="hasSelfLink" default="true" use="optional" />
+		<xs:attribute type="xs:string" name="parentDocument" use="optional" />
 	</xs:complexType>
 
 	<!-- Properties -->
@@ -103,6 +104,7 @@
 		<xs:attribute type="xs:string" name="typeName" use="required"/>
 		<xs:attribute type="xs:boolean" name="usedForQueries" use="required"/>
 		<xs:attribute type="xs:boolean" name="usedForActions" use="required"/>
+		<xs:attribute type="xs:string" name="parentType" use="optional" />
 	</xs:complexType>
 
 	<xs:complexType name="QueryParametersType">

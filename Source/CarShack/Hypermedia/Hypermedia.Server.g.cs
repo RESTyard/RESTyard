@@ -79,6 +79,81 @@ public partial class HypermediaCarHto : HypermediaObject
     }
 }
 
+[HypermediaObject(Title = "Derived Car", Classes = new string[]{ "DerivedCar" })]
+public partial class DerivedCarHto : HypermediaCarHto
+{
+    public string? DerivedProperty { get; set; }
+
+    [HypermediaAction(Name = "Derived", Title = "Derived Operation")]
+    public DerivedOp Derived { get; init; }
+
+    public DerivedCarHto(
+        int? id,
+        string? brand,
+        IEnumerable<float>? priceDevelopment,
+        List<Country>? popularCountries,
+        Country? mostPopularIn,
+        string? derivedProperty,
+        DerivedOp derived,
+        IEnumerable<HypermediaCustomerHto> item,
+        bool hasDerivedLink,
+        object? derivedLinkKey
+    ) : base(
+            id,
+            brand,
+            priceDevelopment,
+            popularCountries,
+            mostPopularIn)
+    {
+        this.DerivedProperty = derivedProperty;
+        this.Derived = derived;
+        Entities.AddRange("item", item);
+        if (hasDerivedLink)
+        {
+            Links.Add("DerivedLink", new HypermediaObjectKeyReference(typeof(HypermediaCustomerHto), derivedLinkKey));
+        }
+    }
+
+    public partial class DerivedOp : HypermediaAction
+    {
+        public DerivedOp(Func<bool> canExecuteDerived)
+            : base(canExecuteDerived) { }
+    }
+}
+
+[HypermediaObject(Title = "Derives from Derived Car", Classes = new string[]{ "NextLevelDerivedCar" })]
+public partial class NextLevelDerivedCarHto : DerivedCarHto
+{
+    public string?  NextLevelDerivedProperty { get; set; }
+
+    public NextLevelDerivedCarHto(
+        int? id,
+        string? brand,
+        IEnumerable<float>? priceDevelopment,
+        List<Country>? popularCountries,
+        Country? mostPopularIn,
+        string? derivedProperty,
+        DerivedOp derived,
+        IEnumerable<HypermediaCustomerHto> item,
+        bool hasDerivedLink,
+        object? derivedLinkKey,
+        string? nextLevelDerivedProperty
+    ) : base(
+            id,
+            brand,
+            priceDevelopment,
+            popularCountries,
+            mostPopularIn,
+            derivedProperty,
+            derived,
+            item,
+            hasDerivedLink,
+            derivedLinkKey)
+    {
+        this.NextLevelDerivedProperty = nextLevelDerivedProperty;
+    }
+}
+
 [HypermediaObject(Title = "The Customers API", Classes = new string[]{ "CustomersRoot" })]
 public partial class HypermediaCustomersRootHto : HypermediaObject
 {

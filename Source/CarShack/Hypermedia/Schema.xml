@@ -44,6 +44,31 @@
                 <Property name="MostPopularIn" type="Country" />
             </Properties>
         </Document>
+        <Document name="DerivedCar" title="Derived Car" parentDocument="HypermediaCar">
+            <Classifications>
+                <Classification class="DerivedCar" />
+            </Classifications>
+            <Properties>
+                <Property name="DerivedProperty" type="string" />
+            </Properties>
+          <Operations>
+            <Operation name="Derived" method="Post" title="Derived Operation" />
+          </Operations>
+          <Entities>
+            <Entity collectionName="item" document="HypermediaCustomer" />
+          </Entities>
+          <Links>
+            <Link rel="DerivedLink" mandatory="false" document="HypermediaCustomer" />
+          </Links>
+        </Document>
+      <Document name="NextLevelDerivedCar" title="Derives from Derived Car" parentDocument="DerivedCar">
+        <Classifications>
+          <Classification class="NextLevelDerivedCar" />
+        </Classifications>
+        <Properties>
+          <Property name="NextLevelDerivedProperty" type="string" />
+        </Properties>
+      </Document>
         <Document name="HypermediaCustomersRoot" title="The Customers API">
             <Classifications>
                 <Classification class="CustomersRoot" />

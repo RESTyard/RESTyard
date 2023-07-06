@@ -20,4 +20,63 @@ func iff
         ret $2
     end
 end
+
+func gatherArguments
+    argumentsRetVal = []
+    for property in $0.Properties
+        arg = (mapNullableType (!property.mandatory) property.type) + " " + (property.name | uncapitalize)
+        argumentsRetVal = array.add argumentsRetVal arg
+    end
+    for operation in $0.Operations
+        arg = operation.name + "Op " + (operation.name | uncapitalize)
+        argumentsRetVal = array.add argumentsRetVal arg
+    end
+    for entity in $0.Entities
+        arg = "IEnumerable<HypermediaObjectReferenceBase> " + (entity.collectionName | uncapitalize)
+        if isNotEmpty entity.document
+            arg = "IEnumerable<" + entity.document + "Hto> " + (entity.collectionName | uncapitalize)
+        end
+        argumentsRetVal = array.add argumentsRetVal arg
+    end
+    for link in $0.Links
+        if isNotEmpty link.document
+            if !link.mandatory
+                arg = "bool has" + link.rel
+                argumentsRetVal = array.add argumentsRetVal arg
+            end
+            if isNotEmpty link.query
+                arg = link.query + " " + (link.rel | uncapitalize) + "Query"
+                argumentsRetVal = array.add argumentsRetVal arg
+            end
+            arg = "object? " + (link.rel | uncapitalize) + "Key"
+            argumentsRetVal = array.add argumentsRetVal arg
+        else
+            arg = (mapNullableType (!link.mandatory) "HypermediaObjectReferenceBase") + " " + (link.rel | uncapitalize)
+            argumentsRetVal = array.add argumentsRetVal arg
+        end
+    end
+    if $0.isQueryResult
+        arg = "IHypermediaQuery query"
+        argumentsRetVal = array.add argumentsRetVal arg
+    end
+    ret argumentsRetVal
+end
+
+func gatherParentArguments
+    parentArgumentsRetVal = []
+    currentDocument = $1
+    while isNotEmpty currentDocument.parentDocument
+        currentDocument = findParent $0 currentDocument.parentDocument
+        parentArgumentsRetVal = array.concat (gatherArguments currentDocument) parentArgumentsRetVal
+    end
+    ret parentArgumentsRetVal
+end
+
+func findParent
+    for document in $0
+        if document.name == $1
+            ret document
+        end
+    end
+end
 -}}
