@@ -41,10 +41,10 @@ namespace CarShack.Controllers.Customers
             }
 
             var queryResult = await customerRepository.QueryAsync(query).ConfigureAwait(false);
-            var resultReferences = new List<HypermediaObjectReferenceBase>();
+            var resultReferences = new List<HypermediaCustomerHto>();
             foreach (var customer in queryResult.Entities)
             {
-                resultReferences.Add(new HypermediaObjectReference(customer.ToHto()));
+                resultReferences.Add(customer.ToHto());
             }
 
             var result = new HypermediaCustomerQueryResultHto(resultReferences, queryResult.TotalCountOfEnties, query);

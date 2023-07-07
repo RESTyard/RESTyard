@@ -9,6 +9,13 @@
             <Property name="CarId" type="int" mandatory="true" />
             <Property name="Price" type="double" />
         </Parameters>
+      <Parameters typeName="BuyLamborghiniParameters" parentType="BuyCarParameters" usedForQueries="true">
+        <Property name="Color" type="string" mandatory="true" />
+        <Property name="OptionalProperty" type="int" />
+      </Parameters>
+      <Parameters typeName="BuyLamborghinettaParameters" parentType="BuyLamborghiniParameters" usedForActions="true">
+        <Property name="HorsePower" type="int" mandatory="true" />
+      </Parameters>
         <Parameters typeName="NewAddress" usedForQueries="false" usedForActions="true">
             <Property name="Address" type="string" mandatory="true" />
         </Parameters>
@@ -19,8 +26,8 @@
                 <Classification class="Entrypoint" />
             </Classifications>
             <Links>
-                <Link rel="CustomersRoot" mandatory="true" />
-                <Link rel="CarsRoot" mandatory="true" />
+                <Link rel="CustomersRoot" mandatory="true" document="HypermediaCustomersRoot" />
+                <Link rel="CarsRoot" mandatory="true" document="HypermediaCarsRoot" />
             </Links>
         </Document>
         <Document name="HypermediaCarsRoot" title="The Cars API">
@@ -28,7 +35,7 @@
                 <Classification class="CarsRoot" />
             </Classifications>
             <Links>
-                <Link rel="NiceCar" mandatory="true" />
+                <Link rel="NiceCar" document="DerivedCar" mandatory="true" />
                 <Link rel="SuperCar" document="HypermediaCar" mandatory="true" />
             </Links>
         </Document>
@@ -80,7 +87,7 @@
             <Links>
                 <Link rel="all" document="HypermediaCustomerQueryResult" query="CustomerQuery" mandatory="true" />
                 <Link rel="BestCustomer" document="HypermediaCustomer" mandatory="true" />
-                <Link rel="GreatSite" mandatory="true" />
+                <Link rel="GreatSite" document="HypermediaCustomer" mandatory="true" />
             </Links>
         </Document>
         <Document name="HypermediaCustomer">
@@ -110,7 +117,7 @@
                 <Property name="CurrentEntitiesCount" type="int" />
             </Properties>
             <Entities>
-                <Entity collectionName="item" />
+                <Entity collectionName="item" document="HypermediaCustomer" />
             </Entities>
         </Document>
     </Documents>

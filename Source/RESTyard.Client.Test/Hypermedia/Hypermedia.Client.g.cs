@@ -31,6 +31,7 @@ public class DefaultHypermediaClientBuilder
 public partial record CreateCustomerParameters(string Name);
 public partial record BuyCarParameters(string Brand, int CarId, double? Price = default);
 public partial record BuyLamborghiniParameters(string Brand, int CarId, string Color, double? Price = default, int? OptionalProperty = default) : BuyCarParameters(Brand, CarId, Price);
+public partial record BuyLamborghinettaParameters(string Brand, int CarId, string Color, int HorsePower, double? Price = default, int? OptionalProperty = default) : BuyLamborghiniParameters(Brand, CarId, Color, Price, OptionalProperty);
 public partial record NewAddress(string Address);
 
 [HypermediaClientObject("Entrypoint")]

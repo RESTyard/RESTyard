@@ -214,7 +214,7 @@ public static class HypermediaMappingExtensions
 
 public partial class HypermediaCustomerQueryResultHto
 {
-    public HypermediaCustomerQueryResultHto(ICollection<HypermediaObjectReferenceBase> entities, int totalEntities,
+    public HypermediaCustomerQueryResultHto(ICollection<HypermediaCustomerHto> entities, int totalEntities,
         CustomerQuery query) : this(totalEntities, entities.Count, entities, query)
     {
     }

@@ -122,9 +122,9 @@ func gatherOptionalParameterParentArguments
 end
 
 func findParentParameters
-    for parameters in $0
-        if parameters.typeName == $1
-            ret parameters
+    for parametersRetVal in $0
+        if parametersRetVal.typeName == $1
+            ret parametersRetVal
         end
     end
 end

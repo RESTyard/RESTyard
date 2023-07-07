@@ -20,18 +20,20 @@ public static class MimeTypes
 
 public partial record CreateCustomerParameters(string Name) : IHypermediaActionParameter;
 public partial record BuyCarParameters(string Brand, int CarId, double? Price = default) : IHypermediaActionParameter;
+public partial record BuyLamborghiniParameters(string Brand, int CarId, string Color, double? Price = default, int? OptionalProperty = default) : BuyCarParameters(Brand, CarId, Price), IHypermediaQuery;
+public partial record BuyLamborghinettaParameters(string Brand, int CarId, string Color, int HorsePower, double? Price = default, int? OptionalProperty = default) : BuyLamborghiniParameters(Brand, CarId, Color, Price, OptionalProperty), IHypermediaActionParameter;
 public partial record NewAddress(string Address) : IHypermediaActionParameter;
 
 [HypermediaObject(Title = "Entry to the Rest API", Classes = new string[]{ "Entrypoint" })]
 public partial class HypermediaEntrypointHto : HypermediaObject
 {
     public HypermediaEntrypointHto(
-                HypermediaObjectReferenceBase customersRoot,
-        HypermediaObjectReferenceBase carsRoot
+                object? customersRootKey,
+        object? carsRootKey
     ) : base(hasSelfLink: true)
     {
-        Links.Add("CustomersRoot", customersRoot);
-        Links.Add("CarsRoot", carsRoot);
+        Links.Add("CustomersRoot", new HypermediaObjectKeyReference(typeof(HypermediaCustomersRootHto), customersRootKey));
+        Links.Add("CarsRoot", new HypermediaObjectKeyReference(typeof(HypermediaCarsRootHto), carsRootKey));
     }
 }
 
@@ -39,11 +41,11 @@ public partial class HypermediaEntrypointHto : HypermediaObject
 public partial class HypermediaCarsRootHto : HypermediaObject
 {
     public HypermediaCarsRootHto(
-        HypermediaObjectReferenceBase niceCar,
+        object? niceCarKey,
         object? superCarKey
     ) : base(hasSelfLink: true)
     {
-        Links.Add("NiceCar", niceCar);
+        Links.Add("NiceCar", new HypermediaObjectKeyReference(typeof(DerivedCarHto), niceCarKey));
         Links.Add("SuperCar", new HypermediaObjectKeyReference(typeof(HypermediaCarHto), superCarKey));
     }
 }
@@ -169,14 +171,14 @@ public partial class HypermediaCustomersRootHto : HypermediaObject
         CustomerQuery allQuery,
         object? allKey,
         object? bestCustomerKey,
-        HypermediaObjectReferenceBase greatSite
+        object? greatSiteKey
     ) : base(hasSelfLink: true)
     {
         this.CreateCustomer = createCustomer;
         this.CreateQuery = createQuery;
         Links.Add("all", new HypermediaObjectQueryReference(typeof(HypermediaCustomerQueryResultHto), allQuery, allKey));
         Links.Add("BestCustomer", new HypermediaObjectKeyReference(typeof(HypermediaCustomerHto), bestCustomerKey));
-        Links.Add("GreatSite", greatSite);
+        Links.Add("GreatSite", new HypermediaObjectKeyReference(typeof(HypermediaCustomerHto), greatSiteKey));
     }
 
     public partial class CreateCustomerOp : HypermediaAction<CreateCustomerParameters>
@@ -276,7 +278,7 @@ public partial class HypermediaCustomerQueryResultHto : HypermediaQueryResult
     public HypermediaCustomerQueryResultHto(
         int? totalEntities,
         int? currentEntitiesCount,
-        IEnumerable<HypermediaObjectReferenceBase> item,
+        IEnumerable<HypermediaCustomerHto> item,
         IHypermediaQuery query
     ) : base(query)
     {

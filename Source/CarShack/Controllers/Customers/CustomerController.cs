@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Net;
+using System.Threading.Tasks;
 using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
 using CarShack.Hypermedia.Cars;
@@ -50,12 +51,12 @@ namespace CarShack.Controllers.Customers
         {
             if (favoriteCustomer == null)
             {
-                var problem = new ProblemJson
+                var problem = new ProblemDetails
                 {
                     Title = $"Can not use provided object of type '{typeof(MarkAsFavoriteParameters)}'",
                     Detail = "Json or contained links might be invalid",
-                    ProblemType = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
-                    StatusCode = 422 // Unprocessable Entity
+                    Type = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
+                    Status = (int)HttpStatusCode.UnprocessableEntity,
                 };
                 return this.UnprocessableEntity(problem);
             }
@@ -80,12 +81,12 @@ namespace CarShack.Controllers.Customers
             }
             catch (InvalidLinkException e)
             {
-                var problem = new ProblemJson()
+                var problem = new ProblemDetails()
                 {
                     Title = $"Can not use provided object of type '{typeof(MarkAsFavoriteParameters)}'",
                     Detail = e.Message,
-                    ProblemType = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
-                    StatusCode = 422 // Unprocessable Entity
+                    Type = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
+                    Status = (int)HttpStatusCode.UnprocessableEntity,
                 };
                 return this.UnprocessableEntity(problem);
             }
@@ -100,12 +101,12 @@ namespace CarShack.Controllers.Customers
         {
             if (parameter == null)
             {
-                var problem = new ProblemJson
+                var problem = new ProblemDetails
                 {
                     Title = $"Can not use provided object of type '{typeof(BuyCarParameters)}'",
                     Detail = "Json or contained links might be invalid",
-                    ProblemType = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
-                    StatusCode = 422 // Unprocessable Entity
+                    Type = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
+                    Status = (int)HttpStatusCode.UnprocessableEntity,
                 };
                 return this.UnprocessableEntity(problem);
             }
@@ -154,12 +155,12 @@ namespace CarShack.Controllers.Customers
             }
             catch (ActionParameterValidationException e)
             {
-                var problem = new ProblemJson()
+                var problem = new ProblemDetails()
                 {
                     Title = $"Can not use provided object of type '{typeof(NewAddress)}'",
                     Detail = e.Message,
-                    ProblemType = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
-                    StatusCode = 422 // Unprocessable Entity
+                    Type = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
+                    Status = (int)HttpStatusCode.UnprocessableEntity,
                 };
                 return this.UnprocessableEntity(problem);
             }
@@ -184,12 +185,12 @@ namespace CarShack.Controllers.Customers
             }
             catch (ActionParameterValidationException e)
             {
-                var problem = new ProblemJson()
+                var problem = new ProblemDetails()
                 {
                     Title = $"Can not use provided object of type '{typeof(NewAddress)}'",
                     Detail = e.Message,
-                    ProblemType = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
-                    StatusCode = 422 // Unprocessable Entity
+                    Type = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
+                    Status = (int)HttpStatusCode.UnprocessableEntity,
                 };
                 return this.UnprocessableEntity(problem);
             }

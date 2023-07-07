@@ -28,38 +28,49 @@ export function match<TIn, TOut>(nullable: Nullable<TIn>, onValue: (v: TIn) => T
     }
 }
 {{
-    for parametersType in TransferParameters
-        parameters = []
-        for property in parametersType.Property
+    func gatherParameterArguments
+        parametersRetVal = []
+        for property in $0.Property
             param = property.name + ": " + (mapNullableType (!property.mandatory) property.type)
-            parameters = array.add parameters param
+            parametersRetVal = array.add parametersRetVal param
         end
+        ret parametersRetVal
+    end
+~}}
+{{
+    for parametersType in TransferParameters
+        parameters = gatherParameterArguments parametersType
+        parentParameters = []
+        currentType = parametersType
+        while isNotEmpty currentType.parentType
+            currentType = findParentParameters TransferParameters currentType.parentType
+            parentParameters = array.concat (gatherParameterArguments currentType) parentParameters
+        end
+        allParameters = array.concat parentParameters parameters
 }}
-export class {{ parametersType.typeName }} {
+export class {{ parametersType.typeName }}{{ if isNotEmpty parametersType.parentType }} extends {{ parametersType.parentType }} {{ end }}{
     constructor(
-{{- for param in parameters }}
+{{- for param in allParameters }}
         public readonly {{ param }}{{ if !for.last }},{{ end }}
 {{- end }}
-    ) { }
+    ) { {{ if (array.size parentParameters) != 0 }}super({{- for param in parentParameters}}{{ param | string.split ':' | array.first }}{{ if !for.last }}, {{ end }}{{- end}});{{ end }} }
 }
 {{
-    end
-
-    for document in Documents
-        arguments = []
-        for property in document.Properties
+    func gatherArguments
+        argumentsRetVal = []
+        for property in $0.Properties
             arg = property.name + ": " + (mapNullableType (!property.mandatory) property.type)
-            arguments = array.add arguments arg
+            argumentsRetVal = array.add argumentsRetVal arg
         end
-        for entity in document.Entities
+        for entity in $0.Entities
             arg = entity.collectionName + ": " + entity.document + "Hco[]"
-            arguments = array.add arguments arg
+            argumentsRetVal = array.add argumentsRetVal arg
         end
-        if document.hasSelfLink
-            arg = "self: HypermediaLink<" + document.name + "Hco>"
-            arguments = array.add arguments arg
+        if $0.hasSelfLink && $1
+            arg = "self: HypermediaLink<" + $0.name + "Hco>"
+            argumentsRetVal = array.add argumentsRetVal arg
         end
-        for link in document.Links
+        for link in $0.Links
             linkType = link.document + "Hco"
             if (link.ResultDocuments | array.size) > 0
                 linkType = ""
@@ -72,9 +83,9 @@ export class {{ parametersType.typeName }} {
             end
             type = "HypermediaLink<" + linkType + ">"
             arg = link.rel + ": " + (mapNullableType (!link.mandatory) type)
-            arguments = array.add arguments arg
+            argumentsRetVal = array.add argumentsRetVal arg
         end
-        for operation in document.Operations
+        for operation in $0.Operations
             actionType = ""
             typeArgs = []
             if isEmpty operation.resultDocument
@@ -97,16 +108,42 @@ export class {{ parametersType.typeName }} {
                 actionType += ">"
             end
             arg = operation.name + ": " + (mapNullableType true actionType)
-            arguments = array.add arguments arg
+            argumentsRetVal = array.add argumentsRetVal arg
         end
+        ret argumentsRetVal
+    end
+~}}
+{{
+    end
+
+    for document in Documents
+        arguments = gatherArguments document true
+        parentArguments = []
+        currentDocument = document
+        while isNotEmpty currentDocument.parentDocument
+            currentDocument = findParent Documents currentDocument.parentDocument
+            parentArguments = array.concat (gatherArguments currentDocument false) parentArguments
+        end
+        parentArgumentsForCall = []
+        currentDocument = document
+        if isNotEmpty currentDocument.parentDocument
+            currentDocument = findParent Documents currentDocument.parentDocument
+            parentArgumentsForCall = gatherArguments currentDocument true
+            while isNotEmpty currentDocument.parentDocument
+                currentDocument = findParent Documents currentDocument.parentDocument
+                parentArgumentsForCall = array.concat (gatherArguments currentDocument false) parentArgumentsForCall
+            end
+        end
+        allArguments = array.concat parentArguments arguments
+        
 }}
-export class {{ document.name }}Hco extends HypermediaObject {
+export class {{ document.name }}Hco extends {{ if isNotEmpty document.parentDocument }}{{ document.parentDocument }}Hco{{ else }}HypermediaObject{{ end }} {
     constructor(
-{{-     for arg in arguments }}
+{{-     for arg in allArguments }}
         public readonly {{ arg }}{{ if !for.last }},{{ end }}
 {{-     end }}
     ) {
-        super();
+        super({{ if (array.size parentArgumentsForCall) != 0 }}{{- for arg in parentArgumentsForCall }}{{ arg | string.split ':' | array.first }}{{ if !for.last }}, {{ end }}{{- end }}{{ end }});
     }
 }
 {{ end }}
