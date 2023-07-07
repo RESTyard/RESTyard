@@ -271,7 +271,14 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             if (prefilledParameter is string value)
             {
                 // dynamic actions can pass a a string already. When migrating to system.text.json we can also allow JsonElement here in the future
-                jfield.Add("value", value);
+                try
+                {
+                    jfield.Add("value", JObject.Parse(value));
+                }
+                catch (Exception e)
+                {
+                    throw new AggregateException($"Can not read prefilled value from given string. Must be a valid JSON object.\nProvided string: {value}\n", e);
+                }
             }
             else
             {

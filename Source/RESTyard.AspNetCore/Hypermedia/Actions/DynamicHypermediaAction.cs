@@ -13,7 +13,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions;
 /// Note that the properties must exactly match the route keys.
 /// <para />
 /// Prefilled values are of type <see cref="object"/> which will be serialized as default parameters. Anonymous objects can be used too.
-/// If a <see cref="string"/> is provided it will be placed in the generated document directly.
+/// If a <see cref="string"/> is provided it must contain a valid JSON object which will be embedded in the generated document.
 /// Therefor it must fit the serialized end format usually json.
 /// Null if none should be provided (default)
 /// </summary>
