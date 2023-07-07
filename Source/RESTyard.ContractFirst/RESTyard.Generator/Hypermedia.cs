@@ -81,7 +81,7 @@ public partial class ParameterType {
     }
     
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [System.Xml.Serialization.XmlAttributeAttribute(DataType="ID")]
     public string typeName {
         get {
             return this.typeNameField;
@@ -114,7 +114,7 @@ public partial class ParameterType {
     }
     
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [System.Xml.Serialization.XmlAttributeAttribute(DataType="IDREF")]
     public string parentType {
         get {
             return this.parentTypeField;
@@ -765,7 +765,7 @@ public partial class DocumentType {
     }
     
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [System.Xml.Serialization.XmlAttributeAttribute(DataType="ID")]
     public string name {
         get {
             return this.nameField;
@@ -821,7 +821,7 @@ public partial class DocumentType {
     }
     
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [System.Xml.Serialization.XmlAttributeAttribute(DataType="IDREF")]
     public string parentDocument {
         get {
             return this.parentDocumentField;

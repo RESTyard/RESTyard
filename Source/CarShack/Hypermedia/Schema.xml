@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<Hypermedia xmlns="http://schema.bluehands.de/2022/Hypermedia.xsd">
+<Hypermedia xmlns="http://schema.bluehands.de/2022/Hypermedia.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schema.bluehands.de/2022/Hypermedia.xsd">
     <TransferParameters>
         <Parameters typeName="CreateCustomerParameters" usedForQueries="false" usedForActions="true">
             <Property name="Name" type="string" mandatory="true" />
@@ -10,11 +10,11 @@
             <Property name="Price" type="double" />
             <Property name="HiddenProperty" type="double" mandatory="false" hidden="true" />
         </Parameters>
-      <Parameters typeName="BuyLamborghiniParameters" parentType="BuyCarParameters" usedForQueries="true">
+      <Parameters typeName="BuyLamborghiniParameters" parentType="BuyCarParameters" usedForActions="true" usedForQueries="true">
         <Property name="Color" type="string" mandatory="true" />
         <Property name="OptionalProperty" type="int" />
       </Parameters>
-      <Parameters typeName="BuyLamborghinettaParameters" parentType="BuyLamborghiniParameters" usedForActions="true">
+      <Parameters typeName="BuyLamborghinettaParameters" parentType="BuyLamborghiniParameters" usedForActions="true" usedForQueries="true">
         <Property name="HorsePower" type="int" mandatory="true" />
       </Parameters>
         <Parameters typeName="NewAddress" usedForQueries="false" usedForActions="true">
@@ -83,7 +83,7 @@
             </Classifications>
             <Operations>
                 <Operation name="CreateCustomer" method="Post" title="Request creation of a new Customer." parameterTypeName="CreateCustomerParameters" resultDocument="HypermediaCustomer" />
-                <Operation name="CreateQuery" metod="Post" title="Query the Customers collection." parameterTypeName="CustomerQuery" />
+                <Operation name="CreateQuery" method="Post" title="Query the Customers collection." parameterTypeName="CustomerQuery" />
             </Operations>
             <Links>
                 <Link rel="all" document="HypermediaCustomerQueryResult" query="CustomerQuery" mandatory="true" />

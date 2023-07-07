@@ -37,11 +37,11 @@
 			<xs:element name="Links" type="hm:LinksType" minOccurs="0" maxOccurs="1" ></xs:element>
 			<xs:element name="Policies" type="hm:PoliciesType" minOccurs="0" maxOccurs="1"/>
 		</xs:sequence>
-		<xs:attribute type="xs:string" name="name" use="required"/>
+		<xs:attribute type="xs:ID" name="name" use="required"/>
 		<xs:attribute type="xs:string" name="title" use="optional"/>
 		<xs:attribute type="xs:boolean" name="isQueryResult" use="optional"/>
 		<xs:attribute type="xs:boolean" name="hasSelfLink" default="true" use="optional" />
-		<xs:attribute type="xs:string" name="parentDocument" use="optional" />
+		<xs:attribute type="xs:IDREF" name="parentDocument" use="optional" />
 	</xs:complexType>
 
 	<!-- Properties -->
@@ -101,10 +101,10 @@
 		<xs:sequence>
 			<xs:element name="Property" type="hm:PropertyType" maxOccurs="unbounded" minOccurs="0"/>
 		</xs:sequence>
-		<xs:attribute type="xs:string" name="typeName" use="required"/>
+		<xs:attribute type="xs:ID" name="typeName" use="required"/>
 		<xs:attribute type="xs:boolean" name="usedForQueries" use="required"/>
 		<xs:attribute type="xs:boolean" name="usedForActions" use="required"/>
-		<xs:attribute type="xs:string" name="parentType" use="optional" />
+		<xs:attribute type="xs:IDREF" name="parentType" use="optional" />
   </xs:complexType>
 
 	<xs:complexType name="QueryParametersType">
