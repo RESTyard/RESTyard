@@ -40,10 +40,10 @@ public class DefaultHypermediaClientBuilder
 
 {{
     for parametersType in TransferParameters 
-        mandatoryArguments = gatherMandatoryParameterArguments parametersType
-        optionalArguments = gatherOptionalParameterArguments parametersType
-        mandatoryParentArguments = gatherMandatoryParameterParentArguments TransferParameters parametersType
-        optionalParentArguments = gatherOptionalParameterParentArguments TransferParameters parametersType
+        mandatoryArguments = gatherMandatoryParameterArguments parametersType showHidden: false
+        optionalArguments = gatherOptionalParameterArguments parametersType showHidden: false
+        mandatoryParentArguments = gatherMandatoryParameterParentArguments TransferParameters parametersType showHidden: false
+        optionalParentArguments = gatherOptionalParameterParentArguments TransferParameters parametersType showHidden: false
         allArguments = mandatoryParentArguments | array.concat mandatoryArguments | array.concat optionalParentArguments | array.concat optionalArguments
 ~}}
 public partial record {{ parametersType.typeName }}(
@@ -57,23 +57,31 @@ public partial record {{ parametersType.typeName }}(
 [HypermediaClientObject({{ for class in document.Classifications }}"{{ class.class }}"{{ if !for.last }}, {{ end }}{{ end }})]
 public partial class {{ typeName }} : {{ if isNotEmpty document.parentDocument }}{{ document.parentDocument + "Hco" }}{{ else }}HypermediaClientObject{{ end }}
 {
-{{- for property in document.Properties }}
-{{- if property.mandatory }}
+{{- checkProperties typeName document.Properties }}
+{{- for property in document.Properties | array.filter @isVisibleProperty }}
+{{-     if property.mandatory }}
     [Mandatory]
-{{- end }}
-    public {{ mapNullableType (!property.mandatory) property.type }} {{ property.name }} { get; set; }
+{{-     end }}
+    public {{ mapNullableType (!property.mandatory) property.type }} {{ property.name }} { get; set; } = default!;
 {{ end }}
 {{- if document.hasSelfLink }}
     [Mandatory]
     [HypermediaRelations(new[]{ "self" })]
-    public {{ if isNotEmpty document.parentDocument }}new {{ end }}MandatoryHypermediaLink<{{ typeName }}> Self { get; set; }
+    public MandatoryHypermediaLink<{{ typeName }}> Self { get; set; } = default!;
 {{- end }}
 {{ for link in document.Links }}
 {{- if link.mandatory }}
     [Mandatory]
 {{- end }}
     [HypermediaRelations(new[]{ "{{ link.rel }}" })]
-    public {{ mapNullableType (!link.mandatory) ("MandatoryHypermediaLink<" + link.document + "Hco>") }} {{ link.rel | string.capitalize }} { get; set; }
+    public {{ mapNullableType (!link.mandatory) ("MandatoryHypermediaLink<" + link.document + "Hco>") }} {{ link.rel | string.capitalize }} { get; set; } = default!;
+{{ end }}
+{{-
+    for entity in document.Entities
+        entityType = iff (isNotEmpty entity.document) (entity.document + "Hco") "TODO"
+}}
+    [HypermediaRelations(new[]{ "{{ entity.collectionName }}" })]
+    public List<{{ entityType }}> {{ entity.collectionName | string.capitalize }} { get; set; } = default!;
 {{ end }}
 {{- for operation in document.Operations }}
     [HypermediaCommand("{{ operation.name }}")]

@@ -39,15 +39,15 @@ public partial class HypermediaEntrypointHco : HypermediaClientObject
 {
     [Mandatory]
     [HypermediaRelations(new[]{ "self" })]
-    public MandatoryHypermediaLink<HypermediaEntrypointHco> Self { get; set; }
+    public MandatoryHypermediaLink<HypermediaEntrypointHco> Self { get; set; } = default!;
 
     [Mandatory]
     [HypermediaRelations(new[]{ "CustomersRoot" })]
-    public MandatoryHypermediaLink<HypermediaCustomersRootHco> CustomersRoot { get; set; }
+    public MandatoryHypermediaLink<HypermediaCustomersRootHco> CustomersRoot { get; set; } = default!;
 
     [Mandatory]
     [HypermediaRelations(new[]{ "CarsRoot" })]
-    public MandatoryHypermediaLink<HypermediaCarsRootHco> CarsRoot { get; set; }
+    public MandatoryHypermediaLink<HypermediaCarsRootHco> CarsRoot { get; set; } = default!;
 }
 
 [HypermediaClientObject("CarsRoot")]
@@ -55,46 +55,49 @@ public partial class HypermediaCarsRootHco : HypermediaClientObject
 {
     [Mandatory]
     [HypermediaRelations(new[]{ "self" })]
-    public MandatoryHypermediaLink<HypermediaCarsRootHco> Self { get; set; }
+    public MandatoryHypermediaLink<HypermediaCarsRootHco> Self { get; set; } = default!;
 
     [Mandatory]
     [HypermediaRelations(new[]{ "NiceCar" })]
-    public MandatoryHypermediaLink<DerivedCarHco> NiceCar { get; set; }
+    public MandatoryHypermediaLink<DerivedCarHco> NiceCar { get; set; } = default!;
 
     [Mandatory]
     [HypermediaRelations(new[]{ "SuperCar" })]
-    public MandatoryHypermediaLink<HypermediaCarHco> SuperCar { get; set; }
+    public MandatoryHypermediaLink<HypermediaCarHco> SuperCar { get; set; } = default!;
 }
 
 [HypermediaClientObject("Car")]
 public partial class HypermediaCarHco : HypermediaClientObject
 {
-    public int?  Id { get; set; }
+    public int?  Id { get; set; } = default!;
 
-    public string? Brand { get; set; }
+    public string? Brand { get; set; } = default!;
 
-    public IEnumerable<float>? PriceDevelopment { get; set; }
+    public IEnumerable<float>? PriceDevelopment { get; set; } = default!;
 
-    public List<Country>? PopularCountries { get; set; }
+    public List<Country>? PopularCountries { get; set; } = default!;
 
-    public Country? MostPopularIn { get; set; }
+    public Country? MostPopularIn { get; set; } = default!;
 
     [Mandatory]
     [HypermediaRelations(new[]{ "self" })]
-    public MandatoryHypermediaLink<HypermediaCarHco> Self { get; set; }
+    public MandatoryHypermediaLink<HypermediaCarHco> Self { get; set; } = default!;
 }
 
 [HypermediaClientObject("DerivedCar")]
 public partial class DerivedCarHco : HypermediaCarHco
 {
-    public string? DerivedProperty { get; set; }
+    public string? DerivedProperty { get; set; } = default!;
 
     [Mandatory]
     [HypermediaRelations(new[]{ "self" })]
-    public new MandatoryHypermediaLink<DerivedCarHco> Self { get; set; }
+    public MandatoryHypermediaLink<DerivedCarHco> Self { get; set; } = default!;
 
     [HypermediaRelations(new[]{ "DerivedLink" })]
-    public MandatoryHypermediaLink<HypermediaCustomerHco>? DerivedLink { get; set; }
+    public MandatoryHypermediaLink<HypermediaCustomerHco>? DerivedLink { get; set; } = default!;
+
+    [HypermediaRelations(new[]{ "item" })]
+    public List<HypermediaCustomerHco> Item { get; set; } = default!;
 
     [HypermediaCommand("Derived")]
     public IHypermediaClientAction? Derived { get; set; }
@@ -103,11 +106,11 @@ public partial class DerivedCarHco : HypermediaCarHco
 [HypermediaClientObject("NextLevelDerivedCar")]
 public partial class NextLevelDerivedCarHco : DerivedCarHco
 {
-    public string?  NextLevelDerivedProperty { get; set; }
+    public string?  NextLevelDerivedProperty { get; set; } = default!;
 
     [Mandatory]
     [HypermediaRelations(new[]{ "self" })]
-    public new MandatoryHypermediaLink<NextLevelDerivedCarHco> Self { get; set; }
+    public MandatoryHypermediaLink<NextLevelDerivedCarHco> Self { get; set; } = default!;
 }
 
 [HypermediaClientObject("CustomersRoot")]
@@ -115,19 +118,19 @@ public partial class HypermediaCustomersRootHco : HypermediaClientObject
 {
     [Mandatory]
     [HypermediaRelations(new[]{ "self" })]
-    public MandatoryHypermediaLink<HypermediaCustomersRootHco> Self { get; set; }
+    public MandatoryHypermediaLink<HypermediaCustomersRootHco> Self { get; set; } = default!;
 
     [Mandatory]
     [HypermediaRelations(new[]{ "all" })]
-    public MandatoryHypermediaLink<HypermediaCustomerQueryResultHco> All { get; set; }
+    public MandatoryHypermediaLink<HypermediaCustomerQueryResultHco> All { get; set; } = default!;
 
     [Mandatory]
     [HypermediaRelations(new[]{ "BestCustomer" })]
-    public MandatoryHypermediaLink<HypermediaCustomerHco> BestCustomer { get; set; }
+    public MandatoryHypermediaLink<HypermediaCustomerHco> BestCustomer { get; set; } = default!;
 
     [Mandatory]
     [HypermediaRelations(new[]{ "GreatSite" })]
-    public MandatoryHypermediaLink<HypermediaCustomerHco> GreatSite { get; set; }
+    public MandatoryHypermediaLink<HypermediaCustomerHco> GreatSite { get; set; } = default!;
 
     [HypermediaCommand("CreateCustomer")]
     public IHypermediaClientFunction<HypermediaCustomerHco, CreateCustomerParameters>? CreateCustomer { get; set; }
@@ -139,21 +142,18 @@ public partial class HypermediaCustomersRootHco : HypermediaClientObject
 [HypermediaClientObject("Customer")]
 public partial class HypermediaCustomerHco : HypermediaClientObject
 {
-    [Mandatory]
-    public int  Id { get; set; }
+    public int?  Age { get; set; } = default!;
 
-    public int? Age { get; set; }
+    public string? FullName { get; set; } = default!;
 
-    public string? FullName { get; set; }
-
-    public string? Address { get; set; }
+    public string? Address { get; set; } = default!;
 
     [Mandatory]
-    public bool IsFavorite { get; set; }
+    public bool IsFavorite { get; set; } = default!;
 
     [Mandatory]
     [HypermediaRelations(new[]{ "self" })]
-    public MandatoryHypermediaLink<HypermediaCustomerHco> Self { get; set; }
+    public MandatoryHypermediaLink<HypermediaCustomerHco> Self { get; set; } = default!;
 
     [HypermediaCommand("CustomerMove")]
     public IHypermediaClientAction<NewAddress>? CustomerMove { get; set; }
@@ -171,11 +171,14 @@ public partial class HypermediaCustomerHco : HypermediaClientObject
 [HypermediaClientObject("CustomersQueryResult")]
 public partial class HypermediaCustomerQueryResultHco : HypermediaClientObject
 {
-    public int? TotalEntities { get; set; }
+    public int? TotalEntities { get; set; } = default!;
 
-    public int? CurrentEntitiesCount { get; set; }
+    public int? CurrentEntitiesCount { get; set; } = default!;
 
     [Mandatory]
     [HypermediaRelations(new[]{ "self" })]
-    public MandatoryHypermediaLink<HypermediaCustomerQueryResultHco> Self { get; set; }
+    public MandatoryHypermediaLink<HypermediaCustomerQueryResultHco> Self { get; set; } = default!;
+
+    [HypermediaRelations(new[]{ "item" })]
+    public List<HypermediaCustomerHco> Item { get; set; } = default!;
 }

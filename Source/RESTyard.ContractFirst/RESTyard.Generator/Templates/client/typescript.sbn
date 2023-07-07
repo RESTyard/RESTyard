@@ -30,7 +30,8 @@ export function match<TIn, TOut>(nullable: Nullable<TIn>, onValue: (v: TIn) => T
 {{
     func gatherParameterArguments
         parametersRetVal = []
-        for property in $0.Property
+        checkProperties $0.typeName $0.Property
+        for property in $0.Property | array.filter @isVisibleProperty
             param = property.name + ": " + (mapNullableType (!property.mandatory) property.type)
             parametersRetVal = array.add parametersRetVal param
         end
@@ -58,7 +59,8 @@ export class {{ parametersType.typeName }}{{ if isNotEmpty parametersType.parent
 {{
     func gatherArguments
         argumentsRetVal = []
-        for property in $0.Properties
+        checkProperties $0.name $0.Properties
+        for property in $0.Properties | array.filter @isVisibleProperty
             arg = property.name + ": " + (mapNullableType (!property.mandatory) property.type)
             argumentsRetVal = array.add argumentsRetVal arg
         end

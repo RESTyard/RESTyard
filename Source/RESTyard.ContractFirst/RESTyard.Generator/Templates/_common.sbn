@@ -82,8 +82,9 @@ end
 
 func gatherMandatoryParameterArguments
     argumentsRetVal = []
+    checkProperties $0.typeName $0.Property
     for property in $0.Property
-        if property.mandatory
+        if property.mandatory && (!property.hidden || $.showHidden)
             arg = property.type + " " + property.name
             argumentsRetVal = array.add argumentsRetVal arg
         end
@@ -93,7 +94,7 @@ end
 func gatherOptionalParameterArguments
     argumentsRetVal = []
     for property in $0.Property
-        if !property.mandatory
+        if !property.mandatory && (!property.hidden || $.showHidden)
             arg = (mapNullableType true property.type) + " " + property.name + " = default"
             argumentsRetVal = array.add argumentsRetVal arg
         end
@@ -106,7 +107,7 @@ func gatherMandatoryParameterParentArguments
     currentTransferParameters = $1
     while isNotEmpty currentTransferParameters.parentType
         currentTransferParameters = findParentParameters $0 currentTransferParameters.parentType
-        parentArgumentsRetVal = array.concat (gatherMandatoryParameterArguments currentTransferParameters) parentArgumentsRetVal
+        parentArgumentsRetVal = array.concat (gatherMandatoryParameterArguments currentTransferParameters showHidden: $.showHidden) parentArgumentsRetVal
     end
     ret parentArgumentsRetVal
 end
@@ -116,7 +117,7 @@ func gatherOptionalParameterParentArguments
     currentTransferParameters = $1
     while isNotEmpty currentTransferParameters.parentType
         currentTransferParameters = findParentParameters $0 currentTransferParameters.parentType
-        parentArgumentsRetVal = array.concat (gatherOptionalParameterArguments currentTransferParameters) parentArgumentsRetVal
+        parentArgumentsRetVal = array.concat (gatherOptionalParameterArguments currentTransferParameters showHidden: $.showHidden) parentArgumentsRetVal
     end
     ret parentArgumentsRetVal
 end
@@ -129,4 +130,18 @@ func findParentParameters
     end
 end
 
+func isVisibleProperty
+    ret !$0.hidden
+end
+
+func checkProperties
+    typeName = $0
+    properties = $1
+
+    for property in properties
+        if property.mandatory && property.hidden
+            warning ("Mandatory property should not be hidden. (" + typeName + "." + property.name + ")")
+        end
+    end
+end
 -}}

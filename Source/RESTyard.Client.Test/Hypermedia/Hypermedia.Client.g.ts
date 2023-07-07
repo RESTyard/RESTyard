@@ -150,7 +150,6 @@ export class HypermediaCustomersRootHco extends HypermediaObject {
 
 export class HypermediaCustomerHco extends HypermediaObject {
     constructor(
-        public readonly Id: int,
         public readonly Age: Nullable<int>,
         public readonly FullName: Nullable<string>,
         public readonly Address: Nullable<string>,

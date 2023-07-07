@@ -47,10 +47,10 @@ public static class MimeTypes
 {{
     for parametersType in TransferParameters
         interfaces = []
-        mandatoryArguments = gatherMandatoryParameterArguments parametersType
-        optionalArguments = gatherOptionalParameterArguments parametersType
-        mandatoryParentArguments = gatherMandatoryParameterParentArguments TransferParameters parametersType
-        optionalParentArguments = gatherOptionalParameterParentArguments TransferParameters parametersType
+        mandatoryArguments = gatherMandatoryParameterArguments parametersType showHidden: true
+        optionalArguments = gatherOptionalParameterArguments parametersType showHidden: true
+        mandatoryParentArguments = gatherMandatoryParameterParentArguments TransferParameters parametersType showHidden: true
+        optionalParentArguments = gatherOptionalParameterParentArguments TransferParameters parametersType showHidden: true
         allArguments = mandatoryParentArguments | array.concat mandatoryArguments | array.concat optionalParentArguments | array.concat optionalArguments
 
         if parametersType.usedForQueries
@@ -81,6 +81,7 @@ public partial class {{ typeName }} : {{
 }}
 {
 {{- keyProperty = null
+    checkProperties typeName document.Properties
     for property in document.Properties }}
 {{ if property.isKey
     keyProperty = property ~}}

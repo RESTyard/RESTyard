@@ -8,6 +8,7 @@
             <Property name="Brand" type="string" mandatory="true" />
             <Property name="CarId" type="int" mandatory="true" />
             <Property name="Price" type="double" />
+            <Property name="HiddenProperty" type="double" mandatory="false" hidden="true" />
         </Parameters>
       <Parameters typeName="BuyLamborghiniParameters" parentType="BuyCarParameters" usedForQueries="true">
         <Property name="Color" type="string" mandatory="true" />
@@ -91,10 +92,10 @@
             </Links>
         </Document>
         <Document name="HypermediaCustomer">
-			<Classifications>
+			      <Classifications>
                 <Classification class="Customer" />
-			</Classifications>
-	        <Properties>
+			      </Classifications>
+	          <Properties>
                 <Property name="Id" type="int" hidden="true" mandatory="true" />
                 <Property name="Age" type="int" />
                 <Property name="FullName" type="string" />

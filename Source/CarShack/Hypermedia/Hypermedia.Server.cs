@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using CarShack.Controllers.Cars;
 using CarShack.Domain.Customer;
 using Microsoft.Extensions.DependencyInjection;
 using RESTyard.AspNetCore.Exceptions;
@@ -164,12 +165,21 @@ public partial class HypermediaCustomersRootHto
 
 public partial class HypermediaCarsRootHto
 {
+    [HypermediaAction(Name = "UploadCarImage", Title = "Upload a car image.")]
+    public UploadCarImageOp UploadCarImage { get; init; }
+    
     [ActivatorUtilitiesConstructor]
     public HypermediaCarsRootHto()
         : this(
             new HypermediaObjectReference(new HypermediaCarHto("VW", 2)),
             new {Brand = "Porsche", Id = 5})
     {
+        UploadCarImage = new UploadCarImageOp(() => true, new FileUploadConfiguration
+        {
+            Accept = new List<string> { ".jpg", "image/png", "image/*" },
+            AllowMultiple = false,
+            MaxFileSizeBytes = 1024 * 1024 * 4
+        });
     }
 }
 
@@ -190,10 +200,6 @@ public partial class HypermediaCustomerHto
             new BuyCarOp(() => true, default!));
         return hto;
     }
-
-
-
-
 }
 
 public partial class HypermediaCarHto
