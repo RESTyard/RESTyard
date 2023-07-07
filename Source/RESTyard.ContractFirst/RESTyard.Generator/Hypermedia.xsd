@@ -2,11 +2,11 @@
 <xs:schema
 	attributeFormDefault="unqualified"
 	elementFormDefault="qualified"
-	targetNamespace="http://schema.bluehands.de/2022/Hypermedia.xsd"
-    xmlns:hm="http://schema.bluehands.de/2022/Hypermedia.xsd"
+	targetNamespace="http://schema.bluehands.de/2023/Hypermedia.xsd"
+    xmlns:hm="http://schema.bluehands.de/2023/Hypermedia.xsd"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
 >
-	<xs:complexType name="HypermediaType">
+  <xs:complexType name="HypermediaType">
 		<xs:sequence>
 			<xs:element name="TransferParameters" type="hm:TransferParametersType" maxOccurs="1" minOccurs="0"/>
 			<xs:element name="Documents" type="hm:DocumentsType" maxOccurs="1" minOccurs="1"/>
@@ -68,8 +68,8 @@
 	</xs:complexType>
 	<xs:complexType name="EntityType">
 		<xs:attribute type="xs:string" name="collectionName" use="required"/>
-		<xs:attribute type="xs:string" name="document" use="optional"/>
-		<xs:attribute type="xs:string" name="referencedDocument" use="optional"/>
+		<xs:attribute type="xs:IDREF" name="document" use="optional"/>
+		<xs:attribute type="xs:IDREF" name="referencedDocument" use="optional"/>
 	</xs:complexType>
 
 	<!-- Operations -->
@@ -86,14 +86,15 @@
 		<xs:attribute type="xs:string" name="name" use="required"/>
 		<xs:attribute type="hm:method" name="method" use="required"/>
 		<xs:attribute type="xs:string" name="title" use="optional"/>
-		<xs:attribute type="xs:string" name="parameterTypeName" use="optional"/>
-		<xs:attribute type="xs:string" name="resultDocument" use="optional"/>
+		<xs:attribute type="xs:IDREF" name="parameterTypeName" use="optional"/>
+		<xs:attribute type="xs:IDREF" name="resultDocument" use="optional"/>
 	</xs:complexType>
 
 	<!-- Parameter -->
 	<xs:complexType name="TransferParametersType">
 		<xs:sequence>
 			<xs:element name="Parameters" type="hm:ParameterType" maxOccurs="unbounded" minOccurs="0"/>
+			<xs:element name="ExternalParameters" type="hm:ExternalParameterType" maxOccurs="unbounded" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
 
@@ -105,6 +106,10 @@
 		<xs:attribute type="xs:boolean" name="usedForQueries" use="required"/>
 		<xs:attribute type="xs:boolean" name="usedForActions" use="required"/>
 		<xs:attribute type="xs:IDREF" name="parentType" use="optional" />
+  </xs:complexType>
+
+	<xs:complexType name="ExternalParameterType">
+		<xs:attribute type="xs:ID" name="typeName" use="required" />
   </xs:complexType>
 
 	<xs:complexType name="QueryParametersType">
@@ -134,7 +139,7 @@
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="ResultDocumentType">
-		<xs:attribute type="xs:string" name="document" use="required"/>
+		<xs:attribute type="xs:IDREF" name="document" use="required"/>
 	</xs:complexType>
 	<xs:complexType name="LinkType">
 		<xs:sequence>
@@ -142,7 +147,7 @@
 			<xs:element name="ResultDocuments" type="hm:ResultDocumentsType" maxOccurs="1" minOccurs="0"/>
 		</xs:sequence>
 		<xs:attribute type="xs:string" name="rel" use="required"/>
-		<xs:attribute type="xs:string" name="document" use="optional"/>
+		<xs:attribute type="xs:IDREF" name="document" use="optional"/>
 		<xs:attribute type="xs:string" name="query" use="optional"/>
 		<xs:attribute type="xs:string" name="contentType" use="optional" />
 		<xs:attribute type="xs:string" name="parameterTypeName" use="optional"/>
@@ -178,6 +183,48 @@
 	</xs:complexType>
 
 	<!-- Root -->
+  <!-- Defining the proper xpath here is a bit tricky. See https://docstore.mik.ua/orelly/xml/schema/ch09_02.htm for guidance-->
+  <xs:element name="Hypermedia" type="hm:HypermediaType">
+    <xs:key name="PK_Document">
+      <xs:selector xpath=".//hm:Document" />
+      <xs:field xpath="@name" />
+    </xs:key>
+    <xs:key name="PK_Parameter">
+      <xs:selector xpath=".//hm:Parameters|.//hm:ExternalParameters" />
+      <xs:field xpath="@typeName" />
+    </xs:key>
 
-	<xs:element name="Hypermedia" type="hm:HypermediaType"/>
+    <xs:keyref name="FK_Document_ParentDocument" refer="hm:PK_Document">
+      <xs:selector xpath=".//hm:Document" />
+      <xs:field xpath="@parentDocument" />
+    </xs:keyref>
+    <xs:keyref name="FK_Entity_Document" refer="hm:PK_Document">
+      <xs:selector xpath=".//hm:Entity" />
+      <xs:field xpath="@document" />
+    </xs:keyref>
+    <xs:keyref name="FK_Entity_ReferencedDocument" refer="hm:PK_Document">
+      <xs:selector xpath=".//hm:Entity" />
+      <xs:field xpath="@referencedDocument" />
+    </xs:keyref>
+    <xs:keyref name="FK_Operation_ParameterTypeName" refer="hm:PK_Parameter">
+      <xs:selector xpath=".//hm:Operation" />
+      <xs:field xpath="@parameterTypeName" />
+    </xs:keyref>
+    <xs:keyref name="FK_Operation_ResultDocument" refer="hm:PK_Document">
+      <xs:selector xpath=".//hm:Operation" />
+      <xs:field xpath="@resultDocument" />
+    </xs:keyref>
+    <xs:keyref name="FK_Parameter_ParentType" refer="hm:PK_Parameter">
+      <xs:selector xpath=".//hm:Parameter" />
+      <xs:field xpath="@parentType" />
+    </xs:keyref>
+    <xs:keyref name="FK_ResultDocument_Document" refer="hm:PK_Document">
+      <xs:selector xpath=".//hm:ResultDocument" />
+      <xs:field xpath="@document" />
+    </xs:keyref>
+    <xs:keyref name="FK_Link_Document" refer="hm:PK_Document">
+      <xs:selector xpath=".//hm:Link" />
+      <xs:field xpath="@document" />
+    </xs:keyref>
+  </xs:element>
 </xs:schema>

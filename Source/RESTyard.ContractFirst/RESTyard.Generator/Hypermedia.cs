@@ -20,8 +20,8 @@ using System.Xml.Serialization;
 [System.SerializableAttribute()]
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
-[System.Xml.Serialization.XmlRootAttribute("Hypermedia", Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd", IsNullable=false)]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2023/Hypermedia.xsd")]
+[System.Xml.Serialization.XmlRootAttribute("Hypermedia", Namespace="http://schema.bluehands.de/2023/Hypermedia.xsd", IsNullable=false)]
 public partial class HypermediaType {
     
     private ParameterType[] transferParametersField;
@@ -56,7 +56,7 @@ public partial class HypermediaType {
 [System.SerializableAttribute()]
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2023/Hypermedia.xsd")]
 public partial class ParameterType {
     
     private PropertyType[] propertyField;
@@ -130,7 +130,7 @@ public partial class ParameterType {
 [System.SerializableAttribute()]
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2023/Hypermedia.xsd")]
 public partial class PropertyType {
     
     private string nameField;
@@ -243,13 +243,13 @@ public partial class PropertyType {
 [System.SerializableAttribute()]
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2023/Hypermedia.xsd")]
 public partial class ResultDocumentType {
     
     private string documentField;
     
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [System.Xml.Serialization.XmlAttributeAttribute(DataType="IDREF")]
     public string document {
         get {
             return this.documentField;
@@ -265,7 +265,7 @@ public partial class ResultDocumentType {
 [System.SerializableAttribute()]
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2023/Hypermedia.xsd")]
 public partial class QueryParameterType {
     
     private string parameterNameField;
@@ -300,7 +300,7 @@ public partial class QueryParameterType {
 [System.SerializableAttribute()]
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2023/Hypermedia.xsd")]
 public partial class LinkType {
     
     private QueryParameterType[] queryParametersField;
@@ -353,7 +353,7 @@ public partial class LinkType {
     }
     
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [System.Xml.Serialization.XmlAttributeAttribute(DataType="IDREF")]
     public string document {
         get {
             return this.documentField;
@@ -413,7 +413,7 @@ public partial class LinkType {
 [System.SerializableAttribute()]
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2023/Hypermedia.xsd")]
 public partial class PermissionType {
     
     private string scopeField;
@@ -435,7 +435,7 @@ public partial class PermissionType {
 [System.SerializableAttribute()]
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2023/Hypermedia.xsd")]
 public partial class PermissionsType {
     
     private PermissionType[] permissionField;
@@ -475,7 +475,7 @@ public partial class PermissionsType {
 [System.SerializableAttribute()]
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2023/Hypermedia.xsd")]
 public partial class PoliciesType {
     
     private PermissionsType permissionsField;
@@ -496,7 +496,7 @@ public partial class PoliciesType {
 [System.SerializableAttribute()]
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2023/Hypermedia.xsd")]
 public partial class OperationType {
     
     private PoliciesType policiesField;
@@ -555,7 +555,7 @@ public partial class OperationType {
     }
     
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [System.Xml.Serialization.XmlAttributeAttribute(DataType="IDREF")]
     public string parameterTypeName {
         get {
             return this.parameterTypeNameField;
@@ -566,7 +566,7 @@ public partial class OperationType {
     }
     
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [System.Xml.Serialization.XmlAttributeAttribute(DataType="IDREF")]
     public string resultDocument {
         get {
             return this.resultDocumentField;
@@ -580,7 +580,7 @@ public partial class OperationType {
 /// <remarks/>
 [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.8.3928.0")]
 [System.SerializableAttribute()]
-[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2023/Hypermedia.xsd")]
 public enum method {
     
     /// <remarks/>
@@ -598,7 +598,7 @@ public enum method {
 [System.SerializableAttribute()]
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2023/Hypermedia.xsd")]
 public partial class EntityType {
     
     private string collectionNameField;
@@ -619,7 +619,7 @@ public partial class EntityType {
     }
     
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [System.Xml.Serialization.XmlAttributeAttribute(DataType="IDREF")]
     public string document {
         get {
             return this.documentField;
@@ -630,7 +630,7 @@ public partial class EntityType {
     }
     
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [System.Xml.Serialization.XmlAttributeAttribute(DataType="IDREF")]
     public string referencedDocument {
         get {
             return this.referencedDocumentField;
@@ -646,7 +646,7 @@ public partial class EntityType {
 [System.SerializableAttribute()]
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2023/Hypermedia.xsd")]
 public partial class ClassificationType {
     
     private string classField;
@@ -668,7 +668,7 @@ public partial class ClassificationType {
 [System.SerializableAttribute()]
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2022/Hypermedia.xsd")]
+[System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schema.bluehands.de/2023/Hypermedia.xsd")]
 public partial class DocumentType {
     
     private ClassificationType[] classificationsField;
