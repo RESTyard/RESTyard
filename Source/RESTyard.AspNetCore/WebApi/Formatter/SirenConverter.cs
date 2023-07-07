@@ -232,9 +232,11 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 { "type", DefaultMediaTypes.ApplicationJson }
             };
 
-            if (!routeResolver.TryGetRouteByType(parameterType, out var classRoute))
+            var routeKeysFromAction = GetRoutKeysIfActionHasSchemaParameters(hypermediaAction);
+            if (!routeResolver.TryGetRouteByType(parameterType, out ResolvedRoute classRoute, routeKeysFromAction))
             {
-                var generatedRouteUrl = routeResolver.RouteUrl(RouteNames.ActionParameterTypes,
+                var generatedRouteUrl = routeResolver.RouteUrl(
+                    RouteNames.ActionParameterTypes,
                     new { parameterTypeName = parameterType.BeautifulName() });
                 jfield.Add("class", new JArray { generatedRouteUrl });
             }
@@ -248,6 +250,16 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             jAction.Add("fields", new JArray { jfield });
         }
 
+        private dynamic GetRoutKeysIfActionHasSchemaParameters(HypermediaActionBase hypermediaAction)
+        {
+            if (hypermediaAction is IDynamicSchema dynamicSchema)
+            {
+                return dynamicSchema.SchemaRouteKeys;
+            }
+
+            return null;
+        }
+
         private void AddPrefilledValue(JObject jfield, HypermediaActionBase hypermediaAction)
         {
             var prefilledParameter = hypermediaAction.GetPrefilledParameter();
@@ -255,8 +267,17 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             {
                 return;
             }
-            
-            jfield.Add("value", SerializeObjectProperties(prefilledParameter));
+
+            if (prefilledParameter is string value)
+            {
+                // dynamic actions can pass a a string already. When migrating to system.text.json we can also allow JsonElement here in the future
+                jfield.Add("value", value);
+            }
+            else
+            {
+                jfield.Add("value",  SerializeObjectProperties(prefilledParameter));
+            }
+           
         }
 
         private static bool IsHypermediaAction(PropertyInfo property)

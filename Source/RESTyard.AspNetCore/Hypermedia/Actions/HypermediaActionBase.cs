@@ -16,7 +16,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
             return commandCanExecute();
         }
 
-        public bool HasParameter() => ParameterType() != null;
+        public virtual bool HasParameter() => ParameterType() != null;
         
         public abstract object GetPrefilledParameter();
 
