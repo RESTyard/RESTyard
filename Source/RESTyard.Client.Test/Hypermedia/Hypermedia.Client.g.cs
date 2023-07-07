@@ -27,7 +27,6 @@ public class DefaultHypermediaClientBuilder
                 register.Register<HypermediaCustomerQueryResultHco>();
             });
 }
-
 public partial record CreateCustomerParameters(string Name);
 public partial record BuyCarParameters(string Brand, int CarId, double? Price = default);
 public partial record BuyLamborghiniParameters(string Brand, int CarId, string Color, double? Price = default, int? OptionalProperty = default) : BuyCarParameters(Brand, CarId, Price);
@@ -69,7 +68,7 @@ public partial class HypermediaCarsRootHco : HypermediaClientObject
 [HypermediaClientObject("Car")]
 public partial class HypermediaCarHco : HypermediaClientObject
 {
-    public int?  Id { get; set; } = default!;
+    public int? Id { get; set; } = default!;
 
     public string? Brand { get; set; } = default!;
 
@@ -106,7 +105,7 @@ public partial class DerivedCarHco : HypermediaCarHco
 [HypermediaClientObject("NextLevelDerivedCar")]
 public partial class NextLevelDerivedCarHco : DerivedCarHco
 {
-    public string?  NextLevelDerivedProperty { get; set; } = default!;
+    public string? NextLevelDerivedProperty { get; set; } = default!;
 
     [Mandatory]
     [HypermediaRelations(new[]{ "self" })]
@@ -142,7 +141,7 @@ public partial class HypermediaCustomersRootHco : HypermediaClientObject
 [HypermediaClientObject("Customer")]
 public partial class HypermediaCustomerHco : HypermediaClientObject
 {
-    public int?  Age { get; set; } = default!;
+    public int? Age { get; set; } = default!;
 
     public string? FullName { get; set; } = default!;
 

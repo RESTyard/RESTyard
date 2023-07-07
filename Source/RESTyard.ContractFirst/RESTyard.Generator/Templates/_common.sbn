@@ -130,6 +130,13 @@ func findParentParameters
     end
 end
 
+func transformMandatoryArgument(arg)
+    ret arg | string.split ' ' | array.last
+end
+func transformOptionalArgument(arg)
+    ret arg | string.split ' ' | array.offset 1 | array.first
+end
+
 func isVisibleProperty
     ret !$0.hidden
 end

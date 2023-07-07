@@ -52,6 +52,7 @@ public static class MimeTypes
         mandatoryParentArguments = gatherMandatoryParameterParentArguments TransferParameters parametersType showHidden: true
         optionalParentArguments = gatherOptionalParameterParentArguments TransferParameters parametersType showHidden: true
         allArguments = mandatoryParentArguments | array.concat mandatoryArguments | array.concat optionalParentArguments | array.concat optionalArguments
+        parentArguments = array.concat (mandatoryParentArguments | array.each @transformMandatoryArgument) (optionalParentArguments | array.each @transformOptionalArgument)
 
         if parametersType.usedForQueries
             interfaces = array.add interfaces "IHypermediaQuery"
@@ -64,7 +65,7 @@ public partial record {{ parametersType.typeName }}(
     {{- for arg in allArguments }}
         {{- arg }}
         {{- if !for.last }}, {{ end }}
-    {{- end }}){{ if isNotEmpty parametersType.parentType }} : {{parametersType.parentType}}({{ for arg in mandatoryParentArguments }}{{ arg | string.split ' ' | array.last }}{{- if !for.last }}, {{ end }}{{ end }}{{ if (array.size mandatoryParentArguments) != 0 && (array.size optionalParentArguments) != 0 }}, {{ end }}{{ for arg in optionalParentArguments }}{{ arg | string.split ' ' | array.offset 1 | array.first }}{{- if !for.last }}, {{ end }}{{ end }}){{ end }}{{ for interface in interfaces }}{{ if for.first }}{{ if isNotEmpty parametersType.parentType }}, {{ else }} : {{ end }}{{ end }}{{ interface }}{{ if !for.last }}, {{ end }}{{ end }};
+    {{- end }}){{ if isNotEmpty parametersType.parentType }} : {{parametersType.parentType}}({{ for arg in parentArguments }}{{ arg }}{{- if !for.last }}, {{ end }}{{ end }}){{ end }}{{ for interface in interfaces }}{{ if for.first }}{{ if isNotEmpty parametersType.parentType }}, {{ else }} : {{ end }}{{ end }}{{ interface }}{{ if !for.last }}, {{ end }}{{ end }};
 {{ end }}
 {{-
     for document in Documents

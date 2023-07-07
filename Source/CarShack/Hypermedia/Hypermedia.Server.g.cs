@@ -28,7 +28,7 @@ public partial record NewAddress(string Address) : IHypermediaActionParameter;
 public partial class HypermediaEntrypointHto : HypermediaObject
 {
     public HypermediaEntrypointHto(
-                object? customersRootKey,
+        object? customersRootKey,
         object? carsRootKey
     ) : base(hasSelfLink: true)
     {
@@ -54,10 +54,10 @@ public partial class HypermediaCarsRootHto : HypermediaObject
 public partial class HypermediaCarHto : HypermediaObject
 {
     [Key("id")]
-    public int?  Id { get; set; }
+    public int? Id { get; set; }
 
     [Key("brand")]
-    public string?  Brand { get; set; }
+    public string? Brand { get; set; }
 
     public IEnumerable<float>? PriceDevelopment { get; set; }
 
@@ -126,7 +126,7 @@ public partial class DerivedCarHto : HypermediaCarHto
 [HypermediaObject(Title = "Derives from Derived Car", Classes = new string[]{ "NextLevelDerivedCar" })]
 public partial class NextLevelDerivedCarHto : DerivedCarHto
 {
-    public string?  NextLevelDerivedProperty { get; set; }
+    public string? NextLevelDerivedProperty { get; set; }
 
     public NextLevelDerivedCarHto(
         int? id,
@@ -198,7 +198,7 @@ public partial class HypermediaCustomersRootHto : HypermediaObject
 public partial class HypermediaCustomerHto : HypermediaObject
 {
     [FormatterIgnoreHypermediaProperty]
-    public int  Id { get; set; }
+    public int Id { get; set; }
 
     public int? Age { get; set; }
 
@@ -271,7 +271,7 @@ public partial class HypermediaCustomerHto : HypermediaObject
 [HypermediaObject(Title = "Query result on Customer", Classes = new string[]{ "CustomersQueryResult" })]
 public partial class HypermediaCustomerQueryResultHto : HypermediaQueryResult
 {
-    public int?  TotalEntities { get; set; }
+    public int? TotalEntities { get; set; }
 
     public int? CurrentEntitiesCount { get; set; }
 

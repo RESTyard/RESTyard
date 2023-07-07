@@ -37,7 +37,6 @@ public class DefaultHypermediaClientBuilder
 {{- end }}
             });
 }
-
 {{
     for parametersType in TransferParameters 
         mandatoryArguments = gatherMandatoryParameterArguments parametersType showHidden: false
@@ -45,12 +44,13 @@ public class DefaultHypermediaClientBuilder
         mandatoryParentArguments = gatherMandatoryParameterParentArguments TransferParameters parametersType showHidden: false
         optionalParentArguments = gatherOptionalParameterParentArguments TransferParameters parametersType showHidden: false
         allArguments = mandatoryParentArguments | array.concat mandatoryArguments | array.concat optionalParentArguments | array.concat optionalArguments
+        parentArguments = array.concat (mandatoryParentArguments | array.each @transformMandatoryArgument) (optionalParentArguments | array.each @transformOptionalArgument)
 ~}}
 public partial record {{ parametersType.typeName }}(
     {{- for arg in allArguments }}
         {{- arg }}
         {{- if !for.last }}, {{ end }}
-    {{- end }}){{ if isNotEmpty parametersType.parentType }} : {{parametersType.parentType}}({{ for arg in mandatoryParentArguments }}{{ arg | string.split ' ' | array.last }}{{- if !for.last }}, {{ end }}{{ end }}{{ if (array.size mandatoryParentArguments) != 0 && (array.size optionalParentArguments) != 0 }}, {{ end }}{{ for arg in optionalParentArguments }}{{ arg | string.split ' ' | array.offset 1 | array.first }}{{- if !for.last }}, {{ end }}{{ end }}){{ end }};
+    {{- end }}){{ if isNotEmpty parametersType.parentType }} : {{parametersType.parentType}}({{ for arg in parentArguments }}{{ arg }}{{- if !for.last }}, {{ end }}{{ end }}){{ end }};
 {{ end }}
 {{- for document in Documents }}
 {{- typeName = document.name + "Hco" }}
