@@ -50,12 +50,22 @@ public partial record {{ parametersType.typeName }}(
     {{- for arg in allArguments }}
         {{- arg }}
         {{- if !for.last }}, {{ end }}
-    {{- end }}){{ if isNotEmpty parametersType.parentType }} : {{parametersType.parentType}}({{ for arg in parentArguments }}{{ arg }}{{- if !for.last }}, {{ end }}{{ end }}){{ end }};
+    {{- end }})
+    {{- if isNotEmpty parametersType.parentType }} : {{parametersType.parentType}}(
+        {{- for arg in parentArguments }}
+            {{- arg }}
+            {{- if !for.last }}, {{ end }}
+        {{- end -}}
+    ){{ end }};
 {{ end }}
 {{- for document in Documents }}
 {{- typeName = document.name + "Hco" }}
 [HypermediaClientObject({{ for class in document.Classifications }}"{{ class.class }}"{{ if !for.last }}, {{ end }}{{ end }})]
-public partial class {{ typeName }} : {{ if isNotEmpty document.parentDocument }}{{ document.parentDocument + "Hco" }}{{ else }}HypermediaClientObject{{ end }}
+public partial class {{ typeName }} : {{ if isNotEmpty document.parentDocument }}
+        {{- document.parentDocument + "Hco" }}
+    {{- else -}}
+        HypermediaClientObject
+    {{- end }}
 {
 {{- checkProperties typeName document.Properties }}
 {{- for property in document.Properties | array.filter @isVisibleProperty }}

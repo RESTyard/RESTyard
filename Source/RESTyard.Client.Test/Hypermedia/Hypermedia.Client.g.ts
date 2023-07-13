@@ -26,13 +26,13 @@ export function match<TIn, TOut>(nullable: Nullable<TIn>, onValue: (v: TIn) => T
     }
 }
 
-export class CreateCustomerParameters{
+export class CreateCustomerParameters {
     constructor(
         public readonly Name: string
     ) {  }
 }
 
-export class BuyCarParameters{
+export class BuyCarParameters {
     constructor(
         public readonly Brand: string,
         public readonly CarId: int,
@@ -61,7 +61,7 @@ export class BuyLamborghinettaParameters extends BuyLamborghiniParameters {
     ) { super(Brand, CarId, Price, Color, OptionalProperty); }
 }
 
-export class NewAddress{
+export class NewAddress {
     constructor(
         public readonly Address: string
     ) {  }

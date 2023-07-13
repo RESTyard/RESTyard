@@ -65,7 +65,20 @@ public partial record {{ parametersType.typeName }}(
     {{- for arg in allArguments }}
         {{- arg }}
         {{- if !for.last }}, {{ end }}
-    {{- end }}){{ if isNotEmpty parametersType.parentType }} : {{parametersType.parentType}}({{ for arg in parentArguments }}{{ arg }}{{- if !for.last }}, {{ end }}{{ end }}){{ end }}{{ for interface in interfaces }}{{ if for.first }}{{ if isNotEmpty parametersType.parentType }}, {{ else }} : {{ end }}{{ end }}{{ interface }}{{ if !for.last }}, {{ end }}{{ end }};
+    {{- end }})
+    {{- if isNotEmpty parametersType.parentType }} : {{parametersType.parentType}}(
+        {{- for arg in parentArguments }}
+            {{- arg }}
+            {{- if !for.last }}, {{ end }}
+        {{- end -}}
+    ){{ end }}
+    {{- for interface in interfaces }}
+        {{- if for.first }}
+            {{- if isNotEmpty parametersType.parentType }}, {{ else }} : {{ end }}
+        {{- end }}
+        {{- interface }}
+        {{- if !for.last }}, {{ end }}
+    {{- end }};
 {{ end }}
 {{-
     for document in Documents
@@ -108,8 +121,17 @@ public partial class {{ typeName }} : {{
 {{- end }}
     ) : base(
         {{- for argument in parentArguments }}
-            {{ argument | string.split ' ' | array.last }}{{ if !for.last }},{{ end }}
-        {{- end }}{{ if (array.size parentArguments) == 0 }}{{ if document.isQueryResult }}query{{ else if isEmpty document.parentDocument }}hasSelfLink: {{ document.hasSelfLink }}{{ end }}){{ else }}){{ end }}
+            {{ argument | string.split ' ' | array.last }}
+            {{- if !for.last }},{{ end }}
+        {{- end }}
+        {{- if (array.size parentArguments) == 0 }}
+            {{- if document.isQueryResult -}}
+                query
+            {{- else if isEmpty document.parentDocument -}}
+                hasSelfLink: {{ document.hasSelfLink }}
+            {{- end -}}
+        {{- end -}}
+        )
     {
 {{- for property in document.Properties }}
         this.{{ property.name }} = {{ property.name | uncapitalize }};

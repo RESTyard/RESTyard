@@ -49,12 +49,21 @@ export function match<TIn, TOut>(nullable: Nullable<TIn>, onValue: (v: TIn) => T
         end
         allParameters = array.concat parentParameters parameters
 }}
-export class {{ parametersType.typeName }}{{ if isNotEmpty parametersType.parentType }} extends {{ parametersType.parentType }} {{ end }}{
+export class {{ parametersType.typeName }}
+    {{- if isNotEmpty parametersType.parentType }} extends {{ parametersType.parentType }}
+    {{- end }} {
     constructor(
 {{- for param in allParameters }}
         public readonly {{ param }}{{ if !for.last }},{{ end }}
 {{- end }}
-    ) { {{ if (array.size parentParameters) != 0 }}super({{- for param in parentParameters}}{{ param | string.split ':' | array.first }}{{ if !for.last }}, {{ end }}{{- end}});{{ end }} }
+    ) { {{ if isNotEmpty parametersType.parentType -}}
+        super(
+            {{- for param in parentParameters}}
+                {{- param | string.split ':' | array.first }}
+                {{- if !for.last }}, {{ end }}
+            {{- end -}}
+        );
+    {{- end }} }
 }
 {{
     func gatherArguments
@@ -68,7 +77,7 @@ export class {{ parametersType.typeName }}{{ if isNotEmpty parametersType.parent
             arg = entity.collectionName + ": " + entity.document + "Hco[]"
             argumentsRetVal = array.add argumentsRetVal arg
         end
-        if $0.hasSelfLink && $1
+        if $0.hasSelfLink && $.includeSelfLink
             arg = "self: HypermediaLink<" + $0.name + "Hco>"
             argumentsRetVal = array.add argumentsRetVal arg
         end
@@ -119,33 +128,37 @@ export class {{ parametersType.typeName }}{{ if isNotEmpty parametersType.parent
     end
 
     for document in Documents
-        arguments = gatherArguments document true
+        arguments = gatherArguments document includeSelfLink: true
         parentArguments = []
         currentDocument = document
         while isNotEmpty currentDocument.parentDocument
             currentDocument = findParent Documents currentDocument.parentDocument
-            parentArguments = array.concat (gatherArguments currentDocument false) parentArguments
+            parentArguments = array.concat (gatherArguments currentDocument includeSelfLink: false) parentArguments
         end
         parentArgumentsForCall = []
         currentDocument = document
         if isNotEmpty currentDocument.parentDocument
             currentDocument = findParent Documents currentDocument.parentDocument
-            parentArgumentsForCall = gatherArguments currentDocument true
+            parentArgumentsForCall = gatherArguments currentDocument includeSelfLink: true
             while isNotEmpty currentDocument.parentDocument
                 currentDocument = findParent Documents currentDocument.parentDocument
-                parentArgumentsForCall = array.concat (gatherArguments currentDocument false) parentArgumentsForCall
+                parentArgumentsForCall = array.concat (gatherArguments currentDocument includeSelfLink: false) parentArgumentsForCall
             end
         end
         allArguments = array.concat parentArguments arguments
         
 }}
-export class {{ document.name }}Hco extends {{ if isNotEmpty document.parentDocument }}{{ document.parentDocument }}Hco{{ else }}HypermediaObject{{ end }} {
+export class {{ document.name }}Hco extends {{ if isNotEmpty document.parentDocument }}
+        {{- document.parentDocument }}Hco
+    {{- else -}}
+        HypermediaObject
+    {{- end }} {
     constructor(
 {{-     for arg in allArguments }}
         public readonly {{ arg }}{{ if !for.last }},{{ end }}
 {{-     end }}
     ) {
-        super({{ if (array.size parentArgumentsForCall) != 0 }}{{- for arg in parentArgumentsForCall }}{{ arg | string.split ':' | array.first }}{{ if !for.last }}, {{ end }}{{- end }}{{ end }});
+        super({{- for arg in parentArgumentsForCall }}{{ arg | string.split ':' | array.first }}{{ if !for.last }}, {{ end }}{{- end }});
     }
 }
 {{ end }}
