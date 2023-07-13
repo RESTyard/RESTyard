@@ -93,7 +93,7 @@ public partial class DerivedCarHco : HypermediaCarHco
     public MandatoryHypermediaLink<DerivedCarHco> Self { get; set; } = default!;
 
     [HypermediaRelations(new[]{ "DerivedLink" })]
-    public MandatoryHypermediaLink<HypermediaCustomerHco>? DerivedLink { get; set; } = default!;
+    public HypermediaLink<HypermediaCustomerHco>? DerivedLink { get; set; } = default!;
 
     [HypermediaRelations(new[]{ "item" })]
     public List<HypermediaCustomerHco> Item { get; set; } = default!;
@@ -129,7 +129,7 @@ public partial class HypermediaCustomersRootHco : HypermediaClientObject
 
     [Mandatory]
     [HypermediaRelations(new[]{ "GreatSite" })]
-    public MandatoryHypermediaLink<HypermediaCustomerHco> GreatSite { get; set; } = default!;
+    public MandatoryHypermediaLink<HypermediaClientObject> GreatSite { get; set; } = default!;
 
     [HypermediaCommand("CreateCustomer")]
     public IHypermediaClientFunction<HypermediaCustomerHco, CreateCustomerParameters>? CreateCustomer { get; set; }

@@ -45,12 +45,12 @@ public static class MimeTypes
 }
 
 {{
-    for parametersType in TransferParameters
+    for parametersType in TransferParameters.Parameters
         interfaces = []
         mandatoryArguments = gatherMandatoryParameterArguments parametersType showHidden: true
         optionalArguments = gatherOptionalParameterArguments parametersType showHidden: true
-        mandatoryParentArguments = gatherMandatoryParameterParentArguments TransferParameters parametersType showHidden: true
-        optionalParentArguments = gatherOptionalParameterParentArguments TransferParameters parametersType showHidden: true
+        mandatoryParentArguments = gatherMandatoryParameterParentArguments TransferParameters.Parameters parametersType showHidden: true
+        optionalParentArguments = gatherOptionalParameterParentArguments TransferParameters.Parameters parametersType showHidden: true
         allArguments = mandatoryParentArguments | array.concat mandatoryArguments | array.concat optionalParentArguments | array.concat optionalArguments
         parentArguments = array.concat (mandatoryParentArguments | array.each @transformMandatoryArgument) (optionalParentArguments | array.each @transformOptionalArgument)
 

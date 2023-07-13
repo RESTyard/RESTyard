@@ -171,8 +171,8 @@ public partial class HypermediaCarsRootHto
     [ActivatorUtilitiesConstructor]
     public HypermediaCarsRootHto()
         : this(
-            new HypermediaObjectReference(new HypermediaCarHto("VW", 2)),
-            new {Brand = "Porsche", Id = 5})
+            new { brand = "VW", id = 2 },
+            new { brand = "Porsche", id = 5 })
     {
         UploadCarImage = new UploadCarImageOp(() => true, new FileUploadConfiguration
         {

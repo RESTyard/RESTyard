@@ -171,14 +171,14 @@ public partial class HypermediaCustomersRootHto : HypermediaObject
         CustomerQuery allQuery,
         object? allKey,
         object? bestCustomerKey,
-        object? greatSiteKey
+        HypermediaObjectReferenceBase greatSite
     ) : base(hasSelfLink: true)
     {
         this.CreateCustomer = createCustomer;
         this.CreateQuery = createQuery;
         Links.Add("all", new HypermediaObjectQueryReference(typeof(HypermediaCustomerQueryResultHto), allQuery, allKey));
         Links.Add("BestCustomer", new HypermediaObjectKeyReference(typeof(HypermediaCustomerHto), bestCustomerKey));
-        Links.Add("GreatSite", new HypermediaObjectKeyReference(typeof(HypermediaCustomerHto), greatSiteKey));
+        Links.Add("GreatSite", greatSite);
     }
 
     public partial class CreateCustomerOp : HypermediaAction<CreateCustomerParameters>
@@ -197,6 +197,7 @@ public partial class HypermediaCustomersRootHto : HypermediaObject
 [HypermediaObject(Title = "", Classes = new string[]{ "Customer" })]
 public partial class HypermediaCustomerHto : HypermediaObject
 {
+    [Key("id")]
     [FormatterIgnoreHypermediaProperty]
     public int Id { get; set; }
 

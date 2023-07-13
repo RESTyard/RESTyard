@@ -140,7 +140,7 @@ export class HypermediaCustomersRootHco extends HypermediaObject {
         public readonly self: HypermediaLink<HypermediaCustomersRootHco>,
         public readonly all: HypermediaLink<HypermediaCustomerQueryResultHco>,
         public readonly BestCustomer: HypermediaLink<HypermediaCustomerHco>,
-        public readonly GreatSite: HypermediaLink<HypermediaCustomerHco>,
+        public readonly GreatSite: HypermediaLink<HypermediaObject>,
         public readonly CreateCustomer: Nullable<HypermediaFunction<HypermediaCustomerHco, CreateCustomerParameters>>,
         public readonly CreateQuery: Nullable<HypermediaAction<CustomerQuery>>
     ) {

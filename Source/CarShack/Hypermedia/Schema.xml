@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<Hypermedia xmlns="http://schema.bluehands.de/2023/Hypermedia.xsd"
+<Hypermedia xmlns="http://schema.bluehands.de/2022/Hypermedia.xsd"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://schema.bluehands.de/2023/Hypermedia.xsd ../../RESTyard.ContractFirst/RESTyard.Generator/Hypermedia.xsd">
+            xsi:schemaLocation="http://schema.bluehands.de/2022/Hypermedia.xsd ../../RESTyard.ContractFirst/RESTyard.Generator/Hypermedia.xsd">
   <TransferParameters>
     <Parameters typeName="CreateCustomerParameters" usedForQueries="false" usedForActions="true">
       <Property name="Name" type="string" mandatory="true" />
@@ -97,7 +97,7 @@
       <Links>
         <Link rel="all" document="HypermediaCustomerQueryResult" query="CustomerQuery" mandatory="true" />
         <Link rel="BestCustomer" document="HypermediaCustomer" mandatory="true" />
-        <Link rel="GreatSite" document="HypermediaCustomer" mandatory="true" />
+        <Link rel="GreatSite" mandatory="true" />
       </Links>
     </Document>
     <Document name="HypermediaCustomer">
@@ -105,7 +105,7 @@
         <Classification class="Customer" />
       </Classifications>
       <Properties>
-        <Property name="Id" type="int" hidden="true" mandatory="true" />
+        <Property name="Id" type="int" hidden="true" mandatory="true" isKey="true" />
         <Property name="Age" type="int" />
         <Property name="FullName" type="string" />
         <Property name="Address" type="string" />

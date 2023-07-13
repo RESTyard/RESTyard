@@ -2,8 +2,8 @@
 <xs:schema
 	attributeFormDefault="unqualified"
 	elementFormDefault="qualified"
-	targetNamespace="http://schema.bluehands.de/2023/Hypermedia.xsd"
-    xmlns:hm="http://schema.bluehands.de/2023/Hypermedia.xsd"
+	targetNamespace="http://schema.bluehands.de/2022/Hypermedia.xsd"
+    xmlns:hm="http://schema.bluehands.de/2022/Hypermedia.xsd"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
 >
   <xs:complexType name="HypermediaType">
