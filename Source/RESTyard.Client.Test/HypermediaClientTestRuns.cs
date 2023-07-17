@@ -59,7 +59,7 @@ namespace RESTyard.Client.Test
             var customer = customersAll.ResultObject.Customers.First();
 
             var newAddress = "New Address";
-            var actionResult = await customer.CustomerMove.ExecuteAsync(new NewAddress {Address = newAddress}, this.Resolver);
+            var actionResult = await customer.CustomerMove.ExecuteAsync(new NewAddress(Address: newAddress), this.Resolver);
             
             customer = await customer.Self.ResolveAsync();
             Assert.IsTrue(actionResult.Success);
