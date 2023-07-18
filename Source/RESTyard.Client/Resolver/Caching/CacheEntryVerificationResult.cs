@@ -3,7 +3,7 @@ using RESTyard.Client.Extensions;
 
 namespace RESTyard.Client.Resolver.Caching
 {
-    public abstract class CacheEntryVerificationResult<TNetworkResponseMessage>
+    public abstract record CacheEntryVerificationResult<TNetworkResponseMessage>
     {
         public void Match(
             Action<CacheEntryMayBeUsed> mayBeUsed,
@@ -17,22 +17,9 @@ namespace RESTyard.Client.Resolver.Caching
             Func<UseThisResponseInstead, TMatchResult> useResponse)
             => this.TypeMatch(mayBeUsed, mayNotBeUsed, useResponse);
 
-        public sealed class CacheEntryMayBeUsed : CacheEntryVerificationResult<TNetworkResponseMessage>
-        {
-        }
-
-        public sealed class CacheEntryMayNotBeUsed : CacheEntryVerificationResult<TNetworkResponseMessage>
-        {
-        }
-
-        public sealed class UseThisResponseInstead : CacheEntryVerificationResult<TNetworkResponseMessage>
-        {
-            public UseThisResponseInstead(TNetworkResponseMessage response)
-            {
-                Response = response;
-            }
-
-            public TNetworkResponseMessage Response { get; }
-        }
+        public sealed record CacheEntryMayBeUsed : CacheEntryVerificationResult<TNetworkResponseMessage>;
+        public sealed record CacheEntryMayNotBeUsed : CacheEntryVerificationResult<TNetworkResponseMessage>;
+        public sealed record UseThisResponseInstead
+            (TNetworkResponseMessage Response) : CacheEntryVerificationResult<TNetworkResponseMessage>;
     }
 }

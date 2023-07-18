@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using FunicularSwitch;
 using RESTyard.Client.Hypermedia;
 using RESTyard.Client.Hypermedia.Commands;
 using RESTyard.Client.ParameterSerializer;
@@ -42,12 +43,12 @@ namespace RESTyard.Client.Resolver
 
         protected ILinkHcoCache<TLinkHcoCacheEntry> LinkHcoCache { get; }
 
-        public async Task<ResolverResult<T>> ResolveLinkAsync<T>(
+        public async Task<HypermediaResult<T>> ResolveLinkAsync<T>(
             Uri uriToResolve,
             bool forceResolve = false)
             where T : HypermediaClientObject
         {
-            TNetworkResponseMessage response;
+            HypermediaResult<TNetworkResponseMessage> networkResult;
             if (this.LinkHcoCache.TryGetValue(uriToResolve, out var cacheEntry))
             {
                 var verificationResult = await this.VerifyIfCacheEntryCanBeUsedAsync(uriToResolve, cacheEntry, DateTimeOffset.Now, forceResolve);
@@ -58,38 +59,43 @@ namespace RESTyard.Client.Resolver
                 if (cacheEntryCanBeUsed)
                 {
                     var hco = (T)this.HypermediaReader.Read(cacheEntry.LinkResponseContent, this);
-                    return new ResolverResult<T>(
-                        success: true,
-                        hco);
+                    return HypermediaResult.Ok(hco);
                 }
                 else
                 {
                     this.LinkHcoCache.Remove(uriToResolve);
                 }
 
-                response = await verificationResult.Match(
+                networkResult = await verificationResult.Match(
                     canBeUsed => this.ResolveAsync(uriToResolve),
                     canNotBeUsed => this.ResolveAsync(uriToResolve),
-                    useResponse => Task.FromResult(useResponse.Response));
+                    async useResponse => HypermediaResult.Ok(useResponse.Response));
             }
             else
             {
-                response = await this.ResolveAsync(uriToResolve);
+                networkResult = await this.ResolveAsync(uriToResolve);
             }
 
-            var cacheConfiguration = this.GetCacheConfigurationFromResponse(response, DateTimeOffset.Now);
-            bool serializeToString = cacheConfiguration.ShouldBeAddedToCache();
-            var (resolverResult, hcoAsString) = await this.HandleLinkResponseAsync<T>(response, serializeToString);
+            return await networkResult
+                .Bind(async response =>
+                {
+                    var cacheConfiguration = this.GetCacheConfigurationFromResponse(response, DateTimeOffset.Now);
+                    bool serializeToString = cacheConfiguration.ShouldBeAddedToCache();
+                    var linkResult = await this.HandleLinkResponseAsync<T>(response, serializeToString);
 
-            if (resolverResult.Success
-                && cacheConfiguration.ShouldBeAddedToCache()
-                && !string.IsNullOrEmpty(hcoAsString))
-            {
-                var entry = GetCacheEntryFromConfiguration(hcoAsString, cacheConfiguration);
-                this.LinkHcoCache.Set(uriToResolve, entry);
-            }
+                    linkResult.Match(ok =>
+                    {
+                        var hcoAsString = ok.HcoAsString;
+                        if (cacheConfiguration.ShouldBeAddedToCache()
+                            && !string.IsNullOrEmpty(hcoAsString))
+                        {
+                            var entry = GetCacheEntryFromConfiguration(hcoAsString, cacheConfiguration);
+                            this.LinkHcoCache.Set(uriToResolve, entry);
+                        }
+                    });
 
-            return resolverResult;
+                    return linkResult.Bind<T>(ok => ok.ResultHco);
+                });
         }
 
         protected abstract Task<CacheEntryVerificationResult<TNetworkResponseMessage>> VerifyIfCacheEntryCanBeUsedAsync(
@@ -106,165 +112,148 @@ namespace RESTyard.Client.Resolver
             string linkResponseContent,
             TLinkHcoCacheEntryConfiguration cacheConfiguration);
 
-        public async Task<HypermediaCommandResult> ResolveActionAsync(
+        public async Task<HypermediaResult<Unit>> ResolveActionAsync(
             Uri uri,
             string method)
         {
-            var responseMessage = await this.SendCommandAsync(uri, method);
-            var actionResult = await this.HandleActionResponseAsync(responseMessage);
-            return actionResult;
+            return await this.SendCommandAsync(uri, method)
+                .Bind(responseMessage => this.HandleActionResponseAsync(responseMessage));
         }
 
-        public async Task<HypermediaCommandResult> ResolveActionAsync(
+        public async Task<HypermediaResult<Unit>> ResolveActionAsync(
             Uri uri,
             string method,
             List<ParameterDescription> parameterDescriptions,
             object parameterObject)
         {
-            var serializedParameters = this.ProcessParameters(parameterDescriptions, parameterObject);
-
-            var responseMessage = await this.SendCommandAsync(uri, method, serializedParameters);
-            var actionResult = await HandleActionResponseAsync(responseMessage);
-            return actionResult;
+            return await this.ProcessParameters(parameterDescriptions, parameterObject)
+                .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters))
+                .Bind(responseMessage => this.HandleActionResponseAsync(responseMessage));
         }
 
-        public async Task<HypermediaFunctionResult<T>> ResolveFunctionAsync<T>(
+        public async Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(
             Uri uri,
             string method) where T : HypermediaClientObject
         {
-            var responseMessage = await SendCommandAsync(uri, method);
-            var functionResult = await this.HandleFunctionResponseAsync<T>(responseMessage);
-            return functionResult;
+            return await SendCommandAsync(uri, method)
+                .Bind(responseMessage => this.HandleFunctionResponseAsync<T>(responseMessage));
         }
 
-        public async Task<HypermediaFunctionResult<T>> ResolveFunctionAsync<T>(
+        public async Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(
             Uri uri,
             string method,
             List<ParameterDescription> parameterDescriptions,
             object parameterObject) where T : HypermediaClientObject
         {
-            var serializedParameters = this.ProcessParameters(parameterDescriptions, parameterObject);
-
-            var responseMessage = await this.SendCommandAsync(uri, method, serializedParameters);
-            var actionResult = await this.HandleFunctionResponseAsync<T>(responseMessage);
-            return actionResult;
+            return await this.ProcessParameters(parameterDescriptions, parameterObject)
+                .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters))
+                .Bind(responseMessage => this.HandleFunctionResponseAsync<T>(responseMessage));
         }
 
-        protected async Task<(ResolverResult<T>, string)> HandleLinkResponseAsync<T>(
+        protected async Task<HypermediaResult<(T ResultHco, string HcoAsString)>> HandleLinkResponseAsync<T>(
             TNetworkResponseMessage responseMessage,
             bool serializeToString)
             where T : HypermediaClientObject
         {
-            await this.EnsureRequestIsSuccessfulAsync(responseMessage);
+            return await this.EnsureRequestIsSuccessfulAsync(responseMessage)
+                .Bind(_ => this.ResponseAsStreamAsync(responseMessage))
+                .Bind(async hypermediaObjectSirenStream =>
+                {
+                    HypermediaClientObject hypermediaClientObject;
+                    string serialized = string.Empty;
+                    if (serializeToString)
+                    {
+                        (hypermediaClientObject, serialized) =
+                            await this.HypermediaReader.ReadAndSerializeAsync(hypermediaObjectSirenStream, this);
+                    }
+                    else
+                    {
+                        hypermediaClientObject =
+                            await this.HypermediaReader.ReadAsync(hypermediaObjectSirenStream, this);
+                    }
 
-            var hypermediaObjectSirenStream = await this.ResponseAsStreamAsync(responseMessage);
+                    if (!(hypermediaClientObject is T desiredResultObject))
+                    {
+                        return HypermediaResult.Error<(T, string)>(HypermediaProblem.InvalidResponse($"Could not retrieve result as {typeof(T).Name}."));
+                    }
 
-            HypermediaClientObject hypermediaClientObject;
-            string serialized = string.Empty;
-            if (serializeToString)
-            {
-                (hypermediaClientObject, serialized) =
-                    await this.HypermediaReader.ReadAndSerializeAsync(hypermediaObjectSirenStream, this);
-            }
-            else
-            {
-                hypermediaClientObject = await this.HypermediaReader.ReadAsync(hypermediaObjectSirenStream, this);
-            }
-            if (!(hypermediaClientObject is T desiredResultObject))
-            {
-                throw new Exception($"Could not retrieve result as {typeof(T).Name}.");
-            }
-
-            var resolverResult = new ResolverResult<T>(
-                success: true,
-                desiredResultObject);
-            return (resolverResult, serialized);
+                    return HypermediaResult.Ok((desiredResultObject, serialized));
+                });
         }
 
-        protected async Task<HypermediaCommandResult> HandleActionResponseAsync(TNetworkResponseMessage responseMessage)
+        protected async Task<HypermediaResult<Unit>> HandleActionResponseAsync(TNetworkResponseMessage responseMessage)
         {
-            await this.EnsureRequestIsSuccessfulAsync(responseMessage);
-
-            var actionResult = new HypermediaCommandResult()
-            {
-                Success = true,
-            };
-            return actionResult;
+            return await this.EnsureRequestIsSuccessfulAsync(responseMessage);
         }
 
-        protected async Task<HypermediaFunctionResult<T>> HandleFunctionResponseAsync<T>(
+        protected async Task<HypermediaResult<MandatoryHypermediaLink<T>>> HandleFunctionResponseAsync<T>(
             TNetworkResponseMessage responseMessage)
             where T : HypermediaClientObject
         {
-            await this.EnsureRequestIsSuccessfulAsync(responseMessage);
-
-            var location = this.GetLocation(responseMessage);
-            if (location == null)
-            {
-                throw new Exception("hypermedia function did not return a result resource location.");
-            }
-
-            var actionResult = new HypermediaFunctionResult<T>
-            {
-                Success = true,
-                ResultLocation =
+            return await this.EnsureRequestIsSuccessfulAsync(responseMessage)
+                .Bind(_ => this.GetLocation(responseMessage))
+                .Bind(location =>
                 {
-                    Uri = location,
-                    Resolver = this,
-                },
-            };
+                    var actionResult = HypermediaResult.Ok(new MandatoryHypermediaLink<T>()
+                    {
+                        Uri = location,
+                        Resolver = this,
+                    });
 
-            return actionResult;
+                    return actionResult;
+                });
         }
 
-        protected string ProcessParameters(IList<ParameterDescription> parameterDescriptions, object parameterObject)
+        protected HypermediaResult<string> ProcessParameters(IList<ParameterDescription> parameterDescriptions, object? parameterObject)
         {
             if (parameterObject is null)
             {
-                throw new Exception("Parameter is described but not passed by action.");
+                return HypermediaResult.Error<string>(
+                    HypermediaProblem.InvalidRequest("Parameter is described but not passed by action."));
             }
 
-            var parameterDescription = GetParameterDescription(parameterDescriptions);
-
-            var serializedParameters =
-                this.ParameterSerializer.SerializeParameterObject(parameterDescription.Name, parameterObject);
-            return serializedParameters;
+            return GetParameterDescription(parameterDescriptions)
+                .Bind(parameterDescription => {
+                    var serializedParameters =
+                        this.ParameterSerializer.SerializeParameterObject(parameterDescription.Name, parameterObject);
+                    return HypermediaResult.Ok(serializedParameters);
+                });
         }
 
-        protected static ParameterDescription GetParameterDescription(IList<ParameterDescription> parameterDescriptions)
+        protected static HypermediaResult<ParameterDescription> GetParameterDescription(IList<ParameterDescription> parameterDescriptions)
         {
             if (parameterDescriptions.Count == 0)
             {
-                throw new Exception("Parameter not described.");
+                return HypermediaResult<ParameterDescription>.Error(HypermediaProblem.InvalidRequest("Parameter not described."));
             }
 
             // todo allow more fields
             if (parameterDescriptions.Count > 1)
             {
-                throw new Exception("Only one action parameter is supported.");
+                return HypermediaResult<ParameterDescription>.Error(HypermediaProblem.InvalidRequest("Only one action parameter is supported."));
             }
 
             // todo allow more types
             var parameterDescription = parameterDescriptions.First();
             if (!parameterDescription.Type.Equals(DefaultMediaTypes.ApplicationJson))
             {
-                throw new Exception("Only one action type 'application/json' is supported.");
+                return HypermediaResult<ParameterDescription>.Error(HypermediaProblem.InvalidRequest("Only one action type 'application/json' is supported."));
             }
-            return parameterDescription;
+            return HypermediaResult.Ok(parameterDescription);
         }
 
-        protected abstract Task<TNetworkResponseMessage> ResolveAsync(Uri uriToResolve);
+        protected abstract Task<HypermediaResult<TNetworkResponseMessage>> ResolveAsync(Uri uriToResolve);
 
-        protected abstract Task<TNetworkResponseMessage> SendCommandAsync(
+        protected abstract Task<HypermediaResult<TNetworkResponseMessage>> SendCommandAsync(
             Uri uri,
             string method,
             string payload = null);
 
-        protected abstract Task EnsureRequestIsSuccessfulAsync(TNetworkResponseMessage responseMessage);
+        protected abstract Task<HypermediaResult<Unit>> EnsureRequestIsSuccessfulAsync(TNetworkResponseMessage responseMessage);
 
-        protected abstract Task<Stream> ResponseAsStreamAsync(TNetworkResponseMessage responseMessage);
+        protected abstract Task<HypermediaResult<Stream>> ResponseAsStreamAsync(TNetworkResponseMessage responseMessage);
 
-        protected abstract Uri GetLocation(TNetworkResponseMessage responseMessage);
+        protected abstract HypermediaResult<Uri> GetLocation(TNetworkResponseMessage responseMessage);
 
         ~HypermediaResolverBase()
         {
