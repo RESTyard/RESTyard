@@ -36,11 +36,11 @@
 
 	<!-- package image -->
 	<ItemGroup>
-		<None Include=".\Images\Ry-Icon_128x128.png" Pack="true" PackagePath="\"/>
+		<None Include=".\Images\Ry-Icon_128x128.png" Pack="true" PackagePath="\" />
 	</ItemGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
 
   <ItemGroup>

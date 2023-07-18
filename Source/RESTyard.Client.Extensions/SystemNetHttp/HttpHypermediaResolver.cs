@@ -146,7 +146,7 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
         protected override async Task<HypermediaResult<HttpResponseMessage>> SendCommandAsync(
             Uri uri,
             string method,
-            string payload = null)
+            string? payload = null)
         {
             var httpMethod = GetHttpMethod(method);
             var request = new HttpRequestMessage(httpMethod, uri);

@@ -10,22 +10,22 @@ public abstract class FileUploadHypermediaAction : HypermediaActionBase, IFileUp
 {
     public FileUploadConfiguration FileUploadConfiguration { get; set; }
     
-    protected FileUploadHypermediaAction(Func<bool> canExecute, FileUploadConfiguration fileUploadConfiguration = null) : base(canExecute)
+    protected FileUploadHypermediaAction(Func<bool> canExecute, FileUploadConfiguration? fileUploadConfiguration = null) : base(canExecute)
     {
         FileUploadConfiguration = fileUploadConfiguration ?? new FileUploadConfiguration();
     }
     
-    protected FileUploadHypermediaAction(FileUploadConfiguration fileUploadConfiguration = null) : base(() => true)
+    protected FileUploadHypermediaAction(FileUploadConfiguration? fileUploadConfiguration = null) : base(() => true)
     {
         FileUploadConfiguration = fileUploadConfiguration ?? new FileUploadConfiguration();
     }
 
-    public override object GetPrefilledParameter()
+    public override object? GetPrefilledParameter()
     {
         return null;
     }
 
-    public override Type ParameterType()
+    public override Type? ParameterType()
     {
         return typeof(FileUploadConfiguration);
     }

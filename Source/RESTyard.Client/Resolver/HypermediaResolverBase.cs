@@ -124,7 +124,7 @@ namespace RESTyard.Client.Resolver
             Uri uri,
             string method,
             List<ParameterDescription> parameterDescriptions,
-            object parameterObject)
+            object? parameterObject)
         {
             return await this.ProcessParameters(parameterDescriptions, parameterObject)
                 .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters))
@@ -143,7 +143,7 @@ namespace RESTyard.Client.Resolver
             Uri uri,
             string method,
             List<ParameterDescription> parameterDescriptions,
-            object parameterObject) where T : HypermediaClientObject
+            object? parameterObject) where T : HypermediaClientObject
         {
             return await this.ProcessParameters(parameterDescriptions, parameterObject)
                 .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters))
@@ -247,7 +247,7 @@ namespace RESTyard.Client.Resolver
         protected abstract Task<HypermediaResult<TNetworkResponseMessage>> SendCommandAsync(
             Uri uri,
             string method,
-            string payload = null);
+            string? payload = null);
 
         protected abstract Task<HypermediaResult<Unit>> EnsureRequestIsSuccessfulAsync(TNetworkResponseMessage responseMessage);
 

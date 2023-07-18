@@ -12,24 +12,24 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
         /// <summary>
         /// The action may provide pre filled values which are passed to the client so action parameters can be filled with provided values.
         /// </summary>
-        public TParameter PrefilledValues { protected set;  get; }
+        public TParameter? PrefilledValues { protected set;  get; }
 
-        public HypermediaAction(Func<bool> canExecute, TParameter prefilledValues = null) : base(canExecute)
+        public HypermediaAction(Func<bool> canExecute, TParameter? prefilledValues = null) : base(canExecute)
         {
             PrefilledValues = prefilledValues;
         }
 
-        public HypermediaAction(TParameter prefilledValues = null) : base(()=>true)
+        public HypermediaAction(TParameter? prefilledValues = null) : base(()=>true)
         {
             PrefilledValues = prefilledValues;
         }
 
-        public override object GetPrefilledParameter()
+        public override object? GetPrefilledParameter()
         {
             return PrefilledValues;
         }
 
-        public override Type ParameterType()
+        public override Type? ParameterType()
         {
             return typeof(TParameter);
         }
@@ -44,12 +44,12 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
         {
         }
 
-        public override object GetPrefilledParameter()
+        public override object? GetPrefilledParameter()
         {
             return null;
         }
 
-        public override Type ParameterType()
+        public override Type? ParameterType()
         {
             return null;
         }

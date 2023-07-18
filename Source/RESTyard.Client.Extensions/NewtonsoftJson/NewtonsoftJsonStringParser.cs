@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -37,14 +38,15 @@ namespace RESTyard.Client.Extensions.NewtonsoftJson
                 this.jToken = jToken;
             }
 
-            public static IToken Wrap(JToken jToken)
+            [return: NotNullIfNotNull(nameof(jToken))]
+            public static IToken? Wrap(JToken? jToken)
             {
                 return jToken != null ? new JTokenWrapper(jToken) : null;
             }
 
             public IEnumerator<IToken> GetEnumerator()
             {
-                return this.jToken.Select(Wrap).GetEnumerator();
+                return this.jToken.Select(token => Wrap(token)).GetEnumerator();
             }
 
             IEnumerator IEnumerable.GetEnumerator()

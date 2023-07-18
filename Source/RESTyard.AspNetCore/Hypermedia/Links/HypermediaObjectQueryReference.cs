@@ -11,7 +11,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
     {
         public IHypermediaQuery Query { get; }
 
-        public HypermediaObjectQueryReference(Type hypermediaObjectType, IHypermediaQuery query, object key = null) : base(hypermediaObjectType, key)
+        public HypermediaObjectQueryReference(Type hypermediaObjectType, IHypermediaQuery query, object? key = null) : base(hypermediaObjectType, key)
         {
             Query = query;
         }

@@ -8,7 +8,7 @@ namespace RESTyard.AspNetCore.Query
 {
     public class QueryStringBuilder : IQueryStringBuilder
     {
-        public string CreateQueryString(object sourceObject, string objectPrefix = "")
+        public string CreateQueryString(object? sourceObject, string objectPrefix = "")
         {
             var queryString = CreateQueryStingInternal(sourceObject, objectPrefix);
 
@@ -21,7 +21,7 @@ namespace RESTyard.AspNetCore.Query
             return "?" + trimedQueryString;
         }
 
-        private string CreateQueryStingInternal(object sourceObject, string objectPrefix)
+        private string CreateQueryStingInternal(object? sourceObject, string objectPrefix)
         {
             if (sourceObject == null)
             {
@@ -35,35 +35,35 @@ namespace RESTyard.AspNetCore.Query
             var result = string.Empty;
             foreach (var propertyInfo in properties)
             {
-                var propretyValue = propertyInfo.GetValue(sourceObject);
+                var propertyValue = propertyInfo.GetValue(sourceObject);
                 var propertyType = propertyInfo.PropertyType;
                 var propertyTypeTypeInfo = propertyType.GetTypeInfo();
                 var serializeInfo = new SerializeInfo(propertyType, propertyTypeTypeInfo);
 
                 if (serializeInfo.IsString)
                 {
-                    result += CreateKeyValue($"{objectPrefix}{propertyInfo.Name}", propretyValue);
+                    result += CreateKeyValue($"{objectPrefix}{propertyInfo.Name}", propertyValue);
                     continue;
                 }
 
                 if (serializeInfo.IsIEnumerable)
                 {
-                    result += SerializeIEnumerable(objectPrefix, (IEnumerable)propretyValue, propertyInfo.Name);
+                    result += SerializeIEnumerable(objectPrefix, (IEnumerable)propertyValue, propertyInfo.Name);
                     continue;
                 }
 
                 if (serializeInfo.IsClass || serializeInfo.IsStructWithNesting)
                 {
-                    result += CreateQueryStingInternal(propretyValue, $"{objectPrefix}{propertyInfo.Name}.");
+                    result += CreateQueryStingInternal(propertyValue, $"{objectPrefix}{propertyInfo.Name}.");
                     continue;
                 }
 
-                if (IsDefaultValue(propretyValue, propertyType))
+                if (IsDefaultValue(propertyValue, propertyType))
                 {
                     continue;
                 }
 
-                result += CreateKeyValue($"{objectPrefix}{propertyInfo.Name}", propretyValue);
+                result += CreateKeyValue($"{objectPrefix}{propertyInfo.Name}", propertyValue);
             }
 
             return result;
@@ -73,7 +73,7 @@ namespace RESTyard.AspNetCore.Query
         {
             var result = string.Empty;
 
-            SerializeInfo serializeInfo = null;
+            SerializeInfo? serializeInfo = null;
             var enumIndex = 0;
             foreach (var item in enumerable)
             {
@@ -96,7 +96,7 @@ namespace RESTyard.AspNetCore.Query
             return result;
         }
 
-        private static string CreateKeyValue(string propertyPath, object item)
+        private static string CreateKeyValue(string propertyPath, object? item)
         {
             var result = propertyPath
                          + "="
@@ -105,27 +105,27 @@ namespace RESTyard.AspNetCore.Query
             return result;
         }
 
-        private static bool IsDefaultValue(object propretyValue, Type propertyType)
+        private static bool IsDefaultValue(object? propertyValue, Type propertyType)
         {
             bool isDefault;
 
             var defaultValue = Activator.CreateInstance(propertyType);
             if (defaultValue == null)
             {
-                isDefault = propretyValue == null;
+                isDefault = propertyValue == null;
             }
             else
             {
-                isDefault = defaultValue.Equals(propretyValue);
+                isDefault = defaultValue.Equals(propertyValue);
             }
             return isDefault;
         }
 
-        private static string ToInvariantString(object obj)
+        private static string ToInvariantString(object? obj)
         {
-            return obj is IConvertible ? ((IConvertible)obj).ToString(CultureInfo.InvariantCulture)
-                 : obj is IFormattable ? ((IFormattable)obj).ToString(null, CultureInfo.InvariantCulture)
-                 : obj.ToString();
+            return obj is IConvertible convertible ? convertible.ToString(CultureInfo.InvariantCulture)
+                 : obj is IFormattable formattable ? formattable.ToString(null, CultureInfo.InvariantCulture)
+                 : obj?.ToString() ?? string.Empty;
         }
     }
 }

@@ -97,7 +97,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             Assert.AreEqual(0, propertiesObject.Properties().Count());
         }
 
-        public static void AssertRoute(string route, string expectedRouteName, string keyObjectString = null, string queryString = null)
+        public static void AssertRoute(string route, string expectedRouteName, string? keyObjectString = null, string? queryString = null)
         {
             var segments = route.Split('/', '?');
             var routAsUri = new Uri(route);

@@ -26,6 +26,6 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
         /// </summary>
         /// <param name="keyObject">The key passed to <see cref="HypermediaObjectKeyReference"/>.</param>
         /// <returns></returns>
-        object CreateFromKeyObject(object keyObject);
+        object CreateFromKeyObject(object? keyObject);
     }
 }

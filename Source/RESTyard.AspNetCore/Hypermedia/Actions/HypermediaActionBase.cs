@@ -18,8 +18,8 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
 
         public bool HasParameter() => ParameterType() != null;
         
-        public abstract object GetPrefilledParameter();
+        public abstract object? GetPrefilledParameter();
 
-        public abstract Type ParameterType();
+        public abstract Type? ParameterType();
     }
 }

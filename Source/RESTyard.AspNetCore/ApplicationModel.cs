@@ -25,32 +25,36 @@ namespace RESTyard.AspNetCore
                 : Assembly.GetEntryAssembly().Yield()).ToImmutableArray();
 
             var controllerTypes = implementingAssemblies
-                .SelectMany(a => a.GetTypes()
+                .SelectMany(a => a?.GetTypes()
                     .Where(t => typeof(ControllerBase).GetTypeInfo().IsAssignableFrom(t))
                     .Select(t =>
                     {
                         return new ControllerType(t,
-                            controllerType => t.GetTypeInfo().GetMethods().Select(m => GetControllerMethodOrNull(m, controllerType)).Where(_ => _ != null)
+                            controllerType => t.GetTypeInfo().GetMethods().Select(m => GetControllerMethodOrNull(m, controllerType)).Where(_ => _ != null).Select(x => x!)
                             );
-                    }))
+                    })
+                    ?? Enumerable.Empty<ControllerType>()
+                        )
                 .ToImmutableArray();
 
             var hmoTypes = implementingAssemblies
-                .SelectMany(a => a.GetTypes()
+                .SelectMany(a => a?.GetTypes()
                     .Where(t => typeof(HypermediaObject).GetTypeInfo().IsAssignableFrom(t))
                     .Select(t => new HmoType(t, FindGetMethods(controllerTypes, t)))
+                        ?? Enumerable.Empty<HmoType>()
                 ).ToImmutableDictionary(_ => _.Type);
 
             var actionParameterTypes = implementingAssemblies
-                .SelectMany(a => a.GetTypes()
+                .SelectMany(a => a?.GetTypes()
                     .Where(t => typeof(IHypermediaActionParameter).GetTypeInfo().IsAssignableFrom(t))
                     .Select(t => new ActionParameterType(t, FindGetParameterInfoMethodOrNull(controllerTypes, t)))
+                        ?? Enumerable.Empty<ActionParameterType>()
                 ).ToImmutableDictionary(_ => _.Type);
 
             return new ApplicationModel(hmoTypes, actionParameterTypes, controllerTypes);
         }
 
-        static GetActionParameterInfoMethod FindGetParameterInfoMethodOrNull(ImmutableArray<ControllerType> controllerTypes, Type type)
+        static GetActionParameterInfoMethod? FindGetParameterInfoMethodOrNull(ImmutableArray<ControllerType> controllerTypes, Type type)
         {
             return controllerTypes.SelectMany(t => t.Methods).OfType<GetActionParameterInfoMethod>()
                 .FirstOrDefault(m => m.ActionParameterType == type);
@@ -65,7 +69,7 @@ namespace RESTyard.AspNetCore
                 .OrderBy(m => m.HmoType == type ? 0 : 1);
         }
 
-        static ControllerMethod GetControllerMethodOrNull(MethodInfo methodInfo, ControllerType controllerType)
+        static ControllerMethod? GetControllerMethodOrNull(MethodInfo methodInfo, ControllerType controllerType)
         {
             var httpGetHypermediaObject = methodInfo.GetCustomAttribute<HttpGetHypermediaObject>();
             if (httpGetHypermediaObject != null)
@@ -130,9 +134,9 @@ namespace RESTyard.AspNetCore
         public class ActionParameterType
         {
             public Type Type { get; }
-            public GetActionParameterInfoMethod GetActionParameterInfoMethod { get; }
+            public GetActionParameterInfoMethod? GetActionParameterInfoMethod { get; }
 
-            public ActionParameterType(Type type, GetActionParameterInfoMethod getActionParameterInfoMethod)
+            public ActionParameterType(Type type, GetActionParameterInfoMethod? getActionParameterInfoMethod)
             {
                 Type = type;
                 GetActionParameterInfoMethod = getActionParameterInfoMethod;
@@ -158,7 +162,7 @@ namespace RESTyard.AspNetCore
                 Methods = methods(this).ToImmutableList();
             }
 
-            private static string FillControllerTokenInRouteTemplate(string routeTemplate, Type controllerType)
+            private static string FillControllerTokenInRouteTemplate(string? routeTemplate, Type controllerType)
             {
                 if (string.IsNullOrWhiteSpace(routeTemplate))
                 {
@@ -193,17 +197,17 @@ namespace RESTyard.AspNetCore
         public abstract class ControllerMethod
         {
             public ControllerType Parent { get; }
-            public string RouteTemplate { get; }
+            public string? RouteTemplate { get; }
             public string RouteTemplateFull { get; }
 
-            protected ControllerMethod(string routeTemplate, ControllerType parent, string methodName)
+            protected ControllerMethod(string? routeTemplate, ControllerType parent, string methodName)
             {
                 RouteTemplate = ReplaceActionTokenInRouteTemplate(routeTemplate, methodName); ;
                 Parent = parent;
                 RouteTemplateFull = string.Concat(parent.RouteTemplate, "/", RouteTemplate).Replace("//", "/").Replace("///", "/");
             }
 
-            private string ReplaceActionTokenInRouteTemplate(string routeTemplate, string methodName)
+            private string? ReplaceActionTokenInRouteTemplate(string? routeTemplate, string methodName)
             {
                 if (routeTemplate == null 
                     || (!routeTemplate.Contains("[action]") && !routeTemplate.Contains("[Action]")))
@@ -219,7 +223,7 @@ namespace RESTyard.AspNetCore
         {
             public Type HmoType { get; }
 
-            public GetHmoMethod(Type hmoType, string routeTemplate, ControllerType parent, string methodName) : base(routeTemplate, parent, methodName)
+            public GetHmoMethod(Type hmoType, string? routeTemplate, ControllerType parent, string methodName) : base(routeTemplate, parent, methodName)
             {
                 HmoType = hmoType;
             }
@@ -229,7 +233,7 @@ namespace RESTyard.AspNetCore
         {
             public Type ActionType { get; }
 
-            public ActionMethod(Type actionType, string routeTemplate, ControllerType parent, string methodName) : base(routeTemplate, parent, methodName)
+            public ActionMethod(Type actionType, string? routeTemplate, ControllerType parent, string methodName) : base(routeTemplate, parent, methodName)
             {
                 ActionType = actionType;
             }
@@ -239,7 +243,7 @@ namespace RESTyard.AspNetCore
         {
             public Type ActionParameterType { get; }
 
-            public GetActionParameterInfoMethod(Type actionParameterType, string routeTemplate, ControllerType parent, string methodName) : base(routeTemplate, parent, methodName)
+            public GetActionParameterInfoMethod(Type actionParameterType, string? routeTemplate, ControllerType parent, string methodName) : base(routeTemplate, parent, methodName)
             {
                 ActionParameterType = actionParameterType;
             }
