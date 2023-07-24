@@ -10,6 +10,6 @@ namespace RESTyard.Client.Hypermedia
 
         public Uri? Uri { get; set; } = null;
 
-        public IHypermediaResolver Resolver { get; set; }
+        public IHypermediaResolver Resolver { get; set; } = ResolverDummyObject.Instance;
     }
 }

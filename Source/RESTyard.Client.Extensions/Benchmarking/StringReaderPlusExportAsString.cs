@@ -110,7 +110,7 @@ namespace Benchmarking
 
             protected override async Task SerializeToStreamAsync(
                 Stream stream,
-                TransportContext context)
+                TransportContext? context)
             {
                 await this.contentStream.CopyToAsync(stream);
             }

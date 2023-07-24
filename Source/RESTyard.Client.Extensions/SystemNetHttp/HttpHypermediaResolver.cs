@@ -171,7 +171,7 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
         {
             if (responseMessage.IsSuccessStatusCode)
             {
-                return HypermediaResult.Ok(Unit.Instance);
+                return HypermediaResult.Ok(No.Thing);
             }
 
             var innerException = GetInnerException(responseMessage);

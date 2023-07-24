@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -107,12 +108,18 @@ namespace RESTyard.Client.Reader
             return ReadClasses(rootObject)
                 .Bind(classes =>
                 {
-                    var hypermediaObjectInstance = this.hypermediaObjectRegister.CreateFromClasses(classes);
+                    return this.hypermediaObjectRegister.CreateFromClasses(classes)
+                        .Match(
+                            hypermediaObjectInstance =>
+                            {
+                                this.ReadTitle(hypermediaObjectInstance, rootObject);
+                                this.ReadRelations(hypermediaObjectInstance, rootObject);
+                                return this.FillHypermediaProperties(hypermediaObjectInstance, rootObject, resolver)
+                                    .Map(_ => hypermediaObjectInstance);
+                            },
+                            error => HypermediaReaderResult.Error<HypermediaClientObject>(
+                                HypermediaReaderProblem.InvalidClientClass(error)));
 
-                    this.ReadTitle(hypermediaObjectInstance, rootObject);
-                    this.ReadRelations(hypermediaObjectInstance, rootObject);
-                    return this.FillHypermediaProperties(hypermediaObjectInstance, rootObject, resolver)
-                        .Map(_ => hypermediaObjectInstance);
                 });
         }
 
@@ -224,28 +231,27 @@ namespace RESTyard.Client.Reader
                     $"Hypermedia command '{propertyInfo.Name}' of type '{hypermediaObjectInstance.GetType()}' requires a {nameof(HypermediaCommandAttribute)}"));
             }
 
-            // create instance in any case so CanExecute can be called
-            var commandInstanceResult = this.CreateHypermediaClientCommand(propertyInfo.PropertyType);
-            return commandInstanceResult.Bind(commandInstance =>
-            {
-                propertyInfo.SetValue(hypermediaObjectInstance, commandInstance);
-
-                var actions = rootObject["actions"];
-                var desiredAction = actions?.FirstOrDefault(e => this.IsDesiredAction(e, commandAttribute.Name));
-                if (actions == null || desiredAction == null)
+            return this.CreateHypermediaClientCommand(propertyInfo.PropertyType)
+                .Bind(commandInstance =>
                 {
-                    if (IsMandatoryHypermediaProperty(propertyInfo))
+                    propertyInfo.SetValue(hypermediaObjectInstance, commandInstance);
+
+                    var actions = rootObject["actions"];
+                    var desiredAction = actions?.FirstOrDefault(e => this.IsDesiredAction(e, commandAttribute.Name));
+                    if (actions == null || desiredAction == null)
                     {
-                        return HypermediaReaderResult.Error<Unit>(
-                            HypermediaReaderProblem.RequiredPropertyMissing(
-                                $"Mandatory hypermedia command '{propertyInfo.Name}' not found."));
+                        if (IsMandatoryHypermediaProperty(propertyInfo))
+                        {
+                            return HypermediaReaderResult.Error<Unit>(
+                                HypermediaReaderProblem.RequiredPropertyMissing(
+                                    $"Mandatory hypermedia command '{propertyInfo.Name}' not found."));
+                        }
+
+                        return HypermediaReaderResult.Ok(No.Thing);
                     }
 
-                    return HypermediaReaderResult.Ok(No.Thing);
-                }
-
-                return this.FillCommandParameters(commandInstance, desiredAction, commandAttribute.Name, resolver);
-            });
+                    return this.FillCommandParameters(commandInstance, desiredAction, commandAttribute.Name, resolver);
+                });
         }
 
         private HypermediaReaderResult<Unit> FillCommandParameters(
@@ -258,26 +264,18 @@ namespace RESTyard.Client.Reader
             commandInstance.CanExecute = true;
             commandInstance.Resolver = resolver;
 
-            var title = action["title"]?.ValueAsString();
-            if (title == null)
-            {
-                title = string.Empty;
-            }
+            var title = action["title"]?.ValueAsString() ?? string.Empty;
             commandInstance.Title = title;
 
 
             var uri = action["href"]?.ValueAsString();
             if (uri == null)
             {
-                throw new Exception($"Siren action without href: '{commandName}'");
+                return HypermediaReaderResult.Error<Unit>(HypermediaReaderProblem.RequiredPropertyMissing($"Siren action without href: '{commandName}'"));
             }
             commandInstance.Uri = new Uri(uri);
 
-            var method = action["method"]?.ValueAsString();
-            if (method == null)
-            {
-                method = "GET";
-            }
+            var method = action["method"]?.ValueAsString() ?? "GET";
             commandInstance.Method = method;
 
             var fields = action["fields"];
@@ -295,6 +293,7 @@ namespace RESTyard.Client.Reader
                 return HypermediaReaderResult.Ok(No.Thing);
             }
 
+            var parameterDescriptions = new List<ParameterDescription>();
             foreach (var field in fields)
             {
                 var name = field["name"]?.ValueAsString();
@@ -311,8 +310,9 @@ namespace RESTyard.Client.Reader
                     Classes: field["class"]?.ChildrenAsStrings().ToList() ?? (IReadOnlyList<string>)Array.Empty<string>());
                 // todo optional but not save, or check annotation on class
 
-                commandInstance.ParameterDescriptions.Add(parameterDescription);
+                parameterDescriptions.Add(parameterDescription);
             }
+            commandInstance.ParameterDescriptions = parameterDescriptions.ToImmutableList();
 
             return HypermediaReaderResult.Ok(No.Thing);
         }

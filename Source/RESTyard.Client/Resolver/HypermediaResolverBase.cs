@@ -75,7 +75,7 @@ namespace RESTyard.Client.Resolver
                 networkResult = await verificationResult.Match(
                     canBeUsed => this.ResolveAsync(uriToResolve),
                     canNotBeUsed => this.ResolveAsync(uriToResolve),
-                    async useResponse => HypermediaResult.Ok(useResponse.Response));
+                    useResponse => Task.FromResult(HypermediaResult.Ok(useResponse.Response)));
             }
             else
             {
@@ -148,7 +148,7 @@ namespace RESTyard.Client.Resolver
         public async Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(
             Uri uri,
             string method,
-            List<ParameterDescription> parameterDescriptions,
+            IReadOnlyList<ParameterDescription> parameterDescriptions,
             object? parameterObject) where T : HypermediaClientObject
         {
             return await this.ProcessParameters(parameterDescriptions, parameterObject)

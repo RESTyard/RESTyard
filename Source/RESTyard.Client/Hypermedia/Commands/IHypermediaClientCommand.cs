@@ -20,7 +20,7 @@ namespace RESTyard.Client.Hypermedia.Commands
 
         bool HasParameters { get; set; }
 
-        List<ParameterDescription> ParameterDescriptions { get; }
+        IReadOnlyList<ParameterDescription> ParameterDescriptions { get; set; }
 
         IHypermediaResolver Resolver { get; set; }
     }

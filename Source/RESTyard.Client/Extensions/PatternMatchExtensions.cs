@@ -15,7 +15,7 @@ namespace RESTyard.Client.Extensions
                 case TDerived2 case2:
                     return handle2(case2);
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(target), $"Target has unexpected type {target.GetType().Name}");
+                    throw new ArgumentOutOfRangeException(nameof(target), $"Target has unexpected type {target?.GetType().Name}");
             }
         }
 
@@ -33,7 +33,7 @@ namespace RESTyard.Client.Extensions
                 case TDerived3 case3:
                     return handle3(case3);
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(target), $"Target has unexpected type {target.GetType().Name}");
+                    throw new ArgumentOutOfRangeException(nameof(target), $"Target has unexpected type {target?.GetType().Name}");
             }
         }
 
@@ -54,7 +54,7 @@ namespace RESTyard.Client.Extensions
                 case TDerived4 case4:
                     return handle4(case4);
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(target), $"Target has unexpected type {target.GetType().Name}");
+                    throw new ArgumentOutOfRangeException(nameof(target), $"Target has unexpected type {target?.GetType().Name}");
             }
         }
 
@@ -71,7 +71,7 @@ namespace RESTyard.Client.Extensions
                     handle2(case2);
                     return;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(target), $"Target has unexpected type {target.GetType().Name}");
+                    throw new ArgumentOutOfRangeException(nameof(target), $"Target has unexpected type {target?.GetType().Name}");
             }
         }
 
@@ -92,7 +92,7 @@ namespace RESTyard.Client.Extensions
                     handle3(case3);
                     return;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(target), $"Target has unexpected type {target.GetType().Name}");
+                    throw new ArgumentOutOfRangeException(nameof(target), $"Target has unexpected type {target?.GetType().Name}");
             }
         }
 
@@ -117,7 +117,7 @@ namespace RESTyard.Client.Extensions
                     handle4(case4);
                     return;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(target), $"Target has unexpected type {target.GetType().Name}");
+                    throw new ArgumentOutOfRangeException(nameof(target), $"Target has unexpected type {target?.GetType().Name}");
             }
         }
 
@@ -146,7 +146,7 @@ namespace RESTyard.Client.Extensions
                     handle5(case5);
                     return;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(target), $"Target has unexpected type {target.GetType().Name}");
+                    throw new ArgumentOutOfRangeException(nameof(target), $"Target has unexpected type {target?.GetType().Name}");
             }
         }
     }
