@@ -105,22 +105,21 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             foreach (var property in properties)
             {
                 var action = property.GetValue(hypermediaObject);
-                var actionBase = (HypermediaActionBase)action;
 
-                if (actionBase.CanExecute())
+                if (action is HypermediaActionBase actionBase && actionBase.CanExecute())
                 {
-                    AddActionSirenContent(hypermediaObject, action, actionBase, property, jActions);
+                    AddActionSirenContent(hypermediaObject, actionBase, property, jActions);
                 }
             }
 
             sirenJson.Add("actions", jActions);
         }
 
-        private void AddActionSirenContent(HypermediaObject hypermediaObject, object action, HypermediaActionBase actionBase, PropertyInfo property, JArray jActions)
+        private void AddActionSirenContent(HypermediaObject hypermediaObject, HypermediaActionBase actionBase, PropertyInfo property, JArray jActions)
         {
             var jAction = new JObject();
             ResolvedRoute resolvedRoute;
-            if (action is HypermediaExternalActionBase externalActionBase)
+            if (actionBase is HypermediaExternalActionBase externalActionBase)
             {
                 resolvedRoute = new ResolvedRoute(externalActionBase.ExternalUri.ToString(), externalActionBase.HttpMethod, acceptableMediaType: externalActionBase.AcceptedMediaType);
             }
@@ -169,27 +168,25 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
         private void AddActionParameters(HypermediaActionBase hypermediaAction, JObject jAction, string? acceptedMediaType)
         {
-            if (!hypermediaAction.HasParameter())
+            if (!hypermediaAction.TryGetParameterType(out var parameterType))
             {
                 jAction.Add("class", new JArray { ActionClasses.ParameterLessActionClass });
                 return;
             }
             
             jAction.Add("type",  acceptedMediaType ?? DefaultMediaTypes.ApplicationJson);
-            AddActionFields(jAction, hypermediaAction);
+            AddActionFields(jAction, hypermediaAction, parameterType);
         }
 
-        private void AddActionFields(JObject jAction, HypermediaActionBase hypermediaAction)
+        private void AddActionFields(JObject jAction, HypermediaActionBase hypermediaAction, Type parameterType)
         {
-            var parameterType = hypermediaAction.ParameterType();
-
             if (parameterType == typeof(FileUploadConfiguration))
             {
                 AddFileUploadActionDescription(jAction, hypermediaAction);
             }
             else
             {
-                AddJsonParameterActionDescription(jAction, hypermediaAction, parameterType);    
+                AddJsonParameterActionDescription(jAction, hypermediaAction, parameterType);
             }
         }
 

@@ -29,10 +29,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
             return PrefilledValues;
         }
 
-        public override Type? ParameterType()
-        {
-            return typeof(TParameter);
-        }
+        protected override Type? ParameterType => typeof(TParameter);
     }
 
     /// <summary>
@@ -49,9 +46,6 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
             return null;
         }
 
-        public override Type? ParameterType()
-        {
-            return null;
-        }
+        protected sealed override Type? ParameterType => null;
     }
 }

@@ -25,8 +25,5 @@ public abstract class FileUploadHypermediaAction : HypermediaActionBase, IFileUp
         return null;
     }
 
-    public override Type? ParameterType()
-    {
-        return typeof(FileUploadConfiguration);
-    }
+    protected override Type? ParameterType => typeof(FileUploadConfiguration);
 }

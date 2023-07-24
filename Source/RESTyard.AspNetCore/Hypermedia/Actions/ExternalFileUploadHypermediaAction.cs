@@ -36,8 +36,5 @@ public abstract class ExternalFileUploadHypermediaAction : HypermediaExternalAct
         return null;
     }
 
-    public override Type? ParameterType()
-    {
-        return typeof(FileUploadConfiguration);
-    }
+    protected override Type? ParameterType => typeof(FileUploadConfiguration);
 }
