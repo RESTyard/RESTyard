@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using FunicularSwitch;
 using RESTyard.Client.Hypermedia.Commands;
 
 namespace RESTyard.Client
@@ -43,10 +44,9 @@ namespace RESTyard.Client
             this.InterfaceImplementationLookup[interfaceType] = implementation;
         }
 
-        public IHypermediaClientCommand Create(Type commandInterfaceType)
+        public Result<IHypermediaClientCommand> Create(Type commandInterfaceType)
         {
-            Type lookupType;
-            IHypermediaClientCommand instance = null;
+            Type typeToConstruct;
 
             var isGenericType = commandInterfaceType.GetTypeInfo().IsGenericType;
             if (isGenericType)
@@ -54,30 +54,29 @@ namespace RESTyard.Client
                 var genericTypeDefinition = commandInterfaceType.GetGenericTypeDefinition();
                 var genericTypeArguments = commandInterfaceType.GetTypeInfo().GetGenericArguments();
 
-                lookupType = genericTypeDefinition;
-                Type commandType;
-                if (!this.InterfaceImplementationLookup.TryGetValue(lookupType, out commandType))
+                var lookupType = genericTypeDefinition;
+                if (!this.InterfaceImplementationLookup.TryGetValue(lookupType, out var commandType))
                 {
-                    throw new Exception($"Requested command interface type not found '{commandInterfaceType.Name}' ");
+                    return Result.Error<IHypermediaClientCommand>($"Requested command interface type not found '{commandInterfaceType.Name}'");
                 }
 
-                var constructedType = commandType.MakeGenericType(genericTypeArguments);
-                instance = (IHypermediaClientCommand)Activator.CreateInstance(constructedType);
-
+                typeToConstruct = commandType.MakeGenericType(genericTypeArguments);
             }
             else
             {
-                lookupType = commandInterfaceType;
-                Type commandType;
-                if (!this.InterfaceImplementationLookup.TryGetValue(lookupType, out commandType))
+                var lookupType = commandInterfaceType;
+                if (!this.InterfaceImplementationLookup.TryGetValue(lookupType, out var commandType))
                 {
-                    throw new Exception($"Requested command interface type not found '{commandInterfaceType.Name}' ");
+                    return Result.Error<IHypermediaClientCommand>($"Requested command interface type not found '{commandInterfaceType.Name}'");
                 }
 
-                instance = (IHypermediaClientCommand)Activator.CreateInstance(commandType);
+                typeToConstruct = commandType;
             }
 
-            return instance;
+            var instance = Activator.CreateInstance(typeToConstruct);
+            return instance is IHypermediaClientCommand commandInstance
+                ? Result.Ok(commandInstance)
+                : Result.Error<IHypermediaClientCommand>($"Could not create command with type {typeToConstruct}");
         }
     }
 }

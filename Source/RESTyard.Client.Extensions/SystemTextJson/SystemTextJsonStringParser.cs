@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using RESTyard.Client.Reader;
 
@@ -11,13 +12,13 @@ namespace RESTyard.Client.Extensions.SystemTextJson
 {
     public class SystemTextJsonStringParser : IStringParser
     {
-        public IToken Parse(string contentString)
+        public IToken? Parse(string contentString)
         {
             var document = JsonDocument.Parse(contentString);
             return JsonElementWrapper.Wrap(document.RootElement);
         }
 
-        public async Task<IToken> ParseAsync(Stream contentStream)
+        public async Task<IToken?> ParseAsync(Stream contentStream)
         {
             var document = await JsonDocument.ParseAsync(contentStream);
             return JsonElementWrapper.Wrap(document.RootElement);
@@ -47,23 +48,26 @@ namespace RESTyard.Client.Extensions.SystemTextJson
                 return GetEnumerator();
             }
 
-            public string ValueAsString()
+            public string? ValueAsString()
             {
                 return this.element.GetString();
             }
 
             public IEnumerable<string> ChildrenAsStrings()
             {
-                return this.element.EnumerateArray().Select(x => x.GetString());
+                return this.element
+                    .EnumerateArray()
+                    .Select(x => x.GetString())
+                    .OfType<string>();
             }
 
-            public object ToObject(Type type)
+            public object? ToObject(Type type)
             {
                 var json = this.element.GetRawText();
                 return JsonSerializer.Deserialize(json, type);
             }
 
-            public IToken this[string key] => this.element.TryGetProperty(key, out var jsonElement) ? Wrap(jsonElement) : null;
+            public IToken? this[string key] => this.element.TryGetProperty(key, out var jsonElement) ? Wrap(jsonElement) : null;
 
             public string Serialize()
             {
@@ -77,7 +81,7 @@ namespace RESTyard.Client.Extensions.SystemTextJson
                     new JsonSerializerOptions()
                     {
                         AllowTrailingCommas = false,
-                        IgnoreNullValues = true,
+                        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                         WriteIndented = false,
                     });
             }

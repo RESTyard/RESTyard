@@ -58,8 +58,14 @@ namespace RESTyard.Client.Resolver
                     useThisResponseInstead => false);
                 if (cacheEntryCanBeUsed)
                 {
-                    var hco = (T)this.HypermediaReader.Read(cacheEntry.LinkResponseContent, this);
-                    return HypermediaResult.Ok(hco);
+                    return this.HypermediaReader.Read(cacheEntry.LinkResponseContent, this)
+                        .Match(
+                            hco => HypermediaResult.Ok((T)hco),
+                            error => HypermediaResult.Error<T>(error.Match(
+                                requiredPropertyMissing => HypermediaProblem.InvalidResponse(requiredPropertyMissing.Message),
+                                invalidFormat => HypermediaProblem.InvalidResponse(invalidFormat.Message),
+                                invalidClientClass => HypermediaProblem.BadHcoDefinition(invalidClientClass.Message),
+                                exception => HypermediaProblem.Exception(exception.Exc))));
                 }
                 else
                 {
@@ -117,18 +123,18 @@ namespace RESTyard.Client.Resolver
             string method)
         {
             return await this.SendCommandAsync(uri, method)
-                .Bind(responseMessage => this.HandleActionResponseAsync(responseMessage));
+                .Bind(this.HandleActionResponseAsync);
         }
 
         public async Task<HypermediaResult<Unit>> ResolveActionAsync(
             Uri uri,
             string method,
-            List<ParameterDescription> parameterDescriptions,
+            IReadOnlyList<ParameterDescription> parameterDescriptions,
             object? parameterObject)
         {
             return await this.ProcessParameters(parameterDescriptions, parameterObject)
                 .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters))
-                .Bind(responseMessage => this.HandleActionResponseAsync(responseMessage));
+                .Bind(this.HandleActionResponseAsync);
         }
 
         public async Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(
@@ -136,7 +142,7 @@ namespace RESTyard.Client.Resolver
             string method) where T : HypermediaClientObject
         {
             return await SendCommandAsync(uri, method)
-                .Bind(responseMessage => this.HandleFunctionResponseAsync<T>(responseMessage));
+                .Bind(this.HandleFunctionResponseAsync<T>);
         }
 
         public async Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(
@@ -147,7 +153,7 @@ namespace RESTyard.Client.Resolver
         {
             return await this.ProcessParameters(parameterDescriptions, parameterObject)
                 .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters))
-                .Bind(responseMessage => this.HandleFunctionResponseAsync<T>(responseMessage));
+                .Bind(this.HandleFunctionResponseAsync<T>);
         }
 
         protected async Task<HypermediaResult<(T ResultHco, string HcoAsString)>> HandleLinkResponseAsync<T>(
@@ -159,25 +165,28 @@ namespace RESTyard.Client.Resolver
                 .Bind(_ => this.ResponseAsStreamAsync(responseMessage))
                 .Bind(async hypermediaObjectSirenStream =>
                 {
-                    HypermediaClientObject hypermediaClientObject;
-                    string serialized = string.Empty;
+                    HypermediaReaderResult<(HypermediaClientObject ResultHco, string HcoAsString)> readResult;
                     if (serializeToString)
                     {
-                        (hypermediaClientObject, serialized) =
+                        readResult =
                             await this.HypermediaReader.ReadAndSerializeAsync(hypermediaObjectSirenStream, this);
                     }
                     else
                     {
-                        hypermediaClientObject =
-                            await this.HypermediaReader.ReadAsync(hypermediaObjectSirenStream, this);
+                        readResult =
+                            await this.HypermediaReader.ReadAsync(hypermediaObjectSirenStream, this).Map(hco => (hco, string.Empty));
                     }
 
-                    if (!(hypermediaClientObject is T desiredResultObject))
-                    {
-                        return HypermediaResult.Error<(T, string)>(HypermediaProblem.InvalidResponse($"Could not retrieve result as {typeof(T).Name}."));
-                    }
-
-                    return HypermediaResult.Ok((desiredResultObject, serialized));
+                    return readResult.Match(
+                        ok: tuple => tuple.ResultHco is T hco
+                            ? HypermediaResult.Ok((hco, tuple.HcoAsString))
+                            : HypermediaResult.Error<(T, string)>(HypermediaProblem.InvalidResponse(($"Could not retrieve result as {typeof(T).Name}."))),
+                        error => HypermediaResult.Error<(T, string)>(
+                            error.Match(
+                                requiredPropertyMissing: rpm => HypermediaProblem.InvalidResponse(rpm.Message),
+                                invalidFormat: invalidFormat => HypermediaProblem.InvalidResponse(invalidFormat.Message),
+                                invalidClientClass: icc => HypermediaProblem.BadHcoDefinition(icc.Message),
+                                exception => HypermediaProblem.Exception(exception.Exc))));
                 });
         }
 
@@ -204,7 +213,7 @@ namespace RESTyard.Client.Resolver
                 });
         }
 
-        protected HypermediaResult<string> ProcessParameters(IList<ParameterDescription> parameterDescriptions, object? parameterObject)
+        protected HypermediaResult<string> ProcessParameters(IReadOnlyList<ParameterDescription> parameterDescriptions, object? parameterObject)
         {
             if (parameterObject is null)
             {
@@ -220,7 +229,7 @@ namespace RESTyard.Client.Resolver
                 });
         }
 
-        protected static HypermediaResult<ParameterDescription> GetParameterDescription(IList<ParameterDescription> parameterDescriptions)
+        protected static HypermediaResult<ParameterDescription> GetParameterDescription(IReadOnlyList<ParameterDescription> parameterDescriptions)
         {
             if (parameterDescriptions.Count == 0)
             {

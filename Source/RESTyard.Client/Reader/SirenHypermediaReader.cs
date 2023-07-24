@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using FunicularSwitch;
 using RESTyard.Client.Hypermedia;
 using RESTyard.Client.Hypermedia.Attributes;
 using RESTyard.Client.Hypermedia.Commands;
@@ -37,58 +39,91 @@ namespace RESTyard.Client.Reader
             this.stringParser = stringParser;
         }
 
-        public HypermediaClientObject Read(
+        public HypermediaReaderResult<HypermediaClientObject> Read(
             string contentString,
             IHypermediaResolver resolver)
         {
-            // TODO inject deserializer
-            // todo catch exception: invalid format
-            var rootObject = this.stringParser.Parse(contentString);
-            var result = this.ReadHypermediaObject(rootObject, resolver);
-            return result;
+            try
+            {
+                var rootObject = this.stringParser.Parse(contentString);
+                if (rootObject is null)
+                {
+                    return HypermediaReaderResult.Error<HypermediaClientObject>(HypermediaReaderProblem.InvalidFormat("empty content"));
+                }
+                var result = this.ReadHypermediaObject(rootObject, resolver);
+                return result;
+            }
+            catch (Exception e)
+            {
+                return HypermediaReaderResult.Error<HypermediaClientObject>(HypermediaReaderProblem.Exception(e));
+            }
         }
 
-        public async Task<HypermediaClientObject> ReadAsync(
+        public async Task<HypermediaReaderResult<HypermediaClientObject>> ReadAsync(
             Stream contentStream,
             IHypermediaResolver resolver)
         {
-            var rootObject = await this.stringParser.ParseAsync(contentStream);
-            var result = this.ReadHypermediaObject(rootObject, resolver);
-            return result;
+            try
+            {
+                var rootObject = await this.stringParser.ParseAsync(contentStream);
+                if (rootObject is null)
+                {
+                    return HypermediaReaderResult.Error<HypermediaClientObject>(HypermediaReaderProblem.InvalidFormat("empty content"));
+                }
+                var result = this.ReadHypermediaObject(rootObject, resolver);
+                return result;
+            }
+            catch (Exception e)
+            {
+                return HypermediaReaderResult.Error<HypermediaClientObject>(HypermediaReaderProblem.Exception(e));
+            }
         }
 
-        public async Task<(HypermediaClientObject, string)> ReadAndSerializeAsync(
+        public async Task<HypermediaReaderResult<(HypermediaClientObject, string)>> ReadAndSerializeAsync(
             Stream contentStream,
             IHypermediaResolver resolver)
         {
-            var rootObject = await this.stringParser.ParseAsync(contentStream);
-            var result = this.ReadHypermediaObject(rootObject, resolver);
-            var export = rootObject.Serialize();
-            return (result, export);
+            try
+            {
+                var rootObject = await this.stringParser.ParseAsync(contentStream);
+                if (rootObject is null)
+                {
+                    return HypermediaReaderResult.Error<(HypermediaClientObject, string)>(HypermediaReaderProblem.InvalidFormat("empty content"));
+                }
+                var result = this.ReadHypermediaObject(rootObject, resolver);
+                return result.Bind<(HypermediaClientObject, string)>(
+                    ok => (ok, rootObject.Serialize()));
+            }
+            catch (Exception e)
+            {
+                return HypermediaReaderResult.Error<(HypermediaClientObject, string)>(HypermediaReaderProblem.Exception(e));
+            }
         }
 
-        private HypermediaClientObject ReadHypermediaObject(
+        private HypermediaReaderResult<HypermediaClientObject> ReadHypermediaObject(
             IToken rootObject,
             IHypermediaResolver resolver)
         {
-            var classes = ReadClasses(rootObject);
-            var hypermediaObjectInstance = this.hypermediaObjectRegister.CreateFromClasses(classes);
+            return ReadClasses(rootObject)
+                .Bind(classes =>
+                {
+                    var hypermediaObjectInstance = this.hypermediaObjectRegister.CreateFromClasses(classes);
 
-            this.ReadTitle(hypermediaObjectInstance, rootObject);
-            this.ReadRelations(hypermediaObjectInstance, rootObject);
-            this.FillHypermediaProperties(hypermediaObjectInstance, rootObject, resolver);
-            
-
-            return hypermediaObjectInstance;
+                    this.ReadTitle(hypermediaObjectInstance, rootObject);
+                    this.ReadRelations(hypermediaObjectInstance, rootObject);
+                    return this.FillHypermediaProperties(hypermediaObjectInstance, rootObject, resolver)
+                        .Map(_ => hypermediaObjectInstance);
+                });
         }
 
-        private void FillHypermediaProperties(
+        private HypermediaReaderResult<Unit> FillHypermediaProperties(
             HypermediaClientObject hypermediaObjectInstance,
             IToken rootObject,
             IHypermediaResolver resolver)
         {
             var typeInfo = hypermediaObjectInstance.GetType().GetTypeInfo();
             var properties = typeInfo.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            HypermediaReaderResult<Unit> result = HypermediaReaderResult.Ok(No.Thing);
             foreach (var propertyInfo in properties)
             {
                 var ignore = propertyInfo.GetCustomAttribute<ClientIgnoreHypermediaPropertyAttribute>() != null;
@@ -101,30 +136,37 @@ namespace RESTyard.Client.Reader
                 switch (hypermediaPropertyType)
                 {
                     case HypermediaPropertyType.Property:
-                        FillProperty(hypermediaObjectInstance, propertyInfo, rootObject);
+                        result = FillProperty(hypermediaObjectInstance, propertyInfo, rootObject);
                         break;
                     case HypermediaPropertyType.Link:
-                        this.FillLink(hypermediaObjectInstance, propertyInfo, rootObject, resolver);
+                        result = this.FillLink(hypermediaObjectInstance, propertyInfo, rootObject, resolver);
                         break;
                     case HypermediaPropertyType.Entity:
-                        this.FillEntity(hypermediaObjectInstance, propertyInfo, rootObject, resolver);
+                        result = this.FillEntity(hypermediaObjectInstance, propertyInfo, rootObject, resolver);
                         break;
                     case HypermediaPropertyType.EntityCollection:
-                        this.FillEntities(hypermediaObjectInstance, propertyInfo, rootObject, resolver);
+                        result = this.FillEntities(hypermediaObjectInstance, propertyInfo, rootObject, resolver);
                         break;
                     case HypermediaPropertyType.Command:
-                        this.FillCommand(hypermediaObjectInstance, propertyInfo, rootObject, resolver);
+                        result = this.FillCommand(hypermediaObjectInstance, propertyInfo, rootObject, resolver);
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        result = HypermediaReaderResult.Error<Unit>(HypermediaReaderProblem.Exception(new ArgumentOutOfRangeException(hypermediaPropertyType.ToString())));
+                        break;
                 }
 
+                if (result.IsError)
+                {
+                    return result;
+                }
             }
+
+            return result;
         }
         
         //todo linked entities
         //todo no derived types considered
-        private void FillEntities(
+        private HypermediaReaderResult<Unit> FillEntities(
             HypermediaClientObject hypermediaObjectInstance,
             PropertyInfo propertyInfo,
             IToken rootObject,
@@ -137,25 +179,39 @@ namespace RESTyard.Client.Reader
             propertyInfo.SetValue(hypermediaObjectInstance, entityCollection);
 
             var entities = rootObject["entities"];
-            if (entities == null)
+            if (entities is null)
             {
-                return;
+                return HypermediaReaderResult.Ok(No.Thing);
+            }
+
+            if (entityCollection is null)
+            {
+                return HypermediaReaderResult.Error<Unit>(HypermediaReaderProblem.InvalidClientClass($"Cannot instantiate type '{propertyInfo.PropertyType}' for property '{propertyInfo.Name}' of '{hypermediaObjectInstance.GetType()}'"));
             }
 
             var matchingEntities = entities.Where(e =>
-                this.EntityRelationsMatch(e, relationsAttribute.Relations) && this.EntityClassMatch(e, classes, propertyInfo.Name));
+                this.EntityRelationsMatch(e, relationsAttribute?.Relations) && this.EntityClassMatch(e, classes, propertyInfo.Name));
 
             var genericAddFunction = entityCollection.GetType().GetTypeInfo().GetMethod("Add");
+            if (genericAddFunction is null)
+            {
+                return HypermediaReaderResult.Error<Unit>(HypermediaReaderProblem.InvalidClientClass($"Collection '{entityCollection.GetType()}' has no suitable method 'Add' to fill it with entities"));
+            }
 
             foreach (var match in matchingEntities)
             {
-                var entity = this.ReadHypermediaObject(match, resolver);
-                genericAddFunction.Invoke(entityCollection, new object[] { entity });
+                var entityResult = this.ReadHypermediaObject(match, resolver);
+                entityResult.Match(entity => genericAddFunction.Invoke(entityCollection, new object[] { entity }));
+                if (entityResult.IsError)
+                {
+                    return entityResult.Map(_ => No.Thing);
+                }
             }
 
+            return HypermediaReaderResult.Ok(No.Thing);
         }
 
-        private void FillCommand(
+        private HypermediaReaderResult<Unit> FillCommand(
             HypermediaClientObject hypermediaObjectInstance,
             PropertyInfo propertyInfo,
             IToken rootObject,
@@ -164,29 +220,35 @@ namespace RESTyard.Client.Reader
             var commandAttribute = propertyInfo.GetCustomAttribute<HypermediaCommandAttribute>();
             if (commandAttribute == null)
             {
-                throw new Exception($"Hypermedia command '{propertyInfo.Name}' requires a {nameof(HypermediaCommandAttribute)} ");
+                return HypermediaReaderResult.Error<Unit>(HypermediaReaderProblem.InvalidClientClass(
+                    $"Hypermedia command '{propertyInfo.Name}' of type '{hypermediaObjectInstance.GetType()}' requires a {nameof(HypermediaCommandAttribute)}"));
             }
 
             // create instance in any case so CanExecute can be called
-            var commandInstance = this.CreateHypermediaClientCommand(propertyInfo.PropertyType);
-
-            propertyInfo.SetValue(hypermediaObjectInstance, commandInstance);
-
-            var actions = rootObject["actions"];
-            var desiredAction = actions.FirstOrDefault(e => this.IsDesiredAction(e, commandAttribute.Name));
-            if (actions == null || desiredAction == null)
+            var commandInstanceResult = this.CreateHypermediaClientCommand(propertyInfo.PropertyType);
+            return commandInstanceResult.Bind(commandInstance =>
             {
-                if (IsMandatoryHypermediaProperty(propertyInfo))
+                propertyInfo.SetValue(hypermediaObjectInstance, commandInstance);
+
+                var actions = rootObject["actions"];
+                var desiredAction = actions?.FirstOrDefault(e => this.IsDesiredAction(e, commandAttribute.Name));
+                if (actions == null || desiredAction == null)
                 {
-                    throw new Exception($"Mandatory hypermedia command '{propertyInfo.Name}' not found.");
+                    if (IsMandatoryHypermediaProperty(propertyInfo))
+                    {
+                        return HypermediaReaderResult.Error<Unit>(
+                            HypermediaReaderProblem.RequiredPropertyMissing(
+                                $"Mandatory hypermedia command '{propertyInfo.Name}' not found."));
+                    }
+
+                    return HypermediaReaderResult.Ok(No.Thing);
                 }
-                return;
-            }
-            
-            this.FillCommandParameters(commandInstance, desiredAction, commandAttribute.Name, resolver);
+
+                return this.FillCommandParameters(commandInstance, desiredAction, commandAttribute.Name, resolver);
+            });
         }
 
-        private void FillCommandParameters(
+        private HypermediaReaderResult<Unit> FillCommandParameters(
             IHypermediaClientCommand commandInstance,
             IToken action,
             string commandName,
@@ -221,36 +283,46 @@ namespace RESTyard.Client.Reader
             var fields = action["fields"];
             if (!commandInstance.HasParameters && fields != null)
             {
-                throw new Exception($"hypermedia Command '{commandName}' has no parameter but hypermedia document indicates parameters.");
+                return HypermediaReaderResult.Error<Unit>(HypermediaReaderProblem.InvalidClientClass($"hypermedia Command '{commandName}' has no parameter but hypermedia document indicates parameters."));
             }
             if (fields == null)
             {
                 if (commandInstance.HasParameters)
                 {
-                    throw new Exception($"hypermedia Command '{commandName}' has parameter but hypermedia document has not.");
+                    return HypermediaReaderResult.Error<Unit>(HypermediaReaderProblem.InvalidFormat($"hypermedia Command '{commandName}' has no parameter but hypermedia document indicates parameters."));
                 }
 
-                return;
+                return HypermediaReaderResult.Ok(No.Thing);
             }
 
             foreach (var field in fields)
             {
-                var parameterDescription = new ParameterDescription
+                var name = field["name"]?.ValueAsString();
+                var type = field["type"]?.ValueAsString();
+                if (name is null || type is null)
                 {
-                    Name = field["name"].ValueAsString(),
-                    Type = field["type"].ValueAsString(),
-                    Classes = field["class"]?.ChildrenAsStrings().ToList(),
-                };
+                    return HypermediaReaderResult.Error<Unit>(
+                        HypermediaReaderProblem.InvalidFormat(
+                            $"name of type is empty for parameter of command '{commandName}'"));
+                }
+                var parameterDescription = new ParameterDescription(
+                    Name: name,
+                    Type: type,
+                    Classes: field["class"]?.ChildrenAsStrings().ToList() ?? (IReadOnlyList<string>)Array.Empty<string>());
                 // todo optional but not save, or check annotation on class
 
                 commandInstance.ParameterDescriptions.Add(parameterDescription);
             }
+
+            return HypermediaReaderResult.Ok(No.Thing);
         }
 
-        private IHypermediaClientCommand CreateHypermediaClientCommand(Type commandType)
+        private HypermediaReaderResult<IHypermediaClientCommand> CreateHypermediaClientCommand(Type commandType)
         {
             var commandInstance = this.hypermediaCommandFactory.Create(commandType);
-            return commandInstance;
+            return commandInstance.Match(
+                ok => HypermediaReaderResult.Ok(ok),
+                error => HypermediaReaderResult.Error<IHypermediaClientCommand>(HypermediaReaderProblem.InvalidClientClass(error)));
         }
 
         private bool IsDesiredAction(IToken action, string commandName)
@@ -264,7 +336,7 @@ namespace RESTyard.Client.Reader
             return name.Equals(commandName);
         }
 
-        private void FillEntity(
+        private HypermediaReaderResult<Unit> FillEntity(
             HypermediaClientObject hypermediaObjectInstance,
             PropertyInfo propertyInfo,
             IToken rootObject,
@@ -278,24 +350,25 @@ namespace RESTyard.Client.Reader
             {
                 if (IsMandatoryHypermediaProperty(propertyInfo))
                 {
-                    throw new Exception($"Mandatory hypermedia property can not be filled {propertyInfo.Name}: server object contains no entities.");
+                    return HypermediaReaderResult.Error<Unit>(HypermediaReaderProblem.InvalidClientClass($"{nameof(IHypermediaLink)} requires a {nameof(HypermediaRelationsAttribute)} Attribute."));
                 }
-                return;
+                return HypermediaReaderResult.Ok(No.Thing);
             }
 
-            var jEntity = entities.FirstOrDefault( e =>
-                this.EntityRelationsMatch(e, relationsAttribute.Relations) && this.EntityClassMatch(e, classes, propertyInfo.Name));
+            var jEntity = entities.FirstOrDefault(e =>
+                this.EntityRelationsMatch(e, relationsAttribute?.Relations) && this.EntityClassMatch(e, classes, propertyInfo.Name));
 
             if (jEntity == null)
             {
                 if (IsMandatoryHypermediaProperty(propertyInfo)) { 
-                    throw new Exception($"Mandatory hypermedia property can not be filled {propertyInfo.Name}: server object contains no entity of matching type (relation and class).");
+                    return HypermediaReaderResult.Error<Unit>(HypermediaReaderProblem.InvalidClientClass($"{nameof(IHypermediaLink)} requires a {nameof(HypermediaRelationsAttribute)} Attribute."));
                 }
-                return;
+                return HypermediaReaderResult.Ok(No.Thing);
             }
 
-            var entity = this.ReadHypermediaObject(jEntity, resolver);
-            propertyInfo.SetValue(hypermediaObjectInstance, entity);
+            var entityResult = this.ReadHypermediaObject(jEntity, resolver);
+            entityResult.Match(entity => propertyInfo.SetValue(hypermediaObjectInstance, entity));
+            return entityResult.Map(_ => No.Thing);
         }
 
         private IDistinctOrderedCollection<string> GetClassesFromEntitiesListProperty(PropertyInfo propertyInfo)
@@ -309,7 +382,7 @@ namespace RESTyard.Client.Reader
             var classAttribute = targetTypeInfo.GetCustomAttribute<HypermediaClientObjectAttribute>();
 
             IDistinctOrderedCollection<string> classes;
-            if (classAttribute == null || classAttribute.Classes == null)
+            if (classAttribute is null)
             {
                 classes = new DistinctOrderedStringCollection(targetTypeInfo.Name);
             }
@@ -337,7 +410,7 @@ namespace RESTyard.Client.Reader
             return this.distinctOrderedStringCollectionComparer.Equals(new DistinctOrderedStringCollection(actualClasses.ChildrenAsStrings()), expectedClasses);
         }
 
-        private bool EntityRelationsMatch(IToken entity, IDistinctOrderedCollection<string> expectedRelations)
+        private bool EntityRelationsMatch(IToken entity, IDistinctOrderedCollection<string>? expectedRelations)
         {
             if (expectedRelations == null || expectedRelations.Count == 0)
             {
@@ -354,7 +427,7 @@ namespace RESTyard.Client.Reader
         }
 
 
-        private void FillLink(
+        private HypermediaReaderResult<Unit> FillLink(
             HypermediaClientObject hypermediaObjectInstance,
             PropertyInfo propertyInfo,
             IToken rootObject,
@@ -363,10 +436,10 @@ namespace RESTyard.Client.Reader
             var linkAttribute = propertyInfo.GetCustomAttribute<HypermediaRelationsAttribute>();
             if (linkAttribute == null)
             {
-                throw new Exception($"{nameof(IHypermediaLink)} requires a {nameof(HypermediaRelationsAttribute)} Attribute.");
+                return HypermediaReaderResult.Error<Unit>(HypermediaReaderProblem.InvalidClientClass($"{nameof(IHypermediaLink)} requires a {nameof(HypermediaRelationsAttribute)} Attribute."));
             }
 
-            var hypermediaLink = (IHypermediaLink)Activator.CreateInstance(propertyInfo.PropertyType);
+            var hypermediaLink = (IHypermediaLink)Activator.CreateInstance(propertyInfo.PropertyType)!;
             propertyInfo.SetValue(hypermediaObjectInstance, hypermediaLink);
 
             var links = rootObject["links"];
@@ -374,37 +447,47 @@ namespace RESTyard.Client.Reader
             {
                 if (IsMandatoryHypermediaLink(propertyInfo))
                 {
-                    throw new Exception($"Mandatory link not found {propertyInfo.Name}");
+                    return HypermediaReaderResult.Error<Unit>(HypermediaReaderProblem.RequiredPropertyMissing($"Mandatory link not found {propertyInfo.Name}"));
                 }
-                return;
+                return HypermediaReaderResult.Ok(No.Thing);
             }
 
-            var link = links.FirstOrDefault(l => this.distinctOrderedStringCollectionComparer.Equals(new DistinctOrderedStringCollection(l["rel"].ChildrenAsStrings()), linkAttribute.Relations));
+            var link = links
+                .Where(l => l["rel"] is not null)
+                .FirstOrDefault(l => this.distinctOrderedStringCollectionComparer.Equals(
+                    new DistinctOrderedStringCollection(l["rel"]!.ChildrenAsStrings()),
+                    linkAttribute.Relations));
             if (link == null)
             {
                 if (IsMandatoryHypermediaLink(propertyInfo))
                 {
-                    throw new Exception($"Mandatory link not found {propertyInfo.Name}");
+                    return HypermediaReaderResult.Error<Unit>(HypermediaReaderProblem.RequiredPropertyMissing($"Mandatory link not found {propertyInfo.Name}"));
                 }
-                return;
+                return HypermediaReaderResult.Ok(No.Thing);
             }
-            
-            hypermediaLink.Uri = new Uri(link["href"].ValueAsString());
-            hypermediaLink.Relations = link["rel"].ChildrenAsStrings().ToList();
+
+            var href = link["href"]?.ValueAsString();
+            if (href is null)
+            {
+                return HypermediaReaderResult.Error<Unit>(HypermediaReaderProblem.RequiredPropertyMissing($"href not found on link {propertyInfo.Name}"));
+            }
+            hypermediaLink.Uri = new Uri(href);
+            hypermediaLink.Relations = link["rel"]!.ChildrenAsStrings().ToList();
             hypermediaLink.Resolver = resolver;
+            return HypermediaReaderResult.Ok(No.Thing);
         }
 
         // todo attribute with different property name
-        private static void FillProperty(HypermediaClientObject hypermediaObjectInstance, PropertyInfo propertyInfo, IToken rootObject)
+        private static HypermediaReaderResult<Unit> FillProperty(HypermediaClientObject hypermediaObjectInstance, PropertyInfo propertyInfo, IToken rootObject)
         {
             var properties = rootObject["properties"];
             if (properties == null)
             {
-                if (IsMandatoryHypermediaProperty(propertyInfo)) { 
-                    throw new Exception($"Mandatory property not found {propertyInfo.Name}");
+                if (IsMandatoryHypermediaProperty(propertyInfo)) {
+                    return HypermediaReaderResult.Error<Unit>(HypermediaReaderProblem.RequiredPropertyMissing($"Mandatory property {propertyInfo.Name} not found"));
                 }
 
-                return;
+                return HypermediaReaderResult.Ok(No.Thing);
             }
 
             var propertyValue = properties[propertyInfo.Name];
@@ -412,13 +495,14 @@ namespace RESTyard.Client.Reader
             {
                 if (IsMandatoryHypermediaProperty(propertyInfo))
                 {
-                    throw new Exception($"Mandatory property not found {propertyInfo.Name}");
+                    return HypermediaReaderResult.Error<Unit>(HypermediaReaderProblem.RequiredPropertyMissing($"Mandatory property {propertyInfo.Name} not found"));
                 }
 
-                return;
+                return HypermediaReaderResult.Ok(No.Thing);
             }
 
             propertyInfo.SetValue(hypermediaObjectInstance, propertyValue.ToObject(propertyInfo.PropertyType));
+            return HypermediaReaderResult.Ok(No.Thing);
         }
 
         private static bool IsMandatoryHypermediaProperty(PropertyInfo propertyInfo)
@@ -493,14 +577,31 @@ namespace RESTyard.Client.Reader
                 return;
             }
 
-            hypermediaObjectInstance.Title = title.ValueAsString();
+            hypermediaObjectInstance.Title = title.ValueAsString() ?? string.Empty;
         }      
 
-        private static IDistinctOrderedCollection<string> ReadClasses(IToken rootObject)
+        private static HypermediaReaderResult<IDistinctOrderedCollection<string>> ReadClasses(IToken rootObject)
         {
-            // todo catch exception
-            // rel migth be missing so provide better error message
-            return new DistinctOrderedStringCollection(rootObject["class"].ChildrenAsStrings());
+            const string ClassDescriptor = "class";
+            // rel might be missing so provide better error message
+            try
+            {
+                var classesToken = rootObject[ClassDescriptor];
+                if (classesToken is null)
+                {
+                    return HypermediaReaderResult.Error<IDistinctOrderedCollection<string>>(HypermediaReaderProblem.RequiredPropertyMissing(ClassDescriptor));
+                }
+                var classes = classesToken.ChildrenAsStrings().ToList();
+                if (!classes.Any())
+                {
+                    return HypermediaReaderResult.Error<IDistinctOrderedCollection<string>>(HypermediaReaderProblem.RequiredPropertyMissing(ClassDescriptor));
+                }
+                return new DistinctOrderedStringCollection(classes);
+            }
+            catch (Exception e)
+            {
+                return HypermediaReaderResult.Error<IDistinctOrderedCollection<string>>(HypermediaReaderProblem.Exception(e));
+            }
         }
     }
 }

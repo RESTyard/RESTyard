@@ -13,13 +13,13 @@ namespace RESTyard.Client.Extensions.NewtonsoftJson
 {
     public class NewtonsoftJsonStringParser : IStringParser
     {
-        public IToken Parse(string contentString)
+        public IToken? Parse(string contentString)
         {
             var jObject = JObject.Parse(contentString);
             return JTokenWrapper.Wrap(jObject);
         }
 
-        public async Task<IToken> ParseAsync(Stream contentStream)
+        public async Task<IToken?> ParseAsync(Stream contentStream)
         {
             using (var textReader = new StreamReader(contentStream))
             using (var jsonReader = new JsonTextReader(textReader))
@@ -54,17 +54,19 @@ namespace RESTyard.Client.Extensions.NewtonsoftJson
                 return GetEnumerator();
             }
 
-            public string ValueAsString()
+            public string? ValueAsString()
             {
                 return this.jToken.Value<string>();
             }
 
             public IEnumerable<string> ChildrenAsStrings()
             {
-                return this.jToken.Values<string>();
+                return this.jToken
+                    .Values<string>()
+                    .OfType<string>();
             }
 
-            public object ToObject(Type type)
+            public object? ToObject(Type type)
             {
                 return this.jToken.ToObject(type);
             }
@@ -74,7 +76,7 @@ namespace RESTyard.Client.Extensions.NewtonsoftJson
                 return this.jToken.ToString(Formatting.None);
             }
 
-            public IToken this[string key] => Wrap(this.jToken[key]);
+            public IToken? this[string key] => Wrap(this.jToken[key]);
         }
     }
 }

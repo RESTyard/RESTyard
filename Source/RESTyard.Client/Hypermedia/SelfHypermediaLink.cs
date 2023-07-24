@@ -8,7 +8,7 @@ namespace RESTyard.Client.Hypermedia
     {
         public async Task<HypermediaResult<T>> RefreshAsync()
         {
-            var result = await this.Resolver.ResolveLinkAsync<T>(this.Uri, forceResolve: true);
+            var result = await this.Resolver.ResolveLinkAsync<T>(this.Uri!, forceResolve: true);
 
             return result;
         }
