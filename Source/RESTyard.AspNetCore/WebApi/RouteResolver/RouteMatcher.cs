@@ -60,12 +60,12 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                 throw new ArgumentException($"Unexpected uri '{request}'. Expected uri for template: {routeTemplate}");
             }
 
-            if (!dict.TryGetValue(key, out var value))
+            if (!dict.TryGetValue(key, out var value) || value is not string stringValue)
             {
                 throw new ArgumentException($"Key {key} not found in {request}");
             }
 
-            return keyFromString((string)value);
+            return keyFromString(stringValue);
         }
     }
 }

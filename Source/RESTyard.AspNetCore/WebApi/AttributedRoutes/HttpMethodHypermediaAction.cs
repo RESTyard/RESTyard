@@ -22,12 +22,12 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
         ///     This type will be used to create a n instance of the producer and generate the key object used in a UrlHelper to
         ///     determine the final URL.
         /// </param>
-        public HttpMethodHypermediaAction(
+        protected HttpMethodHypermediaAction(
             IEnumerable<string> httpMethods,
             Type routeType,
-            Type routeKeyProducerType = null) : base(httpMethods)
+            Type? routeKeyProducerType = null) : base(httpMethods)
         {
-            Init(routeType, routeKeyProducerType);
+            (Name, RouteType, RouteKeyProducerType) = Init(routeType, routeKeyProducerType);
         }
 
         /// <summary>
@@ -45,25 +45,25 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
         ///     This type will be used to create a n instance of the producer and generate the key object used in a UrlHelper to
         ///     determine the final URL.
         /// </param>
-        public HttpMethodHypermediaAction(
+        protected HttpMethodHypermediaAction(
             IEnumerable<string> httpMethods,
             string template,
             Type routeType,
-            Type routeKeyProducerType = null) : base(httpMethods, template)
+            Type? routeKeyProducerType = null) : base(httpMethods, template)
         {
-            Init(routeType, routeKeyProducerType);
+            (Name, RouteType, RouteKeyProducerType) = Init(routeType, routeKeyProducerType);
         }
 
         public Type RouteType { get; private set; }
-        public Type RouteKeyProducerType { get; private set; }
+        public Type? RouteKeyProducerType { get; private set; }
         
         
         /// <summary>
         /// The media type which is acceptable for this action. 
         /// </summary>
-        public string AcceptedMediaType { get; set; } = null;
+        public string? AcceptedMediaType { get; set; } = null;
 
-        private void Init(Type routeType, Type routeKeyProducerType)
+        private static (string Name, Type RouteType, Type? RouteKeyProducerType) Init(Type routeType, Type? routeKeyProducerType)
         {
             AttributedRouteHelper.EnsureIs<HypermediaActionBase>(routeType);
             AttributedRouteHelper.EnsureIsRouteKeyProducer(routeKeyProducerType);
@@ -71,9 +71,7 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
             var buildName = "GenericRouteName_HypermediaAction" + "_" + routeType;
             buildName = AttributedRouteHelper.EscapeRouteName(buildName);
 
-            Name = buildName;
-            RouteType = routeType;
-            RouteKeyProducerType = routeKeyProducerType;
+            return (buildName, routeType, routeKeyProducerType);
         }
     }
 }

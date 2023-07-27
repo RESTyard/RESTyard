@@ -24,7 +24,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             return routeResolver.ReferenceToRoute(item.EntityRef).Url;
         }
 
-        protected override HypermediaEntityLocation GetObject(object locationObject)
+        protected override HypermediaEntityLocation? GetObject(object? locationObject)
         {
             return locationObject as HypermediaEntityLocation;
         }

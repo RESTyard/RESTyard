@@ -7,12 +7,12 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
 {
     public static class AttributedRouteHelper
     {
-        public static void EnsureIsRouteKeyProducer(Type routeKeyProducerType)
+        public static void EnsureIsRouteKeyProducer(Type? routeKeyProducerType)
         {
             if (routeKeyProducerType != null && !typeof(IKeyProducer).GetTypeInfo().IsAssignableFrom(routeKeyProducerType))
             {
                 throw new HypermediaRouteException(
-                    $"{typeof(HttpGetHypermediaObject).Name} requires a {typeof(IKeyProducer).Name} type.");
+                    $"{nameof(HttpGetHypermediaObject)} requires a {nameof(IKeyProducer)} type.");
             }
         }
 

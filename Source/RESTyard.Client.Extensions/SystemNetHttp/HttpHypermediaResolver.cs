@@ -198,7 +198,7 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
                 return HypermediaResult.Error<Unit>(HypermediaProblem.ProblemDetails(problemDetailsCopy));
             }
 
-            var message = innerException.Message ?? string.Empty;
+            var message = innerException?.Message ?? string.Empty;
             return HypermediaResult.Error<Unit>(HypermediaProblem.StatusCode((int)responseMessage.StatusCode, message));
         }
 
@@ -220,7 +220,7 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             }
         }
 
-        private static Exception GetInnerException(HttpResponseMessage result)
+        private static Exception? GetInnerException(HttpResponseMessage result)
         {
             try
             {

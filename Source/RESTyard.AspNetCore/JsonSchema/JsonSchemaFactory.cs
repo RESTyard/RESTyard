@@ -9,6 +9,7 @@ using NJsonSchema.Generation;
 using RESTyard.AspNetCore.Util;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 using System.Text.Json;
+using Newtonsoft.Json.Converters;
 
 namespace RESTyard.AspNetCore.JsonSchema
 {
@@ -17,7 +18,13 @@ namespace RESTyard.AspNetCore.JsonSchema
         static readonly JsonSchemaGeneratorSettings JsonSchemaGeneratorSettings = new JsonSchemaGeneratorSettings
         {
             FlattenInheritanceHierarchy = true,
-            DefaultEnumHandling = EnumHandling.String,
+            SerializerSettings = new()
+            {
+                Converters =
+                {
+                    new StringEnumConverter(),
+                },
+            },
         };
 
         public static object Generate(Type type)
@@ -173,11 +180,11 @@ namespace RESTyard.AspNetCore.JsonSchema
         public Type TargetType { get; }
         public PropertyInfo Property { get; }
         public string SchemaPropertyName { get; }
-        public string RouteTemplateParameterName { get; }
+        public string? RouteTemplateParameterName { get; }
         public ImmutableArray<string> NestingPropertyNames { get; }
         public string ResolvedRouteTemplateParameterName => RouteTemplateParameterName ?? Property.Name;
 
-        public KeyFromUriProperty(Type targetType, PropertyInfo property, string schemaPropertyName, string routeTemplateParameterName, ImmutableArray<string> nestingPropertyNames)
+        public KeyFromUriProperty(Type targetType, PropertyInfo property, string? schemaPropertyName, string? routeTemplateParameterName, ImmutableArray<string> nestingPropertyNames)
         {
             TargetType = targetType;
             Property = property;

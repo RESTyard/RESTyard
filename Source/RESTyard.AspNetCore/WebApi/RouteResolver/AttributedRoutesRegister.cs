@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             this.logger = logger;
             var assembliesToCrawl = hypermediaOptions.ControllerAndHypermediaAssemblies.Length > 0
                 ? hypermediaOptions.ControllerAndHypermediaAssemblies
-                : Assembly.GetEntryAssembly().Yield();
+                : Assembly.GetEntryAssembly()?.Yield() ?? Enumerable.Empty<Assembly>();
 
             foreach (var assemblyToCrawl in assembliesToCrawl)
             {
@@ -74,7 +75,8 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             }
         }
 
-        private void AddRouteKeyProducer<T>(MethodInfo method, T hypermediaAttribute) where T : HttpMethodAttribute, IHaveRouteInfo
+        private void AddRouteKeyProducer<T>(MethodInfo method, T hypermediaAttribute)
+            where T : HttpMethodAttribute, IHaveRouteInfo
         {
             var autoAddRouteKeyProducers = hypermediaAttribute is HttpGetHypermediaObject;
           
@@ -112,7 +114,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             }
         }
 
-        private static bool TryGetSingleHypermediaAttribute(MethodInfo method, out HttpMethodAttribute hypermediaAttribute)
+        private static bool TryGetSingleHypermediaAttribute(MethodInfo method, [NotNullWhen(true)] out HttpMethodAttribute? hypermediaAttribute)
         {
             var httpMethodAttributes = method.GetCustomAttributes<HttpMethodAttribute>(true)
                 .Where(IsExtensionAttribute)

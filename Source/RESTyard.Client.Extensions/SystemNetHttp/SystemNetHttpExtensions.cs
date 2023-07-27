@@ -112,6 +112,11 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
                 createLinkHcoCache);
         }
 
+        /// <summary>
+        /// Creates an <see cref="AuthenticationHeaderValue" /> with a basic scheme from username and password
+        /// </summary>
+        /// <param name="credentials">Credentials to use for authentication as username and password</param>
+        /// <returns></returns>
         public static AuthenticationHeaderValue CreateBasicAuthHeaderValue(
             this UsernamePasswordCredentials credentials)
         {

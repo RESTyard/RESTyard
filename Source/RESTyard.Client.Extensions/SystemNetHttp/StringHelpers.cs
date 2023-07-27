@@ -20,6 +20,11 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             return text;
         }
 
+        /// <summary>
+        /// Removes double quotes (") from the beginning and the front of the given text
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
         public static string RemoveSurroundingQuotes(string text)
         {
             const char doubleQuoteChar = '"';

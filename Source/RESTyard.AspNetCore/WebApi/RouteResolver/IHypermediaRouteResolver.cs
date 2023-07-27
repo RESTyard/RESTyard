@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Hypermedia.Links;
@@ -18,10 +19,10 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
 
         ResolvedRoute TypeToRoute(Type actionParameterType);
 
-        bool TryGetRouteByType(Type type, out ResolvedRoute route, object routeKeys = null);
+        bool TryGetRouteByType(Type type, [NotNullWhen(true)] out ResolvedRoute? route, object? routeKeys = null);
 
-        string RouteUrl(string routeName, object routeKeys = null);
+        string RouteUrl(string routeName, object? routeKeys = null);
         
-        ResolvedRoute RouteUrl(RouteInfo routeInfo, object routeKeys = null);
+        ResolvedRoute RouteUrl(RouteInfo routeInfo, object? routeKeys = null);
     }
 }

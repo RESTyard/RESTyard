@@ -41,9 +41,24 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         /// <param name="queryType">The type of the QueryResult which will be returned when following the Location header.</param>
         /// <param name="queryParameter">The query which was requested. Used by the Formatter to produce the Location header.</param>
         /// <returns></returns>
-        public static ActionResult CreatedQuery(this ControllerBase controller, Type queryType, IHypermediaQuery queryParameter = null)
+        public static ActionResult CreatedQuery(this ControllerBase controller, Type queryType, IHypermediaQuery? queryParameter = null)
         {
             return controller.Ok(new HypermediaQueryLocation(queryType, queryParameter));
+        }
+
+        /// <summary>
+        /// Returns a 201 Created and puts a Location to the Query result in the header
+        /// </summary>
+        /// <typeparam name="TQueryResult">The type of the QueryResult which will be returned when following the Location header.</typeparam>
+        /// <param name="controller"></param>
+        /// <param name="queryParameter"></param>
+        /// <returns></returns>
+        public static IActionResult CreatedQuery<TQueryResult>(
+            this ControllerBase controller,
+            IHypermediaQuery? queryParameter = null)
+            where TQueryResult : HypermediaQueryResult
+        {
+            return controller.Ok(new HypermediaQueryLocation(typeof(TQueryResult), queryParameter));
         }
 
         /// <summary>
@@ -62,7 +77,6 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         /// Indicates that the provided ActionParameters were technically correct but the internal validation (in the business logic) did not accept the parameters. 
         /// </summary>
         /// <param name="controller"></param>
-        /// <param name="problemDetails">Optional ProblemJson as defined in https://tools.ietf.org/html/rfc7807.</param>
         /// <returns></returns>
         public static ActionResult UnprocessableEntity(this ControllerBase controller)
         {
@@ -81,7 +95,6 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         /// The action which was requested can not be executed. Might have changed state since received the Hypermedia.
         /// </summary>
         /// <param name="controller"></param>
-        /// <param name="problemDetails">Optional ProblemJson as defined in https://tools.ietf.org/html/rfc7807</param>
         /// <returns></returns>
         public static ActionResult CanNotExecute(this ControllerBase controller)
         {

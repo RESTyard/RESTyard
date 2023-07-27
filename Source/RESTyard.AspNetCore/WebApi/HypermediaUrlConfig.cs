@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
 
 namespace RESTyard.AspNetCore.WebApi
@@ -8,7 +9,8 @@ namespace RESTyard.AspNetCore.WebApi
     /// </summary>
     public class HypermediaUrlConfig : IHypermediaUrlConfig
     {
-        public string Scheme { get; set; }
+        [DisallowNull]
+        public string? Scheme { get; set; }
 
         public HostString Host { get; set; }
     }

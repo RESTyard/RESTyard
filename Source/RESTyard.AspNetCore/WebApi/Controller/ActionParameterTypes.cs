@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +26,7 @@ namespace RESTyard.AspNetCore.WebApi.Controller
             );
         }
 
-        public bool TryGetValue(string parameterTypeName, out object schema)
+        public bool TryGetValue(string parameterTypeName, [NotNullWhen(true)] out object? schema)
         {
             return schemaByTypeName.TryGetValue(parameterTypeName, out schema);
         }

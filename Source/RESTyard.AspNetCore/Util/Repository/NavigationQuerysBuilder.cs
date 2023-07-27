@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using RESTyard.AspNetCore.Query;
 using RESTyard.Relations;
 
@@ -18,8 +19,7 @@ namespace RESTyard.AspNetCore.Util.Repository
 
             result.AddQuery(DefaultHypermediaRelations.Queries.All, CreateQueryAll(query));
 
-            QueryBase<TSortPropertyEnum, TQueryFilter> createdQuery;
-            if (TryCreateQueryFirst(query, queryResult.TotalCountOfEnties, out createdQuery))
+            if (TryCreateQueryFirst(query, queryResult.TotalCountOfEnties, out var createdQuery))
             {
                 result.AddQuery(DefaultHypermediaRelations.Queries.First, createdQuery);
             }
@@ -44,11 +44,11 @@ namespace RESTyard.AspNetCore.Util.Repository
         }
 
         private static bool TryCreateQueryLast<TSortPropertyEnum, TQueryFilter>(
-        QueryBase<TSortPropertyEnum, TQueryFilter> queryParameters,
-        int queryResultCount,
-        out QueryBase<TSortPropertyEnum, TQueryFilter> queryLast)
-        where TSortPropertyEnum : struct
-        where TQueryFilter : IQueryFilter, new()
+            QueryBase<TSortPropertyEnum, TQueryFilter> queryParameters,
+            int queryResultCount,
+            [NotNullWhen(true)] out QueryBase<TSortPropertyEnum, TQueryFilter>? queryLast)
+            where TSortPropertyEnum : struct
+            where TQueryFilter : IQueryFilter, new()
         {
             if (!HasLastPage(queryParameters, queryResultCount))
             {
@@ -69,7 +69,7 @@ namespace RESTyard.AspNetCore.Util.Repository
         private static bool TryCreateQueryPrevious<TSortPropertyEnum, TQueryFilter>(
             QueryBase<TSortPropertyEnum, TQueryFilter> queryParameters,
             int queryResultCount,
-            out QueryBase<TSortPropertyEnum, TQueryFilter> queryPrevious)
+            [NotNullWhen(true)] out QueryBase<TSortPropertyEnum, TQueryFilter>? queryPrevious)
             where TSortPropertyEnum : struct
             where TQueryFilter : IQueryFilter, new()
         {
@@ -93,7 +93,7 @@ namespace RESTyard.AspNetCore.Util.Repository
         private static bool TryCreateQueryNext<TSortPropertyEnum, TQueryFilter>(
             QueryBase<TSortPropertyEnum, TQueryFilter> queryParameters,
             int queryResultCount,
-            out QueryBase<TSortPropertyEnum, TQueryFilter> queryNext)
+            [NotNullWhen(true)] out QueryBase<TSortPropertyEnum, TQueryFilter>? queryNext)
             where TSortPropertyEnum : struct
             where TQueryFilter : IQueryFilter, new()
         {
@@ -112,7 +112,7 @@ namespace RESTyard.AspNetCore.Util.Repository
         private static bool TryCreateQueryFirst<TSortPropertyEnum, TQueryFilter>(
             QueryBase<TSortPropertyEnum, TQueryFilter> queryParameters,
             int queryResultCount,
-            out QueryBase<TSortPropertyEnum, TQueryFilter> queryFirst)
+            [NotNullWhen(true)] out QueryBase<TSortPropertyEnum, TQueryFilter>? queryFirst)
             where TSortPropertyEnum : struct
             where TQueryFilter : IQueryFilter, new()
             {

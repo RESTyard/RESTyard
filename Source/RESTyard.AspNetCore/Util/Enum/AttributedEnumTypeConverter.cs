@@ -10,7 +10,7 @@ namespace RESTyard.AspNetCore.Util.Enum
     // With out a TypeConverter enums are converted by the enum name not the enum value.
     public class AttributedEnumTypeConverter<T> : TypeConverter where T : struct
     {
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
         {
             if (sourceType == typeof(string))
             {
@@ -20,16 +20,16 @@ namespace RESTyard.AspNetCore.Util.Enum
             return base.CanConvertFrom(context, sourceType);
         }
 
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {
-            if (!(value is string))
+            if (value is not string stringValue)
             {
                 throw new AttributedEnumTypeConverterException("Tried to convert value to enum which is not a string.");
             }
 
             try
             {
-                return EnumHelper.GetEnumByAttributeValue<T>((string)value);
+                return EnumHelper.GetEnumByAttributeValue<T>(stringValue);
             }
             catch (ArgumentException e)
             {
@@ -37,14 +37,20 @@ namespace RESTyard.AspNetCore.Util.Enum
             }
         }
 
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+        public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
         {
             if (destinationType != typeof(string))
             {
                 throw new AttributedEnumTypeConverterException("Tried to convert an enum to other type than string.");
             }
 
-            var enumValue = (T)System.Enum.Parse(typeof(T), value.ToString());
+            var toString = value?.ToString();
+            if (toString is null)
+            {
+                throw new ArgumentNullException(nameof(value), "Cannot convert null");
+            }
+
+            var enumValue = (T)System.Enum.Parse(typeof(T), toString);
 
             try
             {

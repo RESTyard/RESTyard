@@ -43,7 +43,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
 
         public object GetActionRouteKeys(HypermediaActionBase action, HypermediaObject actionHostObject)
         {
-            if (!this.routeRegister.TryGetKeyProducer(action.GetType(), out IKeyProducer keyProducer) 
+            if (!this.routeRegister.TryGetKeyProducer(action.GetType(), out var keyProducer) 
                 && !this.routeRegister.TryGetKeyProducer(actionHostObject.GetType(), out keyProducer))
             {
                 return new { };
