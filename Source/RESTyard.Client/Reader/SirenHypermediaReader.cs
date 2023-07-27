@@ -131,14 +131,11 @@ namespace RESTyard.Client.Reader
             var typeInfo = hypermediaObjectInstance.GetType().GetTypeInfo();
             var properties = typeInfo.GetProperties(BindingFlags.Public | BindingFlags.Instance);
             HypermediaReaderResult<Unit> result = HypermediaReaderResult.Ok(No.Thing);
-            foreach (var propertyInfo in properties)
+            bool HasSetter(PropertyInfo p) => p.CanWrite;
+            bool IsIgnored(PropertyInfo p) =>
+                p.GetCustomAttribute<ClientIgnoreHypermediaPropertyAttribute>() is not null;
+            foreach (var propertyInfo in properties.Where(p => HasSetter(p) && !IsIgnored(p)))
             {
-                var ignore = propertyInfo.GetCustomAttribute<ClientIgnoreHypermediaPropertyAttribute>() != null;
-                if (ignore)
-                {
-                    continue;
-                }
-
                 var hypermediaPropertyType = GetHypermediaPropertyType(propertyInfo);
                 switch (hypermediaPropertyType)
                 {
