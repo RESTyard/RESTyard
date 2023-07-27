@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.Client.Authentication;
 using RESTyard.Client.Builder;
@@ -47,8 +48,8 @@ namespace RESTyard.Client.Test
         public async Task EnterEntryPoint()
         {
             var apiRoot = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint);
-            Assert.IsTrue(apiRoot.IsOk);
-            Assert.IsNotNull(apiRoot.GetValueOrDefault());
+            apiRoot.Should().BeOk()
+                .Which.Should().NotBeNull();
         }
 
         [TestMethod]
@@ -56,17 +57,16 @@ namespace RESTyard.Client.Test
         {
             var apiRoot = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint);
             var customersAll = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
-            Assert.IsTrue(customersAll.IsOk);
-            var customer = customersAll.GetValueOrThrow().Customers.First();
+            
+            var customer = customersAll.Should().BeOk().Which.Customers.First();
 
             var newAddress = "New Address";
             var actionResult = await customer.CustomerMove.ExecuteAsync(new NewAddress(Address: newAddress), this.Resolver);
             
             var refreshResult = await customer.Self.ResolveAsync();
-            Assert.IsTrue(actionResult.IsOk);
-            Assert.IsTrue(refreshResult.IsOk);
-            customer = refreshResult.GetValueOrThrow();
-            Assert.AreEqual(newAddress, customer.Address);
+            actionResult.Should().BeOk();
+            refreshResult.Should().BeOk()
+                .Which.Address.Should().Be(newAddress);
         }
 
         [TestMethod]
@@ -77,7 +77,7 @@ namespace RESTyard.Client.Test
                 .NavigateAsync(l => l.Customers)
                 .NavigateAsync(l => l.All);
 
-            var customer = customersAll.GetValueOrThrow().Customers.First();
+            var customer = customersAll.Should().BeOk().Which.Customers.First();
             if (!customer.MarkAsFavorite.CanExecute)
             {
                 Assert.Inconclusive("Action can not be run on server, not offered.");
@@ -85,9 +85,9 @@ namespace RESTyard.Client.Test
 
             var actionResult = await customer.MarkAsFavorite.ExecuteAsync(new FavoriteCustomer{ Customer = customer.Self.Uri.ToString() }, this.Resolver); 
 
-            customer = (await customer.Self.ResolveAsync()).GetValueOrThrow();
-            Assert.IsTrue(actionResult.IsOk);
-            Assert.IsTrue(customer.IsFavorite);
+            var customerResult = await customer.Self.ResolveAsync();
+            actionResult.Should().BeOk();
+            customerResult.Should().BeOk().Which.IsFavorite.Should().BeTrue();
         }
 
         [TestMethod]
@@ -102,17 +102,17 @@ namespace RESTyard.Client.Test
                 SortBy = new SortOptions { PropertyName = "Age", SortType  = "Ascending" },
                 Pagination = new Pagination { PageOffset = 2, PageSize = 3 }
             };
-
-            var resultResource = await customersRoot.GetValueOrThrow().CreateQuery.ExecuteAsync(query, this.Resolver);
-            var queryResultPage = await resultResource.GetValueOrThrow().ResolveAsync();
-            Assert.IsNotNull(queryResultPage);
+            
+            var resultResource = await customersRoot.Should().BeOk().Which.CreateQuery.ExecuteAsync(query, this.Resolver);
+            var queryResultPage = await resultResource.Should().BeOk().Which.ResolveAsync();
+            queryResultPage.Should().NotBeNull();
         }
 
         [TestMethod]
         public async Task EnterEntryPointAndNavigate()
         {
             var apiRoot = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint);
-            var customers = (await apiRoot.GetValueOrThrow().Customers.ResolveAsync()).GetValueOrThrow();
+            var customers = (await apiRoot.Should().BeOk().Which.Customers.ResolveAsync()).Should().BeOk().Which;
             var all = await customers.All.ResolveAsync();
 
             var allFluent = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint).NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);

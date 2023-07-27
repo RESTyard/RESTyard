@@ -29,7 +29,7 @@ namespace RESTyard.Client.Extensions
             }
         }
 
-        public static async Task<HypermediaResult> ExecuteAsync<TParameters>(
+        public static async Task<HypermediaResult<Unit>> ExecuteAsync<TParameters>(
             this IHypermediaClientAction<TParameters> action,
             TParameters parameters,
             IHypermediaResolver resolver)
