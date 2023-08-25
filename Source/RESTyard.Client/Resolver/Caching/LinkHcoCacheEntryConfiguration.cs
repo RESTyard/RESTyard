@@ -4,16 +4,12 @@ namespace RESTyard.Client.Resolver.Caching
 {
     public class LinkHcoCacheEntryConfiguration
     {
-        protected LinkHcoCacheEntryConfiguration(bool hasConfiguration)
+        public LinkHcoCacheEntryConfiguration(
+            bool hasConfiguration,
+            CacheScope cacheScope,
+            DateTimeOffset? localExpirationDate = null)
         {
             HasCacheConfiguration = hasConfiguration;
-        }
-
-        public LinkHcoCacheEntryConfiguration(
-            CacheScope cacheScope,
-            DateTimeOffset? localExpirationDate)
-            : this(hasConfiguration: true)
-        {
             CacheScope = cacheScope;
             LocalExpirationDate = localExpirationDate;
         }

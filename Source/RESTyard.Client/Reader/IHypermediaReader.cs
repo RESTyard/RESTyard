@@ -8,15 +8,15 @@ namespace RESTyard.Client.Reader
 {
     public interface IHypermediaReader
     {
-        HypermediaClientObject Read(
+        HypermediaReaderResult<HypermediaClientObject> Read(
             string contentString,
             IHypermediaResolver resolver);
 
-        Task<HypermediaClientObject> ReadAsync(
+        Task<HypermediaReaderResult<HypermediaClientObject>> ReadAsync(
             Stream contentStream,
             IHypermediaResolver resolver);
 
-        Task<(HypermediaClientObject, string)> ReadAndSerializeAsync(
+        Task<HypermediaReaderResult<(HypermediaClientObject, string)>> ReadAndSerializeAsync(
             Stream contentStream,
             IHypermediaResolver resolver);
     }

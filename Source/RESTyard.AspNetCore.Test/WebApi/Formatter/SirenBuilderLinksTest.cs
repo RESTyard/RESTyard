@@ -46,15 +46,15 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         [TestMethod]
         public void LinksHypermediaObjectReferenceTest()
         {
-            var routeNameLinking = typeof(LinkingHypermediaObject).Name + "_Route";
+            var routeNameLinking = nameof(LinkingHypermediaObject) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(LinkingHypermediaObject), routeNameLinking, HttpMethod.GET);
 
-            var routeNameLinked1 = typeof(Linked1HypermediaObject).Name + "_Route";
+            var routeNameLinked1 = nameof(Linked1HypermediaObject) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(Linked1HypermediaObject), routeNameLinked1, HttpMethod.GET);
             var hoLink1 = new Linked1HypermediaObject();
             var link1Rel = "Link1";
 
-            var routeNameLinked2 = typeof(Linked2HypermediaObject).Name + "_Route";
+            var routeNameLinked2 = nameof(Linked2HypermediaObject) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(Linked2HypermediaObject), routeNameLinked2, HttpMethod.GET);
             var hoLink2 = new Linked2HypermediaObject();
             var link2Rel = "Link2";
@@ -83,10 +83,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         [TestMethod]
         public void LinksHypermediaObjectReferenceWithRouteKeyTest()
         {
-            var routeNameLinking = typeof(LinkingHypermediaObject).Name + "_Route";
+            var routeNameLinking = nameof(LinkingHypermediaObject) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(LinkingHypermediaObject), routeNameLinking, HttpMethod.GET);
 
-            var routeNameLinked1 = typeof(LinkedHypermediaObjectWithKey).Name + "_Route";
+            var routeNameLinked1 = nameof(LinkedHypermediaObjectWithKey) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(LinkedHypermediaObjectWithKey), routeNameLinked1, HttpMethod.GET);
             var hoLink1 = new LinkedHypermediaObjectWithKey {Id = 42};
             var link1Rel = "Link1";
@@ -113,15 +113,15 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         [TestMethod]
         public void LinksDuplicateRelationTest()
         {
-            var routeNameLinking = typeof(LinkingHypermediaObject).Name + "_Route";
+            var routeNameLinking = nameof(LinkingHypermediaObject) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(LinkingHypermediaObject), routeNameLinking, HttpMethod.GET);
 
-            var routeNameLinked1 = typeof(Linked1HypermediaObject).Name + "_Route";
+            var routeNameLinked1 = nameof(Linked1HypermediaObject) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(Linked1HypermediaObject), routeNameLinked1, HttpMethod.GET);
             var hoLink1 = new Linked1HypermediaObject();
             var duplicateRel = "Duplicate";
 
-            var routeNameLinked2 = typeof(Linked2HypermediaObject).Name + "_Route";
+            var routeNameLinked2 = nameof(Linked2HypermediaObject) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(Linked2HypermediaObject), routeNameLinked2, HttpMethod.GET);
             var hoLink2 = new Linked2HypermediaObject();
 
@@ -146,10 +146,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         [TestMethod]
         public void LinksMultipleRelationTest()
         {
-            var routeNameLinking = typeof(LinkingHypermediaObject).Name + "_Route";
+            var routeNameLinking = nameof(LinkingHypermediaObject) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(LinkingHypermediaObject), routeNameLinking, HttpMethod.GET);
 
-            var routeNameLinked1 = typeof(Linked1HypermediaObject).Name + "_Route";
+            var routeNameLinked1 = nameof(Linked1HypermediaObject) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(Linked1HypermediaObject), routeNameLinked1, HttpMethod.GET);
             var hoLink1 = new Linked1HypermediaObject();
             var multiRel = new List<string> {"RelA", "RelB"};
@@ -174,15 +174,15 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         [TestMethod]
         public void LinksHypermediaObjectKeyReferenceTest()
         {
-            var routeNameLinking = typeof(LinkingHypermediaObject).Name + "_Route";
+            var routeNameLinking = nameof(LinkingHypermediaObject) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(LinkingHypermediaObject), routeNameLinking, HttpMethod.GET);
 
-            var routeNameLinked1 = typeof(Linked1HypermediaObject).Name + "_Route";
+            var routeNameLinked1 = nameof(Linked1HypermediaObject) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(Linked1HypermediaObject), routeNameLinked1, HttpMethod.GET);
             RouteRegister.AddRouteKeyProducer(typeof(Linked1HypermediaObject), new Linked1HypermediaObjectRouteKeyProducer());
             var link1Rel = "Link1";
 
-            var routeNameLinked2 = typeof(Linked2HypermediaObject).Name + "_Route";
+            var routeNameLinked2 = nameof(Linked2HypermediaObject) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(Linked2HypermediaObject), routeNameLinked2, HttpMethod.GET);
             RouteRegister.AddRouteKeyProducer(typeof(Linked2HypermediaObject), new Linked2HypermediaObjectRouteKeyProducer());
             var link2Rel = "Link2";
@@ -210,16 +210,16 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         [TestMethod]
         public void LinksHypermediaObjectQueryReferenceTest()
         {
-            var routeNameLinking = typeof(LinkingHypermediaObject).Name + "_Route";
+            var routeNameLinking = nameof(LinkingHypermediaObject) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(LinkingHypermediaObject), routeNameLinking, HttpMethod.GET);
 
-            var routeNameLinked1 = typeof(Linked1HypermediaObject).Name + "_Route";
+            var routeNameLinked1 = nameof(Linked1HypermediaObject) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(Linked1HypermediaObject), routeNameLinked1, HttpMethod.GET);
             var link1Rel = "Link1";
             var queryObject1 = new QueryObject {ABool = true, AInt = 3};
             
 
-            var routeNameLinked2 = typeof(LinkedHypermediaObjectWithKey).Name + "_Route";
+            var routeNameLinked2 = nameof(LinkedHypermediaObjectWithKey) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(LinkedHypermediaObjectWithKey), routeNameLinked2, HttpMethod.GET);
             RouteRegister.AddRouteKeyProducer(typeof(LinkedHypermediaObjectWithKey), new LinkedHypermediaObjectWithKeyRouteKeyProvider());
             var link2Rel = "Link2";
@@ -249,7 +249,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         public void LinksExternalReferenceTest()
         {
             var externalUri = "http://www.example.com/";
-            var routeNameLinking = typeof(ExternalUsingHypermediaObject).Name + "_Route";
+            var routeNameLinking = nameof(ExternalUsingHypermediaObject) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(ExternalUsingHypermediaObject), routeNameLinking, HttpMethod.GET);
 
             var ho = new ExternalUsingHypermediaObject();
@@ -325,7 +325,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
          [TestMethod]
         public void LinksInternalReferenceTest()
         {
-            var routeNameLinking = typeof(InternalUsingHypermediaObject).Name + "_Route";
+            var routeNameLinking = nameof(InternalUsingHypermediaObject) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(InternalUsingHypermediaObject), routeNameLinking, HttpMethod.GET);
 
             var ho = new InternalUsingHypermediaObject();

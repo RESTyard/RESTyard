@@ -5,7 +5,7 @@ namespace RESTyard.Client.Test.Hypermedia;
 
 public class Country
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     
     public int Population { get; set; }
 }

@@ -11,6 +11,7 @@
     
     <Version>2.1.0$(VersionSuffixLocal)</Version>
     <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     
     <!-- Descriptions and information -->

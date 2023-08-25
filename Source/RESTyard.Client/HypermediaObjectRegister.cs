@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using FunicularSwitch;
 using RESTyard.Client.Hypermedia;
 using RESTyard.Client.Hypermedia.Attributes;
 using RESTyard.Client.Util;
@@ -34,19 +35,25 @@ namespace RESTyard.Client
             
         }
 
-        public HypermediaClientObject CreateFromClasses(IDistinctOrderedCollection<string> classes)
+        public Result<HypermediaClientObject> CreateFromClasses(IDistinctOrderedCollection<string> classes)
         {
-            var hypermediaObjectType = this.GetHypermediaType(classes);
+            var typeResult = this.GetHypermediaType(classes);
 
-            return (HypermediaClientObject)Activator.CreateInstance(hypermediaObjectType);
+            return typeResult.Bind(hypermediaObjectType =>
+            {
+                return Result.Try(() => Activator.CreateInstance(hypermediaObjectType), exc => exc.Message)
+                    .Bind(obj => obj is HypermediaClientObject hco
+                        ? Result.Ok(hco)
+                        : Result.Error<HypermediaClientObject>(
+                            $"Could not create instance of '{hypermediaObjectType.Name}'"));
+            });
         }
 
-        public Type GetHypermediaType(IDistinctOrderedCollection<string> classes)
+        public Result<Type> GetHypermediaType(IDistinctOrderedCollection<string> classes)
         {
-            Type hypermediaObjectType;
-            if (!this.hypermediaObjectTypeDictionary.TryGetValue(classes, out hypermediaObjectType))
+            if (!this.hypermediaObjectTypeDictionary.TryGetValue(classes, out var hypermediaObjectType))
             {
-                throw new Exception($"No HCO Type registered for classes: {string.Join(", ", classes)}");
+                return Result.Error<Type>($"No HCO Type registered for classes: {string.Join(", ", classes)}");
             }
             return hypermediaObjectType;
         }
@@ -66,8 +73,8 @@ namespace RESTyard.Client
         /// <param name="hypermediaObjectType"></param>
         void Register(Type hypermediaObjectType);
 
-        Type GetHypermediaType(IDistinctOrderedCollection<string> classes);
+        Result<Type> GetHypermediaType(IDistinctOrderedCollection<string> classes);
 
-        HypermediaClientObject CreateFromClasses(IDistinctOrderedCollection<string> classes);
+        Result<HypermediaClientObject> CreateFromClasses(IDistinctOrderedCollection<string> classes);
     }
 }

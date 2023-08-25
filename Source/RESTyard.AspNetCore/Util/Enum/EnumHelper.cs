@@ -32,7 +32,6 @@ namespace RESTyard.AspNetCore.Util.Enum
         /// <returns>Attributed value if found otherwise enumValue as string</returns>
         public static string GetEnumMemberValue(Type enumType, object enumValue)
         {
-            
             var enumvalueAsString = enumValue.ToString();
             var fieldInfo = enumType.GetTypeInfo().GetField(enumvalueAsString);
             if (fieldInfo == null)

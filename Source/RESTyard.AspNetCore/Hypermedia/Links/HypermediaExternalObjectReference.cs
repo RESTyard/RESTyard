@@ -15,7 +15,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
         public HypermediaExternalObjectReference(Uri uri, IEnumerable<string> classes) : base(typeof(ExternalObject))
         {
             Uri = uri;
-            Classes = classes?.ToImmutableList();
+            Classes = classes?.ToImmutableList() ?? ImmutableList<string>.Empty;
         }
 
         public Uri Uri { get; }
@@ -27,7 +27,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
             return false;
         }
 
-        public override HypermediaObject GetInstance()
+        public override HypermediaObject? GetInstance()
         {
             return null;
         }
@@ -37,12 +37,12 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
             return false;
         }
 
-        public override object GetKey(IKeyProducer keyProducer)
+        public override object? GetKey(IKeyProducer keyProducer)
         {
             throw new NotSupportedException();
         }
 
-        public override IHypermediaQuery GetQuery()
+        public override IHypermediaQuery? GetQuery()
         {
             return null;
         }

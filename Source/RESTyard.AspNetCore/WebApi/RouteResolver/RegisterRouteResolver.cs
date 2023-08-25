@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using RESTyard.AspNetCore.Exceptions;
@@ -98,7 +99,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             return this.GetRouteByType(type);
         }
 
-        public bool TryGetRouteByType(Type type, out ResolvedRoute route, object routeKeys = null)
+        public bool TryGetRouteByType(Type type, [NotNullWhen(true)] out ResolvedRoute? route, object? routeKeys = null)
         {
             route = null;
             if (this.RouteRegister.TryGetRoute(type, out var routeInfo))
@@ -108,7 +109,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             return route != null;
         }
 
-        public ResolvedRoute RouteUrl(RouteInfo routeInfo, object routeKeys = null)
+        public ResolvedRoute RouteUrl(RouteInfo routeInfo, object? routeKeys = null)
         {
             var urlString = this.urlHelper.RouteUrl(routeInfo.Name, routeKeys, hypermediaUrlConfig.Scheme, hypermediaUrlConfig.Host.ToUriComponent());
 
@@ -122,12 +123,12 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
         /// <param name="routeName"></param>
         /// <param name="routeKeys"></param>
         /// <returns></returns>
-        public string RouteUrl(string routeName, object routeKeys = null)
+        public string RouteUrl(string routeName, object? routeKeys = null)
         { 
             return this.urlHelper.RouteUrl(routeName, routeKeys, hypermediaUrlConfig.Scheme, hypermediaUrlConfig.Host.ToUriComponent());
         }
 
-        private ResolvedRoute GetRouteByType(Type lookupType, object routeKeys = null)
+        private ResolvedRoute GetRouteByType(Type lookupType, object? routeKeys = null)
         {
             var foundRoute = this.RouteRegister.TryGetRoute(lookupType, out var routeInfo);
             if (!foundRoute)

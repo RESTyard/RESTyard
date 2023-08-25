@@ -29,7 +29,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
         /// Derived classes may choose to return the actual referenced <see cref="HypermediaObject"/>
         /// </summary>
         /// <returns></returns>
-        public abstract HypermediaObject GetInstance();
+        public abstract HypermediaObject? GetInstance();
 
         /// <summary>
         ///  Indicates if this reference is backed by a instance.
@@ -41,13 +41,13 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
         /// </summary>
         /// <param name="keyProducer"></param>
         /// <returns>The key object to this <see cref="HypermediaObject"/> or null if it has no key.</returns>
-        public abstract object GetKey(IKeyProducer keyProducer);
+        public abstract object? GetKey(IKeyProducer keyProducer);
 
         /// <summary>
         /// Return a related query object. Null if none is related.
         /// </summary>
         /// <returns></returns>
-        public abstract IHypermediaQuery GetQuery();
+        public abstract IHypermediaQuery? GetQuery();
 
         /// <summary>
         /// Get the referenced <see cref="HypermediaObject"/> type

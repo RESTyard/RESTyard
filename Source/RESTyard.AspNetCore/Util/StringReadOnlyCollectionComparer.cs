@@ -6,7 +6,7 @@ namespace RESTyard.AspNetCore.Util
 {
     public class StringReadOnlyCollectionComparer : IEqualityComparer<IReadOnlyCollection<string>>
     {
-        public bool Equals(IReadOnlyCollection<string> x, IReadOnlyCollection<string> y)
+        public bool Equals(IReadOnlyCollection<string>? x, IReadOnlyCollection<string>? y)
         {
             if (ReferenceEquals(x, y))
             {

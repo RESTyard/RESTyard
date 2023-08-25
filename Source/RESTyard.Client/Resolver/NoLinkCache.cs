@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using RESTyard.Client.Resolver.Caching;
 
 namespace RESTyard.Client.Resolver
@@ -12,7 +13,7 @@ namespace RESTyard.Client.Resolver
 
         public static NoLinkCache<TLinkHcoCacheEntry> Instance { get; } = new NoLinkCache<TLinkHcoCacheEntry>();
 
-        public bool TryGetValue(Uri uri, out TLinkHcoCacheEntry entry)
+        public bool TryGetValue(Uri uri, [NotNullWhen(true)] out TLinkHcoCacheEntry? entry)
         {
             entry = default;
             return false;

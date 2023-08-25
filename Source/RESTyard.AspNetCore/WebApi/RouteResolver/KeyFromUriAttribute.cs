@@ -12,8 +12,8 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
     [AttributeUsage(AttributeTargets.Property)]
     public class KeyFromUriAttribute : Attribute
     {
-        public string SchemaPropertyName { get; }
-        public string RouteTemplateParameterName { get; }
+        public string? SchemaPropertyName { get; }
+        public string? RouteTemplateParameterName { get; }
         public Type ReferencedHypermediaObjectType { get; }
 
         /// <summary>

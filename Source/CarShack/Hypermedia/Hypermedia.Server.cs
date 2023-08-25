@@ -99,7 +99,7 @@ public partial class HypermediaEntrypointHto
     }
 }
 
-public class ExternalActionNoParametersTestOp :HypermediaExternalAction
+public class ExternalActionNoParametersTestOp : HypermediaExternalAction
 {
     public ExternalActionNoParametersTestOp(Uri externalUri, HttpMethod httpMethod) 
         : base(() => true, externalUri, httpMethod)

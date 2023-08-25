@@ -11,6 +11,7 @@
 
         <Version>2.1.0$(VersionSuffixLocal)</Version>
         <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);1591</NoWarn>
 
@@ -38,10 +39,15 @@
 
     <!-- package image -->
     <ItemGroup>
-        <None Include=".\Images\Ry-Icon_128x128.png" Pack="true" PackagePath="\"/>
+        <None Include=".\Images\Ry-Icon_128x128.png" Pack="true" PackagePath="\" />
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Include="..\Shared\DefaultMediaTypes.cs" Link="DefaultMediaTypes.cs"/>
+        <Compile Include="..\Shared\DefaultMediaTypes.cs" Link="DefaultMediaTypes.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="FunicularSwitch" Version="4.0.0" />
+      <PackageReference Include="FunicularSwitch.Generators" Version="2.0.0" />
     </ItemGroup>
 </Project>

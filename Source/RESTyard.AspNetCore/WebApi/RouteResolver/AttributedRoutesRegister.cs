@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             this.logger = logger;
             var assembliesToCrawl = hypermediaOptions.ControllerAndHypermediaAssemblies.Length > 0
                 ? hypermediaOptions.ControllerAndHypermediaAssemblies
-                : Assembly.GetEntryAssembly().Yield();
+                : Assembly.GetEntryAssembly()?.Yield() ?? Enumerable.Empty<Assembly>();
 
             foreach (var assemblyToCrawl in assembliesToCrawl)
             {
@@ -74,7 +75,8 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             }
         }
 
-        private void AddRouteKeyProducer<T>(MethodInfo method, T hypermediaAttribute) where T : HttpMethodAttribute, IHaveRouteInfo
+        private void AddRouteKeyProducer<T>(MethodInfo method, T hypermediaAttribute)
+            where T : HttpMethodAttribute, IHaveRouteInfo
         {
             var autoAddRouteKeyProducers = hypermediaAttribute is HttpGetHypermediaObject;
           
@@ -86,7 +88,8 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                         $"Routes to Query's may not require a key '{hypermediaAttribute.RouteType}'. Queries should not be handled on a Entity.");
                 }
 
-                var keyProducer = (IKeyProducer)Activator.CreateInstance(hypermediaAttribute.RouteKeyProducerType);
+                AttributedRouteHelper.AssertIsRouteKeyProducer(hypermediaAttribute.RouteKeyProducerType);
+                var keyProducer = (IKeyProducer)Activator.CreateInstance(hypermediaAttribute.RouteKeyProducerType)!;
                 this.AddRouteKeyProducer(hypermediaAttribute.RouteType, keyProducer);
             }
             else if (autoAddRouteKeyProducers && !typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(hypermediaAttribute.RouteType))
@@ -112,7 +115,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             }
         }
 
-        private static bool TryGetSingleHypermediaAttribute(MethodInfo method, out HttpMethodAttribute hypermediaAttribute)
+        private static bool TryGetSingleHypermediaAttribute(MethodInfo method, [NotNullWhen(true)] out HttpMethodAttribute? hypermediaAttribute)
         {
             var httpMethodAttributes = method.GetCustomAttributes<HttpMethodAttribute>(true)
                 .Where(IsExtensionAttribute)

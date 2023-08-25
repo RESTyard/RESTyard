@@ -46,7 +46,7 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         /// <summary>
         /// Configuration for Url generation
         /// </summary>
-        public HypermediaUrlConfig HypermediaUrlConfig { get; set; } = new HypermediaUrlConfig();
+        public IHypermediaUrlConfig DefaultHypermediaUrlConfig { get; set; } = new HypermediaUrlConfig();
 
 
         /// <summary>
@@ -62,12 +62,12 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         /// <summary>
         /// If another route register should be used provide a type which derives from <see cref="IRouteRegister"/>
         /// </summary>
-        public Type AlternateRouteRegister = null;
+        public Type? AlternateRouteRegister = null;
         
         /// <summary>
         /// If another query string builder should be used provide a type which derives from <see cref="IQueryStringBuilder"/>
         /// </summary>
-        public Type AlternateQueryStringBuilder = null;
+        public Type? AlternateQueryStringBuilder = null;
     }
 
     public class HypermediaConverterConfiguration
