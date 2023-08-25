@@ -12,12 +12,12 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             throw new System.NotImplementedException();
         }
 
-        public string Content(string contentPath)
+        public string Content(string? contentPath)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool IsLocalUrl(string url)
+        public bool IsLocalUrl(string? url)
         {
             throw new System.NotImplementedException();
         }
@@ -32,7 +32,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             return result;
         }
 
-        public string Link(string routeName, object values)
+        public string Link(string? routeName, object? values)
         {
             throw new System.NotImplementedException();
         }

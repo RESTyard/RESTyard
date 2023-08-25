@@ -29,7 +29,7 @@ public static class ProblemDetailsExtensions
                 value = jsonElement.Deserialize<TValue>();
                 return value is not null;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return false;
             }

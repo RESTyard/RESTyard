@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using RESTyard.Client.Extensions.SystemTextJson.Extensions;
 using RESTyard.Client.Reader;
 
 namespace RESTyard.Client.Extensions.SystemTextJson
@@ -58,7 +59,7 @@ namespace RESTyard.Client.Extensions.SystemTextJson
                 return this.element
                     .EnumerateArray()
                     .Select(x => x.GetString())
-                    .OfType<string>();
+                    .WhereNotNull();
             }
 
             public object? ToObject(Type type)

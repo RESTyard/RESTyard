@@ -88,7 +88,8 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                         $"Routes to Query's may not require a key '{hypermediaAttribute.RouteType}'. Queries should not be handled on a Entity.");
                 }
 
-                var keyProducer = (IKeyProducer)Activator.CreateInstance(hypermediaAttribute.RouteKeyProducerType);
+                AttributedRouteHelper.AssertIsRouteKeyProducer(hypermediaAttribute.RouteKeyProducerType);
+                var keyProducer = (IKeyProducer)Activator.CreateInstance(hypermediaAttribute.RouteKeyProducerType)!;
                 this.AddRouteKeyProducer(hypermediaAttribute.RouteType, keyProducer);
             }
             else if (autoAddRouteKeyProducers && !typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(hypermediaAttribute.RouteType))

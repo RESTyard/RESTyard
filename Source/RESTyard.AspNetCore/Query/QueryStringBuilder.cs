@@ -40,6 +40,11 @@ namespace RESTyard.AspNetCore.Query
                 var propertyTypeTypeInfo = propertyType.GetTypeInfo();
                 var serializeInfo = new SerializeInfo(propertyType, propertyTypeTypeInfo);
 
+                if (propertyValue is null)
+                {
+                    continue;
+                }
+
                 if (serializeInfo.IsString)
                 {
                     result += CreateKeyValue($"{objectPrefix}{propertyInfo.Name}", propertyValue);
@@ -77,6 +82,10 @@ namespace RESTyard.AspNetCore.Query
             var enumIndex = 0;
             foreach (var item in enumerable)
             {
+                if (item is null)
+                {
+                    continue;
+                }
                 if (serializeInfo == null)
                 {
                     serializeInfo = new SerializeInfo(item);
@@ -96,7 +105,7 @@ namespace RESTyard.AspNetCore.Query
             return result;
         }
 
-        private static string CreateKeyValue(string propertyPath, object? item)
+        private static string CreateKeyValue(string propertyPath, object item)
         {
             var result = propertyPath
                          + "="

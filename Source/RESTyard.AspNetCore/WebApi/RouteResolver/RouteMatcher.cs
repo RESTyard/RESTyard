@@ -36,7 +36,8 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             {
                 if (parameter.DefaultValue != null)
                 {
-                    result.Add(parameter.Name, parameter.DefaultValue);
+                    // Info: parameter.Name is not null here because of the way TemplateParser.Parse(routeTemplate) adds only parts to Parameters that have .IsParameter == true, in which case .Name is set.
+                    result.Add(parameter.Name!, parameter.DefaultValue);
                 }
             }
 

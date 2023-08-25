@@ -20,7 +20,7 @@ namespace RESTyard.AspNetCore.Util.Enum
             return base.CanConvertFrom(context, sourceType);
         }
 
-        public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {
             if (value is not string stringValue)
             {
@@ -37,7 +37,7 @@ namespace RESTyard.AspNetCore.Util.Enum
             }
         }
 
-        public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
         {
             if (destinationType != typeof(string))
             {

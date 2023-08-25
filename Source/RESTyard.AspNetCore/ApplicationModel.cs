@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
+using RESTyard.AspNetCore.Extensions;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Util;
@@ -30,7 +31,7 @@ namespace RESTyard.AspNetCore
                     .Select(t =>
                     {
                         return new ControllerType(t,
-                            controllerType => t.GetTypeInfo().GetMethods().Select(m => GetControllerMethodOrNull(m, controllerType)).Where(_ => _ != null).Select(x => x!)
+                            controllerType => t.GetTypeInfo().GetMethods().Select(m => GetControllerMethodOrNull(m, controllerType)).WhereNotNull()
                             );
                     })
                     ?? Enumerable.Empty<ControllerType>()
