@@ -20,7 +20,7 @@
 	  <Title>RESTyard Code Generation Tool</Title>
 	  <PackageDescription>Code generator for multiple languages and types to use with RESTyard libraries.</PackageDescription>
 	  <PackageTags>Client REST Siren Hypermedia Extensions RESTyard Generator Generation</PackageTags>
-	  <Authors>Waldemar Tomme</Authors>
+	  <Authors>Waldemar Tomme; Jasper Park</Authors>
 	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
 	  <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
 	  <RepositoryType>Git</RepositoryType>

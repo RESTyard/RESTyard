@@ -18,7 +18,7 @@
     <Title>System.Net.Http implementation for RESTyard.Client</Title>
     <PackageDescription>Implementations of IHypermediaResolver for RESTyard.Client using System.Net.Http</PackageDescription>
     <PackageTags>Client REST Siren Hypermedia Extensions</PackageTags>
-    <Authors>Jasper Marianczuk; Aydin Mir Mohammadi; Waldemar Tomme; Alexander Wiedemann; Marcel Weigel</Authors>
+    <Authors>Jasper Park; Aydin Mir Mohammadi; Waldemar Tomme; Alexander Wiedemann; Marcel Weigel</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
     <RepositoryType>Git</RepositoryType>
