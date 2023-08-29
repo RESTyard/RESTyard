@@ -6,10 +6,10 @@ namespace RESTyard.Client.Hypermedia
 {
     public class HypermediaLink<T> : IHypermediaLink where T : HypermediaClientObject
     {
-        public List<string> Relations { get; set; }
+        public IReadOnlyList<string> Relations { get; set; } = Array.Empty<string>();
 
-        public Uri Uri { get; set; } = null;
+        public Uri? Uri { get; set; } = null;
 
-        public IHypermediaResolver Resolver { get; set; }
+        public IHypermediaResolver Resolver { get; set; } = ResolverDummyObject.Instance;
     }
 }

@@ -20,7 +20,7 @@ namespace RESTyard.AspNetCore.Hypermedia
         /// </summary>
         /// <param name="routeName">The route name</param>
         /// <param name="routeParameters">Route parameters</param>
-        public InternalReference(string routeName, object routeParameters = null) : base()
+        public InternalReference(string routeName, object? routeParameters = null) : base()
         {
             RouteName = routeName;
             RouteParameters = routeParameters;
@@ -30,6 +30,6 @@ namespace RESTyard.AspNetCore.Hypermedia
         public string RouteName { get; }
 
         [FormatterIgnoreHypermediaProperty]
-        public object RouteParameters { get; }
+        public object? RouteParameters { get; }
     }
 }

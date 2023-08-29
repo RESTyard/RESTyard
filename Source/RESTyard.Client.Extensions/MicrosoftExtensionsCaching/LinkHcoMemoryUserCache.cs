@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.Caching.Memory;
 using RESTyard.Client.Resolver.Caching;
@@ -108,9 +109,9 @@ namespace MicrosoftExtensionsCaching
 
         public bool TryGetValue(
             Uri uri,
-            out TLinkHcoCacheEntry entry)
+            [NotNullWhen(true)] out TLinkHcoCacheEntry? entry)
         {
-            if (this.memoryCache.TryGetValue(this.hcoEntryKeyBuilder(this.currentUserIdentifier, uri), out entry))
+            if (this.memoryCache.TryGetValue(this.hcoEntryKeyBuilder(this.currentUserIdentifier, uri), out entry!))
             {
                 return true;
             }

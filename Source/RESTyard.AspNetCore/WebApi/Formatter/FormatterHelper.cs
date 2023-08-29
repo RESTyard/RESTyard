@@ -14,7 +14,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
         public static IUrlHelper GetUrlHelperForCurrentContext(HttpContext httpContext)
         {
             var requestServices = httpContext.RequestServices;
-            var actionContext = requestServices.GetRequiredService<IActionContextAccessor>().ActionContext;
+            var actionContext = requestServices.GetRequiredService<IActionContextAccessor>().ActionContext!;
             
             return urlHelperFactory.GetUrlHelper(actionContext);
         }

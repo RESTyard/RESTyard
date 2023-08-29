@@ -7,20 +7,20 @@ namespace RESTyard.Client.Reader
 {
     public interface IStringParser
     {
-        IToken Parse(string contentString);
+        IToken? Parse(string contentString);
 
-        Task<IToken> ParseAsync(Stream contentStream);
+        Task<IToken?> ParseAsync(Stream contentStream);
     }
 
     public interface IToken : IEnumerable<IToken>
     {
-        string ValueAsString();
+        string? ValueAsString();
 
         IEnumerable<string> ChildrenAsStrings();
 
-        object ToObject(Type type);
+        object? ToObject(Type type);
 
-        IToken this[string key] { get; }
+        IToken? this[string key] { get; }
 
         string Serialize();
     }

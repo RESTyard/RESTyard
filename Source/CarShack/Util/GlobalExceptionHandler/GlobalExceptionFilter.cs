@@ -37,11 +37,15 @@ namespace CarShack.Util.GlobalExceptionHandler
 
         private void HandleUnauthorizedAccessException(ExceptionContext context)
         {
-            var response = new ExceptionProblemJson(context.Exception)
+            var response = new ProblemDetails()
             {
                 Title = "Not authorized.",
-                ProblemType = "WebApi.HypermediaExtensions.NotAuthorized",
-                StatusCode = (int)HttpStatusCode.Unauthorized
+                Type = "WebApi.HypermediaExtensions.NotAuthorized",
+                Status = (int)HttpStatusCode.Unauthorized,
+                Extensions =
+                {
+                    { "ExceptionDetail", context.Exception.ToString() },  
+                },
             };
 
             CreateResultObject(context, response);
@@ -49,11 +53,15 @@ namespace CarShack.Util.GlobalExceptionHandler
 
         private void HandleHypermediaException(ExceptionContext context)
         {
-            var response = new ExceptionProblemJson(context.Exception)
+            var response = new ProblemDetails()
             {
                 Title = "Hypermedia error.",
-                ProblemType = "WebApi.HypermediaExtensions.HyperrmediaError",
-                StatusCode = (int)HttpStatusCode.InternalServerError
+                Type = "WebApi.HypermediaExtensions.HyperrmediaError",
+                Status = (int)HttpStatusCode.InternalServerError,
+                Extensions =
+                {
+                    { "ExceptionDetail", context.Exception.ToString() },
+                },
             };
 
             CreateResultObject(context, response);
@@ -61,22 +69,26 @@ namespace CarShack.Util.GlobalExceptionHandler
 
         private static void GenericResponse(ExceptionContext context)
         {
-            var response = new ExceptionProblemJson(context.Exception) {
+            var response = new ProblemDetails() {
                 Title = "Sorry, something went wrong.",
-                ProblemType = "WebApi.HypermediaExtensions.InternalError",
-                StatusCode = (int)HttpStatusCode.InternalServerError
+                Type = "WebApi.HypermediaExtensions.InternalError",
+                Status = (int)HttpStatusCode.InternalServerError,
+                Extensions =
+                {
+                    { "ExceptionDetail", context.Exception.ToString() },
+                },
             };
 
             CreateResultObject(context, response);
         }
 
-        private static void CreateResultObject(ExceptionContext context, ExceptionProblemJson response)
+        private static void CreateResultObject(ExceptionContext context, ProblemDetails response)
         {
             context.Result = new ObjectResult(response)
-                             {
-                                 StatusCode = response.StatusCode,
-                                 DeclaredType = response.GetType()
-                             };
+            {
+                StatusCode = response.Status,
+                DeclaredType = response.GetType()
+            };
         }
 
         public void Dispose()

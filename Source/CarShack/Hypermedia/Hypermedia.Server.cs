@@ -99,7 +99,7 @@ public partial class HypermediaEntrypointHto
     }
 }
 
-public class ExternalActionNoParametersTestOp :HypermediaExternalAction
+public class ExternalActionNoParametersTestOp : HypermediaExternalAction
 {
     public ExternalActionNoParametersTestOp(Uri externalUri, HttpMethod httpMethod) 
         : base(() => true, externalUri, httpMethod)
@@ -171,8 +171,8 @@ public partial class HypermediaCarsRootHto
     [ActivatorUtilitiesConstructor]
     public HypermediaCarsRootHto()
         : this(
-            new HypermediaObjectReference(new HypermediaCarHto("VW", 2)),
-            new {Brand = "Porsche", Id = 5})
+            new { brand = "VW", id = 2 },
+            new { brand = "Porsche", id = 5 })
     {
         UploadCarImage = new UploadCarImageOp(() => true, new FileUploadConfiguration
         {
@@ -220,7 +220,7 @@ public static class HypermediaMappingExtensions
 
 public partial class HypermediaCustomerQueryResultHto
 {
-    public HypermediaCustomerQueryResultHto(ICollection<HypermediaObjectReferenceBase> entities, int totalEntities,
+    public HypermediaCustomerQueryResultHto(ICollection<HypermediaCustomerHto> entities, int totalEntities,
         CustomerQuery query) : this(totalEntities, entities.Count, entities, query)
     {
     }

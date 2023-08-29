@@ -28,6 +28,6 @@ namespace RESTyard.Client.Builder
         IHypermediaResolverBuilder<TLinkHcoCacheEntry> WithCustomLinkHcoCache(
             Func<ILinkHcoCache<TLinkHcoCacheEntry>> createCache);
 
-        IHypermediaResolverDependencies<TLinkHcoCacheEntry> BuildDependencies();
+        new IHypermediaResolverDependencies<TLinkHcoCacheEntry> BuildDependencies();
     }
 }

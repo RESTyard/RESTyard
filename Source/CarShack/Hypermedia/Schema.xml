@@ -1,92 +1,136 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<Hypermedia xmlns="http://schema.bluehands.de/2022/Hypermedia.xsd">
-    <TransferParameters>
-        <Parameters typeName="CreateCustomerParameters" usedForQueries="false" usedForActions="true">
-            <Property name="Name" type="string" mandatory="true" />
-        </Parameters>
-        <Parameters typeName="BuyCarParameters" usedForQueries="false" usedForActions="true">
-            <Property name="Brand" type="string" mandatory="true" />
-            <Property name="CarId" type="int" mandatory="true" />
-            <Property name="Price" type="double" />
-        </Parameters>
-        <Parameters typeName="NewAddress" usedForQueries="false" usedForActions="true">
-            <Property name="Address" type="string" mandatory="true" />
-        </Parameters>
-    </TransferParameters>
-    <Documents>
-        <Document name="HypermediaEntrypoint" title="Entry to the Rest API">
-            <Classifications>
-                <Classification class="Entrypoint" />
-            </Classifications>
-            <Links>
-                <Link rel="CustomersRoot" mandatory="true" />
-                <Link rel="CarsRoot" mandatory="true" />
-            </Links>
-        </Document>
-        <Document name="HypermediaCarsRoot" title="The Cars API">
-            <Classifications>
-                <Classification class="CarsRoot" />
-            </Classifications>
-            <Links>
-                <Link rel="NiceCar" mandatory="true" />
-                <Link rel="SuperCar" document="HypermediaCar" mandatory="true" />
-            </Links>
-        </Document>
-        <Document name="HypermediaCar" title="A Car">
-            <Classifications>
-                <Classification class="Car" />
-            </Classifications>
-            <Properties>
-                <Property name="Id" type="int" isKey="true" />
-                <Property name="Brand" type="string" isKey="true" />
-                <Property name="PriceDevelopment" type="IEnumerable&lt;float&gt;" />
-                <Property name="PopularCountries" type="List&lt;Country&gt;" />
-                <Property name="MostPopularIn" type="Country" />
-            </Properties>
-        </Document>
-        <Document name="HypermediaCustomersRoot" title="The Customers API">
-            <Classifications>
-                <Classification class="CustomersRoot" />
-            </Classifications>
-            <Operations>
-                <Operation name="CreateCustomer" method="Post" title="Request creation of a new Customer." parameterTypeName="CreateCustomerParameters" resultDocument="HypermediaCustomer" />
-                <Operation name="CreateQuery" metod="Post" title="Query the Customers collection." parameterTypeName="CustomerQuery" />
-            </Operations>
-            <Links>
-                <Link rel="all" document="HypermediaCustomerQueryResult" query="CustomerQuery" mandatory="true" />
-                <Link rel="BestCustomer" document="HypermediaCustomer" mandatory="true" />
-                <Link rel="GreatSite" mandatory="true" />
-            </Links>
-        </Document>
-        <Document name="HypermediaCustomer">
-			<Classifications>
-                <Classification class="Customer" />
-			</Classifications>
-	        <Properties>
-                <Property name="Id" type="int" hidden="true" mandatory="true" />
-                <Property name="Age" type="int" />
-                <Property name="FullName" type="string" />
-                <Property name="Address" type="string" />
-                <Property name="IsFavorite" type="bool" mandatory="true" />
-            </Properties>
-            <Operations>
-                <Operation name="CustomerMove" method="Post" title="A Customer moved to a new location." parameterTypeName="NewAddress" />
-                <Operation name="CustomerRemove" method="Delete" title="Remove a Customer." />
-                <Operation name="MarkAsFavorite" method="Post" title="Marks a Customer as a favorite buyer." parameterTypeName="MarkAsFavoriteParameters" />
-                <Operation name="BuyCar" method="Post" title="Buy a car." parameterTypeName="BuyCarParameters" />
-            </Operations>
-        </Document>
-        <Document name="HypermediaCustomerQueryResult" title="Query result on Customer" isQueryResult="true">
-            <Classifications>
-                <Classification class="CustomersQueryResult" />
-            </Classifications>
-            <Properties>
-                <Property name="TotalEntities" type="int" />
-                <Property name="CurrentEntitiesCount" type="int" />
-            </Properties>
-            <Entities>
-                <Entity collectionName="item" />
-            </Entities>
-        </Document>
-    </Documents>
+<?xml version="1.0" encoding="utf-8"?>
+
+<Hypermedia xmlns="http://schema.bluehands.de/2022/Hypermedia.xsd"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://schema.bluehands.de/2022/Hypermedia.xsd ../../RESTyard.ContractFirst/RESTyard.Generator/Hypermedia.xsd">
+  <TransferParameters>
+    <Parameters typeName="CreateCustomerParameters" usedForQueries="false" usedForActions="true">
+      <Property name="Name" type="string" mandatory="true" />
+    </Parameters>
+    <Parameters typeName="BuyCarParameters" usedForQueries="false" usedForActions="true">
+      <Property name="Brand" type="string" mandatory="true" />
+      <Property name="CarId" type="int" mandatory="true" />
+      <Property name="Price" type="double" />
+      <Property name="HiddenProperty" type="double" mandatory="false" hidden="true" />
+    </Parameters>
+    <Parameters typeName="BuyLamborghiniParameters" parentType="BuyCarParameters" usedForActions="true"
+                usedForQueries="true">
+      <Property name="Color" type="string" mandatory="true" />
+      <Property name="OptionalProperty" type="int" />
+    </Parameters>
+    <Parameters typeName="BuyLamborghinettaParameters" parentType="BuyLamborghiniParameters" usedForActions="true"
+                usedForQueries="true">
+      <Property name="HorsePower" type="int" mandatory="true" />
+    </Parameters>
+    <Parameters typeName="NewAddress" usedForQueries="false" usedForActions="true">
+      <Property name="Address" type="string" mandatory="true" />
+    </Parameters>
+    <ExternalParameters typeName="MarkAsFavoriteParameters" usedForActions="true" usedForQueries="false" />
+    <ExternalParameters typeName="CustomerQuery" />
+  </TransferParameters>
+  <Documents>
+    <Document name="HypermediaEntrypoint" title="Entry to the Rest API">
+      <Classifications>
+        <Classification class="Entrypoint" />
+      </Classifications>
+      <Links>
+        <Link rel="CustomersRoot" mandatory="true" document="HypermediaCustomersRoot" />
+        <Link rel="CarsRoot" mandatory="true" document="HypermediaCarsRoot" />
+      </Links>
+    </Document>
+    <Document name="HypermediaCarsRoot" title="The Cars API">
+      <Classifications>
+        <Classification class="CarsRoot" />
+      </Classifications>
+      <Links>
+        <Link rel="NiceCar" document="DerivedCar" mandatory="true" />
+        <Link rel="SuperCar" document="HypermediaCar" mandatory="true" />
+      </Links>
+    </Document>
+    <Document name="HypermediaCar" title="A Car">
+      <Classifications>
+        <Classification class="Car" />
+      </Classifications>
+      <Properties>
+        <Property name="Id" type="int" isKey="true" />
+        <Property name="Brand" type="string" isKey="true" />
+        <Property name="PriceDevelopment" type="IEnumerable&lt;float&gt;" />
+        <Property name="PopularCountries" type="List&lt;Country&gt;" />
+        <Property name="MostPopularIn" type="Country" />
+      </Properties>
+    </Document>
+    <Document name="DerivedCar" title="Derived Car" parentDocument="HypermediaCar">
+      <Classifications>
+        <Classification class="DerivedCar" />
+      </Classifications>
+      <Properties>
+        <Property name="DerivedProperty" type="string" />
+      </Properties>
+      <Entities>
+        <Entity collectionName="item" document="HypermediaCustomer" />
+      </Entities>
+      <Operations>
+        <Operation name="Derived" method="Post" title="Derived Operation" />
+      </Operations>
+      <Links>
+        <Link rel="DerivedLink" mandatory="false" document="HypermediaCustomer" />
+      </Links>
+    </Document>
+    <Document name="NextLevelDerivedCar" title="Derives from Derived Car" parentDocument="DerivedCar">
+      <Classifications>
+        <Classification class="NextLevelDerivedCar" />
+      </Classifications>
+      <Properties>
+        <Property name="NextLevelDerivedProperty" type="string" />
+      </Properties>
+    </Document>
+    <Document name="HypermediaCustomersRoot" title="The Customers API">
+      <Classifications>
+        <Classification class="CustomersRoot" />
+      </Classifications>
+      <Operations>
+        <Operation name="CreateCustomer" method="Post" title="Request creation of a new Customer."
+                   parameterTypeName="CreateCustomerParameters" resultDocument="HypermediaCustomer" />
+        <Operation name="CreateQuery" method="Post" title="Query the Customers collection."
+                   parameterTypeName="CustomerQuery" />
+      </Operations>
+      <Links>
+        <Link rel="all" document="HypermediaCustomerQueryResult" query="CustomerQuery" mandatory="true" />
+        <Link rel="BestCustomer" document="HypermediaCustomer" mandatory="true" />
+        <Link rel="GreatSite" mandatory="true" />
+      </Links>
+    </Document>
+    <Document name="HypermediaCustomer">
+      <Classifications>
+        <Classification class="Customer" />
+      </Classifications>
+      <Properties>
+        <Property name="Id" type="int" hidden="true" mandatory="true" isKey="true" />
+        <Property name="Age" type="int" />
+        <Property name="FullName" type="string" />
+        <Property name="Address" type="string" />
+        <Property name="IsFavorite" type="bool" mandatory="true" />
+      </Properties>
+      <Operations>
+        <Operation name="CustomerMove" method="Post" title="A Customer moved to a new location."
+                   parameterTypeName="NewAddress" />
+        <Operation name="CustomerRemove" method="Delete" title="Remove a Customer." />
+        <Operation name="MarkAsFavorite" method="Post" title="Marks a Customer as a favorite buyer."
+                   parameterTypeName="MarkAsFavoriteParameters" />
+        <Operation name="BuyCar" method="Post" title="Buy a car." parameterTypeName="BuyCarParameters" />
+      </Operations>
+    </Document>
+    <Document name="HypermediaCustomerQueryResult" title="Query result on Customer" isQueryResult="true">
+      <Classifications>
+        <Classification class="CustomersQueryResult" />
+      </Classifications>
+      <Properties>
+        <Property name="TotalEntities" type="int" />
+        <Property name="CurrentEntitiesCount" type="int" />
+      </Properties>
+      <Entities>
+        <Entity collectionName="item" document="HypermediaCustomer" />
+      </Entities>
+    </Document>
+  </Documents>
 </Hypermedia>

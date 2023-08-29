@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RESTyard.Client.Resolver.Caching
 {
     public interface ILinkHcoCache<TLinkHcoCacheEntry>
         where TLinkHcoCacheEntry : LinkHcoCacheEntry
     {
-        bool TryGetValue(Uri uri, out TLinkHcoCacheEntry entry);
+        bool TryGetValue(Uri uri, [NotNullWhen(true)] out TLinkHcoCacheEntry? entry);
 
         void Set(Uri uri, TLinkHcoCacheEntry entry);
 

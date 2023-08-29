@@ -50,6 +50,6 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
         protected abstract string GetLocation(IHypermediaRouteResolver routeResolver, T item);
         
-        protected abstract T GetObject(object locationObject);
+        protected abstract T? GetObject(object? locationObject);
     }
 }

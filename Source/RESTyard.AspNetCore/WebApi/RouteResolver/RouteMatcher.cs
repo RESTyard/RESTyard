@@ -36,7 +36,8 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             {
                 if (parameter.DefaultValue != null)
                 {
-                    result.Add(parameter.Name, parameter.DefaultValue);
+                    // Info: parameter.Name is not null here because of the way TemplateParser.Parse(routeTemplate) adds only parts to Parameters that have .IsParameter == true, in which case .Name is set.
+                    result.Add(parameter.Name!, parameter.DefaultValue);
                 }
             }
 
@@ -60,12 +61,12 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                 throw new ArgumentException($"Unexpected uri '{request}'. Expected uri for template: {routeTemplate}");
             }
 
-            if (!dict.TryGetValue(key, out var value))
+            if (!dict.TryGetValue(key, out var value) || value is not string stringValue)
             {
                 throw new ArgumentException($"Key {key} not found in {request}");
             }
 
-            return keyFromString((string)value);
+            return keyFromString(stringValue);
         }
     }
 }

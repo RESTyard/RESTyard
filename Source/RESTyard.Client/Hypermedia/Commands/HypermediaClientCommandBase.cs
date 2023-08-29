@@ -7,15 +7,15 @@ namespace RESTyard.Client.Hypermedia.Commands
     public abstract class HypermediaClientCommandBase
         : IHypermediaClientCommand
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
-        public string Method { get; set; }
-        
-        public string Type { get; set; }
+        public string Method { get; set; } = string.Empty;
 
-        public Uri Uri { get; set; }
+        public string Type { get; set; } = string.Empty;
+
+        public Uri Uri { get; set; } = new Uri("not://set");
 
         public bool CanExecute { get; set; }
 
@@ -23,8 +23,8 @@ namespace RESTyard.Client.Hypermedia.Commands
 
         public bool HasParameters { get; set; }
 
-        public List<ParameterDescription> ParameterDescriptions { get; } = new List<ParameterDescription>();
+        public IReadOnlyList<ParameterDescription> ParameterDescriptions { get; set; } = Array.Empty<ParameterDescription>();
 
-        public IHypermediaResolver Resolver { get; set; }
+        public IHypermediaResolver Resolver { get; set; } = ResolverDummyObject.Instance;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using RESTyard.AspNetCore.Exceptions;
 using RESTyard.AspNetCore.Hypermedia;
@@ -21,17 +22,19 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
 
         public bool TryGetRoute(Type lookupType, out RouteInfo routeInfo)
         {
-            if (!this.routeRegister.TryGetValue(lookupType, out routeInfo))
+            if (this.routeRegister.TryGetValue(lookupType, out var ri))
+            {
+                routeInfo = ri;
+                return true;
+            }
+            else
             {
                 routeInfo = RouteInfo.Empty();
                 return false;
-               
             }
-
-            return true;
         }
 
-        public void AddActionRoute(Type hypermediaActionType, string routeName, HttpMethod httpMethod, string acceptableMediaType = null)
+        public void AddActionRoute(Type hypermediaActionType, string? routeName, HttpMethod httpMethod, string? acceptableMediaType = null)
         {
             if (!IsHypermediaAction(hypermediaActionType) /*&& !IsGenericHypermediaAction(hypermediaActionType)*/)
             {
@@ -47,23 +50,23 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             return typeof(HypermediaActionBase).GetTypeInfo().IsAssignableFrom(hypermediaActionType);
         }
 
-        public void AddHypermediaObjectRoute(Type hypermediaObjectType, string routeName, HttpMethod httpMethod)
+        public void AddHypermediaObjectRoute(Type hypermediaObjectType, string? routeName, HttpMethod httpMethod)
         {
             if (!typeof(HypermediaObject).GetTypeInfo().IsAssignableFrom(hypermediaObjectType))
             {
                 throw new RouteRegisterException(
-                    $"Type {hypermediaObjectType} must derive from {typeof(HypermediaObject).Name}.");
+                    $"Type {hypermediaObjectType} must derive from {nameof(HypermediaObject)}.");
             }
 
             this.AddRoute(hypermediaObjectType, new RouteInfo(routeName, httpMethod));
         }
 
-        public void AddParameterTypeRoute(Type iHypermediaActionParameter, string routeName, HttpMethod httpMethod)
+        public void AddParameterTypeRoute(Type iHypermediaActionParameter, string? routeName, HttpMethod httpMethod)
         {
             if (!typeof(IHypermediaActionParameter).GetTypeInfo().IsAssignableFrom(iHypermediaActionParameter))
             {
                 throw new RouteRegisterException(
-                    $"Type {iHypermediaActionParameter} must derive from {typeof(IHypermediaActionParameter).Name}.");
+                    $"Type {iHypermediaActionParameter} must derive from {nameof(IHypermediaActionParameter)}.");
             }
 
             this.AddRoute(iHypermediaActionParameter, new RouteInfo(routeName, httpMethod));
@@ -79,7 +82,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             this.routeKeyProducerRegister.Add(keySourceType, keyProducer);
         }
 
-        public bool TryGetKeyProducer(Type type, out IKeyProducer keyProducer)
+        public bool TryGetKeyProducer(Type type, [NotNullWhen(true)] out IKeyProducer? keyProducer)
         {
             return this.routeKeyProducerRegister.TryGetValue(type, out keyProducer);
         }

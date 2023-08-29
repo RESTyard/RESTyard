@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -23,7 +24,7 @@ namespace RESTyard.AspNetCore.JsonSchema
             this.explicitUsage = explicitUsage;
         }
 
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             var modelType = context.Metadata.ModelType;
             if (ParameterIsHypermediaActionType(modelType) 
@@ -103,7 +104,7 @@ namespace RESTyard.AspNetCore.JsonSchema
                 }
             }
 
-            JObject jObject;
+            JObject? jObject;
             if (rawDeserialized is JArray wrapperArray)
             {
                 if (!TryUnwrapArray(wrapperArray, modelTypeName, out jObject))
@@ -129,7 +130,7 @@ namespace RESTyard.AspNetCore.JsonSchema
             }
         }
 
-        static bool TryUnwrapArray(JArray wrapperArray, string modelTypeName, out JObject jObject)
+        static bool TryUnwrapArray(JArray wrapperArray, string modelTypeName, [NotNullWhen(true)] out JObject? jObject)
         {
             if (wrapperArray.Count != 1)
             {

@@ -54,7 +54,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             SirenConverterNoNullProperties = CreateSirenConverter(new HypermediaConverterConfiguration{ WriteNullProperties = false });
         }
 
-        protected SirenConverter CreateSirenConverter(HypermediaConverterConfiguration configuration = null)
+        protected SirenConverter CreateSirenConverter(HypermediaConverterConfiguration? configuration = null)
         {
             return new SirenConverter(RouteResolver, QueryStringBuilder, configuration);
         }
@@ -97,7 +97,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             Assert.AreEqual(0, propertiesObject.Properties().Count());
         }
 
-        public static void AssertRoute(string route, string expectedRouteName, string keyObjectString = null, string queryString = null)
+        public static void AssertRoute(string route, string expectedRouteName, string? keyObjectString = null, string? queryString = null)
         {
             var segments = route.Split('/', '?');
             var routAsUri = new Uri(route);
@@ -158,12 +158,12 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertHasLinkWithKeyAndQuery(linksArray, linkRelations, routeNameLinking, null, queryString);
         }
 
-        public static void AssertHasLinkWithKeyAndQuery(JArray linksArray, string linkRelation, string routeNameLinking, string keyObjectString = null, string queryString = null)
+        public static void AssertHasLinkWithKeyAndQuery(JArray linksArray, string linkRelation, string routeNameLinking, string? keyObjectString = null, string? queryString = null)
         {
             AssertHasLinkWithKeyAndQuery(linksArray, new List<string> { linkRelation }, routeNameLinking, keyObjectString, queryString);
         }
 
-        public static void AssertHasLinkWithKeyAndQuery(JArray linksArray, List<string> linkRelations, string routeNameLinking, string keyObjectString = null, string queryString = null)
+        public static void AssertHasLinkWithKeyAndQuery(JArray linksArray, List<string> linkRelations, string routeNameLinking, string? keyObjectString = null, string? queryString = null)
         {
             var foundLink = false;
             foreach (var link in linksArray)

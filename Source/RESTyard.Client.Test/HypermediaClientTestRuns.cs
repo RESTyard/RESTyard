@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.Client.Authentication;
 using RESTyard.Client.Builder;
@@ -47,7 +51,8 @@ namespace RESTyard.Client.Test
         public async Task EnterEntryPoint()
         {
             var apiRoot = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint);
-            Assert.IsNotNull(apiRoot.ResultObject);
+            apiRoot.Should().BeOk()
+                .Which.Should().NotBeNull();
         }
 
         [TestMethod]
@@ -55,15 +60,16 @@ namespace RESTyard.Client.Test
         {
             var apiRoot = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint);
             var customersAll = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
-
-            var customer = customersAll.ResultObject.Customers.First();
+            
+            var customer = customersAll.Should().BeOk().Which.Customers.First();
 
             var newAddress = "New Address";
-            var actionResult = await customer.CustomerMove.ExecuteAsync(new NewAddress {Address = newAddress}, this.Resolver);
+            var actionResult = await customer.CustomerMove.ExecuteAsync(new NewAddress(Address: newAddress), this.Resolver);
             
-            customer = await customer.Self.ResolveAsync();
-            Assert.IsTrue(actionResult.Success);
-            Assert.AreEqual(newAddress, customer.Address);
+            var refreshResult = await customer.Self.ResolveAsync();
+            actionResult.Should().BeOk();
+            refreshResult.Should().BeOk()
+                .Which.Address.Should().Be(newAddress);
         }
 
         [TestMethod]
@@ -74,7 +80,7 @@ namespace RESTyard.Client.Test
                 .NavigateAsync(l => l.Customers)
                 .NavigateAsync(l => l.All);
 
-            var customer = customersAll.ResultObject.Customers.First();
+            var customer = customersAll.Should().BeOk().Which.Customers.First();
             if (!customer.MarkAsFavorite.CanExecute)
             {
                 Assert.Inconclusive("Action can not be run on server, not offered.");
@@ -82,9 +88,9 @@ namespace RESTyard.Client.Test
 
             var actionResult = await customer.MarkAsFavorite.ExecuteAsync(new FavoriteCustomer{ Customer = customer.Self.Uri.ToString() }, this.Resolver); 
 
-            customer = await customer.Self.ResolveAsync();
-            Assert.IsTrue(actionResult.Success);
-            Assert.IsTrue(customer.IsFavorite);
+            var customerResult = await customer.Self.ResolveAsync();
+            actionResult.Should().BeOk();
+            customerResult.Should().BeOk().Which.IsFavorite.Should().BeTrue();
         }
 
         [TestMethod]
@@ -99,44 +105,51 @@ namespace RESTyard.Client.Test
                 SortBy = new SortOptions { PropertyName = "Age", SortType  = "Ascending" },
                 Pagination = new Pagination { PageOffset = 2, PageSize = 3 }
             };
-
-            var resultResource = await customersRoot.ResultObject.CreateQuery.ExecuteAsync(query, this.Resolver);
-            var queryResultPage = await resultResource.ResultLocation.ResolveAsync();
-            Assert.IsNotNull(queryResultPage);
+            
+            var resultResource = await customersRoot.Should().BeOk().Which.CreateQuery.ExecuteAsync(query, this.Resolver);
+            var queryResultPage = await resultResource.Should().BeOk().Which.ResolveAsync();
+            queryResultPage.Should().NotBeNull();
         }
 
         [TestMethod]
         public async Task EnterEntryPointAndNavigate()
         {
             var apiRoot = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint);
-            var customers = await apiRoot.ResultObject.Customers.ResolveAsync();
+            var customers = (await apiRoot.Should().BeOk().Which.Customers.ResolveAsync()).Should().BeOk().Which;
             var all = await customers.All.ResolveAsync();
 
             var allFluent = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint).NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
             var allFluent2 = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
             var optionalFluent = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All).NavigateAsync(l => l.Next);
         }
-        
+
         [TestMethod]
         public async Task FileUpload()
         {
             var apiRoot = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint);
-            var cars = await apiRoot
+            var carsResult = await apiRoot
                 .NavigateAsync(l => l.Cars);
-            
-            cars.ResultObject.UploadCarImage.ExecuteAsync<>()
 
-            var customer = cars.ResultObject.Customers.First();
-            if (!customer.MarkAsFavorite.CanExecute)
-            {
-                Assert.Inconclusive("Action can not be run on server, not offered.");
-            }
+            var cars = carsResult.Should().BeOk().Which;
+            var uploadResult = await cars.UploadCarImage.ExecuteAsync(
+                new UploadCarParameters(
+                    "Text",
+                    true,
+                    new []{() => new MemoryStream(new byte[] { 1, 2, 3, 4})}),
+                this.Resolver);
+            uploadResult.Should().BeOk();
 
-            var actionResult = await customer.MarkAsFavorite.ExecuteAsync(new FavoriteCustomer{ Customer = customer.Self.Uri.ToString() }, this.Resolver); 
+            //var customer = cars.Customers.First();
+            //if (!customer.MarkAsFavorite.CanExecute)
+            //{
+            //    Assert.Inconclusive("Action can not be run on server, not offered.");
+            //}
 
-            customer = await customer.Self.ResolveAsync();
-            Assert.IsTrue(actionResult.Success);
-            Assert.IsTrue(customer.IsFavorite);
+            //var actionResult = await customer.MarkAsFavorite.ExecuteAsync(new FavoriteCustomer{ Customer = customer.Self.Uri.ToString() }, this.Resolver);
+            //actionResult.Should().BeOk();
+
+            //customer = await customer.Self.ResolveAsync();
+            //customer.IsFavorite.Should().BeTrue();
         }
 
         private static void ConfigureHypermediaObjectRegister(IHypermediaObjectRegister register)

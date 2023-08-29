@@ -13,14 +13,14 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
         /// <summary>
         /// The action may provide pre filled values which are passed to the client so action parameters can be filled with provided values.
         /// </summary>
-        public TParameter PrefilledValues { protected set;  get; }
+        public TParameter? PrefilledValues { protected set;  get; }
 
         public HypermediaExternalAction(
             Func<bool> canExecute,
             Uri externalUri,
             HttpMethod httpMethod,
             string acceptedMediaType = DefaultMediaTypes.ApplicationJson,
-            TParameter prefilledValues = null) 
+            TParameter? prefilledValues = null) 
             : base(canExecute, externalUri, httpMethod, acceptedMediaType)
         {
             PrefilledValues = prefilledValues;
@@ -30,21 +30,18 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
             Uri externalUri,
             HttpMethod httpMethod,
             string acceptedMediaType = DefaultMediaTypes.ApplicationJson,
-            TParameter prefilledValues = null)
+            TParameter? prefilledValues = null)
             : base(() => true, externalUri, httpMethod, acceptedMediaType)
         {
             PrefilledValues = prefilledValues;
         }
 
-        public override object GetPrefilledParameter()
+        public override object? GetPrefilledParameter()
         {
             return PrefilledValues;
         }
 
-        public override Type ParameterType()
-        {
-            return typeof(TParameter);
-        }
+        protected override Type? ParameterType => typeof(TParameter);
     }
 
     /// <summary>
@@ -63,14 +60,11 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
             HttpMethod httpMethod)
             : base(() => true, externalUri, httpMethod) { }
 
-        public override object GetPrefilledParameter()
+        public override object? GetPrefilledParameter()
         {
             return null;
         }
 
-        public override Type ParameterType()
-        {
-            return null;
-        }
+        protected sealed override Type? ParameterType => null;
     }
 }

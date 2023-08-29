@@ -6,18 +6,17 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
 {
     public class HttpLinkHcoCacheEntryConfiguration : LinkHcoCacheEntryConfiguration
     {
-        protected HttpLinkHcoCacheEntryConfiguration(bool hasConfiguration)
-            : base(hasConfiguration)
-        {
-        }
+        public static HttpLinkHcoCacheEntryConfiguration NoConfiguration() => new(false, CacheScope.Undefined, null,
+            CacheMode.Undefined, string.Empty, null);
 
         public HttpLinkHcoCacheEntryConfiguration(
+            bool hasConfiguration,
             CacheScope cacheScope,
             DateTimeOffset? localExpirationDate,
             CacheMode cacheMode,
             string etag,
             DateTimeOffset? lastModified)
-            : base(cacheScope, localExpirationDate)
+            : base(hasConfiguration, cacheScope, localExpirationDate)
         {
             CacheMode = cacheMode;
             ETag = etag;
@@ -37,7 +36,7 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             var cc = response.Headers.CacheControl;
             if (cc is null)
             {
-                return new HttpLinkHcoCacheEntryConfiguration(false);
+                return NoConfiguration();
             }
 
             CacheMode mode = CacheMode.Undefined;
@@ -98,6 +97,7 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             if (mode != CacheMode.Undefined)
             {
                 return new HttpLinkHcoCacheEntryConfiguration(
+                    true,
                     scope,
                     expirationDate,
                     mode,
@@ -105,12 +105,7 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
                     lastModified);
             }
 
-            return new HttpLinkHcoCacheEntryConfiguration(false);
-        }
-
-        public static HttpLinkHcoCacheEntryConfiguration EmptyConfiguration()
-        {
-            return new HttpLinkHcoCacheEntryConfiguration(false);
+            return NoConfiguration();
         }
 
         public override bool ShouldBeAddedToCache() => base.ShouldBeAddedToCache() && this.CacheMode != CacheMode.DoNotCache;

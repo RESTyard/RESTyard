@@ -17,7 +17,7 @@ public abstract class ExternalFileUploadHypermediaAction : HypermediaExternalAct
         Uri externalUri,
         HttpMethod httpMethod,
         string acceptedMediaType = DefaultMediaTypes.ApplicationJson,
-        FileUploadConfiguration fileUploadConfiguration = null) : base(canExecute, externalUri, httpMethod, acceptedMediaType)
+        FileUploadConfiguration? fileUploadConfiguration = null) : base(canExecute, externalUri, httpMethod, acceptedMediaType)
     {
         FileUploadConfiguration = fileUploadConfiguration ?? new FileUploadConfiguration();
     }
@@ -26,18 +26,15 @@ public abstract class ExternalFileUploadHypermediaAction : HypermediaExternalAct
         Uri externalUri,
         HttpMethod httpMethod,
         string acceptedMediaType = DefaultMediaTypes.ApplicationJson,
-        FileUploadConfiguration fileUploadConfiguration = null) : base(() => true, externalUri, httpMethod, acceptedMediaType)
+        FileUploadConfiguration? fileUploadConfiguration = null) : base(() => true, externalUri, httpMethod, acceptedMediaType)
     {
         FileUploadConfiguration = fileUploadConfiguration ?? new FileUploadConfiguration();
     }
 
-    public override object GetPrefilledParameter()
+    public override object? GetPrefilledParameter()
     {
         return null;
     }
 
-    public override Type ParameterType()
-    {
-        return typeof(FileUploadConfiguration);
-    }
+    protected override Type? ParameterType => typeof(FileUploadConfiguration);
 }

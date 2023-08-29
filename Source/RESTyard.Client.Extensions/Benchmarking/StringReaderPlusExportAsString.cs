@@ -82,21 +82,21 @@ namespace Benchmarking
         public async Task ParseFromStringAsync()
         {
             var asString = await this.httpContent.ReadAsStringAsync();
-            var hco = this.sirenReader.Read(asString, null);
+            var result = this.sirenReader.Read(asString, null!);
         }
 
         [Benchmark]
         public async Task ParseFromStreamAsync()
         {
             var asStream = await this.httpContent.ReadAsStreamAsync();
-            var hco = await this.sirenReader.ReadAsync(asStream, null);
+            var result = await this.sirenReader.ReadAsync(asStream, null!);
         }
 
         [Benchmark]
         public async Task ParseFromStreamAndExportAsync()
         {
             var asStream = await this.httpContent.ReadAsStreamAsync();
-            var (hco, json) = await this.sirenReader.ReadAndSerializeAsync(asStream, null);
+            var result = await this.sirenReader.ReadAndSerializeAsync(asStream, null!);
         }
 
         private class HttpContentMock : HttpContent
@@ -110,7 +110,7 @@ namespace Benchmarking
 
             protected override async Task SerializeToStreamAsync(
                 Stream stream,
-                TransportContext context)
+                TransportContext? context)
             {
                 await this.contentStream.CopyToAsync(stream);
             }

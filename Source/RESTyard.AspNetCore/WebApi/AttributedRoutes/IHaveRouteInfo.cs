@@ -6,8 +6,8 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
     {
         Type RouteType { get; }
 
-        Type RouteKeyProducerType { get; }
+        Type? RouteKeyProducerType { get; }
         
-        string AcceptedMediaType { get; }
+        string? AcceptedMediaType { get; }
     }
 }
