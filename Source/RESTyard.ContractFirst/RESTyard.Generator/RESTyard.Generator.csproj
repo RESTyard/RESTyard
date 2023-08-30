@@ -4,7 +4,6 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
 
     <VersionSuffixLocal></VersionSuffixLocal>
     <!--When variable is set we are building a prerelease package-->
@@ -42,6 +41,9 @@
   <ItemGroup>
     <None Update="Sample.xml">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Templates\server\csharp.sbn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
