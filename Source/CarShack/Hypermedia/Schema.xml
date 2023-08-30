@@ -25,6 +25,10 @@
     <Parameters typeName="NewAddress" usedForQueries="false" usedForActions="true">
       <Property name="Address" type="string" mandatory="true" />
     </Parameters>
+		<Parameters typeName="UploadCarImageParameters">
+			<Property name="Text" type="string" mandatory="true" />
+			<Property name="Flag" type="bool" mandatory="true" />
+		</Parameters>
     <ExternalParameters typeName="MarkAsFavoriteParameters" usedForActions="true" usedForQueries="false" />
     <ExternalParameters typeName="CustomerQuery" />
   </TransferParameters>
@@ -42,6 +46,9 @@
       <Classifications>
         <Classification class="CarsRoot" />
       </Classifications>
+			<Operations>
+				<Operation name="UploadCarImage" method="Post" title="Upload image for car" parameterTypeName="UploadCarImageParameters" isUploadAction="true" />
+			</Operations>
       <Links>
         <Link rel="NiceCar" document="DerivedCar" mandatory="true" />
         <Link rel="SuperCar" document="HypermediaCar" mandatory="true" />
@@ -124,13 +131,19 @@
       <Classifications>
         <Classification class="CustomersQueryResult" />
       </Classifications>
+	    <Entities>
+		    <Entity collectionName="Customers" document="HypermediaCustomer" />
+	    </Entities>
       <Properties>
         <Property name="TotalEntities" type="int" />
         <Property name="CurrentEntitiesCount" type="int" />
       </Properties>
-      <Entities>
-        <Entity collectionName="item" document="HypermediaCustomer" />
-      </Entities>
+			<Links>
+				<Link rel="Next" document="HypermediaCustomerQueryResult" mandatory="false" />
+				<Link rel="Previous" document="HypermediaCustomerQueryResult" mandatory="false" />
+				<Link rel="Last" document="HypermediaCustomerQueryResult" mandatory="false" />
+				<Link rel="All" document="HypermediaCustomerQueryResult" mandatory="false" />
+			</Links>
     </Document>
   </Documents>
 </Hypermedia>

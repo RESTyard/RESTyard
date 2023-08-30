@@ -192,8 +192,6 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
         private void AddFileUploadActionDescription(JObject jAction, HypermediaActionBase hypermediaAction)
         {
-            const string InputTypeFile = "file";
-            
             if (hypermediaAction is not IFileUploadConfiguration fileUploadAction)
             {
                 throw new Exception($"Parameter indicates file upload action but action type does not match: {hypermediaAction.GetType()}. Can not create action description.");
@@ -202,8 +200,8 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             var fileUploadConfiguration = fileUploadAction.FileUploadConfiguration;
             var jfield = new JObject
             {
-                { "name", "UploadFiles"},
-                { "type", InputTypeFile }
+                { "name", "UploadFiles"}, //TODO JP: i'm currently overriding this parameter description to read StringContent called "ParameterObject", let's figure out how this can be designed
+                { "type", DefaultMediaTypes.MultipartFormData }
             };
 
             if (fileUploadConfiguration.Accept.Any())

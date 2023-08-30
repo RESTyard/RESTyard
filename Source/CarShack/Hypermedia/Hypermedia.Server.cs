@@ -107,7 +107,7 @@ public class ExternalActionNoParametersTestOp : HypermediaExternalAction
     }
 }
 
-public class ExternalActionWitParameterTestOp :HypermediaExternalAction<ExternalActionParameters>
+public class ExternalActionWitParameterTestOp : HypermediaExternalAction<ExternalActionParameters>
 {
     public ExternalActionWitParameterTestOp(Uri externalUri,
         HttpMethod httpMethod) 
@@ -165,12 +165,10 @@ public partial class HypermediaCustomersRootHto
 
 public partial class HypermediaCarsRootHto
 {
-    [HypermediaAction(Name = "UploadCarImage", Title = "Upload a car image.")]
-    public UploadCarImageOp UploadCarImage { get; init; }
-    
     [ActivatorUtilitiesConstructor]
     public HypermediaCarsRootHto()
         : this(
+            new(() => true),
             new { brand = "VW", id = 2 },
             new { brand = "Porsche", id = 5 })
     {
@@ -215,13 +213,5 @@ public static class HypermediaMappingExtensions
     public static HypermediaCustomerHto ToHto(this Customer customer)
     {
         return HypermediaCustomerHto.FromDomain(customer);
-    }
-}
-
-public partial class HypermediaCustomerQueryResultHto
-{
-    public HypermediaCustomerQueryResultHto(ICollection<HypermediaCustomerHto> entities, int totalEntities,
-        CustomerQuery query) : this(totalEntities, entities.Count, entities, query)
-    {
     }
 }

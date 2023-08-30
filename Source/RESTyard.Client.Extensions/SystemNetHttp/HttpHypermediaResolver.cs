@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FunicularSwitch;
 using RESTyard.Client.Exceptions;
+using RESTyard.Client.Hypermedia.Commands;
 using RESTyard.Client.ParameterSerializer;
 using RESTyard.Client.Reader;
 using RESTyard.Client.Resolver;
@@ -19,6 +20,7 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
     public class HttpHypermediaResolver
         : HypermediaResolverBase<
             HttpResponseMessage,
+            MultipartFormDataContent,
             HttpLinkHcoCacheEntry,
             HttpLinkHcoCacheEntryConfiguration>
     {
@@ -131,6 +133,36 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             return !previousEntry.IsConfigurationEquivalentTo(newEntryConfiguration);
         }
 
+        protected override async Task<HypermediaResult<MultipartFormDataContent>> CreateUploadPayload(
+            ParameterDescription parameterDescription,
+            IHypermediaFileUploadParameter parameterObject)
+        {
+            MultipartFormDataContent? result = null;
+            try
+            {
+                result = new MultipartFormDataContent();
+                if (parameterObject.ParameterObject is not null)
+                {
+                    var serializeParameterObject = this.ParameterSerializer.SerializeParameterObject(nameof(parameterObject.ParameterObject),
+                        parameterObject.ParameterObject);
+                    result.Add(
+                        new StringContent(serializeParameterObject), nameof(IHypermediaFileUploadParameter.ParameterObject));
+                }
+
+                foreach (var file in parameterObject.FileDefinitions)
+                {
+                    result.Add(new StreamContent(await file.OpenReadStreamAsync()), file.Name, file.FileName);
+                }
+
+                return result;
+            }
+            catch (Exception e)
+            {
+                result?.Dispose();
+                return HypermediaResult.Error<MultipartFormDataContent>(HypermediaProblem.Exception(e));
+            }
+        }
+
         protected override async Task<HypermediaResult<HttpResponseMessage>> ResolveAsync(Uri uriToResolve)
         {
             try
@@ -155,6 +187,28 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             {
                 request.Content = new StringContent(payload, Encoding.UTF8, DefaultMediaTypes.ApplicationJson);//CONTENT-TYPE header    
             }
+
+            try
+            {
+                var responseMessage = await httpClient.SendAsync(request);
+                return responseMessage;
+            }
+            catch (Exception e)
+            {
+                return HypermediaResult.Error<HttpResponseMessage>(HypermediaProblem.Exception(e));
+            }
+        }
+
+        protected override async Task<HypermediaResult<HttpResponseMessage>> SendUploadCommandAsync(
+            Uri uri,
+            string method,
+            MultipartFormDataContent uploadPayload)
+        {
+            using var _ = uploadPayload;
+
+            var httpMethod = GetHttpMethod(method);
+            var request = new HttpRequestMessage(httpMethod, uri);
+            request.Content = uploadPayload;
 
             try
             {

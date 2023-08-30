@@ -1,4 +1,8 @@
 #nullable enable
+using RESTyard.Client.Hypermedia.Commands;
+using System.Collections.Generic;
+using System.IO;
+using System;
 using System.Xml.Linq;
 
 namespace RESTyard.Client.Test.Hypermedia;
@@ -10,12 +14,7 @@ public class Country
     public int Population { get; set; }
 }
 
-public class CustomerQuery
+public record MarkAsFavoriteParameters(string Customer)
 {
-
-}
-
-public class MarkAsFavoriteParameters
-{
-
+    public static MarkAsFavoriteParameters FromCustomer(HypermediaCustomerHco c) => new(c.Self.Uri!.ToString());
 }

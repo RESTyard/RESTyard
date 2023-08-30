@@ -32,6 +32,7 @@ public partial record BuyCarParameters(string Brand, int CarId, double? Price = 
 public partial record BuyLamborghiniParameters(string Brand, int CarId, string Color, double? Price = default, int? OptionalProperty = default) : BuyCarParameters(Brand, CarId, Price);
 public partial record BuyLamborghinettaParameters(string Brand, int CarId, string Color, int HorsePower, double? Price = default, int? OptionalProperty = default) : BuyLamborghiniParameters(Brand, CarId, Color, Price, OptionalProperty);
 public partial record NewAddress(string Address);
+public partial record UploadCarImageParameters(string Text, bool Flag);
 
 [HypermediaClientObject("Entrypoint")]
 public partial class HypermediaEntrypointHco : HypermediaClientObject
@@ -63,6 +64,9 @@ public partial class HypermediaCarsRootHco : HypermediaClientObject
     [Mandatory]
     [HypermediaRelations(new[]{ "SuperCar" })]
     public MandatoryHypermediaLink<HypermediaCarHco> SuperCar { get; set; } = default!;
+
+    [HypermediaCommand("UploadCarImage")]
+    public IHypermediaClientFileUploadAction<UploadCarImageParameters>? UploadCarImage { get; set; }
 }
 
 [HypermediaClientObject("Car")]
@@ -178,6 +182,18 @@ public partial class HypermediaCustomerQueryResultHco : HypermediaClientObject
     [HypermediaRelations(new[]{ "self" })]
     public MandatoryHypermediaLink<HypermediaCustomerQueryResultHco> Self { get; set; } = default!;
 
-    [HypermediaRelations(new[]{ "item" })]
-    public List<HypermediaCustomerHco> Item { get; set; } = default!;
+    [HypermediaRelations(new[]{ "Next" })]
+    public HypermediaLink<HypermediaCustomerQueryResultHco>? Next { get; set; } = default!;
+
+    [HypermediaRelations(new[]{ "Previous" })]
+    public HypermediaLink<HypermediaCustomerQueryResultHco>? Previous { get; set; } = default!;
+
+    [HypermediaRelations(new[]{ "Last" })]
+    public HypermediaLink<HypermediaCustomerQueryResultHco>? Last { get; set; } = default!;
+
+    [HypermediaRelations(new[]{ "All" })]
+    public HypermediaLink<HypermediaCustomerQueryResultHco>? All { get; set; } = default!;
+
+    [HypermediaRelations(new[]{ "Customers" })]
+    public List<HypermediaCustomerHco> Customers { get; set; } = default!;
 }

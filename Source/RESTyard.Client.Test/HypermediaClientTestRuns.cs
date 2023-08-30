@@ -13,6 +13,7 @@ using RESTyard.Client.Builder;
 using RESTyard.Client.Extensions;
 using RESTyard.Client.Extensions.SystemNetHttp;
 using RESTyard.Client.Extensions.SystemTextJson;
+using RESTyard.Client.Hypermedia.Commands;
 using RESTyard.Client.Reader;
 using RESTyard.Client.Resolver;
 using RESTyard.Client.Test.Hypermedia;
@@ -37,9 +38,8 @@ namespace RESTyard.Client.Test
             httpClient.DefaultRequestHeaders.Authorization =
                 new UsernamePasswordCredentials("User", "Password").CreateBasicAuthHeaderValue();
             httpClient.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue("en", 1.0));
-            this.Resolver = HypermediaResolverBuilder
+            this.Resolver = DefaultHypermediaClientBuilder
                 .CreateBuilder()
-                .ConfigureObjectRegister(ConfigureHypermediaObjectRegister)
                 .WithSingleSystemTextJsonObjectParameterSerializer()
                 .WithSystemTextJsonStringParser()
                 .WithSystemTextJsonProblemReader()
@@ -50,7 +50,7 @@ namespace RESTyard.Client.Test
         [TestMethod]
         public async Task EnterEntryPoint()
         {
-            var apiRoot = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint);
+            var apiRoot = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint);
             apiRoot.Should().BeOk()
                 .Which.Should().NotBeNull();
         }
@@ -58,8 +58,8 @@ namespace RESTyard.Client.Test
         [TestMethod]
         public async Task CallAction_CustomerMove()
         {
-            var apiRoot = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint);
-            var customersAll = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
+            var apiRoot = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint);
+            var customersAll = await apiRoot.NavigateAsync(l => l.CustomersRoot).NavigateAsync(l => l.All);
             
             var customer = customersAll.Should().BeOk().Which.Customers.First();
 
@@ -75,9 +75,9 @@ namespace RESTyard.Client.Test
         [TestMethod]
         public async Task CallAction_MarkAsFavorite()
         {
-            var apiRoot = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint);
+            var apiRoot = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint);
             var customersAll = await apiRoot
-                .NavigateAsync(l => l.Customers)
+                .NavigateAsync(l => l.CustomersRoot)
                 .NavigateAsync(l => l.All);
 
             var customer = customersAll.Should().BeOk().Which.Customers.First();
@@ -86,7 +86,7 @@ namespace RESTyard.Client.Test
                 Assert.Inconclusive("Action can not be run on server, not offered.");
             }
 
-            var actionResult = await customer.MarkAsFavorite.ExecuteAsync(new FavoriteCustomer{ Customer = customer.Self.Uri.ToString() }, this.Resolver); 
+            var actionResult = await customer.MarkAsFavorite.ExecuteAsync(MarkAsFavoriteParameters.FromCustomer(customer), this.Resolver); 
 
             var customerResult = await customer.Self.ResolveAsync();
             actionResult.Should().BeOk();
@@ -96,68 +96,56 @@ namespace RESTyard.Client.Test
         [TestMethod]
         public async Task CallAction_CreateQuery()
         {
-            var apiRoot = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint);
-            var customersRoot = await apiRoot.NavigateAsync(l => l.Customers);
+            var apiRoot = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint);
+            var customersRoot = await apiRoot.NavigateAsync(l => l.CustomersRoot);
 
-            var query = new CustomersQuery
+            var query = new CustomerQuery
             {
                 Filter = new CustomerFilter { MinAge = 22 },
                 SortBy = new SortOptions { PropertyName = "Age", SortType  = "Ascending" },
                 Pagination = new Pagination { PageOffset = 2, PageSize = 3 }
             };
             
-            var resultResource = await customersRoot.Should().BeOk().Which.CreateQuery.ExecuteAsync(query, this.Resolver);
-            var queryResultPage = await resultResource.Should().BeOk().Which.ResolveAsync();
-            queryResultPage.Should().NotBeNull();
+            var resultResource = await customersRoot.Should().BeOk().Which.CreateQuery!.ExecuteAsync(query, this.Resolver);
+            resultResource
+                .Should()
+                .BeOk()
+                .Which
+                .Should()
+                .NotBeNull();
         }
 
         [TestMethod]
         public async Task EnterEntryPointAndNavigate()
         {
-            var apiRoot = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint);
-            var customers = (await apiRoot.Should().BeOk().Which.Customers.ResolveAsync()).Should().BeOk().Which;
+            var apiRoot = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint);
+            var customers = (await apiRoot.Should().BeOk().Which.CustomersRoot.ResolveAsync()).Should().BeOk().Which;
             var all = await customers.All.ResolveAsync();
 
-            var allFluent = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint).NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
-            var allFluent2 = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All);
-            var optionalFluent = await apiRoot.NavigateAsync(l => l.Customers).NavigateAsync(l => l.All).NavigateAsync(l => l.Next);
+            var allFluent = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint).NavigateAsync(l => l.CustomersRoot).NavigateAsync(l => l.All);
+            var allFluent2 = await apiRoot.NavigateAsync(l => l.CustomersRoot).NavigateAsync(l => l.All);
+            var optionalFluent = await apiRoot.NavigateAsync(l => l.CustomersRoot).NavigateAsync(l => l.All).NavigateAsync(l => l.Next);
         }
 
         [TestMethod]
         public async Task FileUpload()
         {
-            var apiRoot = await this.Resolver.ResolveLinkAsync<EntryPointHco>(ApiEntryPoint);
+            var apiRoot = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint);
             var carsResult = await apiRoot
-                .NavigateAsync(l => l.Cars);
+                .NavigateAsync(l => l.CarsRoot);
 
             var cars = carsResult.Should().BeOk().Which;
-            var uploadResult = await cars.UploadCarImage.ExecuteAsync(
-                new UploadCarParameters(
-                    "Text",
-                    true,
-                    new []{() => new MemoryStream(new byte[] { 1, 2, 3, 4})}),
+            var uploadResult = await cars.UploadCarImage!.ExecuteAsync(
+                new HypermediaFileUploadActionParameter<UploadCarImageParameters>(
+                    FileDefinitions: new List<FileDefinition>()
+                    {
+                        new(async () => new MemoryStream(new byte[] { 1, 2, 3, 4}), "Bytes", "Bytes.txt"),
+                    },
+                    new(
+                        "Text",
+                        true)),
                 this.Resolver);
             uploadResult.Should().BeOk();
-
-            //var customer = cars.Customers.First();
-            //if (!customer.MarkAsFavorite.CanExecute)
-            //{
-            //    Assert.Inconclusive("Action can not be run on server, not offered.");
-            //}
-
-            //var actionResult = await customer.MarkAsFavorite.ExecuteAsync(new FavoriteCustomer{ Customer = customer.Self.Uri.ToString() }, this.Resolver);
-            //actionResult.Should().BeOk();
-
-            //customer = await customer.Self.ResolveAsync();
-            //customer.IsFavorite.Should().BeTrue();
-        }
-
-        private static void ConfigureHypermediaObjectRegister(IHypermediaObjectRegister register)
-        {
-            register.Register<EntryPointHco>();
-            register.Register<CustomerHco>();
-            register.Register<CustomersRootHco>();
-            register.Register<CustomerQueryResultHco>();
         }
     }
 }
