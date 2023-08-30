@@ -52,7 +52,7 @@ namespace CarShack.Controllers.Cars
             }
         }
 
-        [HttpPostHypermediaAction("UploadImage", typeof(UploadCarImageOp), AcceptedMediaType = DefaultMediaTypes.MultipartFormData)]
+        [HttpPostHypermediaAction("UploadImage", typeof(HypermediaCarsRootHto.UploadCarImageOp), AcceptedMediaType = DefaultMediaTypes.MultipartFormData)]
         public async Task<IActionResult> UploadCarImage([HypermediaUploadParameterFromFrom] HypermediaFileUploadActionParameter<UploadCarImageParameters> parameters)
         {
             var files = parameters.Files;
@@ -110,13 +110,6 @@ namespace CarShack.Controllers.Cars
                 Detail = "Form must contain one key: 'Payload' with Value: <file to upload>",
                 Status = StatusCodes.Status400BadRequest
             });
-        }
-    }
-
-    public class UploadCarImageOp : FileUploadHypermediaAction
-    {
-        public UploadCarImageOp(Func<bool> canExecute, FileUploadConfiguration fileUploadConfiguration = null) : base(canExecute, fileUploadConfiguration)
-        {
         }
     }
 }

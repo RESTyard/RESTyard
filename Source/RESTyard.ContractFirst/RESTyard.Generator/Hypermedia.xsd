@@ -86,6 +86,7 @@
 		<xs:attribute type="xs:string" name="name" use="required"/>
 		<xs:attribute type="hm:method" name="method" use="required"/>
 		<xs:attribute type="xs:string" name="title" use="optional"/>
+		<xs:attribute type="xs:boolean" name="isUploadAction" use="optional" />
 		<xs:attribute type="xs:IDREF" name="parameterTypeName" use="optional"/>
 		<xs:attribute type="xs:IDREF" name="resultDocument" use="optional"/>
 	</xs:complexType>

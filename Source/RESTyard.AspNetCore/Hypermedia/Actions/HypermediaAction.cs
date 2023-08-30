@@ -12,7 +12,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
         /// <summary>
         /// The action may provide pre filled values which are passed to the client so action parameters can be filled with provided values.
         /// </summary>
-        public TParameter? PrefilledValues { protected set;  get; }
+        public TParameter? PrefilledValues { get; protected set; }
 
         public HypermediaAction(Func<bool> canExecute, TParameter? prefilledValues = null) : base(canExecute)
         {

@@ -172,7 +172,11 @@ public partial class {{ typeName }} : {{
 {{
         for operation in document.Operations
             typeParameters = []
-            actionType = "HypermediaAction"
+            if (operation.isUploadAction)
+                actionType = "FileUploadHypermediaAction"
+            else
+                actionType = "HypermediaAction"
+            end
             if isNotEmpty operation.parameterTypeName
                 typeParameters = array.add typeParameters operation.parameterTypeName
             end
@@ -196,6 +200,10 @@ public partial class {{ typeName }} : {{
 
             parameterArg = ""
             parameterValue = ""
+            if operation.isUploadAction
+                parameterArg += ", FileUploadConfiguration? fileUploadConfiguration = null";
+                parameterValue += ", fileUploadConfiguration";
+            end
             if isNotEmpty operation.parameterTypeName
                 parameterArg += ", " + operation.parameterTypeName + "? prefilledValues = default"
                 parameterValue += ", prefilledValues";

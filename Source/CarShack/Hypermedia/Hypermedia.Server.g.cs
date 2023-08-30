@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using CarShack.Controllers.Cars;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
@@ -24,7 +23,7 @@ public partial record BuyCarParameters(string Brand, int CarId, double? Price = 
 public partial record BuyLamborghiniParameters(string Brand, int CarId, string Color, double? Price = default, double? HiddenProperty = default, int? OptionalProperty = default) : BuyCarParameters(Brand, CarId, Price, HiddenProperty), IHypermediaQuery, IHypermediaActionParameter;
 public partial record BuyLamborghinettaParameters(string Brand, int CarId, string Color, int HorsePower, double? Price = default, double? HiddenProperty = default, int? OptionalProperty = default) : BuyLamborghiniParameters(Brand, CarId, Color, Price, HiddenProperty, OptionalProperty), IHypermediaQuery, IHypermediaActionParameter;
 public partial record NewAddress(string Address) : IHypermediaActionParameter;
-public partial record UploadCarImageParameters(string Text, bool Flag) : IHypermediaActionParameter;
+public partial record UploadCarImageParameters(string Text, bool Flag);
 
 [HypermediaObject(Title = "Entry to the Rest API", Classes = new string[]{ "Entrypoint" })]
 public partial class HypermediaEntrypointHto : HypermediaObject
@@ -54,6 +53,12 @@ public partial class HypermediaCarsRootHto : HypermediaObject
         this.UploadCarImage = uploadCarImage;
         Links.Add("NiceCar", new HypermediaObjectKeyReference(typeof(DerivedCarHto), niceCarKey));
         Links.Add("SuperCar", new HypermediaObjectKeyReference(typeof(HypermediaCarHto), superCarKey));
+    }
+
+    public partial class UploadCarImageOp : FileUploadHypermediaAction<UploadCarImageParameters>
+    {
+        public UploadCarImageOp(Func<bool> canExecuteUploadCarImage, FileUploadConfiguration? fileUploadConfiguration = null, UploadCarImageParameters? prefilledValues = default)
+            : base(canExecuteUploadCarImage, fileUploadConfiguration, prefilledValues) { }
     }
 }
 
