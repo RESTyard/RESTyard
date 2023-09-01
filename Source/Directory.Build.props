@@ -25,6 +25,7 @@
 
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<LangVersion>latest</LangVersion>
 
 		<Nullable>enable</Nullable>
     <Deterministic>true</Deterministic>
