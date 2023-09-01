@@ -9,8 +9,8 @@
             $(VersionSuffix)
         </VersionSuffixLocal>
 
-        <Version>3.0.0$(VersionSuffixLocal)</Version>
-        <TargetFramework>net6.0</TargetFramework>
+        <Version>3.0.2$(VersionSuffixLocal)</Version>
+        <TargetFramework>netstandard2.0</TargetFramework>
         <Nullable>enable</Nullable>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);1591</NoWarn>
@@ -49,5 +49,6 @@
     <ItemGroup>
       <PackageReference Include="FunicularSwitch" Version="4.0.0" />
       <PackageReference Include="FunicularSwitch.Generators" Version="2.0.0" />
+      <PackageReference Include="System.Collections.Immutable" Version="7.0.0" />
     </ItemGroup>
 </Project>

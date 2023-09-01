@@ -174,8 +174,6 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
                 return HypermediaResult.Ok(No.Thing);
             }
 
-            var innerException = GetInnerException(responseMessage);
-
             var (hasProblemDescription, problemDescription) = await this.TryReadProblemStringAsync(responseMessage);
             if (hasProblemDescription)
             {
@@ -198,8 +196,7 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
                 return HypermediaResult.Error<Unit>(HypermediaProblem.ProblemDetails(problemDetailsCopy));
             }
 
-            var message = innerException?.Message ?? string.Empty;
-            return HypermediaResult.Error<Unit>(HypermediaProblem.StatusCode((int)responseMessage.StatusCode, message));
+            return HypermediaResult.Error<Unit>(HypermediaProblem.StatusCode((int)responseMessage.StatusCode));
         }
 
         private async Task<(bool hasProblemDescription, ProblemDetails? problemDescription)> TryReadProblemStringAsync(HttpResponseMessage response)
@@ -218,20 +215,6 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             {
                 return (false, null);
             }
-        }
-
-        private static Exception? GetInnerException(HttpResponseMessage result)
-        {
-            try
-            {
-                result.EnsureSuccessStatusCode();
-            }
-            catch (Exception inner)
-            {
-                return inner;
-            }
-
-            return null;
         }
 
         protected override async Task<HypermediaResult<Stream>> ResponseAsStreamAsync(HttpResponseMessage responseMessage)
