@@ -114,7 +114,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             var urlString = this.urlHelper.RouteUrl(routeInfo.Name, routeKeys, hypermediaUrlConfig.Scheme, hypermediaUrlConfig.Host.ToUriComponent());
 
             return new ResolvedRoute(urlString, routeInfo.HttpMethod, acceptableMediaType: routeInfo.AcceptableMediaType);
-        } 
+        }
         
         /// <summary>
         /// Will return a URL for a given route name.
