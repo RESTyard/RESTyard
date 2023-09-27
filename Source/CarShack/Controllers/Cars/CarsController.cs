@@ -53,7 +53,7 @@ namespace CarShack.Controllers.Cars
         }
 
         [HttpPostHypermediaAction("UploadImage", typeof(HypermediaCarsRootHto.UploadCarImageOp), AcceptedMediaType = DefaultMediaTypes.MultipartFormData)]
-        public async Task<IActionResult> UploadCarImage([HypermediaUploadParameterFromFrom] HypermediaFileUploadActionParameter<UploadCarImageParameters> parameters)
+        public async Task<IActionResult> UploadCarImage([HypermediaUploadParameterFromForm] HypermediaFileUploadActionParameter<UploadCarImageParameters> parameters)
         {
             var files = parameters.Files;
             if (files.Count != 1)

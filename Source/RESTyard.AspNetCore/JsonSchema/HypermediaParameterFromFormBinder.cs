@@ -19,8 +19,8 @@ namespace RESTyard.AspNetCore.JsonSchema;
 
 public class HypermediaParameterFromFormBinderProvider : IModelBinderProvider
 {
-    readonly Func<Type, ImmutableArray<string>> getRouteTemplateForType;
-    readonly bool explicitUsage;
+    private readonly Func<Type, ImmutableArray<string>> getRouteTemplateForType;
+    private readonly bool explicitUsage;
 
     public HypermediaParameterFromFormBinderProvider(Func<Type, ImmutableArray<string>> getRouteTemplateForType, bool explicitUsage = false)
     {
@@ -111,7 +111,6 @@ public class HypermediaParameterFromFormBinder : IModelBinder
             return;
         }
 
-        var files = request.Form.Files;
         var (deserializeParameter, gmt, s) = this.genericModelType.Match(
             some: gmt => this.serializer.Match(
                 some: s => (true, gmt, s),

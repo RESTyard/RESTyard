@@ -201,7 +201,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             var jfield = new JObject
             {
                 { "name", "UploadFiles"}, //TODO JP: i'm currently overriding this parameter description to read StringContent called "ParameterObject", let's figure out how this can be designed
-                { "type", DefaultMediaTypes.MultipartFormData }
+                { "type", "file" },
             };
 
             if (fileUploadConfiguration.Accept.Any())

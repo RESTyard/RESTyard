@@ -8,9 +8,9 @@ namespace RESTyard.AspNetCore.WebApi;
 /// Explicitly marks a hypermedia upload action parameter of controller method to be deserialized from the multipart/form-data form of the request
 /// The parameter needs to be of type <see cref="HypermediaFileUploadActionParameter" /> or <see cref="HypermediaFileUploadActionParameter{TParameters}" />
 /// </summary>
-public class HypermediaUploadParameterFromFromAttribute : ModelBinderAttribute
+public class HypermediaUploadParameterFromFormAttribute : ModelBinderAttribute
 {
-    public HypermediaUploadParameterFromFromAttribute()
+    public HypermediaUploadParameterFromFormAttribute()
     {
         BinderType = typeof(HypermediaParameterFromFormBinder);
     }
