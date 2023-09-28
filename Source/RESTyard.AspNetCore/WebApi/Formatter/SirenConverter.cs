@@ -235,16 +235,17 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 { "type", DefaultMediaTypes.ApplicationJson }
             };
 
-            if (!routeResolver.TryGetRouteByType(parameterType, out var classRoute))
-            {
-                var generatedRouteUrl = routeResolver.RouteUrl(RouteNames.ActionParameterTypes,
-                    new { parameterTypeName = parameterType.BeautifulName() });
-                jfield.Add("class", new JArray { generatedRouteUrl });
-            }
-            else
-            {
-                jfield.Add("class", new JArray { classRoute.Url });
-            }
+            routeResolver.TryGetRouteByType(parameterType).Match(
+                classRoute =>
+                {
+                    jfield.Add("class", new JArray { classRoute.Url });
+                },
+                () =>
+                {
+                    var generatedRouteUrl = routeResolver.RouteUrl(RouteNames.ActionParameterTypes,
+                        new { parameterTypeName = parameterType.BeautifulName() });
+                    jfield.Add("class", new JArray { generatedRouteUrl });
+                });
 
             AddPrefilledValue(jfield, hypermediaAction);
             
