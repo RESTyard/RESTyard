@@ -1,13 +1,15 @@
-
 export type int = number;
 export type double = number;
 export type float = number;
 export type IEnumerable<T> = T[];
 export type List<T> = T[];
+export type IList<T> = T[];
 export class HypermediaObject { }
-export class HypermediaLink<T> { }
-export class HypermediaAction<T> { }
-export class HypermediaFunction<T> { }
+export class HypermediaLink<T> {
+    constructor(public relations: string[], public url: string, public type: string) { }
+}
+export class HypermediaAction<T = undefined> { }
+export class HypermediaFunction<TResult, TParameter = undefined> { }
 export class Country {
     constructor(
         public readonly Name: string
@@ -42,9 +44,9 @@ export class BuyCarParameters {
 
 export class BuyLamborghiniParameters extends BuyCarParameters {
     constructor(
-        public readonly Brand: string,
-        public readonly CarId: int,
-        public readonly Price: Nullable<double>,
+        Brand: string,
+        CarId: int,
+        Price: Nullable<double>,
         public readonly Color: string,
         public readonly OptionalProperty: Nullable<int>
     ) { super(Brand, CarId, Price); }
@@ -52,11 +54,11 @@ export class BuyLamborghiniParameters extends BuyCarParameters {
 
 export class BuyLamborghinettaParameters extends BuyLamborghiniParameters {
     constructor(
-        public readonly Brand: string,
-        public readonly CarId: int,
-        public readonly Price: Nullable<double>,
-        public readonly Color: string,
-        public readonly OptionalProperty: Nullable<int>,
+        Brand: string,
+        CarId: int,
+        Price: Nullable<double>,
+        Color: string,
+        OptionalProperty: Nullable<int>,
         public readonly HorsePower: int
     ) { super(Brand, CarId, Price, Color, OptionalProperty); }
 }
