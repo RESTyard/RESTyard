@@ -104,11 +104,11 @@ export class HypermediaCarHco extends HypermediaObject {
 
 export class DerivedCarHco extends HypermediaCarHco {
     constructor(
-        public readonly Id: Nullable<int>,
-        public readonly Brand: Nullable<string>,
-        public readonly PriceDevelopment: Nullable<IEnumerable<float>>,
-        public readonly PopularCountries: Nullable<List<Country>>,
-        public readonly MostPopularIn: Nullable<Country>,
+        Id: Nullable<int>,
+        Brand: Nullable<string>,
+        PriceDevelopment: Nullable<IEnumerable<float>>,
+        PopularCountries: Nullable<List<Country>>,
+        MostPopularIn: Nullable<Country>,
         public readonly DerivedProperty: Nullable<string>,
         public readonly item: HypermediaCustomerHco[],
         public readonly self: HypermediaLink<DerivedCarHco>,
@@ -121,15 +121,15 @@ export class DerivedCarHco extends HypermediaCarHco {
 
 export class NextLevelDerivedCarHco extends DerivedCarHco {
     constructor(
-        public readonly Id: Nullable<int>,
-        public readonly Brand: Nullable<string>,
-        public readonly PriceDevelopment: Nullable<IEnumerable<float>>,
-        public readonly PopularCountries: Nullable<List<Country>>,
-        public readonly MostPopularIn: Nullable<Country>,
-        public readonly DerivedProperty: Nullable<string>,
-        public readonly item: HypermediaCustomerHco[],
-        public readonly DerivedLink: Nullable<HypermediaLink<HypermediaCustomerHco>>,
-        public readonly Derived: Nullable<HypermediaAction>,
+        Id: Nullable<int>,
+        Brand: Nullable<string>,
+        PriceDevelopment: Nullable<IEnumerable<float>>,
+        PopularCountries: Nullable<List<Country>>,
+        MostPopularIn: Nullable<Country>,
+        DerivedProperty: Nullable<string>,
+        item: HypermediaCustomerHco[],
+        DerivedLink: Nullable<HypermediaLink<HypermediaCustomerHco>>,
+        Derived: Nullable<HypermediaAction>,
         public readonly NextLevelDerivedProperty: Nullable<string>,
         public readonly self: HypermediaLink<NextLevelDerivedCarHco>
     ) {
