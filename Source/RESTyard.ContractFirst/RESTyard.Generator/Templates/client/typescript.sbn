@@ -148,7 +148,6 @@ export class {{ parametersType.typeName }}
                 parentArgumentsForCall = array.concat (gatherArguments currentDocument includeSelfLink: false) parentArgumentsForCall
             end
         end
-        allArguments = array.concat parentArguments arguments
         
 }}
 export class {{ document.name }}Hco extends {{ if isNotEmpty document.parentDocument }}
@@ -157,9 +156,13 @@ export class {{ document.name }}Hco extends {{ if isNotEmpty document.parentDocu
         HypermediaObject
     {{- end }} {
     constructor(
-{{-     for arg in allArguments }}
-        public readonly {{ arg }}{{ if !for.last }},{{ end }}
-{{-     end }}
+{{- for param in parentArguments }}
+        {{ param }}{{ if !for.last }},{{ end }}
+{{- end }}
+{{- if (array.size parentArguments) > 0 && (array.size arguments) > 0 }},{{ end -}}
+{{- for param in arguments }}
+        public readonly {{ param }}{{ if !for.last }},{{ end }}
+{{- end }}
     ) {
         super({{- for arg in parentArgumentsForCall }}{{ arg | string.split ':' | array.first }}{{ if !for.last }}, {{ end }}{{- end }});
     }
