@@ -111,9 +111,9 @@ export class DerivedCarHco extends HypermediaCarHco {
         MostPopularIn: Nullable<Country>,
         public readonly DerivedProperty: Nullable<string>,
         public readonly item: HypermediaCustomerHco[],
-        public readonly self: HypermediaLink<DerivedCarHco>,
+        public override readonly self: HypermediaLink<DerivedCarHco>,
         public readonly DerivedLink: Nullable<HypermediaLink<HypermediaCustomerHco>>,
-        public readonly Derived: Nullable<HypermediaAction>
+        public readonly DerivedOperation: Nullable<HypermediaAction>
     ) {
         super(Id, Brand, PriceDevelopment, PopularCountries, MostPopularIn, self);
     }
@@ -129,11 +129,11 @@ export class NextLevelDerivedCarHco extends DerivedCarHco {
         DerivedProperty: Nullable<string>,
         item: HypermediaCustomerHco[],
         DerivedLink: Nullable<HypermediaLink<HypermediaCustomerHco>>,
-        Derived: Nullable<HypermediaAction>,
+        DerivedOperation: Nullable<HypermediaAction>,
         public readonly NextLevelDerivedProperty: Nullable<string>,
-        public readonly self: HypermediaLink<NextLevelDerivedCarHco>
+        public override readonly self: HypermediaLink<NextLevelDerivedCarHco>
     ) {
-        super(Id, Brand, PriceDevelopment, PopularCountries, MostPopularIn, DerivedProperty, item, self, DerivedLink, Derived);
+        super(Id, Brand, PriceDevelopment, PopularCountries, MostPopularIn, DerivedProperty, item, self, DerivedLink, DerivedOperation);
     }
 }
 
