@@ -9,8 +9,9 @@
       $(VersionSuffix)
     </VersionSuffixLocal>
 
-    <Version>4.1.1$(VersionSuffixLocal)</Version>
+    <Version>4.2.0$(VersionSuffixLocal)</Version>
     <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
 
@@ -18,7 +19,7 @@
     <Titel>RESTyard</Titel>
     <PackageDescription>Web Api extensions to create REST Web services using Siren as Hypermedia format</PackageDescription>
     <PackageTags>WebApi;REST;Siren;Hypermedia;ASP.NET Core;</PackageTags>
-    <Authors>Mathias Reichardt; Jasper Marianczuk; Aydin Mir Mohammadi; Waldemar Tomme; Alexander Wiedemann; Marcel Weigel</Authors>
+    <Authors>Mathias Reichardt; Jasper Park; Aydin Mir Mohammadi; Waldemar Tomme; Alexander Wiedemann; Marcel Weigel</Authors>
     <Copyright>Copyright 2001-2022 RESTyard Team</Copyright>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

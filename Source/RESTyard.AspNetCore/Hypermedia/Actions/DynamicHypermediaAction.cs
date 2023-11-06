@@ -21,46 +21,35 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions;
 public class DynamicHypermediaAction<TParameter> : HypermediaActionBase, IDynamicSchema where TParameter : class, IHypermediaActionParameter
 {
     
-    private readonly object prefilledValues;
-
-    private readonly bool hasParameters;
+    private readonly object? prefilledValues;
 
     /// <summary>
     /// Create a dynamic action.
-    /// <param name="hasParameters">Indicates if the action has a parameter.</param>
     /// <param name="prefilledValues">The action may provide pre filled values which are passed to the client so action parameters can be filled with provided values.</param>
     /// </summary>
-    public DynamicHypermediaAction(Func<bool> canExecute, bool hasParameters, object prefilledValues = null) : base(canExecute)
+    public DynamicHypermediaAction(Func<bool> canExecute, object? prefilledValues = null) : base(canExecute)
     {
         this.prefilledValues = prefilledValues;
-        this.hasParameters = hasParameters;
     }
 
     /// <summary>
     /// Create a dynamic action.
-    /// <param name="hasParameters">Indicates if the action has a parameter.</param>
     /// <param name="prefilledValues">The action may provide pre filled values which are passed to the client so action parameters can be filled with provided values.</param>
     /// </summary>
-    public DynamicHypermediaAction(bool hasParameters, object prefilledValues = null) : base(()=>true)
+    public DynamicHypermediaAction(object? prefilledValues = null) : base(()=>true)
     {
         this.prefilledValues = prefilledValues;
-        this.hasParameters = hasParameters;
     }
 
-    public override bool HasParameter() => hasParameters;
-
-    public override object GetPrefilledParameter()
+    public override object? GetPrefilledParameter()
     {
         return prefilledValues;
     }
 
-    public override Type ParameterType()
-    {
-        return typeof(TParameter);
-    }
+    protected override Type ParameterType => typeof(TParameter);
 
     /// <summary>
     /// An (dynamic) object containing the route keys to be used to build the route to the schema
     /// </summary>
-    public object SchemaRouteKeys { get; set; }
+    public object? SchemaRouteKeys { get; set; }
 }

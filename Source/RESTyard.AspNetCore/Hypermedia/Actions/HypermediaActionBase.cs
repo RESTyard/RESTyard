@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RESTyard.AspNetCore.Hypermedia.Actions
 {
@@ -16,10 +17,14 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
             return commandCanExecute();
         }
 
-        public virtual bool HasParameter() => ParameterType() != null;
+        public bool TryGetParameterType([NotNullWhen(true)] out Type? parameterType)
+        {
+            parameterType = ParameterType;
+            return parameterType is not null;
+        }
         
-        public abstract object GetPrefilledParameter();
+        public abstract object? GetPrefilledParameter();
 
-        public abstract Type ParameterType();
+        protected abstract Type? ParameterType { get; }
     }
 }

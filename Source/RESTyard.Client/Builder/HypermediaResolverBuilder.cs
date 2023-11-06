@@ -15,18 +15,18 @@ namespace RESTyard.Client.Builder
 
     internal class HypermediaResolverBuilderImplementation : IHypermediaResolverBuilder
     {
-        private Func<IHypermediaObjectRegister> createHypermediaObjectRegister;
-        private Func<IParameterSerializer> createParameterSerializer;
-        private Func<IStringParser> createStringParser;
-        private Func<IProblemStringReader> createProblemStringReader;
-        private Func<IHypermediaObjectRegister, IStringParser, IHypermediaReader> createHypermediaReader;
+        private Func<IHypermediaObjectRegister>? createHypermediaObjectRegister;
+        private Func<IParameterSerializer>? createParameterSerializer;
+        private Func<IStringParser>? createStringParser;
+        private Func<IProblemStringReader>? createProblemStringReader;
+        private Func<IHypermediaObjectRegister, IStringParser, IHypermediaReader>? createHypermediaReader;
 
         public HypermediaResolverBuilderImplementation()
         {
 
         }
 
-        private static T Get<T>(Func<T> getFunc, params string[] possibleMethodNames)
+        private static T Get<T>(Func<T>? getFunc, params string[] possibleMethodNames)
         {
             if (getFunc == null)
             {
@@ -47,7 +47,11 @@ namespace RESTyard.Client.Builder
             var serializer = Get(this.createParameterSerializer, nameof(WithCustomParameterSerializer));
             var stringParser = Get(this.createStringParser, nameof(WithCustomStringParser));
             var problemReader = Get(this.createProblemStringReader, nameof(WithCustomProblemStringReader));
-            var reader = Get(() => this.createHypermediaReader(objectRegister, stringParser), nameof(SirenExtensions.WithSirenHypermediaReader), nameof(WithCustomHypermediaReader));
+            var reader = Get<IHypermediaReader>(
+                this.createHypermediaReader is null
+                    ? null
+                    : () => this.createHypermediaReader(objectRegister, stringParser),
+                nameof(SirenExtensions.WithSirenHypermediaReader), nameof(WithCustomHypermediaReader));
             return new ResolverDependencies(objectRegister, serializer, stringParser, problemReader, reader);
         }
 

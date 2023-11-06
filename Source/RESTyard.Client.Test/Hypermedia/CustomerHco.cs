@@ -32,12 +32,7 @@ namespace RESTyard.Client.Test.Hypermedia
 
     //TODO make a all generic HypermediaObjectGeneric to use in all cases, all fields are lists and dynamic
 
-    //TODO not validated on read, maybe only on post
-    [HypermediaCommandParameter(new[] { "http://localhost:5000/Customers/NewAddressType" })]
-    public class NewAddress
-    {
-        public string Address { get; set; }
-    }
+   
 
     [HypermediaCommandParameter(new[] { "http://localhost:5000/MyFavoriteCustomers/FavoriteCustomer" })]
     public class FavoriteCustomer

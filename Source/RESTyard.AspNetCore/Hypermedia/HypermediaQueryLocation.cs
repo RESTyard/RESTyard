@@ -8,9 +8,9 @@ namespace RESTyard.AspNetCore.Hypermedia
     public class HypermediaQueryLocation
     {
         public Type QueryType { get; set; }
-        public IHypermediaQuery QueryParameter { get; set; }
+        public IHypermediaQuery? QueryParameter { get; set; }
 
-        public HypermediaQueryLocation(Type queryType, IHypermediaQuery queryParameter = null)
+        public HypermediaQueryLocation(Type queryType, IHypermediaQuery? queryParameter = null)
         {
             if (!typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(queryType))
             {

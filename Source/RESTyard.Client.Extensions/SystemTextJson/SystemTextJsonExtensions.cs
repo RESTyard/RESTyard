@@ -4,6 +4,9 @@ using RESTyard.Client.Builder;
 
 namespace RESTyard.Client.Extensions.SystemTextJson
 {
+    /// <summary>
+    /// Extensions to build IHypermediaResolver with Json services using the System.Text.Json library
+    /// </summary>
     public static class SystemTextJsonExtensions
     {
         /// <summary>
@@ -22,7 +25,7 @@ namespace RESTyard.Client.Extensions.SystemTextJson
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static IHypermediaResolverBuilder WithSystemTextJsonObjectParameterSerializer(this IHypermediaResolverBuilder builder, JsonSerializerOptions options = null)
+        public static IHypermediaResolverBuilder WithSystemTextJsonObjectParameterSerializer(this IHypermediaResolverBuilder builder, JsonSerializerOptions? options = null)
         {
             return builder.WithCustomParameterSerializer(() => new SystemTextJsonObjectParameterSerializer(options));
         }

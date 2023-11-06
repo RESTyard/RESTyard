@@ -6,9 +6,9 @@ namespace RESTyard.Client.Extensions.SystemTextJson
 {
     public class SystemTextJsonObjectParameterSerializer : IParameterSerializer
     {
-        private readonly JsonSerializerOptions options;
+        private readonly JsonSerializerOptions? options;
 
-        public SystemTextJsonObjectParameterSerializer(JsonSerializerOptions options = null)
+        public SystemTextJsonObjectParameterSerializer(JsonSerializerOptions? options = null)
         {
             this.options = options;
         }

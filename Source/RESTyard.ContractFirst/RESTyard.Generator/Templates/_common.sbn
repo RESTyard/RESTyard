@@ -21,6 +21,122 @@ func iff
     end
 end
 
+func gatherArguments
+    argumentsRetVal = []
+    for property in $0.Properties
+        arg = (mapNullableType (!property.mandatory) property.type) + " " + (property.name | uncapitalize)
+        argumentsRetVal = array.add argumentsRetVal arg
+    end
+    for operation in $0.Operations
+        arg = operation.name + "Op " + (operation.name | uncapitalize)
+        argumentsRetVal = array.add argumentsRetVal arg
+    end
+    for entity in $0.Entities
+        arg = "IEnumerable<HypermediaObjectReferenceBase> " + (entity.collectionName | uncapitalize)
+        if isNotEmpty entity.document
+            arg = "IEnumerable<" + entity.document + "Hto> " + (entity.collectionName | uncapitalize)
+        end
+        argumentsRetVal = array.add argumentsRetVal arg
+    end
+    for link in $0.Links
+        if isNotEmpty link.document
+            if !link.mandatory
+                arg = "bool has" + link.rel
+                argumentsRetVal = array.add argumentsRetVal arg
+            end
+            if isNotEmpty link.query
+                arg = link.query + " " + (link.rel | uncapitalize) + "Query"
+                argumentsRetVal = array.add argumentsRetVal arg
+            end
+            arg = "object? " + (link.rel | uncapitalize) + "Key"
+            argumentsRetVal = array.add argumentsRetVal arg
+        else
+            arg = (mapNullableType (!link.mandatory) "HypermediaObjectReferenceBase") + " " + (link.rel | uncapitalize)
+            argumentsRetVal = array.add argumentsRetVal arg
+        end
+    end
+    if $0.isQueryResult
+        arg = "IHypermediaQuery query"
+        argumentsRetVal = array.add argumentsRetVal arg
+    end
+    ret argumentsRetVal
+end
+
+func gatherParentArguments
+    parentArgumentsRetVal = []
+    currentDocument = $1
+    while isNotEmpty currentDocument.parentDocument
+        currentDocument = findParent $0 currentDocument.parentDocument
+        parentArgumentsRetVal = array.concat (gatherArguments currentDocument) parentArgumentsRetVal
+    end
+    ret parentArgumentsRetVal
+end
+
+func findParent
+    for docTempVal in $0
+        if docTempVal.name == $1
+            ret docTempVal
+        end
+    end
+end
+
+func gatherMandatoryParameterArguments
+    argumentsRetVal = []
+    checkProperties $0.typeName $0.Property
+    for property in $0.Property
+        if property.mandatory && (!property.hidden || $.showHidden)
+            arg = property.type + " " + property.name
+            argumentsRetVal = array.add argumentsRetVal arg
+        end
+    end
+    ret argumentsRetVal
+end
+func gatherOptionalParameterArguments
+    argumentsRetVal = []
+    for property in $0.Property
+        if !property.mandatory && (!property.hidden || $.showHidden)
+            arg = (mapNullableType true property.type) + " " + property.name + " = default"
+            argumentsRetVal = array.add argumentsRetVal arg
+        end
+    end
+    ret argumentsRetVal
+end
+
+func gatherMandatoryParameterParentArguments
+    parentArgumentsRetVal = []
+    currentTransferParameters = $1
+    while isNotEmpty currentTransferParameters.parentType
+        currentTransferParameters = findParentParameters $0 currentTransferParameters.parentType
+        parentArgumentsRetVal = array.concat (gatherMandatoryParameterArguments currentTransferParameters showHidden: $.showHidden) parentArgumentsRetVal
+    end
+    ret parentArgumentsRetVal
+end
+
+func gatherOptionalParameterParentArguments
+    parentArgumentsRetVal = []
+    currentTransferParameters = $1
+    while isNotEmpty currentTransferParameters.parentType
+        currentTransferParameters = findParentParameters $0 currentTransferParameters.parentType
+        parentArgumentsRetVal = array.concat (gatherOptionalParameterArguments currentTransferParameters showHidden: $.showHidden) parentArgumentsRetVal
+    end
+    ret parentArgumentsRetVal
+end
+
+func findParentParameters
+    for parametersRetVal in $0
+        if parametersRetVal.typeName == $1
+            ret parametersRetVal
+        end
+    end
+end
+
+func transformMandatoryArgument(arg)
+    ret arg | string.split ' ' | array.last
+end
+func transformOptionalArgument(arg)
+    ret arg | string.split ' ' | array.offset 1 | array.first
+end
+
 func isVisibleProperty
     ret !$0.hidden
 end

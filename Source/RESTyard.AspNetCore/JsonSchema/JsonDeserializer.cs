@@ -35,17 +35,17 @@ namespace RESTyard.AspNetCore.JsonSchema
                 .ToImmutableArray();
         }
 
-        public object Deserialize(Stream stream)
+        public object? Deserialize(Stream stream)
         {
             using (var sr = new StreamReader(stream))
             using (var jsonTextReader = new JsonTextReader(sr))
             {
-                var raw = (JObject)new JsonSerializer().Deserialize(jsonTextReader);
+                var raw = (JObject?)new JsonSerializer().Deserialize(jsonTextReader);
                 return Deserialize(raw);
             }
         }
 
-        public object Deserialize(JObject raw)
+        public object? Deserialize(JObject? raw)
         {
             if (raw == null)
             {
@@ -68,7 +68,7 @@ namespace RESTyard.AspNetCore.JsonSchema
                     throw new ArgumentException($"Value property {uriPropertyName} is not a valid uri. Value: '{uri}'");
                 }
 
-                RouteValueDictionary values = null;
+                RouteValueDictionary? values = null;
                 if (!schemaPropertyGroup.TemplateMatchers.Any(t => t.TryGetValuesFromRequest(request.LocalPath, out values)))
                 {
                     //trim first path part if application is hosted with a base path part (only one supported...). Passing the base path from configuration would be the better approach.
@@ -87,7 +87,7 @@ namespace RESTyard.AspNetCore.JsonSchema
                 raw.RemoveNested(uriPropertyName, schemaPropertyGroup.NestingPropertyNameSpace);
                 foreach (var keyFromUriProperty in schemaPropertyGroup.Properties)
                 {
-                    var parameterValue = (string)values[keyFromUriProperty.ResolvedRouteTemplateParameterName];
+                    var parameterValue = (string?)values![keyFromUriProperty.ResolvedRouteTemplateParameterName];
                     raw.SetNestedValue(keyFromUriProperty.Property.Name, keyFromUriProperty.NestingPropertyNames, parameterValue);
                 }
             }
@@ -150,7 +150,7 @@ namespace RESTyard.AspNetCore.JsonSchema
                     .ToImmutableArray();
                 if (keyPropertiesMissingInTemplate.Any())
                 {
-                    throw new ArgumentException($"Type {Properties.First().Property.DeclaringType.BeautifulName()} contains KeyFromUri properties that are not represented as route template parameters: {string.Join(",", keyPropertiesMissingInTemplate.Select(k => $"Property {k.Property.Name}"))}. Route templates: {string.Join(",", TemplateMatchers.Select(r => r.Template.TemplateText))}");
+                    throw new ArgumentException($"Type {Properties.First().Property.DeclaringType?.BeautifulName()} contains KeyFromUri properties that are not represented as route template parameters: {string.Join(",", keyPropertiesMissingInTemplate.Select(k => $"Property {k.Property.Name}"))}. Route templates: {string.Join(",", TemplateMatchers.Select(r => r.Template.TemplateText))}");
                 }
             }
         }

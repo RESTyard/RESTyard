@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 using RESTyard.Client.Exceptions;
 using RESTyard.Client.Reader;
@@ -7,7 +8,7 @@ namespace RESTyard.Client.Extensions.NewtonsoftJson
 {
     public class NewtonsoftJsonProblemStringReader : IProblemStringReader
     {
-        public bool TryReadProblemString(string problemString, out ProblemDetails problemDescription)
+        public bool TryReadProblemString(string problemString, [NotNullWhen(true)] out ProblemDetails? problemDescription)
         {
             problemDescription = null;
             try

@@ -19,19 +19,21 @@ public static class MimeTypes
 }
 
 public partial record CreateCustomerParameters(string Name) : IHypermediaActionParameter;
-public partial record BuyCarParameters(string Brand, int CarId, double? Price = default) : IHypermediaActionParameter;
+public partial record BuyCarParameters(string Brand, int CarId, double? Price = default, double? HiddenProperty = default) : IHypermediaActionParameter;
+public partial record BuyLamborghiniParameters(string Brand, int CarId, string Color, double? Price = default, double? HiddenProperty = default, int? OptionalProperty = default) : BuyCarParameters(Brand, CarId, Price, HiddenProperty), IHypermediaQuery, IHypermediaActionParameter;
+public partial record BuyLamborghinettaParameters(string Brand, int CarId, string Color, int HorsePower, double? Price = default, double? HiddenProperty = default, int? OptionalProperty = default) : BuyLamborghiniParameters(Brand, CarId, Color, Price, HiddenProperty, OptionalProperty), IHypermediaQuery, IHypermediaActionParameter;
 public partial record NewAddress(string Address) : IHypermediaActionParameter;
 
 [HypermediaObject(Title = "Entry to the Rest API", Classes = new string[]{ "Entrypoint" })]
 public partial class HypermediaEntrypointHto : HypermediaObject
 {
     public HypermediaEntrypointHto(
-                HypermediaObjectReferenceBase customersRoot,
-        HypermediaObjectReferenceBase carsRoot
+        object? customersRootKey,
+        object? carsRootKey
     ) : base(hasSelfLink: true)
     {
-        Links.Add("CustomersRoot", customersRoot);
-        Links.Add("CarsRoot", carsRoot);
+        Links.Add("CustomersRoot", new HypermediaObjectKeyReference(typeof(HypermediaCustomersRootHto), customersRootKey));
+        Links.Add("CarsRoot", new HypermediaObjectKeyReference(typeof(HypermediaCarsRootHto), carsRootKey));
     }
 }
 
@@ -39,11 +41,11 @@ public partial class HypermediaEntrypointHto : HypermediaObject
 public partial class HypermediaCarsRootHto : HypermediaObject
 {
     public HypermediaCarsRootHto(
-        HypermediaObjectReferenceBase niceCar,
+        object? niceCarKey,
         object? superCarKey
     ) : base(hasSelfLink: true)
     {
-        Links.Add("NiceCar", niceCar);
+        Links.Add("NiceCar", new HypermediaObjectKeyReference(typeof(DerivedCarHto), niceCarKey));
         Links.Add("SuperCar", new HypermediaObjectKeyReference(typeof(HypermediaCarHto), superCarKey));
     }
 }
@@ -52,10 +54,10 @@ public partial class HypermediaCarsRootHto : HypermediaObject
 public partial class HypermediaCarHto : HypermediaObject
 {
     [Key("id")]
-    public int?  Id { get; set; }
+    public int? Id { get; set; }
 
     [Key("brand")]
-    public string?  Brand { get; set; }
+    public string? Brand { get; set; }
 
     public IEnumerable<float>? PriceDevelopment { get; set; }
 
@@ -76,6 +78,81 @@ public partial class HypermediaCarHto : HypermediaObject
         this.PriceDevelopment = priceDevelopment;
         this.PopularCountries = popularCountries;
         this.MostPopularIn = mostPopularIn;
+    }
+}
+
+[HypermediaObject(Title = "Derived Car", Classes = new string[]{ "DerivedCar" })]
+public partial class DerivedCarHto : HypermediaCarHto
+{
+    public string? DerivedProperty { get; set; }
+
+    [HypermediaAction(Name = "Derived", Title = "Derived Operation")]
+    public DerivedOp Derived { get; init; }
+
+    public DerivedCarHto(
+        int? id,
+        string? brand,
+        IEnumerable<float>? priceDevelopment,
+        List<Country>? popularCountries,
+        Country? mostPopularIn,
+        string? derivedProperty,
+        DerivedOp derived,
+        IEnumerable<HypermediaCustomerHto> item,
+        bool hasDerivedLink,
+        object? derivedLinkKey
+    ) : base(
+            id,
+            brand,
+            priceDevelopment,
+            popularCountries,
+            mostPopularIn)
+    {
+        this.DerivedProperty = derivedProperty;
+        this.Derived = derived;
+        Entities.AddRange("item", item);
+        if (hasDerivedLink)
+        {
+            Links.Add("DerivedLink", new HypermediaObjectKeyReference(typeof(HypermediaCustomerHto), derivedLinkKey));
+        }
+    }
+
+    public partial class DerivedOp : HypermediaAction
+    {
+        public DerivedOp(Func<bool> canExecuteDerived)
+            : base(canExecuteDerived) { }
+    }
+}
+
+[HypermediaObject(Title = "Derives from Derived Car", Classes = new string[]{ "NextLevelDerivedCar" })]
+public partial class NextLevelDerivedCarHto : DerivedCarHto
+{
+    public string? NextLevelDerivedProperty { get; set; }
+
+    public NextLevelDerivedCarHto(
+        int? id,
+        string? brand,
+        IEnumerable<float>? priceDevelopment,
+        List<Country>? popularCountries,
+        Country? mostPopularIn,
+        string? derivedProperty,
+        DerivedOp derived,
+        IEnumerable<HypermediaCustomerHto> item,
+        bool hasDerivedLink,
+        object? derivedLinkKey,
+        string? nextLevelDerivedProperty
+    ) : base(
+            id,
+            brand,
+            priceDevelopment,
+            popularCountries,
+            mostPopularIn,
+            derivedProperty,
+            derived,
+            item,
+            hasDerivedLink,
+            derivedLinkKey)
+    {
+        this.NextLevelDerivedProperty = nextLevelDerivedProperty;
     }
 }
 
@@ -120,8 +197,9 @@ public partial class HypermediaCustomersRootHto : HypermediaObject
 [HypermediaObject(Title = "", Classes = new string[]{ "Customer" })]
 public partial class HypermediaCustomerHto : HypermediaObject
 {
+    [Key("id")]
     [FormatterIgnoreHypermediaProperty]
-    public int  Id { get; set; }
+    public int Id { get; set; }
 
     public int? Age { get; set; }
 
@@ -194,14 +272,14 @@ public partial class HypermediaCustomerHto : HypermediaObject
 [HypermediaObject(Title = "Query result on Customer", Classes = new string[]{ "CustomersQueryResult" })]
 public partial class HypermediaCustomerQueryResultHto : HypermediaQueryResult
 {
-    public int?  TotalEntities { get; set; }
+    public int? TotalEntities { get; set; }
 
     public int? CurrentEntitiesCount { get; set; }
 
     public HypermediaCustomerQueryResultHto(
         int? totalEntities,
         int? currentEntitiesCount,
-        IEnumerable<HypermediaObjectReferenceBase> item,
+        IEnumerable<HypermediaCustomerHto> item,
         IHypermediaQuery query
     ) : base(query)
     {

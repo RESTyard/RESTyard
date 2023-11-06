@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FunicularSwitch;
 using RESTyard.Client.Exceptions;
 using RESTyard.Client.ParameterSerializer;
 using RESTyard.Client.Reader;
@@ -130,15 +131,22 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             return !previousEntry.IsConfigurationEquivalentTo(newEntryConfiguration);
         }
 
-        protected override async Task<HttpResponseMessage> ResolveAsync(Uri uriToResolve)
+        protected override async Task<HypermediaResult<HttpResponseMessage>> ResolveAsync(Uri uriToResolve)
         {
-            return await this.httpClient.GetAsync(uriToResolve);
+            try
+            {
+                return await this.httpClient.GetAsync(uriToResolve);
+            }
+            catch (Exception e)
+            {
+                return HypermediaResult.Error<HttpResponseMessage>(HypermediaProblem.Exception(e));
+            }
         }
 
-        protected override async Task<HttpResponseMessage> SendCommandAsync(
+        protected override async Task<HypermediaResult<HttpResponseMessage>> SendCommandAsync(
             Uri uri,
             string method,
-            string payload = null)
+            string? payload = null)
         {
             var httpMethod = GetHttpMethod(method);
             var request = new HttpRequestMessage(httpMethod, uri);
@@ -148,42 +156,50 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
                 request.Content = new StringContent(payload, Encoding.UTF8, DefaultMediaTypes.ApplicationJson);//CONTENT-TYPE header    
             }
 
-            var responseMessage = await httpClient.SendAsync(request);
-
-            return responseMessage;
+            try
+            {
+                var responseMessage = await httpClient.SendAsync(request);
+                return responseMessage;
+            }
+            catch (Exception e)
+            {
+                return HypermediaResult.Error<HttpResponseMessage>(HypermediaProblem.Exception(e));
+            }
         }
 
-        protected override async Task EnsureRequestIsSuccessfulAsync(HttpResponseMessage responseMessage)
+        protected override async Task<HypermediaResult<Unit>> EnsureRequestIsSuccessfulAsync(HttpResponseMessage responseMessage)
         {
             if (responseMessage.IsSuccessStatusCode)
             {
-                return;
+                return HypermediaResult.Ok(No.Thing);
             }
-
-            var innerException = GetInnerException(responseMessage);
 
             var (hasProblemDescription, problemDescription) = await this.TryReadProblemStringAsync(responseMessage);
             if (hasProblemDescription)
             {
-                if (problemDescription.Status is not null)
+                if (problemDescription!.Status is not null)
                 {
-                    var httpStatus = (HttpStatusCode)problemDescription.Status;
-                    switch (httpStatus)
-                    {
-                        case HttpStatusCode.NotFound:
-                            throw new ResourceNotFound(problemDescription, innerException);
-                        case HttpStatusCode.InternalServerError:
-                            throw new ServerError(problemDescription, innerException);
-                    }
+                    return HypermediaResult.Error<Unit>(HypermediaProblem.ProblemDetails(problemDescription));
                 }
-                throw new HypermediaProblemException(problemDescription, innerException);
+                var problemDetailsCopy = new ProblemDetails()
+                {
+                    Detail = problemDescription.Detail,
+                    Instance = problemDescription.Instance,
+                    Status = (int)responseMessage.StatusCode,
+                    Title = problemDescription.Title,
+                    Type = problemDescription.Type,
+                };
+                foreach (var kvp in problemDescription.Extensions)
+                {
+                    problemDetailsCopy.Extensions.Add(kvp);
+                }
+                return HypermediaResult.Error<Unit>(HypermediaProblem.ProblemDetails(problemDetailsCopy));
             }
 
-            var message = innerException.Message ?? string.Empty;
-            throw new RequestNotSuccessfulException(message, (int)responseMessage.StatusCode, innerException);
+            return HypermediaResult.Error<Unit>(HypermediaProblem.StatusCode((int)responseMessage.StatusCode));
         }
 
-        private async Task<(bool hasProblemDescription, ProblemDetails problemDescription)> TryReadProblemStringAsync(HttpResponseMessage response)
+        private async Task<(bool hasProblemDescription, ProblemDetails? problemDescription)> TryReadProblemStringAsync(HttpResponseMessage response)
         {
             if (response.Content == null)
             {
@@ -201,28 +217,26 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             }
         }
 
-        private static Exception GetInnerException(HttpResponseMessage result)
+        protected override async Task<HypermediaResult<Stream>> ResponseAsStreamAsync(HttpResponseMessage responseMessage)
         {
             try
             {
-                result.EnsureSuccessStatusCode();
+                return await responseMessage.Content.ReadAsStreamAsync();
             }
-            catch (Exception inner)
+            catch (Exception e)
             {
-                return inner;
+                return HypermediaResult<Stream>.Error(HypermediaProblem.Exception(e));
             }
-
-            return null;
         }
 
-        protected override async Task<Stream> ResponseAsStreamAsync(HttpResponseMessage responseMessage)
+        protected override HypermediaResult<Uri> GetLocation(HttpResponseMessage responseMessage)
         {
-            return await responseMessage.Content.ReadAsStreamAsync();
-        }
-
-        protected override Uri GetLocation(HttpResponseMessage responseMessage)
-        {
-            return responseMessage.Headers.Location;
+            var location = responseMessage.Headers.Location;
+            if (location is null)
+            {
+                return HypermediaResult.Error<Uri>(HypermediaProblem.InvalidResponse("hypermedia function did not return a result resource location."));
+            }
+            return HypermediaResult.Ok(location);
         }
 
         private static HttpMethod GetHttpMethod(string method)

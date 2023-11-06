@@ -1,10 +1,11 @@
 using System;
+using FunicularSwitch;
 using RESTyard.Client.Hypermedia.Commands;
 
 namespace RESTyard.Client
 {
     public interface IHypermediaCommandFactory
     {
-        IHypermediaClientCommand Create(Type commandInterfaceType);
+        Result<IHypermediaClientCommand> Create(Type commandInterfaceType);
     }
 }

@@ -9,7 +9,7 @@ namespace RESTyard.Client.Extensions.SystemTextJson
 {
     public class SystemTextJsonProblemStringReader : IProblemStringReader
     {
-        public bool TryReadProblemString(string problemString, out ProblemDetails problemDescription)
+        public bool TryReadProblemString(string problemString, [NotNullWhen(true)] out ProblemDetails? problemDescription)
         {
             problemDescription = null;
             try

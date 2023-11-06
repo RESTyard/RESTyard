@@ -38,7 +38,7 @@ public static  class JObjectExtensions
         currentPositon.Remove(propertyName);
     }
 
-    public static void SetNestedValue(this JObject jObject, string propertyName,  ImmutableArray<string> nestingPath, string value)
+    public static void SetNestedValue(this JObject jObject, string propertyName,  ImmutableArray<string> nestingPath, string? value)
     {
         var currentPositon = jObject;
         foreach (var nesting in nestingPath)

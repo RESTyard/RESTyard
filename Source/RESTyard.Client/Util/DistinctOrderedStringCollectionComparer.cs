@@ -7,7 +7,7 @@ namespace RESTyard.Client.Util
 {
     public class DistinctOrderedStringCollectionComparer : IEqualityComparer<IDistinctOrderedCollection<string>>
     {
-        public bool Equals(IDistinctOrderedCollection<string> left, IDistinctOrderedCollection<string> right)
+        public bool Equals(IDistinctOrderedCollection<string>? left, IDistinctOrderedCollection<string>? right)
         {
             if (ReferenceEquals(left, right))
             {

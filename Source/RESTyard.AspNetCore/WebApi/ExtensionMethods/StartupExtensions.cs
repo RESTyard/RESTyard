@@ -23,14 +23,14 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         /// Adds the Hypermedia Extensions.
         /// By default a Siren Formatters is added and the entry assembly is crawled for Hypermedia route attributes
         /// </summary>
-        public static IServiceCollection AddHypermediaExtensions(this IServiceCollection serviceCollection, Action<HypermediaExtensionsOptions> configureHypermediaOptionsAction = null)
+        public static IServiceCollection AddHypermediaExtensions(this IServiceCollection serviceCollection, Action<HypermediaExtensionsOptions>? configureHypermediaOptionsAction = null)
         {
             var hypermediaOptions = new HypermediaExtensionsOptions();
             configureHypermediaOptionsAction?.Invoke(hypermediaOptions);
             
             serviceCollection.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
             serviceCollection.AddSingleton(hypermediaOptions);
-            serviceCollection.AddSingleton<IHypermediaUrlConfig>(hypermediaOptions.HypermediaUrlConfig);
+            serviceCollection.AddSingleton(hypermediaOptions.DefaultHypermediaUrlConfig);
             serviceCollection.AddSingleton(CreateApplicationModel);
             serviceCollection.AddSingletonWithAlternative<IRouteRegister, AttributedRoutesRegister>(hypermediaOptions.AlternateRouteRegister);
             serviceCollection.AddSingletonWithAlternative<IQueryStringBuilder, QueryStringBuilder>(hypermediaOptions.AlternateQueryStringBuilder);
@@ -129,7 +129,8 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
             return options;
         }
 
-        public static IServiceCollection AddSingletonWithAlternative<TInterface, TDefault>(this IServiceCollection serviceCollection, Type alternative) where TDefault : TInterface
+        public static IServiceCollection AddSingletonWithAlternative<TInterface, TDefault>(this IServiceCollection serviceCollection, Type? alternative)
+            where TDefault : TInterface
         {
             var serviceType = typeof(TInterface);
             if (alternative != null && !serviceType.IsAssignableFrom(alternative))

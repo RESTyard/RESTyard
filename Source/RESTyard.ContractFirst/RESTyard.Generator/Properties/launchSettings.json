@@ -6,7 +6,7 @@
     },
     "Generate TS Client": {
       "commandName": "Project",
-      "commandLineArgs": "--schema-file ../../../../Sample.xml --type client --language typescript --output-file ../../../../Hypermedia.Generator.Demo.Server/wwwroot/Hypermedia.Client.g.ts --include-file ../../../../include.ts"
+      "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --type client --language typescript --output-file ../../../../../RESTyard.Client.Test/Hypermedia/Hypermedia.Client.g.ts --include-file ../../../../../RESTyard.Client.Test/Hypermedia/include.ts"
     },
     "Generate Server": {
       "commandName": "Project",
