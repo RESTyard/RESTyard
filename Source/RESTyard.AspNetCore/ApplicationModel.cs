@@ -88,7 +88,11 @@ namespace RESTyard.AspNetCore
             {
                 return new ActionMethod(httpPatchHypermediaAction.RouteType, httpPatchHypermediaAction.Template, controllerType, methodInfo.Name);
             }
-
+            var httpPutHypermediaAction = methodInfo.GetCustomAttribute<HttpPutHypermediaAction>();
+            if (httpPutHypermediaAction != null)
+            {
+                return new ActionMethod(httpPutHypermediaAction.RouteType, httpPutHypermediaAction.Template, controllerType, methodInfo.Name);
+            }
 
             var httpGetHypermediaActionParameterInfo = methodInfo.GetCustomAttribute<HttpGetHypermediaActionParameterInfo>();
             if (httpGetHypermediaActionParameterInfo != null)
