@@ -508,9 +508,9 @@ The corresponding post would look like:
 
 In certain scenarios an actions parameters (or not having any) is determined at runtime. This special case can be implemented using `DynamicHypermediaAction`.
 This action allows for a runtime dynamic schema to be retrieved. To decide what schema is desired it is required to pass runtime values to the schema routes.
-`DynamicHypermediaAction` has the property `SchemaRouteKeys` which accepts and object which will be passed to route generation so route keys can be filled with values.
+`DynamicHypermediaAction` has the property `SchemaRouteKeys` which accepts an object which will be passed to route generation so route keys can be filled with values.
 This also requires a custom route for the dynamic schemas using `[HttpGetHypermediaActionParameterInfo]`.
-For tis to work the custom type route has to:
+For this to work the custom type route has to:
 - have route keys which match the properties in `SchemaRouteKeys` so they can be filled.
 - the type route is identified by a `IHypermediaActionParameter` used as marker to find the route.
 

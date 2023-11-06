@@ -235,7 +235,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 { "type", DefaultMediaTypes.ApplicationJson }
             };
 
-            var routeKeysFromAction = GetRoutKeysIfActionHasSchemaParameters(hypermediaAction);
+            var routeKeysFromAction = GetRouteKeysIfActionHasSchemaParameters(hypermediaAction);
             if (!routeResolver.TryGetRouteByType(parameterType, out ResolvedRoute classRoute, routeKeysFromAction))
             {
                 var generatedRouteUrl = routeResolver.RouteUrl(
@@ -253,7 +253,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             jAction.Add("fields", new JArray { jfield });
         }
 
-        private dynamic GetRoutKeysIfActionHasSchemaParameters(HypermediaActionBase hypermediaAction)
+        private dynamic GetRouteKeysIfActionHasSchemaParameters(HypermediaActionBase hypermediaAction)
         {
             if (hypermediaAction is IDynamicSchema dynamicSchema)
             {
