@@ -189,9 +189,6 @@ public partial class {{ typeName }} : {{
                 end
             end
 }}
-{{
-    
-}}
     public partial class {{ operation.name }}Op : {{ actionType }}
     {
 {{-
