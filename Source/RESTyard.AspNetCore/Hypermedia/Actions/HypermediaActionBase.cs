@@ -17,9 +17,9 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
             return commandCanExecute();
         }
 
-        public bool TryGetParameterType([NotNullWhen(true)] out Type? parameterType)
+        public virtual bool TryGetParameterType([NotNullWhen(true)] out Type? parameterType)
         {
-            parameterType = this.ParameterType;
+            parameterType = ParameterType;
             return parameterType is not null;
         }
         

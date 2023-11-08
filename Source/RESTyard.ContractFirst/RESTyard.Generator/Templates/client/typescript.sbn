@@ -148,6 +148,7 @@ export class {{ parametersType.typeName }}
                 parentArgumentsForCall = array.concat (gatherArguments currentDocument includeSelfLink: false) parentArgumentsForCall
             end
         end
+        allArguments = array.concat parentArguments arguments
         
 }}
 export class {{ document.name }}Hco extends {{ if isNotEmpty document.parentDocument }}
