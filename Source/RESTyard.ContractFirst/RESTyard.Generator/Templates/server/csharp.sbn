@@ -169,6 +169,30 @@ public partial class {{ typeName }} : {{
     end
 }}
     }
+{{-
+    func isKeyProperty
+        ret $0.isKey
+    end
+    keyProperties = array.filter document.Properties @isKeyProperty
+    if (array.size keyProperties) != 0
+}}
+    public static object CreateKeyObject(
+    {{-
+        for property in keyProperties
+    -}}
+    {{ mapNullableType (!property.mandatory) property.type }} {{ property.name | uncapitalize }}{{ if !for.last }}, {{ end }}
+    {{-
+        end
+    }}) => new { {{
+        for property in keyProperties
+    -}}
+    {{ property.name | uncapitalize }} = {{ property.name | uncapitalize }}{{ if !for.last }}, {{ end }}
+    {{-
+        end
+    }} };
+{{-
+    end
+}}
 {{
         for operation in document.Operations
             typeParameters = []
