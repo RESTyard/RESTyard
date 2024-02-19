@@ -64,7 +64,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             
             if (internalReferenceTypeInfo.IsAssignableFrom(lookupType))
             {
-                if (!(reference.GetInstance() is InternalReference internalReference))
+                if (reference.GetInstance() is not InternalReference internalReference)
                 {
                     throw new HypermediaRouteException("Can not get instance for InternalReference.");
                 }
@@ -118,10 +118,17 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
 
         public Result<ResolvedRoute> RouteUrl(RouteInfo routeInfo, object? routeKeys = null)
         {
-            var urlStringResult = urlHelper.RouteUrl(routeInfo.Name, routeKeys, hypermediaUrlConfig.Scheme, hypermediaUrlConfig.Host.ToUriComponent())?? Result<string>.Error("Could not build URL");
-            return urlStringResult.Match(
-                url => new ResolvedRoute(url, routeInfo.HttpMethod, acceptableMediaType: routeInfo.AcceptableMediaType),
-                Result<ResolvedRoute>.Error);
+            var urlStringResult = urlHelper.RouteUrl(
+                routeInfo.Name,
+                routeKeys,
+                hypermediaUrlConfig.Scheme,
+                hypermediaUrlConfig.Host.ToUriComponent())
+                ?? Result<string>.Error("Could not build URL");
+            return urlStringResult.Map(
+                url => new ResolvedRoute(
+                    url,
+                    routeInfo.HttpMethod,
+                    acceptableMediaType: routeInfo.AcceptableMediaType));
         }
         
         /// <summary>

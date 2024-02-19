@@ -236,11 +236,11 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             };
 
             routeResolver.TryGetRouteByType(parameterType).Match(
-                classRoute =>
+                some: classRoute =>
                 {
                     jfield.Add("class", new JArray { classRoute.Url });
                 },
-                () =>
+                none: () =>
                 {
                     var generatedRouteUrl = routeResolver.RouteUrl(RouteNames.ActionParameterTypes,
                         new { parameterTypeName = parameterType.BeautifulName() });

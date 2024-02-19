@@ -44,7 +44,7 @@
   <!-- shared references, compilation flags and build options -->
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="FunicularSwitch" Version="4.0.0" />
+    <PackageReference Include="FunicularSwitch" Version="5.0.1" />
     <PackageReference Include="NJsonSchema" Version="10.8.0" />
   </ItemGroup>
 
