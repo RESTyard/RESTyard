@@ -52,6 +52,15 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             var routeNameFileUpload = nameof(FileUploadAction) + "_Route";
             RouteRegister.AddActionRoute(typeof(FileUploadAction), routeNameFileUpload, HttpMethod.POST, DefaultMediaTypes.MultipartFormData);
             
+            // for dynamic actions
+            // parameter type route
+            var routeNameDynamicParameter = nameof(DynamicParameter) + "_Route";
+            RouteRegister.AddParameterTypeRoute(typeof(DynamicParameter), routeNameDynamicParameter, HttpMethod.GET);
+            
+            // ReSharper disable InconsistentNaming
+            var routeNameDynamicAction = nameof(DynamicAction) + "_Route";
+            RouteRegister.AddActionRoute(typeof(DynamicAction), routeNameDynamicAction, HttpMethod.POST);
+            
             var ho = new ActionsHypermediaObject();
 
             var siren = SirenConverter.ConvertToJson(ho);
@@ -62,7 +71,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertHasOnlySelfLink(siren, routeName);
 
             var actionsArray = (JArray) siren["actions"];
-            Assert.AreEqual(7, actionsArray!.Count);
+            Assert.AreEqual(10, actionsArray!.Count);
             AssertActionBasic((JObject)siren["actions"]![0], "RenamedAction", "POST", routeNameHypermediaActionNoArgument, 5,  ActionClasses.ParameterLessActionClass, "A Title");
             AssertActionBasic((JObject)siren["actions"][1], "ActionNoArgument", "POST", routeNameHypermediaActionNoArgument, 4,  ActionClasses.ParameterLessActionClass);
 
@@ -81,6 +90,16 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             
             AssertActionBasic((JObject)siren["actions"][6], nameof(ExternalFileUploadAction), "POST", "ExternalActionRoute", 6,  ActionClasses.FileUploadActionClass);
             AssertFileUploadAction((JObject)siren["actions"][6], ho.FileUploadAction.FileUploadConfiguration, CustomMediaType);
+            
+            AssertActionBasic((JObject)siren["actions"][7], nameof(ActionsHypermediaObject.DynamicActionPrefilledParameter_None), "POST", routeNameDynamicAction, 4,  ActionClasses.ParameterLessActionClass);
+            
+            AssertActionBasic((JObject)siren["actions"][8], nameof(ActionsHypermediaObject.DynamicActionPrefilledParameter_String), "POST", routeNameDynamicAction, 6,  ActionClasses.ParameterActionClass);
+            AssertActionArgument((JObject) siren["actions"][8], DefaultMediaTypes.ApplicationJson,  nameof(DynamicParameter), nameof(DynamicParameter), hasDefaultValues:true, parameterTypeRouteName:routeNameDynamicParameter, objectKeyString:"{ SchemaRouteValue = SchemaKey_1 }");
+            AssertDynamicDefaultValues((JObject) siren["actions"][8], "3");
+            
+            AssertActionBasic((JObject)siren["actions"][9], nameof(ActionsHypermediaObject.DynamicActionPrefilledParameter_Object), "POST", routeNameDynamicAction, 6,  ActionClasses.ParameterActionClass);
+            AssertActionArgument((JObject) siren["actions"][9], DefaultMediaTypes.ApplicationJson,  nameof(DynamicParameter), nameof(DynamicParameter), hasDefaultValues:true, parameterTypeRouteName:routeNameDynamicParameter, objectKeyString:"{ SchemaRouteValue = SchemaKey_2 }");
+            AssertDynamicDefaultValues((JObject) siren["actions"][9], "4");
         }
 
         private void AssertFileUploadAction(JObject action, FileUploadConfiguration fileUploadConfiguration, string type)
@@ -105,8 +124,18 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             Assert.AreEqual(1, fields.Count());
             Assert.AreEqual(expectedDefaultValues.AInt, aInt);
         }
+        
+        private void AssertDynamicDefaultValues(JObject action, string expectedValue)
+        {
+            var fields = action["fields"];
+            var value = fields[0]["value"];
+            var property1 = value["Property1"].Value<string>();
+         
+            Assert.AreEqual(1, fields.Count());
+            Assert.AreEqual(expectedValue, property1);
+        }
 
-        private void AssertActionArgument(JObject action, string contentType, string actionParameterName, string actionParameterClass, bool classIsRoute = false, bool hasDefaultValues = false)
+        private void AssertActionArgument(JObject action, string contentType, string actionParameterName, string actionParameterClass, bool hasDefaultValues = false, string  parameterTypeRouteName = RouteNames.ActionParameterTypes, string objectKeyString = null)
         {
             Assert.AreEqual(contentType, action["type"]);
             var fields = (JArray) action["fields"];
@@ -129,13 +158,14 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             Assert.AreEqual(1, actionsArray.Count);
 
             var route = ((JValue)actionsArray[0]).Value<string>();
-            if (!classIsRoute)
+            
+            if (objectKeyString == null)
             {
-                AssertRoute(route, "ActionParameterTypes", $"{{ parameterTypeName = {actionParameterClass} }}");
+                AssertRoute(route, parameterTypeRouteName, $"{{ parameterTypeName = {actionParameterClass} }}");
             }
             else
             {
-                AssertRoute(route, actionParameterClass);
+                AssertRoute(route, parameterTypeRouteName, objectKeyString);
             }
         }
 
@@ -174,12 +204,18 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             
             public FileUploadAction FileUploadAction { get; private set; }
             public ExternalFileUploadAction ExternalFileUploadAction { get; private set; }
+            
+            public DynamicAction DynamicActionPrefilledParameter_None { get; private set; }
+            public DynamicAction DynamicActionPrefilledParameter_String { get; private set; }
+            public DynamicAction DynamicActionPrefilledParameter_Object { get; private set; }
 
 
             public static readonly Uri  ExternalUri = new Uri(TestUrlConfig.Scheme +"://" + TestUrlConfig.Host + "/ExternalActionRoute");
 
             public static readonly ActionParameter ActionWithArgumentDefaultValues = new ActionParameter() { AInt = 3 };
             public static readonly ActionParameter  ExternalActionWithArgumentDefaultValues = new ActionParameter{AInt = 4};
+            public static readonly string  DynamicActionPrefilledParameter_String_DefaultValues = @"{""Property1"":""3""}";
+            public static readonly object  DynamicActionPrefilledParameter_Object_DefaultValues = new {Property1="4"};
             
             public ActionsHypermediaObject()
             {
@@ -208,6 +244,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
                         Accept = new List<string>{".png", ".jpg"},
                         AllowMultiple = true
                     });
+
+                DynamicActionPrefilledParameter_None = new DynamicAction("Should_not_be_used_no_schema_referenced", false);
+                DynamicActionPrefilledParameter_String = new DynamicAction("SchemaKey_1", true, DynamicActionPrefilledParameter_String_DefaultValues);
+                DynamicActionPrefilledParameter_Object = new DynamicAction("SchemaKey_2", true, DynamicActionPrefilledParameter_Object_DefaultValues);
             }
         }
     }
@@ -285,14 +325,26 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         {
         }
     }
+    
+    public class DynamicAction : DynamicHypermediaAction<DynamicParameter>
+    {
+        public DynamicAction(string schemaRouteValue, bool hasParameters, object prefilledValues = null)
+            : base(hasParameters, prefilledValues)
+        {
+            SchemaRouteKeys = new {SchemaRouteValue=schemaRouteValue};
+        }
+    }
 
     public class ActionParameter : IHypermediaActionParameter
     {
         public int AInt { get; set; }
-    }  
-    
+    }
+
     public class RegisteredActionParameter : IHypermediaActionParameter
     {
         public int AInt { get; set; }
     }
+
+    // ReSharper disable once ClassNeverInstantiated.Global
+    public class DynamicParameter : IHypermediaActionParameter { }
 }

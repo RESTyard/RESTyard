@@ -47,13 +47,16 @@ export function match<TIn, TOut>(nullable: Nullable<TIn>, onValue: (v: TIn) => T
             currentType = findParentParameters TransferParameters.Parameters currentType.parentType
             parentParameters = array.concat (gatherParameterArguments currentType) parentParameters
         end
-        allParameters = array.concat parentParameters parameters
 }}
 export class {{ parametersType.typeName }}
     {{- if isNotEmpty parametersType.parentType }} extends {{ parametersType.parentType }}
     {{- end }} {
     constructor(
-{{- for param in allParameters }}
+{{- for param in parentParameters }}
+        {{ param }}{{ if !for.last }},{{ end }}
+{{- end }}
+{{- if (array.size parentParameters) > 0 && (array.size parameters) > 0 }},{{ end -}}
+{{- for param in parameters }}
         public readonly {{ param }}{{ if !for.last }},{{ end }}
 {{- end }}
     ) { {{ if isNotEmpty parametersType.parentType -}}
@@ -154,9 +157,13 @@ export class {{ document.name }}Hco extends {{ if isNotEmpty document.parentDocu
         HypermediaObject
     {{- end }} {
     constructor(
-{{-     for arg in allArguments }}
-        public readonly {{ arg }}{{ if !for.last }},{{ end }}
-{{-     end }}
+{{- for param in parentArguments }}
+        {{ param }}{{ if !for.last }},{{ end }}
+{{- end }}
+{{- if (array.size parentArguments) > 0 && (array.size arguments) > 0 }},{{ end -}}
+{{- for param in arguments }}
+        public{{ if (array.size parentArguments) > 0 && string.contains param "self:" }} override{{ end }} readonly {{ param }}{{ if !for.last }},{{ end }}
+{{- end }}
     ) {
         super({{- for arg in parentArgumentsForCall }}{{ arg | string.split ':' | array.first }}{{ if !for.last }}, {{ end }}{{- end }});
     }

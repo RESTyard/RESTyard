@@ -29,7 +29,7 @@
 			<Property name="Text" type="string" mandatory="true" />
 			<Property name="Flag" type="bool" mandatory="true" />
 		</Parameters>
-    <ExternalParameters typeName="MarkAsFavoriteParameters" usedForActions="true" usedForQueries="false" />
+    <ExternalParameters typeName="MarkAsFavoriteParameters"/>
     <ExternalParameters typeName="CustomerQuery" />
   </TransferParameters>
   <Documents>
@@ -77,7 +77,7 @@
         <Entity collectionName="item" document="HypermediaCustomer" />
       </Entities>
       <Operations>
-        <Operation name="Derived" method="Post" title="Derived Operation" />
+        <Operation name="DerivedOperation" method="Post" title="Derived Operation" />
       </Operations>
       <Links>
         <Link rel="DerivedLink" mandatory="false" document="HypermediaCustomer" />
