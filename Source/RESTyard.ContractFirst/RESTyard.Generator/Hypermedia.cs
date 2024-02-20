@@ -541,6 +541,10 @@ public partial class OperationType {
     
     private string titleField;
     
+    private bool isUploadActionField;
+    
+    private bool isUploadActionFieldSpecified;
+    
     private string parameterTypeNameField;
     
     private string resultDocumentField;
@@ -585,6 +589,28 @@ public partial class OperationType {
         }
         set {
             this.titleField = value;
+        }
+    }
+    
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public bool isUploadAction {
+        get {
+            return this.isUploadActionField;
+        }
+        set {
+            this.isUploadActionField = value;
+        }
+    }
+    
+    /// <remarks/>
+    [System.Xml.Serialization.XmlIgnoreAttribute()]
+    public bool isUploadActionSpecified {
+        get {
+            return this.isUploadActionFieldSpecified;
+        }
+        set {
+            this.isUploadActionFieldSpecified = value;
         }
     }
     

@@ -11,6 +11,8 @@ namespace RESTyard.Client.Hypermedia.Commands
         string Title { get; set; }
 
         string Method { get; set; }
+        
+        string Type { get; set; }
 
         Uri Uri { get; set; }
 

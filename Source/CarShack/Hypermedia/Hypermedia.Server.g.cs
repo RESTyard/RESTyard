@@ -23,6 +23,7 @@ public partial record BuyCarParameters(string Brand, int CarId, double? Price = 
 public partial record BuyLamborghiniParameters(string Brand, int CarId, string Color, double? Price = default, double? HiddenProperty = default, int? OptionalProperty = default) : BuyCarParameters(Brand, CarId, Price, HiddenProperty), IHypermediaQuery, IHypermediaActionParameter;
 public partial record BuyLamborghinettaParameters(string Brand, int CarId, string Color, int HorsePower, double? Price = default, double? HiddenProperty = default, int? OptionalProperty = default) : BuyLamborghiniParameters(Brand, CarId, Color, Price, HiddenProperty, OptionalProperty), IHypermediaQuery, IHypermediaActionParameter;
 public partial record NewAddress(string Address) : IHypermediaActionParameter;
+public partial record UploadCarImageParameters(string Text, bool Flag);
 
 [HypermediaObject(Title = "Entry to the Rest API", Classes = new string[]{ "Entrypoint" })]
 public partial class HypermediaEntrypointHto : HypermediaObject
@@ -40,13 +41,24 @@ public partial class HypermediaEntrypointHto : HypermediaObject
 [HypermediaObject(Title = "The Cars API", Classes = new string[]{ "CarsRoot" })]
 public partial class HypermediaCarsRootHto : HypermediaObject
 {
+    [HypermediaAction(Name = "UploadCarImage", Title = "Upload image for car")]
+    public UploadCarImageOp UploadCarImage { get; init; }
+
     public HypermediaCarsRootHto(
+        UploadCarImageOp uploadCarImage,
         object? niceCarKey,
         object? superCarKey
     ) : base(hasSelfLink: true)
     {
+        this.UploadCarImage = uploadCarImage;
         Links.Add("NiceCar", new HypermediaObjectKeyReference(typeof(DerivedCarHto), niceCarKey));
         Links.Add("SuperCar", new HypermediaObjectKeyReference(typeof(HypermediaCarHto), superCarKey));
+    }
+
+    public partial class UploadCarImageOp : FileUploadHypermediaAction<UploadCarImageParameters>
+    {
+        public UploadCarImageOp(Func<bool> canExecuteUploadCarImage, FileUploadConfiguration? fileUploadConfiguration = null, UploadCarImageParameters? prefilledValues = default)
+            : base(canExecuteUploadCarImage, fileUploadConfiguration, prefilledValues) { }
     }
 }
 
@@ -281,12 +293,36 @@ public partial class HypermediaCustomerQueryResultHto : HypermediaQueryResult
     public HypermediaCustomerQueryResultHto(
         int? totalEntities,
         int? currentEntitiesCount,
-        IEnumerable<HypermediaCustomerHto> item,
+        IEnumerable<HypermediaCustomerHto> customers,
+        bool hasNext,
+        object? nextKey,
+        bool hasPrevious,
+        object? previousKey,
+        bool hasLast,
+        object? lastKey,
+        bool hasAll,
+        object? allKey,
         IHypermediaQuery query
     ) : base(query)
     {
         this.TotalEntities = totalEntities;
         this.CurrentEntitiesCount = currentEntitiesCount;
-        Entities.AddRange("item", item);
+        Entities.AddRange("Customers", customers);
+        if (hasNext)
+        {
+            Links.Add("Next", new HypermediaObjectKeyReference(typeof(HypermediaCustomerQueryResultHto), nextKey));
+        }
+        if (hasPrevious)
+        {
+            Links.Add("Previous", new HypermediaObjectKeyReference(typeof(HypermediaCustomerQueryResultHto), previousKey));
+        }
+        if (hasLast)
+        {
+            Links.Add("Last", new HypermediaObjectKeyReference(typeof(HypermediaCustomerQueryResultHto), lastKey));
+        }
+        if (hasAll)
+        {
+            Links.Add("All", new HypermediaObjectKeyReference(typeof(HypermediaCustomerQueryResultHto), allKey));
+        }
     }
 }

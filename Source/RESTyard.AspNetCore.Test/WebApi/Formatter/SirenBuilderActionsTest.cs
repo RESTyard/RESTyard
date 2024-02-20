@@ -285,7 +285,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     
     public class FileUploadAction : FileUploadHypermediaAction
     {
-        public FileUploadAction(Func<bool> canExecute, FileUploadConfiguration fileUploadConfiguration = null) : base(canExecute, fileUploadConfiguration)
+        public FileUploadAction(Func<bool> canExecute, FileUploadConfiguration? fileUploadConfiguration = null) : base(canExecute, fileUploadConfiguration)
         {
         }
     }

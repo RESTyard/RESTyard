@@ -13,6 +13,8 @@ namespace RESTyard.Client.Hypermedia.Commands
 
         public string Method { get; set; } = string.Empty;
 
+        public string Type { get; set; } = string.Empty;
+
         public Uri Uri { get; set; } = new Uri("not://set");
 
         public bool CanExecute { get; set; }

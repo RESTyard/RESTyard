@@ -99,7 +99,11 @@ public partial class {{ typeName }} : {{ if isNotEmpty document.parentDocument }
 typeParameters = []
 actionType = ""
 if isEmpty operation.resultDocument
-    actionType = "IHypermediaClientAction"
+    if operation.isUploadAction
+        actionType = "IHypermediaClientFileUploadAction"
+    else
+        actionType = "IHypermediaClientAction"
+    end
 else
     actionType = "IHypermediaClientFunction"
     typeParameters = array.add typeParameters (operation.resultDocument + "Hco")

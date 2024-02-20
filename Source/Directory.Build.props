@@ -27,6 +27,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<LangVersion>latest</LangVersion>
 
+		<Nullable>enable</Nullable>
     <Deterministic>true</Deterministic>
     <!-- The condition may change depending on the build system you use -->
     <!-- Azure DevOps -->

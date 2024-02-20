@@ -27,3 +27,31 @@ public abstract class FileUploadHypermediaAction : HypermediaActionBase, IFileUp
 
     protected override Type? ParameterType => typeof(FileUploadConfiguration);
 }
+
+/// <summary>
+/// A HypermediaAction which represents a file upload.
+/// For each concrete type a corresponding attributed route must exist.
+/// </summary>
+public abstract class FileUploadHypermediaAction<TParameter> : HypermediaActionBase, IFileUploadConfiguration
+    where TParameter : class
+{
+    public FileUploadConfiguration FileUploadConfiguration { get; set; }
+    public TParameter? PrefilledValues { get; protected set; }
+
+    protected FileUploadHypermediaAction(Func<bool> canExecute, FileUploadConfiguration? fileUploadConfiguration = null, TParameter? prefilledValues = null) : base(canExecute)
+    {
+        this.FileUploadConfiguration = fileUploadConfiguration ?? new FileUploadConfiguration();
+        this.PrefilledValues = prefilledValues;
+    }
+
+    protected FileUploadHypermediaAction(FileUploadConfiguration? fileUploadConfiguration = null, TParameter? prefilledValues = null) : this(() => true, fileUploadConfiguration, prefilledValues)
+    {
+    }
+
+    public override object? GetPrefilledParameter()
+    {
+        return this.PrefilledValues;
+    }
+
+    protected override Type? ParameterType => typeof(TParameter);
+}

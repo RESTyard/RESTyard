@@ -100,5 +100,30 @@ namespace RESTyard.Client.Extensions
                 return HypermediaResult.Error<MandatoryHypermediaLink<TResultType>>(HypermediaProblem.Exception(e));
             }
         }
+        
+        public static async Task<HypermediaResult<Unit>> ExecuteAsync<TParameters>(
+            this IHypermediaClientFileUploadAction<TParameters> action,
+            HypermediaFileUploadActionParameter<TParameters> parameters,
+            IHypermediaResolver resolver)
+        {
+            if (!action.CanExecute)
+            {
+                return HypermediaResult.Error<Unit>(HypermediaProblem.InvalidRequest("Can not execute Action."));
+            }
+
+            try
+            {
+                var result = await resolver.ResolveActionAsync(
+                    action.Uri,
+                    action.Method,
+                    action.ParameterDescriptions,
+                    parameters);
+                return result;
+            }
+            catch (Exception e)
+            {
+                return HypermediaResult.Error<Unit>(HypermediaProblem.Exception(e));
+            }
+        }
     }
 }
