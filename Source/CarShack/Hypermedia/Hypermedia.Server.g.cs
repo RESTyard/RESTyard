@@ -79,6 +79,7 @@ public partial class HypermediaCarHto : HypermediaObject
         this.PopularCountries = popularCountries;
         this.MostPopularIn = mostPopularIn;
     }
+    public static object CreateKeyObject(int? id, string? brand) => new { id = id, brand = brand };
 }
 
 [HypermediaObject(Title = "Derived Car", Classes = new string[]{ "DerivedCar" })]
@@ -86,8 +87,8 @@ public partial class DerivedCarHto : HypermediaCarHto
 {
     public string? DerivedProperty { get; set; }
 
-    [HypermediaAction(Name = "Derived", Title = "Derived Operation")]
-    public DerivedOp Derived { get; init; }
+    [HypermediaAction(Name = "DerivedOperation", Title = "Derived Operation")]
+    public DerivedOperationOp DerivedOperation { get; init; }
 
     public DerivedCarHto(
         int? id,
@@ -96,7 +97,7 @@ public partial class DerivedCarHto : HypermediaCarHto
         List<Country>? popularCountries,
         Country? mostPopularIn,
         string? derivedProperty,
-        DerivedOp derived,
+        DerivedOperationOp derivedOperation,
         IEnumerable<HypermediaCustomerHto> item,
         bool hasDerivedLink,
         object? derivedLinkKey
@@ -108,7 +109,7 @@ public partial class DerivedCarHto : HypermediaCarHto
             mostPopularIn)
     {
         this.DerivedProperty = derivedProperty;
-        this.Derived = derived;
+        this.DerivedOperation = derivedOperation;
         Entities.AddRange("item", item);
         if (hasDerivedLink)
         {
@@ -116,10 +117,10 @@ public partial class DerivedCarHto : HypermediaCarHto
         }
     }
 
-    public partial class DerivedOp : HypermediaAction
+    public partial class DerivedOperationOp : HypermediaAction
     {
-        public DerivedOp(Func<bool> canExecuteDerived)
-            : base(canExecuteDerived) { }
+        public DerivedOperationOp(Func<bool> canExecuteDerivedOperation)
+            : base(canExecuteDerivedOperation) { }
     }
 }
 
@@ -135,7 +136,7 @@ public partial class NextLevelDerivedCarHto : DerivedCarHto
         List<Country>? popularCountries,
         Country? mostPopularIn,
         string? derivedProperty,
-        DerivedOp derived,
+        DerivedOperationOp derivedOperation,
         IEnumerable<HypermediaCustomerHto> item,
         bool hasDerivedLink,
         object? derivedLinkKey,
@@ -147,7 +148,7 @@ public partial class NextLevelDerivedCarHto : DerivedCarHto
             popularCountries,
             mostPopularIn,
             derivedProperty,
-            derived,
+            derivedOperation,
             item,
             hasDerivedLink,
             derivedLinkKey)
@@ -243,6 +244,7 @@ public partial class HypermediaCustomerHto : HypermediaObject
         this.MarkAsFavorite = markAsFavorite;
         this.BuyCar = buyCar;
     }
+    public static object CreateKeyObject(int id) => new { id = id };
 
     public partial class CustomerMoveOp : HypermediaAction<NewAddress>
     {

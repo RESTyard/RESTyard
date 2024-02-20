@@ -11,7 +11,7 @@
     <VersionSuffixLocal Condition="'$(IsPreRelease)'!='' AND  '$(IsPreRelease)'">
       $(VersionSuffix)
     </VersionSuffixLocal>
-    <Version>0.7$(VersionSuffixLocal)</Version>
+    <Version>0.9.2$(VersionSuffixLocal)</Version>
 
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>restyard-generator</ToolCommandName>
@@ -29,13 +29,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Scriban" Version="5.7.0" />
+    <PackageReference Include="Scriban" Version="5.9.0" />
     <PackageReference Include="System.CommandLine.DragonFruit" Version="0.4.0-alpha.22114.1" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="Templates/**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Templates\client\typescript.sbn">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
