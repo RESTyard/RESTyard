@@ -8,6 +8,6 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
     {
         IHypermediaRouteResolver CreateRouteResolver(HttpContext httpContext);
 
-        IHypermediaRouteResolver CreateRouteResolver(IUrlHelper urlHelper);
+        IHypermediaRouteResolver CreateRouteResolver(IUrlHelper urlHelper, IHypermediaUrlConfig urlConfig);
     }
 }

@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using FunicularSwitch;
 using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.Exceptions;
 using RESTyard.AspNetCore.Hypermedia;
@@ -236,24 +237,25 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             };
 
             var routeKeysFromAction = GetRouteKeysIfActionHasSchemaParameters(hypermediaAction);
-            if (!routeResolver.TryGetRouteByType(parameterType, out ResolvedRoute classRoute, routeKeysFromAction))
-            {
-                var generatedRouteUrl = routeResolver.RouteUrl(
-                    RouteNames.ActionParameterTypes,
-                    new { parameterTypeName = parameterType.BeautifulName() });
-                jfield.Add("class", new JArray { generatedRouteUrl });
-            }
-            else
-            {
-                jfield.Add("class", new JArray { classRoute.Url });
-            }
+            routeResolver.TryGetRouteByType(parameterType, routeKeysFromAction).Match(
+                some: classRoute =>
+                {
+                    jfield.Add("class", new JArray { classRoute.Url });
+                },
+                none: () =>
+                {
+                    var generatedRouteUrl = routeResolver.RouteUrl(
+                        RouteNames.ActionParameterTypes,
+                        new { parameterTypeName = parameterType.BeautifulName() });
+                    jfield.Add("class", new JArray { generatedRouteUrl });
+                });
 
             AddPrefilledValue(jfield, hypermediaAction);
             
             jAction.Add("fields", new JArray { jfield });
         }
 
-        private dynamic GetRouteKeysIfActionHasSchemaParameters(HypermediaActionBase hypermediaAction)
+        private object? GetRouteKeysIfActionHasSchemaParameters(HypermediaActionBase hypermediaAction)
         {
             if (hypermediaAction is IDynamicSchema dynamicSchema)
             {

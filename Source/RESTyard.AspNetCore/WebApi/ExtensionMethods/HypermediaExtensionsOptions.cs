@@ -44,12 +44,6 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         public bool ImplicitHypermediaActionParameterBinders { get; set; } = true;
 
         /// <summary>
-        /// Configuration for Url generation
-        /// </summary>
-        public IHypermediaUrlConfig DefaultHypermediaUrlConfig { get; set; } = new HypermediaUrlConfig();
-
-
-        /// <summary>
         /// Configuration for hypermedia document generation
         /// </summary>
         public HypermediaConverterConfiguration HypermediaConverterConfiguration { get; set; } = new HypermediaConverterConfiguration();

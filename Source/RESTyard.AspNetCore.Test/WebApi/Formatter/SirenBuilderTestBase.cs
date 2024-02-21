@@ -47,9 +47,9 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         {
             RouteRegister = new RouteRegister();
             RouteKeyFactory = new RouteKeyFactory(RouteRegister);
-            RouteResolverFactory = new RegisterRouteResolverFactory(RouteRegister, new HypermediaExtensionsOptions(), RouteKeyFactory, TestUrlConfig);
+            RouteResolverFactory = new RegisterRouteResolverFactory(RouteRegister, new HypermediaExtensionsOptions(), RouteKeyFactory);
 
-            RouteResolver = RouteResolverFactory.CreateRouteResolver(UrlHelper);
+            RouteResolver = RouteResolverFactory.CreateRouteResolver(UrlHelper, TestUrlConfig);
             SirenConverter = CreateSirenConverter();
             SirenConverterNoNullProperties = CreateSirenConverter(new HypermediaConverterConfiguration{ WriteNullProperties = false });
         }

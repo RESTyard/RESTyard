@@ -1,6 +1,6 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using FunicularSwitch;
 using Microsoft.AspNetCore.Mvc;
 using RESTyard.AspNetCore.Exceptions;
 using RESTyard.AspNetCore.Hypermedia;
@@ -16,7 +16,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
     /// </summary>
     public class RegisterRouteResolver : IHypermediaRouteResolver
     {
-        protected IRouteRegister RouteRegister;
+        protected readonly IRouteRegister RouteRegister;
 
         private readonly IHypermediaUrlConfig hypermediaUrlConfig;
 
@@ -30,19 +30,19 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
 
         public RegisterRouteResolver(IUrlHelper urlHelper, IRouteKeyFactory routeKeyFactory, IRouteRegister routeRegister, HypermediaExtensionsOptions hypermediaOptions, IHypermediaUrlConfig hypermediaUrlConfig)
         {
-            this.RouteRegister = routeRegister;
+            RouteRegister = routeRegister;
             this.urlHelper = urlHelper;
             this.hypermediaUrlConfig = hypermediaUrlConfig;
             this.routeKeyFactory = routeKeyFactory;
-            this.returnDefaultRouteForUnknownHto = hypermediaOptions.ReturnDefaultRouteForUnknownHto;
-            this.defaultRouteSegmentForUnknownHto = hypermediaOptions.DefaultRouteSegmentForUnknownHto;
+            returnDefaultRouteForUnknownHto = hypermediaOptions.ReturnDefaultRouteForUnknownHto;
+            defaultRouteSegmentForUnknownHto = hypermediaOptions.DefaultRouteSegmentForUnknownHto;
         }
 
         public ResolvedRoute ObjectToRoute(HypermediaObject hypermediaObject)
         {
             var lookupType = hypermediaObject.GetType();
-            var routeKeys = this.routeKeyFactory.GetHypermediaRouteKeys(hypermediaObject);
-            return this.GetRouteByType(lookupType, routeKeys);
+            var routeKeys = routeKeyFactory.GetHypermediaRouteKeys(hypermediaObject);
+            return GetRouteByType(lookupType, routeKeys);
         }
 
         public ResolvedRoute ReferenceToRoute(HypermediaObjectReferenceBase reference)
@@ -64,16 +64,22 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             
             if (internalReferenceTypeInfo.IsAssignableFrom(lookupType))
             {
-                if (!(reference.GetInstance() is InternalReference internalReference))
+                if (reference.GetInstance() is not InternalReference internalReference)
                 {
                     throw new HypermediaRouteException("Can not get instance for InternalReference.");
                 }
 
                 // we assume get here since external references will be links only for now
                 var routeInfo = new RouteInfo(internalReference.RouteName, HttpMethod.GET);
-                var resolvedInternalRoute = RouteUrl(routeInfo, internalReference.RouteParameters);
-                resolvedInternalRoute.AvailableMediaTypes = internalReference.AvailableMediaTypes;
-                return resolvedInternalRoute;
+                var resolvedInternalRouteOption = RouteUrl(routeInfo, internalReference.RouteParameters);
+
+                return resolvedInternalRouteOption.Match(
+                    resolvedInternalRoute =>
+                    {
+                        resolvedInternalRoute.AvailableMediaTypes = internalReference.AvailableMediaTypes;
+                        return resolvedInternalRoute;
+                    },
+                    _ => throw new HypermediaRouteException($"Could not build URL to internal route. Name: {internalReference.RouteName}"));
             }
 
             if (reference is HypermediaExternalObjectReference hypermediaExternalObjectReference)
@@ -83,38 +89,47 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                 return new ResolvedRoute(hypermediaExternalObjectReference.Uri.ToString(), HttpMethod.GET);
             }
 
-            var routeKeys = this.routeKeyFactory.GetHypermediaRouteKeys(reference);
-            return this.GetRouteByType(lookupType, routeKeys);
+            var routeKeys = routeKeyFactory.GetHypermediaRouteKeys(reference);
+            return GetRouteByType(lookupType, routeKeys);
         }
 
         public ResolvedRoute ActionToRoute(HypermediaObject actionHostObject, HypermediaActionBase action)
         {
             var lookupType = action.GetType();
             var routeKeys = routeKeyFactory.GetActionRouteKeys(action, actionHostObject);
-            return this.GetRouteByType(lookupType, routeKeys);
+            return GetRouteByType(lookupType, routeKeys);
         }
 
         public ResolvedRoute TypeToRoute(Type type)
         {
-            return this.GetRouteByType(type);
+            return GetRouteByType(type);
         }
 
-        public bool TryGetRouteByType(Type type, [NotNullWhen(true)] out ResolvedRoute? route, object? routeKeys = null)
+        public Option<ResolvedRoute> TryGetRouteByType(Type type, object? routeKeys = null)
         {
-            route = null;
-            if (this.RouteRegister.TryGetRoute(type, out var routeInfo))
+            if (RouteRegister.TryGetRoute(type, out var routeInfo))
             {
-                route = RouteUrl(routeInfo, routeKeys);
+                return RouteUrl(routeInfo, routeKeys).Match(
+                    ok => ok, 
+                    _ => Option<ResolvedRoute>.None);
             }
-            return route != null;
+            return Option<ResolvedRoute>.None;
         }
 
-        public ResolvedRoute RouteUrl(RouteInfo routeInfo, object? routeKeys = null)
+        public Result<ResolvedRoute> RouteUrl(RouteInfo routeInfo, object? routeKeys = null)
         {
-            var urlString = this.urlHelper.RouteUrl(routeInfo.Name, routeKeys, hypermediaUrlConfig.Scheme, hypermediaUrlConfig.Host.ToUriComponent());
-
-            return new ResolvedRoute(urlString, routeInfo.HttpMethod, acceptableMediaType: routeInfo.AcceptableMediaType);
-        } 
+            var urlStringResult = urlHelper.RouteUrl(
+                routeInfo.Name,
+                routeKeys,
+                hypermediaUrlConfig.Scheme,
+                hypermediaUrlConfig.Host.ToUriComponent())
+                ?? Result<string>.Error("Could not build URL");
+            return urlStringResult.Map(
+                url => new ResolvedRoute(
+                    url,
+                    routeInfo.HttpMethod,
+                    acceptableMediaType: routeInfo.AcceptableMediaType));
+        }
         
         /// <summary>
         /// Will return a URL for a given route name.
@@ -123,21 +138,20 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
         /// <param name="routeName"></param>
         /// <param name="routeKeys"></param>
         /// <returns></returns>
-        public string RouteUrl(string routeName, object? routeKeys = null)
+        public Result<string> RouteUrl(string routeName, object? routeKeys = null)
         { 
-            return this.urlHelper.RouteUrl(routeName, routeKeys, hypermediaUrlConfig.Scheme, hypermediaUrlConfig.Host.ToUriComponent());
+            return urlHelper.RouteUrl(routeName, routeKeys, hypermediaUrlConfig.Scheme, hypermediaUrlConfig.Host.ToUriComponent()) ?? Result<string>.Error("Could not build URL");
         }
 
         private ResolvedRoute GetRouteByType(Type lookupType, object? routeKeys = null)
         {
-            var foundRoute = this.RouteRegister.TryGetRoute(lookupType, out var routeInfo);
+            var foundRoute = RouteRegister.TryGetRoute(lookupType, out var routeInfo);
             if (!foundRoute)
             {
-                return this.HandleUnknownRoute(lookupType);
+                return HandleUnknownRoute(lookupType);
             }
 
-
-            var routeUrl = this.urlHelper.RouteUrl(routeInfo.Name, routeKeys, hypermediaUrlConfig.Scheme, hypermediaUrlConfig.Host.ToUriComponent());
+            var routeUrl = urlHelper.RouteUrl(routeInfo.Name, routeKeys, hypermediaUrlConfig.Scheme, hypermediaUrlConfig.Host.ToUriComponent());
             if (routeUrl == null)
             {
                 throw new RouteResolverException($"Could not build route: '{routeInfo.Name}' with method {routeInfo.HttpMethod}");

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using RESTyard.AspNetCore.Exceptions;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.JsonSchema;
 using RESTyard.AspNetCore.Query;
@@ -29,12 +31,24 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
             configureHypermediaOptionsAction?.Invoke(hypermediaOptions);
             
             serviceCollection.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            serviceCollection.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             serviceCollection.AddSingleton(hypermediaOptions);
-            serviceCollection.AddSingleton(hypermediaOptions.DefaultHypermediaUrlConfig);
             serviceCollection.AddSingleton(CreateApplicationModel);
             serviceCollection.AddSingletonWithAlternative<IRouteRegister, AttributedRoutesRegister>(hypermediaOptions.AlternateRouteRegister);
             serviceCollection.AddSingletonWithAlternative<IQueryStringBuilder, QueryStringBuilder>(hypermediaOptions.AlternateQueryStringBuilder);
             serviceCollection.AddSingleton<IRouteResolverFactory, RegisterRouteResolverFactory>();
+            serviceCollection.AddScoped<IHypermediaRouteResolver>(sp =>
+            {
+                var factory = sp.GetRequiredService<IRouteResolverFactory>();
+                var accessor = sp.GetRequiredService<IHttpContextAccessor>();
+                var httpContext = accessor.HttpContext;
+                if (httpContext is null)
+                {
+                    throw new HypermediaException(
+                        "Cannot resolve HttpContext from a scope that is not created as part of a request");
+                }
+                return factory.CreateRouteResolver(httpContext);
+            });
             serviceCollection.AddSingleton<IRouteKeyFactory, RouteKeyFactory>();
             serviceCollection.AddSingleton<ISirenHypermediaConverterFactory, SirenHypermediaConverterFactory>();
             serviceCollection.AddSingleton<HypermediaQueryLocationFormatter>();

@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.Logging.Console;
 using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
 using CarShack.Util.GlobalExceptionHandler;
+using Microsoft.AspNetCore.HttpOverrides;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 
 namespace CarShack
@@ -41,6 +43,7 @@ namespace CarShack
                         .WithExposedHeaders("Location");
                 }
             ); 
+            app.UseForwardedHeaders();
             app.UseMvc();
         }
 
@@ -53,6 +56,12 @@ namespace CarShack
                     options.EnableEndpointRouting = false;
                 });
 
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto |
+                                           ForwardedHeaders.XForwardedHost;
+                options.KnownNetworks.Add(new IPNetwork(IPAddress.Any, 0));
+            });
             // Initializes and adds the Hypermedia Extensions
             builder.Services.AddHypermediaExtensions(o =>
             {
