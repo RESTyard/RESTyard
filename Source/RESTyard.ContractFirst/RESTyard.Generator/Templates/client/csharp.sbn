@@ -105,7 +105,11 @@ if isEmpty operation.resultDocument
         actionType = "IHypermediaClientAction"
     end
 else
-    actionType = "IHypermediaClientFunction"
+    if operation.isUploadAction
+        actionType = 'IHypermediaClientFileUploadFunction'
+    else
+        actionType = "IHypermediaClientFunction"
+    end
     typeParameters = array.add typeParameters (operation.resultDocument + "Hco")
 end
 if isNotEmpty operation.parameterTypeName

@@ -169,8 +169,8 @@ public partial class HypermediaCarsRootHto
     public HypermediaCarsRootHto()
         : this(
             new(() => true),
-            new { brand = "VW", id = 2 },
-            new { brand = "Porsche", id = 5 })
+            DerivedCarHto.CreateKeyObject(id: 2, brand: "VW"),
+            HypermediaCarHto.CreateKeyObject(id: 5, brand: "Porsche"))
     {
         UploadCarImage = new UploadCarImageOp(() => true, new FileUploadConfiguration
         {

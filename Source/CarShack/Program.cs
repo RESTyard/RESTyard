@@ -1,32 +1,48 @@
-﻿using System.IO;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Logging;
+﻿using System.Threading.Tasks;
+using CarShack.Controllers.EntryPoint;
+using CarShack.Domain.Customer;
+using CarShack.Hypermedia;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 
 namespace CarShack
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .ConfigureLogging(loggingBuilder =>
-                {
-                    loggingBuilder.AddConsole();
-                    loggingBuilder.AddDebug();
-                })
-                .UseStartup<Startup>()
-                .ConfigureLogging(
-                    (hostingContext, logging) =>
-                    {
-                        logging.AddConsole();
-                        logging.AddDebug();
-                    })
-                .Build();
+            var builder = WebApplication.CreateBuilder(args);
 
-            host.Run();
+            builder.Services.AddControllers();
+
+            builder.Services.AddHypermediaExtensions(o =>
+            {
+                o.ReturnDefaultRouteForUnknownHto = true;
+                o.ControllerAndHypermediaAssemblies = [typeof(EntryPointController).Assembly];
+            });
+
+            builder.Services.AddCors();
+
+            builder.Services
+                .AddSingleton<HypermediaEntrypointHto>()
+                .AddSingleton<HypermediaCustomersRootHto>()
+                .AddSingleton<HypermediaCarsRootHto>()
+                .AddSingleton<ICustomerRepository, CustomerRepository>();
+
+            var app = builder.Build();
+
+            app.UseCors(builder =>
+            {
+                builder
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .WithExposedHeaders("Location");
+            });
+            app.MapControllers();
+
+            await app.RunAsync();
         }
     }
 }

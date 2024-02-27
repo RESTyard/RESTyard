@@ -47,7 +47,7 @@
         <Classification class="CarsRoot" />
       </Classifications>
 			<Operations>
-				<Operation name="UploadCarImage" method="Post" title="Upload image for car" parameterTypeName="UploadCarImageParameters" isUploadAction="true" />
+				<Operation name="UploadCarImage" method="Post" title="Upload image for car" parameterTypeName="UploadCarImageParameters" isUploadAction="true" resultDocument="CarImage" />
 			</Operations>
       <Links>
         <Link rel="NiceCar" document="DerivedCar" mandatory="true" />
@@ -64,6 +64,14 @@
         <Property name="PriceDevelopment" type="IEnumerable&lt;float&gt;" />
         <Property name="PopularCountries" type="List&lt;Country&gt;" />
         <Property name="MostPopularIn" type="Country" />
+      </Properties>
+    </Document>
+    <Document name="CarImage" title="Image for a car">
+      <Classifications>
+        <Classification class="CarImage"/>
+      </Classifications>
+      <Properties>
+        <Property name="Filename" type="string" isKey="true" hidden="true" />
       </Properties>
     </Document>
     <Document name="DerivedCar" title="Derived Car" parentDocument="HypermediaCar">

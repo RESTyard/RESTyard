@@ -31,7 +31,7 @@ public class HypermediaParameterFromFormBinderProvider : IModelBinderProvider
     public IModelBinder? GetBinder(ModelBinderProviderContext context)
     {
         var modelType = context.Metadata.ModelType;
-        if (ParameterIsHypermediaActionType(modelType)
+        if (ParameterIsHypermediaFileUploadActionType(modelType)
             && (ThisBinderIsSelectedOnMethod(context) || this.UseThisBinderImplicit(context)))
         {
             return new HypermediaParameterFromFormBinder(modelType, getRouteTemplateForType);
@@ -57,7 +57,7 @@ public class HypermediaParameterFromFormBinderProvider : IModelBinderProvider
         return context.BindingInfo.BinderType == typeof(HypermediaParameterFromFormBinder);
     }
 
-    private static bool ParameterIsHypermediaActionType(Type modelType)
+    private static bool ParameterIsHypermediaFileUploadActionType(Type modelType)
     {
         return typeof(HypermediaFileUploadActionParameter).GetTypeInfo().IsAssignableFrom(modelType);
     }

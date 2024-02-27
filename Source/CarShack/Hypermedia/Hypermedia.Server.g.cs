@@ -94,6 +94,22 @@ public partial class HypermediaCarHto : HypermediaObject
     public static object CreateKeyObject(int? id, string? brand) => new { id = id, brand = brand };
 }
 
+[HypermediaObject(Title = "Image for a car", Classes = new string[]{ "CarImage" })]
+public partial class CarImageHto : HypermediaObject
+{
+    [Key("filename")]
+    [FormatterIgnoreHypermediaProperty]
+    public string? Filename { get; set; }
+
+    public CarImageHto(
+        string? filename
+    ) : base(hasSelfLink: true)
+    {
+        this.Filename = filename;
+    }
+    public static object CreateKeyObject(string? filename) => new { filename = filename };
+}
+
 [HypermediaObject(Title = "Derived Car", Classes = new string[]{ "DerivedCar" })]
 public partial class DerivedCarHto : HypermediaCarHto
 {

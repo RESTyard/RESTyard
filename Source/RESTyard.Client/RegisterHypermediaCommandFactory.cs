@@ -18,6 +18,8 @@ namespace RESTyard.Client
             hypermediaCommandFactory.Register(typeof(IHypermediaClientFunction<,>), typeof(HypermediaClientFunction<,>));
             hypermediaCommandFactory.Register(typeof(IHypermediaClientFileUploadAction), typeof(HypermediaClientFileUploadAction));
             hypermediaCommandFactory.Register(typeof(IHypermediaClientFileUploadAction<>), typeof(HypermediaClientFileUploadAction<>));
+            hypermediaCommandFactory.Register(typeof(IHypermediaClientFileUploadFunction<>), typeof(HypermediaClientFileUploadFunction<>));
+            hypermediaCommandFactory.Register(typeof(IHypermediaClientFileUploadFunction<,>), typeof(HypermediaClientFileUploadFunction<,>));
             return hypermediaCommandFactory;
         }
 

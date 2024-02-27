@@ -1,16 +1,14 @@
 ﻿using System;
 using System.IO;
+using System.Net.Mime;
 using System.Reflection;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using CarShack.Hypermedia;
-using CarShack.Hypermedia.Cars;
 using CarShack.Util;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using RESTyard.AspNetCore.Exceptions;
-using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.JsonSchema;
 using RESTyard.AspNetCore.WebApi;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
@@ -52,8 +50,45 @@ namespace CarShack.Controllers.Cars
             }
         }
 
-        [HttpPostHypermediaAction("UploadImage", typeof(HypermediaCarsRootHto.UploadCarImageOp), AcceptedMediaType = DefaultMediaTypes.MultipartFormData)]
-        public async Task<IActionResult> UploadCarImage([HypermediaUploadParameterFromForm] HypermediaFileUploadActionParameter<UploadCarImageParameters> parameters)
+        [HttpGetHypermediaObject("special/{brand}/{id:int}", typeof(DerivedCarHto))]
+        public ActionResult GetDerivedEntity(string brand, int id)
+        {
+            try
+            {
+                // short cut for example, we should actually call the Car repo and get a Car domain object
+                var result = new DerivedCarHto(
+                    id: id,
+                    brand: brand,
+                    priceDevelopment: [],
+                    popularCountries: [],
+                    mostPopularIn: new Country(),
+                    derivedProperty: "some text",
+                    derivedOperation: new(() => false),
+                    item: [],
+                    hasDerivedLink: false, derivedLinkKey: null);
+                return Ok(result);
+            }
+            catch (EntityNotFoundException)
+            {
+                return this.Problem(ProblemJsonBuilder.CreateEntityNotFound());
+            }
+        }
+
+        [HttpGetHypermediaObject("CarImage/{filename}", typeof(CarImageHto))]
+        public async Task<IActionResult> GetCarImage(string filename)
+        {
+            var fullPath = GetFilePath(filename);
+
+            var content = await System.IO.File.ReadAllBytesAsync(fullPath);
+
+            return new FileContentResult(content, MediaTypeNames.Image.Jpeg);
+        }
+
+        [HttpPostHypermediaAction("UploadImage", typeof(HypermediaCarsRootHto.UploadCarImageOp),
+            AcceptedMediaType = DefaultMediaTypes.MultipartFormData)]
+        public async Task<IActionResult> UploadCarImage(
+            [HypermediaUploadParameterFromForm]
+            HypermediaFileUploadActionParameter<UploadCarImageParameters> parameters)
         {
             var files = parameters.Files;
             if (files.Count != 1)
@@ -71,35 +106,42 @@ namespace CarShack.Controllers.Cars
                     Detail = $"File must be <={maxFileSize}",
                     Status = StatusCodes.Status400BadRequest
                 });
-
             }
+
             var originalFilename = payloadFile.FileName;
             // Don't trust any file name, file extension, and file data from the request unless you trust them completely
             // Otherwise, it is very likely to cause problems such as virus uploading, disk filling, etc
             // In short, it is necessary to restrict and verify the upload
-            await SaveToBinDir(originalFilename, payloadFile);
+            var path = await SaveToBinDir(originalFilename, payloadFile);
 
-            return this.Ok();
+            return this.Created(new HypermediaObjectReference(new CarImageHto(Path.GetFileName(path))));
         }
 
-        private static async Task SaveToBinDir(string originalFilename, IFormFile payloadFile)
+        private static async Task<string> SaveToBinDir(string originalFilename, IFormFile payloadFile)
         {
-            var saveToPath = GetFilePath(originalFilename);
+            var saveToPath = GetFilePath(GetFileName(originalFilename));
 
             await using (var targetStream = System.IO.File.Create(saveToPath))
             {
                 await payloadFile.CopyToAsync(targetStream);
             }
+
+            return saveToPath;
         }
 
-        private static string GetFilePath(string originalFilename)
+        private static string GetFilePath(string fileName)
         {
             // In stub load to execution folder and replace same file. In Prod dont use user supplied filename and do not store in app folder
             var executionPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
             var targetPath = Path.Combine(executionPath, "Uploads");
             Directory.CreateDirectory(targetPath);
-            var saveToPath = Path.Combine(targetPath, "MyUploadedFile" + Path.GetExtension(originalFilename));
+            var saveToPath = Path.Combine(targetPath, GetFileName(fileName));
             return saveToPath;
+        }
+
+        private static string GetFileName(string originalFilename)
+        {
+            return "MyUploadedFile" + Path.GetExtension(originalFilename);
         }
 
         private BadRequestObjectResult BuildMalformedRequestError()

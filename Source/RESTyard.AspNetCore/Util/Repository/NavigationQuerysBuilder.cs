@@ -50,7 +50,8 @@ namespace RESTyard.AspNetCore.Util.Repository
             Option<QueryBase<TSortPropertyEnum, TQueryFilter>> next,
             Option<QueryBase<TSortPropertyEnum, TQueryFilter>> previous,
             Option<QueryBase<TSortPropertyEnum, TQueryFilter>> last)
-            Create<TSortPropertyEnum, TQueryFilter, TEntity>(QueryBase<TSortPropertyEnum, TQueryFilter> query,
+            Create<TSortPropertyEnum, TQueryFilter, TEntity>(
+                QueryBase<TSortPropertyEnum, TQueryFilter> query,
                 QueryResult<TEntity> queryResult)
             where TSortPropertyEnum : struct
             where TQueryFilter : IQueryFilter, new()

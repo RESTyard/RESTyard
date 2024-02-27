@@ -9,7 +9,7 @@ using RESTyard.Client.Hypermedia.Attributes;
 using RESTyard.Client.Hypermedia.Commands;
 
 
-namespace RESTyard.Client.Test.Hypermedia;
+namespace RESTyard.Integration.Test.Hco;
 
 public class DefaultHypermediaClientBuilder
 {
@@ -20,6 +20,7 @@ public class DefaultHypermediaClientBuilder
                 register.Register<HypermediaEntrypointHco>();
                 register.Register<HypermediaCarsRootHco>();
                 register.Register<HypermediaCarHco>();
+                register.Register<CarImageHco>();
                 register.Register<DerivedCarHco>();
                 register.Register<NextLevelDerivedCarHco>();
                 register.Register<HypermediaCustomersRootHco>();
@@ -66,7 +67,7 @@ public partial class HypermediaCarsRootHco : HypermediaClientObject
     public MandatoryHypermediaLink<HypermediaCarHco> SuperCar { get; set; } = default!;
 
     [HypermediaCommand("UploadCarImage")]
-    public IHypermediaClientFileUploadAction<UploadCarImageParameters>? UploadCarImage { get; set; }
+    public IHypermediaClientFileUploadFunction<CarImageHco, UploadCarImageParameters>? UploadCarImage { get; set; }
 }
 
 [HypermediaClientObject("Car")]
@@ -87,6 +88,14 @@ public partial class HypermediaCarHco : HypermediaClientObject
     public MandatoryHypermediaLink<HypermediaCarHco> Self { get; set; } = default!;
 }
 
+[HypermediaClientObject("CarImage")]
+public partial class CarImageHco : HypermediaClientObject
+{
+    [Mandatory]
+    [HypermediaRelations(new[]{ "self" })]
+    public MandatoryHypermediaLink<CarImageHco> Self { get; set; } = default!;
+}
+
 [HypermediaClientObject("DerivedCar")]
 public partial class DerivedCarHco : HypermediaCarHco
 {
@@ -102,8 +111,8 @@ public partial class DerivedCarHco : HypermediaCarHco
     [HypermediaRelations(new[]{ "item" })]
     public List<HypermediaCustomerHco> Item { get; set; } = default!;
 
-    [HypermediaCommand("Derived")]
-    public IHypermediaClientAction? Derived { get; set; }
+    [HypermediaCommand("DerivedOperation")]
+    public IHypermediaClientAction? DerivedOperation { get; set; }
 }
 
 [HypermediaClientObject("NextLevelDerivedCar")]

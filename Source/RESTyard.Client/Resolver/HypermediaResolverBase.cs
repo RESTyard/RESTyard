@@ -158,6 +158,12 @@ namespace RESTyard.Client.Resolver
             IReadOnlyList<ParameterDescription> parameterDescriptions,
             object? parameterObject) where T : HypermediaClientObject
         {
+            if (parameterObject is IHypermediaFileUploadParameter fileUploadParameter)
+            {
+                return await this.ProcessUploadParameters(parameterDescriptions, fileUploadParameter)
+                    .Bind(uploadPayload => this.SendUploadCommandAsync(uri, method, uploadPayload))
+                    .Bind(this.HandleFunctionResponseAsync<T>);
+            }
             return await this.ProcessParameters(parameterDescriptions, parameterObject)
                 .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters))
                 .Bind(this.HandleFunctionResponseAsync<T>);
@@ -240,10 +246,12 @@ namespace RESTyard.Client.Resolver
             IReadOnlyList<ParameterDescription> parameterDescriptions, IHypermediaFileUploadParameter parameterObject)
         {
             return GetParameterDescription(parameterDescriptions)
-                .Bind(parameterDescription => CreateUploadPayload(parameterDescription, parameterObject));
+                .Match(
+                    parameterDescription => CreateUploadPayload(parameterObject, parameterDescription),
+                    error: _ => CreateUploadPayload(parameterObject));
         }
 
-        protected abstract Task<HypermediaResult<TUploadPayload>> CreateUploadPayload(ParameterDescription parameterDescription, IHypermediaFileUploadParameter parameterObject);
+        protected abstract Task<HypermediaResult<TUploadPayload>> CreateUploadPayload(IHypermediaFileUploadParameter parameterObject, ParameterDescription? parameterDescription = null);
 
         protected static HypermediaResult<ParameterDescription> GetParameterDescription(IReadOnlyList<ParameterDescription> parameterDescriptions)
         {

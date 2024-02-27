@@ -134,8 +134,8 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
         }
 
         protected override async Task<HypermediaResult<MultipartFormDataContent>> CreateUploadPayload(
-            ParameterDescription parameterDescription,
-            IHypermediaFileUploadParameter parameterObject)
+            IHypermediaFileUploadParameter parameterObject,
+            ParameterDescription? parameterDescription = null)
         {
             MultipartFormDataContent? result = null;
             try

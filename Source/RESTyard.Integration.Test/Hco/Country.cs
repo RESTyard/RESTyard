@@ -5,7 +5,7 @@ using System.IO;
 using System;
 using System.Xml.Linq;
 
-namespace RESTyard.Client.Test.Hypermedia;
+namespace RESTyard.Integration.Test.Hco;
 
 public class Country
 {
