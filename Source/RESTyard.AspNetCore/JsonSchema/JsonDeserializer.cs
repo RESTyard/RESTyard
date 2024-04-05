@@ -52,6 +52,7 @@ namespace RESTyard.AspNetCore.JsonSchema
                 return null;
             }
 
+            // todo: all deconstructed properties must be either a list or not a list 
             foreach (var schemaPropertyGroup in keyFromUriProperties)
             {
                 var uriPropertyName = schemaPropertyGroup.SchemaPropertyName;
@@ -62,36 +63,65 @@ namespace RESTyard.AspNetCore.JsonSchema
                     throw new ArgumentException($"Required uri property {uriPropertyName} is missing");
                 }
 
-                var uri = (string)uriToken;
-                if (!Uri.TryCreate(uri, UriKind.RelativeOrAbsolute, out var request))
+                List<string> uris;
+                bool isSingleUriDeconstruction;
+                switch (uriToken.Type)
                 {
-                    throw new ArgumentException($"Value property {uriPropertyName} is not a valid uri. Value: '{uri}'");
+                    case JTokenType.String:
+                        isSingleUriDeconstruction = true;
+                        uris = [uriToken.ToString()];
+                        break;
+                    case JTokenType.Array:
+                        isSingleUriDeconstruction = false;
+                        uris = uriToken.ToObject<List<string>>();
+                        break;
+                    default:
+                        throw new ArgumentException($"Given values for URL deconstruction need to be a string or a list of strings.");
                 }
 
-                RouteValueDictionary? values = null;
-                if (!schemaPropertyGroup.TemplateMatchers.Any(t => t.TryGetValuesFromRequest(request.LocalPath, out values)))
+                var parameterValues = new Dictionary<string, List<string?>>();
+                foreach (var uri in uris)
                 {
-                    //trim first path part if application is hosted with a base path part (only one supported...). Passing the base path from configuration would be the better approach.
-                    var basePathTrimmed = TrimFirstPathPart(request.LocalPath);
-                    if (!schemaPropertyGroup.TemplateMatchers.Any(t => t.TryGetValuesFromRequest(basePathTrimmed, out values)))
+                    if (!Uri.TryCreate(uri, UriKind.RelativeOrAbsolute, out var request))
                     {
-                        if (request.LocalPath.Contains("[Area]") || request.LocalPath.Contains("[area]"))
+                        throw new ArgumentException($"Value property {uriPropertyName} is not a valid uri. Value: '{uri}'");
+                    }
+
+                    RouteValueDictionary? values = null;
+                    if (!schemaPropertyGroup.TemplateMatchers.Any(t => t.TryGetValuesFromRequest(request.LocalPath, out values)))
+                    {
+                        //trim first path part if application is hosted with a base path part (only one supported...). Passing the base path from configuration would be the better approach.
+                        var basePathTrimmed = TrimFirstPathPart(request.LocalPath);
+                        if (!schemaPropertyGroup.TemplateMatchers.Any(t => t.TryGetValuesFromRequest(basePathTrimmed, out values)))
                         {
-                            throw new ArgumentException($"Local path '{request.LocalPath}' contains unsupported tokens. The tokens '[Area]' and '[area]' are not supported. Please replace them with fixed values.");
+                            if (request.LocalPath.Contains("[Area]") || request.LocalPath.Contains("[area]"))
+                            {
+                                throw new ArgumentException($"Local path '{request.LocalPath}' contains unsupported tokens. The tokens '[Area]' and '[area]' are not supported. Please replace them with fixed values.");
+                            }
+
+                            throw new ArgumentException($"Local path '{request.LocalPath}' does not match any expected route template '{string.Join(",", schemaPropertyGroup.TemplateMatchers.Select(r => r.Template.TemplateText))}'");
+                        }
+                    }
+
+                    raw.RemoveNested(uriPropertyName, schemaPropertyGroup.NestingPropertyNameSpace);
+                    foreach (var keyFromUriProperty in schemaPropertyGroup.Properties)
+                    {
+                        var parameterValue = (string?)values![keyFromUriProperty.ResolvedRouteTemplateParameterName];
+                        if (!parameterValues.ContainsKey(keyFromUriProperty.ResolvedRouteTemplateParameterName))
+                        {
+                            parameterValues[keyFromUriProperty.ResolvedRouteTemplateParameterName] = [];
                         }
 
-                        throw new ArgumentException($"Local path '{request.LocalPath}' does not match any expected route template '{string.Join(",", schemaPropertyGroup.TemplateMatchers.Select(r => r.Template.TemplateText))}'");
+                        parameterValues[keyFromUriProperty.ResolvedRouteTemplateParameterName].Add(parameterValue);
                     }
                 }
 
-                raw.RemoveNested(uriPropertyName, schemaPropertyGroup.NestingPropertyNameSpace);
                 foreach (var keyFromUriProperty in schemaPropertyGroup.Properties)
                 {
-                    var parameterValue = (string?)values![keyFromUriProperty.ResolvedRouteTemplateParameterName];
-                    raw.SetNestedValue(keyFromUriProperty.Property.Name, keyFromUriProperty.NestingPropertyNames, parameterValue);
+                    var parameterValue = parameterValues[keyFromUriProperty.ResolvedRouteTemplateParameterName];
+                    raw.SetNestedValue(keyFromUriProperty.Property.Name, keyFromUriProperty.NestingPropertyNames, parameterValue, isSingleUriDeconstruction);
                 }
             }
-
             return raw.ToObject(type);
         }
 
