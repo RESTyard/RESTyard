@@ -41,6 +41,31 @@ namespace RESTyard.AspNetCore.JsonSchema
             var schema = NJsonSchema.JsonSchema.FromType(type, JsonSchemaGeneratorSettings);
             var keyProperties = type.GetKeyFromUriProperties();
 
+            bool? isSingleUriDeconstruction = null;
+            foreach (var keyProperty in keyProperties)
+            {
+                if (!keyProperty.Property.PropertyType.GetInterfaces()
+                        .Any(x => x.IsGenericType &&
+                                  x.GetGenericTypeDefinition() == typeof(ICollection<>)))
+                {
+                    isSingleUriDeconstruction = isSingleUriDeconstruction switch
+                    {
+                        false => throw new JsonSchemaGenerationException("Attribute KeyFromUri should be applied consistently either as a List or not as a List."),
+                        null => true,
+                        _ => isSingleUriDeconstruction
+                    };
+                }
+                else
+                {
+                    isSingleUriDeconstruction = isSingleUriDeconstruction switch
+                    {
+                        true => throw new JsonSchemaGenerationException("Attribute KeyFromUri should be applied consistently either as a List or not as a List."),
+                        null => false,
+                        _ => isSingleUriDeconstruction
+                    };
+                }
+            }
+            
             foreach (var keyProperty in keyProperties)
             {
                 RemoveProperty(schema, keyProperty.Property.Name, keyProperty.NestingPropertyNames);
@@ -55,7 +80,28 @@ namespace RESTyard.AspNetCore.JsonSchema
                 }
 
                 var isRequired = propertyGroup.Any(p => p.Property.GetCustomAttribute<RequiredAttribute>() != null);
-                var property = new JsonSchemaProperty { Type = JsonObjectType.String, Format = JsonFormatStrings.Uri };
+
+                // If 'isSingleUriDeconstruction' is true then set type = string
+                // Else set type = array of strings
+                JsonSchemaProperty property;
+                if (isSingleUriDeconstruction is true)
+                {
+                    property = new JsonSchemaProperty { Type = JsonObjectType.String, Format = JsonFormatStrings.Uri };
+                }
+                else
+                {
+                    property = new JsonSchemaProperty
+                    {
+                        Type = JsonObjectType.Array,
+                        Item = new NJsonSchema.JsonSchema
+                        {
+                            Type = JsonObjectType.String,
+                            Format = JsonFormatStrings.Uri
+                        }
+                    };
+                }
+
+                // var property = new JsonSchemaProperty { Type = jsonSchemaPropertyType, Format = JsonFormatStrings.Uri };
                 //schema factory sets minlength of required uri properties, so do it here as well
                 if (isRequired)
                 {
