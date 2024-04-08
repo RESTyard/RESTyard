@@ -41,31 +41,6 @@ namespace RESTyard.AspNetCore.JsonSchema
             var schema = NJsonSchema.JsonSchema.FromType(type, JsonSchemaGeneratorSettings);
             var keyProperties = type.GetKeyFromUriProperties();
 
-            bool? isSingleUriDeconstruction = null;
-            foreach (var keyProperty in keyProperties)
-            {
-                if (!keyProperty.Property.PropertyType.GetInterfaces()
-                        .Any(x => x.IsGenericType &&
-                                  x.GetGenericTypeDefinition() == typeof(ICollection<>)))
-                {
-                    isSingleUriDeconstruction = isSingleUriDeconstruction switch
-                    {
-                        false => throw new JsonSchemaGenerationException("Attribute KeyFromUri should be applied consistently either as a List or not as a List."),
-                        null => true,
-                        _ => isSingleUriDeconstruction
-                    };
-                }
-                else
-                {
-                    isSingleUriDeconstruction = isSingleUriDeconstruction switch
-                    {
-                        true => throw new JsonSchemaGenerationException("Attribute KeyFromUri should be applied consistently either as a List or not as a List."),
-                        null => false,
-                        _ => isSingleUriDeconstruction
-                    };
-                }
-            }
-            
             foreach (var keyProperty in keyProperties)
             {
                 RemoveProperty(schema, keyProperty.Property.Name, keyProperty.NestingPropertyNames);
@@ -73,6 +48,20 @@ namespace RESTyard.AspNetCore.JsonSchema
 
             foreach (var propertyGroup in keyProperties.GroupBy(p => p.SchemaPropertyName))
             {
+                var allAreCollection = propertyGroup
+                    .All(p => p.Property.PropertyType.GetInterfaces()
+                        .Any(x => x.IsGenericType &&
+                                  x.GetGenericTypeDefinition() == typeof(ICollection<>)));
+                var allAreNotCollection = propertyGroup
+                    .All(p => !p.Property.PropertyType.GetInterfaces()
+                        .Any(x => x.IsGenericType &&
+                                  x.GetGenericTypeDefinition() == typeof(ICollection<>)));
+                bool? isSingleUriDeconstruction = allAreCollection ? false : allAreNotCollection ? true : null;
+                if (isSingleUriDeconstruction is null)
+                {
+                    throw new JsonSchemaGenerationException("Attribute KeyFromUri should be applied consistently either as a List or not as a List for a specific type.");
+                }
+                
                 var schemaPropertyName = propertyGroup.Key;
                 if (schema.Properties.ContainsKey(schemaPropertyName))
                 {
@@ -101,7 +90,6 @@ namespace RESTyard.AspNetCore.JsonSchema
                     };
                 }
 
-                // var property = new JsonSchemaProperty { Type = jsonSchemaPropertyType, Format = JsonFormatStrings.Uri };
                 //schema factory sets minlength of required uri properties, so do it here as well
                 if (isRequired)
                 {
