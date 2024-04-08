@@ -21,6 +21,7 @@ public class DefaultHypermediaClientBuilder
                 register.Register<HypermediaCarsRootHco>();
                 register.Register<HypermediaCarHco>();
                 register.Register<CarImageHco>();
+                register.Register<CarInsuranceHco>();
                 register.Register<DerivedCarHco>();
                 register.Register<NextLevelDerivedCarHco>();
                 register.Register<HypermediaCustomersRootHco>();
@@ -68,6 +69,9 @@ public partial class HypermediaCarsRootHco : HypermediaClientObject
 
     [HypermediaCommand("UploadCarImage")]
     public IHypermediaClientFileUploadFunction<CarImageHco, UploadCarImageParameters>? UploadCarImage { get; set; }
+
+    [HypermediaCommand("UploadInsuranceScan")]
+    public IHypermediaClientFileUploadFunction<CarInsuranceHco>? UploadInsuranceScan { get; set; }
 }
 
 [HypermediaClientObject("Car")]
@@ -94,6 +98,14 @@ public partial class CarImageHco : HypermediaClientObject
     [Mandatory]
     [HypermediaRelations(new[]{ "self" })]
     public MandatoryHypermediaLink<CarImageHco> Self { get; set; } = default!;
+}
+
+[HypermediaClientObject("CarInsurance")]
+public partial class CarInsuranceHco : HypermediaClientObject
+{
+    [Mandatory]
+    [HypermediaRelations(new[]{ "self" })]
+    public MandatoryHypermediaLink<CarInsuranceHco> Self { get; set; } = default!;
 }
 
 [HypermediaClientObject("DerivedCar")]

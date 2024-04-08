@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Mime;
 using System.Reflection;
@@ -84,7 +85,19 @@ namespace CarShack.Controllers.Cars
             return new FileContentResult(content, MediaTypeNames.Image.Jpeg);
         }
 
-        [HttpPostHypermediaAction("UploadImage", typeof(HypermediaCarsRootHto.UploadCarImageOp),
+        [HttpGetHypermediaObject("CarInsurance/{filename}", typeof(CarInsuranceHto))]
+        public async Task<IActionResult> GetCarInsurance(string filename)
+        {
+            var fullPath = GetFilePath(filename);
+
+            var content = await System.IO.File.ReadAllBytesAsync(fullPath);
+
+            return new FileContentResult(content, MediaTypeNames.Application.Pdf);
+        }
+
+        [HttpPostHypermediaAction(
+            "UploadImage",
+            typeof(HypermediaCarsRootHto.UploadCarImageOp),
             AcceptedMediaType = DefaultMediaTypes.MultipartFormData)]
         public async Task<IActionResult> UploadCarImage(
             [HypermediaUploadParameterFromForm]
@@ -115,6 +128,26 @@ namespace CarShack.Controllers.Cars
             var path = await SaveToBinDir(originalFilename, payloadFile);
 
             return this.Created(new HypermediaObjectReference(new CarImageHto(Path.GetFileName(path))));
+        }
+
+        [HttpPostHypermediaAction(
+            "UploadInsurance",
+            typeof(HypermediaCarsRootHto.UploadInsuranceScanOp),
+            AcceptedMediaType = DefaultMediaTypes.MultipartFormData)]
+        public async Task<IActionResult> UploadInsurance(
+            [HypermediaUploadParameterFromForm] HypermediaFileUploadActionParameter parameters)
+        {
+            var files = parameters.Files;
+            if (files.Count != 1)
+            {
+                return BuildMalformedRequestError();
+            }
+            
+            // do things with the data
+            var payloadFile = files[0];
+            var path = await SaveToBinDir(payloadFile.FileName, payloadFile);
+
+            return this.Created(new HypermediaObjectReference(new CarInsuranceHto(Path.GetFileName(path))));
         }
 
         private static async Task<string> SaveToBinDir(string originalFilename, IFormFile payloadFile)

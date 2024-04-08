@@ -168,16 +168,25 @@ public partial class HypermediaCarsRootHto
     [ActivatorUtilitiesConstructor]
     public HypermediaCarsRootHto()
         : this(
-            new(() => true),
+            new UploadCarImageOp(
+                () => true,
+                new FileUploadConfiguration()
+                {
+                    Accept = [".jpg", "image/png", "image/*"],
+                    AllowMultiple = false,
+                    MaxFileSizeBytes = 1024 * 1024 * 4
+                }),
+            new UploadInsuranceScanOp(
+                () => true,
+                new FileUploadConfiguration()
+                {
+                    Accept = [".pdf"],
+                    AllowMultiple = true,
+                    MaxFileSizeBytes = 200,
+                }),
             DerivedCarHto.CreateKeyObject(id: 2, brand: "VW"),
             HypermediaCarHto.CreateKeyObject(id: 5, brand: "Porsche"))
     {
-        UploadCarImage = new UploadCarImageOp(() => true, new FileUploadConfiguration
-        {
-            Accept = new List<string> { ".jpg", "image/png", "image/*" },
-            AllowMultiple = false,
-            MaxFileSizeBytes = 1024 * 1024 * 4
-        });
     }
 }
 

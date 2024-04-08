@@ -23,7 +23,7 @@ public partial record BuyCarParameters(string Brand, int CarId, double? Price = 
 public partial record BuyLamborghiniParameters(string Brand, int CarId, string Color, double? Price = default, double? HiddenProperty = default, int? OptionalProperty = default) : BuyCarParameters(Brand, CarId, Price, HiddenProperty), IHypermediaQuery, IHypermediaActionParameter;
 public partial record BuyLamborghinettaParameters(string Brand, int CarId, string Color, int HorsePower, double? Price = default, double? HiddenProperty = default, int? OptionalProperty = default) : BuyLamborghiniParameters(Brand, CarId, Color, Price, HiddenProperty, OptionalProperty), IHypermediaQuery, IHypermediaActionParameter;
 public partial record NewAddress(string Address) : IHypermediaActionParameter;
-public partial record UploadCarImageParameters(string Text, bool Flag);
+public partial record UploadCarImageParameters(string Text, bool Flag) : IHypermediaActionParameter;
 
 [HypermediaObject(Title = "Entry to the Rest API", Classes = new string[]{ "Entrypoint" })]
 public partial class HypermediaEntrypointHto : HypermediaObject
@@ -44,13 +44,18 @@ public partial class HypermediaCarsRootHto : HypermediaObject
     [HypermediaAction(Name = "UploadCarImage", Title = "Upload image for car")]
     public UploadCarImageOp UploadCarImage { get; init; }
 
+    [HypermediaAction(Name = "UploadInsuranceScan", Title = "Upload scan of insurance for the car")]
+    public UploadInsuranceScanOp UploadInsuranceScan { get; init; }
+
     public HypermediaCarsRootHto(
         UploadCarImageOp uploadCarImage,
+        UploadInsuranceScanOp uploadInsuranceScan,
         object? niceCarKey,
         object? superCarKey
     ) : base(hasSelfLink: true)
     {
         this.UploadCarImage = uploadCarImage;
+        this.UploadInsuranceScan = uploadInsuranceScan;
         Links.Add("NiceCar", new HypermediaObjectKeyReference(typeof(DerivedCarHto), niceCarKey));
         Links.Add("SuperCar", new HypermediaObjectKeyReference(typeof(HypermediaCarHto), superCarKey));
     }
@@ -59,6 +64,12 @@ public partial class HypermediaCarsRootHto : HypermediaObject
     {
         public UploadCarImageOp(Func<bool> canExecuteUploadCarImage, FileUploadConfiguration? fileUploadConfiguration = null, UploadCarImageParameters? prefilledValues = default)
             : base(canExecuteUploadCarImage, fileUploadConfiguration, prefilledValues) { }
+    }
+
+    public partial class UploadInsuranceScanOp : FileUploadHypermediaAction
+    {
+        public UploadInsuranceScanOp(Func<bool> canExecuteUploadInsuranceScan, FileUploadConfiguration? fileUploadConfiguration = null)
+            : base(canExecuteUploadInsuranceScan, fileUploadConfiguration) { }
     }
 }
 
@@ -102,6 +113,22 @@ public partial class CarImageHto : HypermediaObject
     public string? Filename { get; set; }
 
     public CarImageHto(
+        string? filename
+    ) : base(hasSelfLink: true)
+    {
+        this.Filename = filename;
+    }
+    public static object CreateKeyObject(string? filename) => new { filename = filename };
+}
+
+[HypermediaObject(Title = "Insurance scan for a car", Classes = new string[]{ "CarInsurance" })]
+public partial class CarInsuranceHto : HypermediaObject
+{
+    [Key("filename")]
+    [FormatterIgnoreHypermediaProperty]
+    public string? Filename { get; set; }
+
+    public CarInsuranceHto(
         string? filename
     ) : base(hasSelfLink: true)
     {

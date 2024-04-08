@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace RESTyard.Client.Hypermedia.Commands;
 
 public class HypermediaClientFileUploadAction
-    : HypermediaClientCommandBase, IHypermediaClientFileUploadAction
+    : HypermediaClientFileUploadCommandBase, IHypermediaClientFileUploadAction
 {
     public HypermediaClientFileUploadAction()
     {
@@ -13,7 +13,7 @@ public class HypermediaClientFileUploadAction
 }
 
 public class HypermediaClientFileUploadAction<TParameter>
-    : HypermediaClientCommandBase, IHypermediaClientFileUploadAction<TParameter>
+    : HypermediaClientFileUploadCommandBase, IHypermediaClientFileUploadAction<TParameter>
 {
     public HypermediaClientFileUploadAction()
     {

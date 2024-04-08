@@ -155,6 +155,40 @@ public class IntegrationTests : IClassFixture<CarShackWaf>, IAsyncLifetime
             .NavigateAsync(l => l.CarsRoot);
 
         var cars = carsResult.Should().BeOk().Which;
+        var function = cars.UploadInsuranceScan!;
+        function.Should().NotBeNull();
+        function.Configuration.Should().NotBeNull();
+        function.Configuration.Should().BeEquivalentTo(new HypermediaClientFileUploadConfiguration(
+            MaxFileSizeBytes: 200,
+            AllowMultiple: true,
+            Accept: [".pdf"]));
+        var uploadResult = await cars.UploadInsuranceScan!.ExecuteAsync(
+            new HypermediaFileUploadActionParameter(
+                FileDefinitions:
+                [
+                    new(async () => new MemoryStream([5, 6, 7, 8]), "Scan", "Scan.pdf"),
+                ]),
+            this.Resolver);
+        var link = uploadResult.Should().BeOk().Which;
+        var bytes = await this.Client.GetByteArrayAsync(link.Uri);
+        bytes.Should().BeEquivalentTo([5, 6, 7, 8]);
+    }
+
+    [Fact]
+    public async Task FileUploadWithParameter()
+    {
+        var apiRoot = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint);
+        var carsResult = await apiRoot
+            .NavigateAsync(l => l.CarsRoot);
+
+        var cars = carsResult.Should().BeOk().Which;
+        var function = cars.UploadCarImage!;
+        function.Should().NotBeNull();
+        function.Configuration.Should().NotBeNull();
+        function.Configuration.Should().BeEquivalentTo(new HypermediaClientFileUploadConfiguration(
+            MaxFileSizeBytes: 1024 * 1024 * 4,
+            AllowMultiple: false,
+            Accept: [".jpg", "image/png", "image/*"]));
         var uploadResult = await cars.UploadCarImage!.ExecuteAsync(
             new HypermediaFileUploadActionParameter<UploadCarImageParameters>(
                 FileDefinitions: new List<FileDefinition>()

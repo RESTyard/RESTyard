@@ -141,12 +141,13 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             try
             {
                 result = new MultipartFormDataContent();
-                if (parameterObject.ParameterObject is not null)
+                if (parameterObject.ParameterObject is not null && parameterDescription is not null)
                 {
-                    var serializeParameterObject = this.ParameterSerializer.SerializeParameterObject(nameof(parameterObject.ParameterObject),
+                    var serializeParameterObject = this.ParameterSerializer.SerializeParameterObject(
+                        parameterDescription.Name,
                         parameterObject.ParameterObject);
                     result.Add(
-                        new StringContent(serializeParameterObject), nameof(IHypermediaFileUploadParameter.ParameterObject));
+                        new StringContent(serializeParameterObject), parameterDescription.Name);
                 }
 
                 foreach (var file in parameterObject.FileDefinitions)

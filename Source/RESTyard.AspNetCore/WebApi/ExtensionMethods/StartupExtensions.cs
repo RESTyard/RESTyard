@@ -125,15 +125,19 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
 
                 return hmoType.GetHmoMethods.Select(_ => _.RouteTemplateFull).ToImmutableArray();
             }, forAttributedActionParametersOnly));
-            options.ModelBinderProviders.Insert(1, new HypermediaParameterFromFormBinderProvider(t =>
-            {
-                if (!applicationModel.HmoTypes.TryGetValue(t, out var hmoType))
-                {
-                    throw new ArgumentException($"No route found for type {t.BeautifulName()}");
-                }
+            options.ModelBinderProviders.Insert(
+                1,
+                new HypermediaParameterFromFormBinderProvider(
+                    t =>
+                    {
+                        if (!applicationModel.HmoTypes.TryGetValue(t, out var hmoType))
+                        {
+                            throw new ArgumentException($"No route found for type {t.BeautifulName()}");
+                        }
 
-                return hmoType.GetHmoMethods.Select(_ => _.RouteTemplateFull).ToImmutableArray();
-            }, forAttributedActionParametersOnly));
+                        return hmoType.GetHmoMethods.Select(_ => _.RouteTemplateFull).ToImmutableArray();
+                    },
+                    forAttributedActionParametersOnly));
 
             return options;
         }

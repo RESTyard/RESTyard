@@ -1,13 +1,13 @@
 namespace RESTyard.Client.Hypermedia.Commands;
 
 public interface IHypermediaClientFileUploadFunction<TResultType>
-    : IHypermediaClientCommand
+    : IHypermediaClientFileUploadCommand
     where TResultType : HypermediaClientObject
 {
 }
 
 public interface IHypermediaClientFileUploadFunction<TResultType, TParameters>
-    : IHypermediaClientCommand
+    : IHypermediaClientFileUploadCommand
     where TResultType : HypermediaClientObject
 {
 }

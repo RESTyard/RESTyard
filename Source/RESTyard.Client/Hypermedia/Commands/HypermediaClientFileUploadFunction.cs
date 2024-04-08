@@ -1,7 +1,7 @@
 namespace RESTyard.Client.Hypermedia.Commands;
 
 public class HypermediaClientFileUploadFunction<TResultType>
-    : HypermediaClientCommandBase, IHypermediaClientFileUploadFunction<TResultType>
+    : HypermediaClientFileUploadCommandBase, IHypermediaClientFileUploadFunction<TResultType>
     where TResultType : HypermediaClientObject
 {
     public HypermediaClientFileUploadFunction()
@@ -12,7 +12,7 @@ public class HypermediaClientFileUploadFunction<TResultType>
 }
 
 public class HypermediaClientFileUploadFunction<TResultType, TParameters>
-    : HypermediaClientCommandBase, IHypermediaClientFileUploadFunction<TResultType, TParameters>
+    : HypermediaClientFileUploadCommandBase, IHypermediaClientFileUploadFunction<TResultType, TParameters>
     where TResultType : HypermediaClientObject
 {
     public HypermediaClientFileUploadFunction()

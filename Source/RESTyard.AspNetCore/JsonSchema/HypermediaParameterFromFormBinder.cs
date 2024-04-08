@@ -76,97 +76,135 @@ public class HypermediaFileUploadActionParameter<TParameters> : HypermediaFileUp
 public class HypermediaParameterFromFormBinder : IModelBinder
 {
     private readonly Type wrapperModelType;
-    private readonly Option<Type> genericModelType;
-    private readonly Option<JsonDeserializer> serializer;
+    private readonly Option<(Type ParameterModelType, JsonDeserializer ModelDeserializer)> parameterModelInfo;
 
     public HypermediaParameterFromFormBinder(Type modelType, Func<Type, ImmutableArray<string>> getRouteTemplatesForType)
     {
         this.wrapperModelType = modelType;
-        this.genericModelType = modelType.GenericTypeArguments.FirstOrDefault().ToOption();
-        this.serializer = this.genericModelType.Map(gmt => new JsonDeserializer(gmt, getRouteTemplatesForType));
+        this.parameterModelInfo = modelType.GenericTypeArguments
+            .FirstOrDefault()
+            .ToOption()
+            .Map(parameterModelType => (
+                parameterModelType,
+                new JsonDeserializer(parameterModelType, getRouteTemplatesForType)));
+    }
+
+    private Result<ModelBindingContext> CheckModelType(ModelBindingContext bindingContext)
+    {
+        if (bindingContext.ModelType == this.wrapperModelType)
+        {
+            return Result.Ok(bindingContext);
+        }
+        else
+        {
+            return Result.Error<ModelBindingContext>(
+                $"ModelBinder does not match model type: '{this.wrapperModelType.BeautifulName()}' != '{bindingContext.ModelType}'");
+        }
+    }
+
+    private Result<ModelBindingContext> CheckRequestMethod(ModelBindingContext bindingContext)
+    {
+        var requestMethod = bindingContext.ActionContext.HttpContext.Request.Method;
+        if (requestMethod == HttpMethods.Post || requestMethod == HttpMethods.Patch || requestMethod == HttpMethods.Put)
+        {
+            return Result.Ok(bindingContext);
+        }
+        else
+        {
+            return Result.Error<ModelBindingContext>(
+                $"Invalid http method {requestMethod} expected Post, Put or Patch");
+        }
+    }
+
+    private Result<HttpRequest> CheckFormDataAndBoundary(HttpRequest request)
+    {
+        if (request.HasFormContentType
+            && MediaTypeHeaderValue.TryParse(request.ContentType, out var mediaTypeHeader)
+            && !string.IsNullOrEmpty(mediaTypeHeader.Boundary.Value))
+        {
+            return Result.Ok(request);
+        }
+        else
+        {
+            return Result.Error<HttpRequest>("File upload malformed. File upload must be form-data and have boundary");
+        }
     }
 
     public async Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        var modelTypeName = wrapperModelType.BeautifulName();
-        if (bindingContext.ModelType != wrapperModelType)
-        {
-            bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"ModelBinder does not match model type '{modelTypeName}' != '{bindingContext.ModelType}'");
-            return;
-        }
-
-        var requestMethod = bindingContext.ActionContext.HttpContext.Request.Method;
-        if (requestMethod != HttpMethods.Post && requestMethod != HttpMethods.Patch && requestMethod != HttpMethods.Put)
-        {
-            bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Invalid http method {requestMethod} expected Post, Put or Patch");
-            return;
-        }
-
-        var request = bindingContext.ActionContext.HttpContext.Request;
-        if (!request.HasFormContentType
-            || !MediaTypeHeaderValue.TryParse(request.ContentType, out var mediaTypeHeader)
-            || string.IsNullOrEmpty(mediaTypeHeader.Boundary.Value))
-        {
-            bindingContext.ModelState.AddModelError(bindingContext.ModelName, "File upload malformed. File upload must be form-data and have boundary");
-            return;
-        }
-
-        var (deserializeParameter, gmt, s) = this.genericModelType.Match(
-            some: gmt => this.serializer.Match(
-                some: s => (true, gmt, s),
-                none: () => (false, gmt, null!)),
-            none: () => (false, null!, null!));
-        JObject? jObject = null;
-        if (deserializeParameter)
-        {
-            if (request.Form.TryGetValue(nameof(HypermediaFileUploadActionParameter<Unit>.ParameterObject), out var parameters))
-            {
-                var rawDeserialized = JsonConvert.DeserializeObject(parameters);
-
-                if (rawDeserialized is JArray wrapperArray)
+        this.CheckModelType(bindingContext)
+            .Bind(this.CheckRequestMethod)
+            .Map(bc => bc.HttpContext.Request)
+            .Bind(this.CheckFormDataAndBoundary)
+            .Bind(request => ExtractParameterObject(request).Map(jObject => (request, jObject)))
+            .Bind(tuple => CreateResultObject(tuple.request, tuple.jObject))
+            .Match(
+                ok =>
                 {
-                    if (!TryUnwrapArray(wrapperArray, nameof(HypermediaFileUploadActionParameter<Unit>.ParameterObject), out jObject))
+                    bindingContext.Result = ModelBindingResult.Success(ok);
+                },
+                error =>
+                {
+                    bindingContext.ModelState.AddModelError(bindingContext.ModelName, error);
+                });
+
+        Result<JObject?> ExtractParameterObject(HttpRequest request)
+        {
+            return this.parameterModelInfo.Match(
+                some =>
+                {
+                    var typeName = some.ParameterModelType.BeautifulName();
+                    if (request.Form.TryGetValue(typeName, out var parameters))
                     {
-                        bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Invalid Json. Expected an object or and array containing one element with one object property '{modelTypeName}'");
-                        return;
-                    }
-                }
-                else
-                {
-                    jObject = (JObject)rawDeserialized;
-                }
-            }
-            else
-            {
-                bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Method indicates additional parameters, but no {nameof(StringContent)} with key {nameof(HypermediaFileUploadActionParameter<Unit>.ParameterObject)} found in the form");
-                return;
-            }
-        }
+                        var rawDeserialized = JsonConvert.DeserializeObject(parameters);
 
-        try
-        {
-            HypermediaFileUploadActionParameter resultObject;
-            if (deserializeParameter)
-            {
-                var deserialized = s.Deserialize(jObject);
-                var resultType = typeof(HypermediaFileUploadActionParameter<>).MakeGenericType(gmt);
-                resultObject = (HypermediaFileUploadActionParameter)Activator.CreateInstance(resultType);
-                var parameterProperty =
-                    resultType.GetProperty(nameof(HypermediaFileUploadActionParameter<Unit>.ParameterObject));
-                parameterProperty.SetValue(resultObject, deserialized);
-            }
-            else
-            {
-                resultObject = new HypermediaFileUploadActionParameter();
-            }
-            resultObject.Files = request.Form.Files;
-            bindingContext.Result = ModelBindingResult.Success(resultObject);
-            return;
+                        if (rawDeserialized is JArray wrapperArray)
+                        {
+                            if (!TryUnwrapArray(wrapperArray, typeName, out var jObject))
+                            {
+                                return Result.Error<JObject?>(
+                                    $"Invalid Json. Expected an object or and array containing one element with one object property '{typeName}'");
+                            }
+
+                            return Result.Ok<JObject?>(jObject);
+                        }
+                        else
+                        {
+                            return Result.Ok((JObject?)rawDeserialized);
+                        }
+                    }
+                    else
+                    {
+                        return Result.Error<JObject?>(
+                            $"Method indicates additional parameters, but no {nameof(StringContent)} with key {nameof(HypermediaFileUploadActionParameter<Unit>.ParameterObject)} found in the form");
+                    }
+                },
+                none: () => Result.Ok<JObject?>(null));
         }
-        catch (Exception e)
+        
+        Result<HypermediaFileUploadActionParameter> CreateResultObject(HttpRequest request, JObject? jObject)
         {
-            bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Deserialization failed: {e}");
-            return;
+            return Result.Try(
+                () =>
+                {
+                    var resultObject = this.parameterModelInfo.Match(
+                        some =>
+                        {
+                            var deserialized = some.ModelDeserializer.Deserialize(jObject);
+                            var resultType =
+                                typeof(HypermediaFileUploadActionParameter<>).MakeGenericType(some.ParameterModelType);
+                            var result = (HypermediaFileUploadActionParameter)Activator.CreateInstance(resultType)!;
+                            var parameterProperty =
+                                resultType.GetProperty(
+                                    nameof(HypermediaFileUploadActionParameter<Unit>.ParameterObject));
+                            parameterProperty!.SetValue(result, deserialized);
+                            return result;
+                        },
+                        none: () => new HypermediaFileUploadActionParameter());
+                    resultObject.Files = request.Form.Files;
+                    return resultObject;
+                },
+                e => $"Deserialization failed: {e}");
         }
     }
 

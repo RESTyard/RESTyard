@@ -25,10 +25,10 @@
     <Parameters typeName="NewAddress" usedForQueries="false" usedForActions="true">
       <Property name="Address" type="string" mandatory="true" />
     </Parameters>
-		<Parameters typeName="UploadCarImageParameters">
-			<Property name="Text" type="string" mandatory="true" />
-			<Property name="Flag" type="bool" mandatory="true" />
-		</Parameters>
+    <Parameters typeName="UploadCarImageParameters" usedForActions="true" usedForQueries="false">
+        <Property name="Text" type="string" mandatory="true" />
+        <Property name="Flag" type="bool" mandatory="true" />
+    </Parameters>
     <ExternalParameters typeName="MarkAsFavoriteParameters"/>
     <ExternalParameters typeName="CustomerQuery" />
   </TransferParameters>
@@ -46,9 +46,10 @@
       <Classifications>
         <Classification class="CarsRoot" />
       </Classifications>
-			<Operations>
-				<Operation name="UploadCarImage" method="Post" title="Upload image for car" parameterTypeName="UploadCarImageParameters" isUploadAction="true" resultDocument="CarImage" />
-			</Operations>
+      <Operations>
+          <Operation name="UploadCarImage" method="Post" title="Upload image for car" parameterTypeName="UploadCarImageParameters" isUploadAction="true" resultDocument="CarImage" />
+          <Operation name="UploadInsuranceScan" method="Post" title="Upload scan of insurance for the car" isUploadAction="true" resultDocument="CarInsurance"/>
+      </Operations>
       <Links>
         <Link rel="NiceCar" document="DerivedCar" mandatory="true" />
         <Link rel="SuperCar" document="HypermediaCar" mandatory="true" />
@@ -69,6 +70,14 @@
     <Document name="CarImage" title="Image for a car">
       <Classifications>
         <Classification class="CarImage"/>
+      </Classifications>
+      <Properties>
+        <Property name="Filename" type="string" isKey="true" hidden="true" />
+      </Properties>
+    </Document>
+    <Document name="CarInsurance" title="Insurance scan for a car">
+      <Classifications>
+        <Classification class="CarInsurance"/>
       </Classifications>
       <Properties>
         <Property name="Filename" type="string" isKey="true" hidden="true" />
