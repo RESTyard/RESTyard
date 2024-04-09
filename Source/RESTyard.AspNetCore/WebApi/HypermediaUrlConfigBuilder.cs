@@ -5,14 +5,12 @@ namespace RESTyard.AspNetCore.WebApi
 {
     public static class HypermediaUrlConfigBuilder
     {
-        public static IHypermediaUrlConfig Build(IHypermediaUrlConfig defaultHypermediaUrlConfig, HttpRequest request)
+        public static IHypermediaUrlConfig Build(HttpRequest request)
         {
             return new HypermediaUrlConfig()
             {
-                Scheme = string.IsNullOrEmpty(defaultHypermediaUrlConfig.Scheme)
-                    ? request.Scheme
-                    : defaultHypermediaUrlConfig.Scheme,
-                Host = defaultHypermediaUrlConfig.Host.HasValue ? defaultHypermediaUrlConfig.Host : request.Host,
+                Scheme = request.Scheme,
+                Host = request.Host,
             };
         }
     }

@@ -257,24 +257,25 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             };
 
             var routeKeysFromAction = GetRouteKeysIfActionHasSchemaParameters(hypermediaAction);
-            if (!routeResolver.TryGetRouteByType(parameterType, out ResolvedRoute classRoute, routeKeysFromAction))
-            {
-                var generatedRouteUrl = routeResolver.RouteUrl(
-                    RouteNames.ActionParameterTypes,
-                    new { parameterTypeName = parameterType.BeautifulName() });
-                jField.Add("class", new JArray { generatedRouteUrl });
-            }
-            else
-            {
-                jField.Add("class", new JArray { classRoute.Url });
-            }
+            routeResolver.TryGetRouteByType(parameterType, routeKeysFromAction).Match(
+                some: classRoute => 
+                {
+                    jField.Add("class", new JArray { classRoute.Url });
+                },
+                none: () =>
+                {
+                    var generatedRouteUrl = routeResolver.RouteUrl(
+                        RouteNames.ActionParameterTypes,
+                        new { parameterTypeName = parameterType.BeautifulName() });
+                    jField.Add("class", new JArray { generatedRouteUrl });
+                });
 
             AddPrefilledValue(jField, hypermediaAction);
 
             return jField;
         }
 
-        private dynamic GetRouteKeysIfActionHasSchemaParameters(HypermediaActionBase hypermediaAction)
+        private object? GetRouteKeysIfActionHasSchemaParameters(HypermediaActionBase hypermediaAction)
         {
             if (hypermediaAction is IDynamicSchema dynamicSchema)
             {
@@ -284,7 +285,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             return null;
         }
 
-        private void AddPrefilledValue(JObject jfield, HypermediaActionBase hypermediaAction)
+        private void AddPrefilledValue(JObject jField, HypermediaActionBase hypermediaAction)
         {
             var prefilledParameter = hypermediaAction.GetPrefilledParameter();
             if (prefilledParameter == null)
@@ -297,7 +298,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 // dynamic actions can pass a a string already. When migrating to system.text.json we can also allow JsonElement here in the future
                 try
                 {
-                    jfield.Add("value", JObject.Parse(value));
+                    jField.Add("value", JObject.Parse(value));
                 }
                 catch (Exception e)
                 {
@@ -308,7 +309,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             }
             else
             {
-                jfield.Add("value", SerializeObjectProperties(prefilledParameter));
+                jField.Add("value", SerializeObjectProperties(prefilledParameter));
             }
         }
 
@@ -423,10 +424,10 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             var propertyName = GetPropertyName(publicProperty);
             var value = publicProperty.GetValue(propertyObject);
 
-            var jvalue = ValueToJToken(value, propertyType, propertyTypeInfo);
-            if (jvalue != null || this.configuration.WriteNullProperties)
+            var jValue = ValueToJToken(value, propertyType, propertyTypeInfo);
+            if (jValue != null || this.configuration.WriteNullProperties)
             {
-                jProperties.Add(propertyName, jvalue);
+                jProperties.Add(propertyName, jValue);
             }
         }
 
@@ -473,9 +474,9 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 return new JValue(value.ToString());
             }
 
-            if (IsIEnumerable(value, propertyType, out var ienumerable))
+            if (IsIEnumerable(value, propertyType, out var iEnumerable))
             {
-                return SerializeEnumerable(ienumerable);
+                return SerializeEnumerable(iEnumerable);
             }
 
             if (propertyType == typeof(Type))
@@ -526,9 +527,9 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             return jProperties;
         }
 
-        private JToken SerializeEnumerable(IEnumerable ienumerable)
+        private JToken SerializeEnumerable(IEnumerable iEnumerable)
         {
-            var enumerableType = ienumerable.GetType();
+            var enumerableType = iEnumerable.GetType();
 
             var itemType = enumerableType.IsArray
                 ? enumerableType.GetElementType()!
@@ -540,7 +541,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             var getTypeForEachItem = itemType == typeof(object);
 
             var result = new JArray();
-            foreach (var item in ienumerable)
+            foreach (var item in iEnumerable)
             {
                 if (item == null)
                 {
@@ -632,7 +633,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             sirenJson.Add("class", sirenClasses);
         }
 
-        private static void AddEmbeddedEntityRelations(JObject jembeddedEntity,
+        private static void AddEmbeddedEntityRelations(JObject jEmbeddedEntity,
             IReadOnlyCollection<string> embeddedEntityRelations)
         {
             var rels = new JArray();
@@ -641,7 +642,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 rels.Add(embeddedEntityRelation);
             }
 
-            jembeddedEntity.Add("rel", rels);
+            jEmbeddedEntity.Add("rel", rels);
         }
 
         private static void AddTitle(JObject sirenJson, HypermediaObjectAttribute? hypermediaObjectAttribute)
