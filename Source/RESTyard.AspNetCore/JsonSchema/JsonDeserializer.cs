@@ -51,10 +51,25 @@ namespace RESTyard.AspNetCore.JsonSchema
             {
                 return null;
             }
-
-            // todo: all deconstructed properties must be either a list or not a list 
+            
             foreach (var schemaPropertyGroup in keyFromUriProperties)
             {
+                var allAreCollection = schemaPropertyGroup.Properties
+                    .All(p => p.Property.PropertyType.GetInterfaces()
+                                  .Any(x => x.IsGenericType &&
+                                            x.GetGenericTypeDefinition() == typeof(ICollection<>))
+                              && p.TargetType == schemaPropertyGroup.Properties.First().TargetType);
+                var allAreNotCollection = schemaPropertyGroup.Properties
+                    .All(p => !p.Property.PropertyType.GetInterfaces()
+                                  .Any(x => x.IsGenericType &&
+                                            x.GetGenericTypeDefinition() == typeof(ICollection<>))
+                              && p.TargetType == schemaPropertyGroup.Properties.First().TargetType);
+                bool? isSingleUriDeconstruction = allAreCollection ? false : allAreNotCollection ? true : null;
+                if (isSingleUriDeconstruction is null)
+                {
+                    throw new Exception("Attribute KeyFromUri should be applied consistently either as a List or not as a List for a schema name.");
+                }
+
                 var uriPropertyName = schemaPropertyGroup.SchemaPropertyName;
                 if (!raw.TryGetNestedValue(uriPropertyName, schemaPropertyGroup.NestingPropertyNameSpace, out var uriToken))
                 {
@@ -63,22 +78,7 @@ namespace RESTyard.AspNetCore.JsonSchema
                     throw new ArgumentException($"Required uri property {uriPropertyName} is missing");
                 }
 
-                List<string> uris;
-                bool isSingleUriDeconstruction;
-                switch (uriToken.Type)
-                {
-                    case JTokenType.String:
-                        isSingleUriDeconstruction = true;
-                        uris = [uriToken.ToString()];
-                        break;
-                    case JTokenType.Array:
-                        isSingleUriDeconstruction = false;
-                        uris = uriToken.ToObject<List<string>>();
-                        break;
-                    default:
-                        throw new ArgumentException($"Given values for URL deconstruction need to be a string or a list of strings.");
-                }
-
+                var uris = isSingleUriDeconstruction is true ? [uriToken.ToString()] : uriToken.ToObject<List<string>>();
                 var parameterValues = new Dictionary<string, List<string?>>();
                 foreach (var uri in uris)
                 {
@@ -111,7 +111,6 @@ namespace RESTyard.AspNetCore.JsonSchema
                         {
                             parameterValues[keyFromUriProperty.ResolvedRouteTemplateParameterName] = [];
                         }
-
                         parameterValues[keyFromUriProperty.ResolvedRouteTemplateParameterName].Add(parameterValue);
                     }
                 }
@@ -119,7 +118,7 @@ namespace RESTyard.AspNetCore.JsonSchema
                 foreach (var keyFromUriProperty in schemaPropertyGroup.Properties)
                 {
                     var parameterValue = parameterValues[keyFromUriProperty.ResolvedRouteTemplateParameterName];
-                    raw.SetNestedValue(keyFromUriProperty.Property.Name, keyFromUriProperty.NestingPropertyNames, parameterValue, isSingleUriDeconstruction);
+                    raw.SetNestedValue(keyFromUriProperty.Property.Name, keyFromUriProperty.NestingPropertyNames, parameterValue, isSingleUriDeconstruction!.Value);
                 }
             }
             return raw.ToObject(type);
