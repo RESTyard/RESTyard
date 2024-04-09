@@ -51,15 +51,17 @@ namespace RESTyard.AspNetCore.JsonSchema
                 var allAreCollection = propertyGroup
                     .All(p => p.Property.PropertyType.GetInterfaces()
                         .Any(x => x.IsGenericType &&
-                                  x.GetGenericTypeDefinition() == typeof(ICollection<>)));
+                                  x.GetGenericTypeDefinition() == typeof(ICollection<>))
+                              && p.TargetType == propertyGroup.First().TargetType);
                 var allAreNotCollection = propertyGroup
                     .All(p => !p.Property.PropertyType.GetInterfaces()
                         .Any(x => x.IsGenericType &&
-                                  x.GetGenericTypeDefinition() == typeof(ICollection<>)));
+                                  x.GetGenericTypeDefinition() == typeof(ICollection<>))
+                              && p.TargetType == propertyGroup.First().TargetType);
                 bool? isSingleUriDeconstruction = allAreCollection ? false : allAreNotCollection ? true : null;
                 if (isSingleUriDeconstruction is null)
                 {
-                    throw new JsonSchemaGenerationException("Attribute KeyFromUri should be applied consistently either as a List or not as a List for a specific type.");
+                    throw new JsonSchemaGenerationException("Attribute KeyFromUri should be applied consistently either as a List or not as a List for a schema name.");
                 }
                 
                 var schemaPropertyName = propertyGroup.Key;
