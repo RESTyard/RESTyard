@@ -1,4 +1,4 @@
-# RESTyard (formerly know as Web Api Hypermedia Extensions)
+# RESTyard
 
 This project consists of a set of Extensions for ASP.NET Core projects. The purpose is to
 assist in building restful Web services using the [Siren Hypermedia Format](https://github.com/kevinswiber/siren) with much less coding.
@@ -21,3 +21,8 @@ There is a partner project which aims for a generic UI client: [HypermediaUi](ht
 ## Documentation
 
 Documentation can be found here: [RESTyard-Docs](https://restyard.github.io/RESTyard-Docs/)
+
+## Predecessor
+
+Formerly this project was named `Web Api Hypermedia Extensions`. We move to a new name so
+we have a whole namespace for partner projects and it is more easy to find.
