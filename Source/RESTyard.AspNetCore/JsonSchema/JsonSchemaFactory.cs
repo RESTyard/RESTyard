@@ -48,6 +48,22 @@ namespace RESTyard.AspNetCore.JsonSchema
 
             foreach (var propertyGroup in keyProperties.GroupBy(p => p.SchemaPropertyName))
             {
+                var allAreCollection = propertyGroup
+                    .All(p => p.Property.PropertyType.GetInterfaces()
+                        .Any(x => x.IsGenericType &&
+                                  x.GetGenericTypeDefinition() == typeof(ICollection<>))
+                              && p.TargetType == propertyGroup.First().TargetType);
+                var allAreNotCollection = propertyGroup
+                    .All(p => !p.Property.PropertyType.GetInterfaces()
+                        .Any(x => x.IsGenericType &&
+                                  x.GetGenericTypeDefinition() == typeof(ICollection<>))
+                              && p.TargetType == propertyGroup.First().TargetType);
+                bool? isSingleUriDeconstruction = allAreCollection ? false : allAreNotCollection ? true : null;
+                if (isSingleUriDeconstruction is null)
+                {
+                    throw new JsonSchemaGenerationException("Attribute KeyFromUri should be applied consistently either as a List or not as a List for a schema name.");
+                }
+                
                 var schemaPropertyName = propertyGroup.Key;
                 if (schema.Properties.ContainsKey(schemaPropertyName))
                 {
@@ -55,7 +71,27 @@ namespace RESTyard.AspNetCore.JsonSchema
                 }
 
                 var isRequired = propertyGroup.Any(p => p.Property.GetCustomAttribute<RequiredAttribute>() != null);
-                var property = new JsonSchemaProperty { Type = JsonObjectType.String, Format = JsonFormatStrings.Uri };
+
+                // If 'isSingleUriDeconstruction' is true then set type = string
+                // Else set type = array of strings
+                JsonSchemaProperty property;
+                if (isSingleUriDeconstruction is true)
+                {
+                    property = new JsonSchemaProperty { Type = JsonObjectType.String, Format = JsonFormatStrings.Uri };
+                }
+                else
+                {
+                    property = new JsonSchemaProperty
+                    {
+                        Type = JsonObjectType.Array,
+                        Item = new NJsonSchema.JsonSchema
+                        {
+                            Type = JsonObjectType.String,
+                            Format = JsonFormatStrings.Uri
+                        }
+                    };
+                }
+
                 //schema factory sets minlength of required uri properties, so do it here as well
                 if (isRequired)
                 {
