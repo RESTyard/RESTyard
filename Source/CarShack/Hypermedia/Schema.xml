@@ -25,6 +25,10 @@
     <Parameters typeName="NewAddress" usedForQueries="false" usedForActions="true">
       <Property name="Address" type="string" mandatory="true" />
     </Parameters>
+    <Parameters typeName="UploadCarImageParameters" usedForActions="true" usedForQueries="false">
+        <Property name="Text" type="string" mandatory="true" />
+        <Property name="Flag" type="bool" mandatory="true" />
+    </Parameters>
     <ExternalParameters typeName="MarkAsFavoriteParameters"/>
     <ExternalParameters typeName="CustomerQuery" />
   </TransferParameters>
@@ -42,6 +46,10 @@
       <Classifications>
         <Classification class="CarsRoot" />
       </Classifications>
+      <Operations>
+          <Operation name="UploadCarImage" method="Post" title="Upload image for car" parameterTypeName="UploadCarImageParameters" isUploadAction="true" resultDocument="CarImage" />
+          <Operation name="UploadInsuranceScan" method="Post" title="Upload scan of insurance for the car" isUploadAction="true" resultDocument="CarInsurance"/>
+      </Operations>
       <Links>
         <Link rel="NiceCar" document="DerivedCar" mandatory="true" />
         <Link rel="SuperCar" document="HypermediaCar" mandatory="true" />
@@ -57,6 +65,22 @@
         <Property name="PriceDevelopment" type="IEnumerable&lt;float&gt;" />
         <Property name="PopularCountries" type="List&lt;Country&gt;" />
         <Property name="MostPopularIn" type="Country" />
+      </Properties>
+    </Document>
+    <Document name="CarImage" title="Image for a car">
+      <Classifications>
+        <Classification class="CarImage"/>
+      </Classifications>
+      <Properties>
+        <Property name="Filename" type="string" isKey="true" hidden="true" />
+      </Properties>
+    </Document>
+    <Document name="CarInsurance" title="Insurance scan for a car">
+      <Classifications>
+        <Classification class="CarInsurance"/>
+      </Classifications>
+      <Properties>
+        <Property name="Filename" type="string" isKey="true" hidden="true" />
       </Properties>
     </Document>
     <Document name="DerivedCar" title="Derived Car" parentDocument="HypermediaCar">
@@ -124,13 +148,19 @@
       <Classifications>
         <Classification class="CustomersQueryResult" />
       </Classifications>
+	    <Entities>
+		    <Entity collectionName="Customers" document="HypermediaCustomer" />
+	    </Entities>
       <Properties>
         <Property name="TotalEntities" type="int" />
         <Property name="CurrentEntitiesCount" type="int" />
       </Properties>
-      <Entities>
-        <Entity collectionName="item" document="HypermediaCustomer" />
-      </Entities>
+			<Links>
+				<Link rel="Next" document="HypermediaCustomerQueryResult" mandatory="false" />
+				<Link rel="Previous" document="HypermediaCustomerQueryResult" mandatory="false" />
+				<Link rel="Last" document="HypermediaCustomerQueryResult" mandatory="false" />
+				<Link rel="All" document="HypermediaCustomerQueryResult" mandatory="false" />
+			</Links>
     </Document>
   </Documents>
 </Hypermedia>

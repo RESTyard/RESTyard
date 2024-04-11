@@ -100,5 +100,107 @@ namespace RESTyard.Client.Extensions
                 return HypermediaResult.Error<MandatoryHypermediaLink<TResultType>>(HypermediaProblem.Exception(e));
             }
         }
+
+        public static async Task<HypermediaResult<Unit>> ExecuteAsync(
+            this IHypermediaClientFileUploadAction action,
+            HypermediaFileUploadActionParameter parameters,
+            IHypermediaResolver resolver)
+        {
+            if (!action.CanExecute)
+            {
+                return HypermediaResult.Error<Unit>(HypermediaProblem.InvalidRequest("Can not execute Action."));
+            }
+
+            try
+            {
+                var result = await resolver.ResolveActionAsync(
+                    action.Uri,
+                    action.Method,
+                    action.ParameterDescriptions,
+                    parameters);
+                return result;
+            }
+            catch (Exception e)
+            {
+                return HypermediaResult.Error<Unit>(HypermediaProblem.Exception(e));
+            }
+        }
+        
+        public static async Task<HypermediaResult<Unit>> ExecuteAsync<TParameters>(
+            this IHypermediaClientFileUploadAction<TParameters> action,
+            HypermediaFileUploadActionParameter<TParameters> parameters,
+            IHypermediaResolver resolver)
+        {
+            if (!action.CanExecute)
+            {
+                return HypermediaResult.Error<Unit>(HypermediaProblem.InvalidRequest("Can not execute Action."));
+            }
+
+            try
+            {
+                var result = await resolver.ResolveActionAsync(
+                    action.Uri,
+                    action.Method,
+                    action.ParameterDescriptions,
+                    parameters);
+                return result;
+            }
+            catch (Exception e)
+            {
+                return HypermediaResult.Error<Unit>(HypermediaProblem.Exception(e));
+            }
+        }
+
+        public static async Task<HypermediaResult<MandatoryHypermediaLink<TResultType>>> ExecuteAsync<TResultType>(
+            this IHypermediaClientFileUploadFunction<TResultType> function,
+            HypermediaFileUploadActionParameter parameters,
+            IHypermediaResolver resolver)
+            where TResultType : HypermediaClientObject
+        {
+            if (!function.CanExecute)
+            {
+                return HypermediaResult.Error<MandatoryHypermediaLink<TResultType>>(HypermediaProblem.InvalidRequest("Can not execute Function."));
+            }
+
+            try
+            {
+                var result = await resolver.ResolveFunctionAsync<TResultType>(
+                    function.Uri,
+                    function.Method,
+                    function.ParameterDescriptions,
+                    parameters);
+                return result;
+            }
+            catch (Exception e)
+            {
+                return HypermediaResult.Error<MandatoryHypermediaLink<TResultType>>(HypermediaProblem.Exception(e));
+            }
+        }
+
+        public static async Task<HypermediaResult<MandatoryHypermediaLink<TResultType>>> ExecuteAsync<TResultType, TParameters>(
+            this IHypermediaClientFileUploadFunction<TResultType, TParameters> function,
+            HypermediaFileUploadActionParameter<TParameters> parameters,
+            IHypermediaResolver resolver)
+            where TResultType : HypermediaClientObject
+        {
+            if (!function.CanExecute)
+            {
+                return HypermediaResult.Error<MandatoryHypermediaLink<TResultType>>(HypermediaProblem.InvalidRequest("Can not execute Function."));
+            }
+
+            try
+            {
+                var result = await resolver.ResolveFunctionAsync<TResultType>(
+                    function.Uri,
+                    function.Method,
+                    function.ParameterDescriptions,
+                    parameters);
+                return result;
+            }
+            catch (Exception e)
+            {
+                return HypermediaResult.Error<MandatoryHypermediaLink<TResultType>>(HypermediaProblem.Exception(e));
+            }
+        }
     }
 }

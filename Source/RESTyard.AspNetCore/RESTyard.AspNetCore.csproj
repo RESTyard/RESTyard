@@ -11,7 +11,6 @@
 
     <Version>4.3.0$(VersionSuffixLocal)</Version>
     <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
 
@@ -44,7 +43,7 @@
   <!-- shared references, compilation flags and build options -->
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="FunicularSwitch" Version="5.0.1" />
+    <PackageReference Include="FunicularSwitch" Version="6.0.0" />
     <PackageReference Include="NJsonSchema" Version="10.8.0" />
   </ItemGroup>
 

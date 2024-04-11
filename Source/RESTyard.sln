@@ -44,6 +44,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicrosoftExtensionsCaching.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarking", "RESTyard.Client.Extensions\Benchmarking\Benchmarking.csproj", "{A605FF16-E6EF-4365-A728-AC9C97D2023F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.Integration.Test", "RESTyard.Integration.Test\RESTyard.Integration.Test.csproj", "{ED8B266E-247E-4C59-8630-303BEA3FEEDF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -102,6 +104,10 @@ Global
 		{A605FF16-E6EF-4365-A728-AC9C97D2023F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A605FF16-E6EF-4365-A728-AC9C97D2023F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A605FF16-E6EF-4365-A728-AC9C97D2023F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED8B266E-247E-4C59-8630-303BEA3FEEDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED8B266E-247E-4C59-8630-303BEA3FEEDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED8B266E-247E-4C59-8630-303BEA3FEEDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED8B266E-247E-4C59-8630-303BEA3FEEDF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

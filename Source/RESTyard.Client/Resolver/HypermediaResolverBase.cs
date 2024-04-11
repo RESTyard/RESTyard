@@ -15,6 +15,7 @@ namespace RESTyard.Client.Resolver
 {
     public abstract class HypermediaResolverBase<
             TNetworkResponseMessage,
+            TUploadPayload,
             TLinkHcoCacheEntry,
             TLinkHcoCacheEntryConfiguration>
         : IHypermediaResolver
@@ -132,6 +133,12 @@ namespace RESTyard.Client.Resolver
             IReadOnlyList<ParameterDescription> parameterDescriptions,
             object? parameterObject)
         {
+            if (parameterObject is IHypermediaFileUploadParameter fileUploadParameter)
+            {
+                return await this.ProcessUploadParameters(parameterDescriptions, fileUploadParameter)
+                    .Bind(uploadPayload => this.SendUploadCommandAsync(uri, method, uploadPayload))
+                    .Bind(this.HandleActionResponseAsync);
+            }
             return await this.ProcessParameters(parameterDescriptions, parameterObject)
                 .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters))
                 .Bind(this.HandleActionResponseAsync);
@@ -151,6 +158,12 @@ namespace RESTyard.Client.Resolver
             IReadOnlyList<ParameterDescription> parameterDescriptions,
             object? parameterObject) where T : HypermediaClientObject
         {
+            if (parameterObject is IHypermediaFileUploadParameter fileUploadParameter)
+            {
+                return await this.ProcessUploadParameters(parameterDescriptions, fileUploadParameter)
+                    .Bind(uploadPayload => this.SendUploadCommandAsync(uri, method, uploadPayload))
+                    .Bind(this.HandleFunctionResponseAsync<T>);
+            }
             return await this.ProcessParameters(parameterDescriptions, parameterObject)
                 .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters))
                 .Bind(this.HandleFunctionResponseAsync<T>);
@@ -222,12 +235,23 @@ namespace RESTyard.Client.Resolver
             }
 
             return GetParameterDescription(parameterDescriptions)
-                .Bind(parameterDescription => {
+                .Map(parameterDescription => {
                     var serializedParameters =
                         this.ParameterSerializer.SerializeParameterObject(parameterDescription.Name, parameterObject);
-                    return HypermediaResult.Ok(serializedParameters);
+                    return serializedParameters;
                 });
         }
+
+        protected Task<HypermediaResult<TUploadPayload>> ProcessUploadParameters(
+            IReadOnlyList<ParameterDescription> parameterDescriptions, IHypermediaFileUploadParameter parameterObject)
+        {
+            return GetParameterDescription(parameterDescriptions)
+                .Match(
+                    parameterDescription => CreateUploadPayload(parameterObject, parameterDescription),
+                    error: _ => CreateUploadPayload(parameterObject));
+        }
+
+        protected abstract Task<HypermediaResult<TUploadPayload>> CreateUploadPayload(IHypermediaFileUploadParameter parameterObject, ParameterDescription? parameterDescription = null);
 
         protected static HypermediaResult<ParameterDescription> GetParameterDescription(IReadOnlyList<ParameterDescription> parameterDescriptions)
         {
@@ -244,7 +268,7 @@ namespace RESTyard.Client.Resolver
 
             // todo allow more types
             var parameterDescription = parameterDescriptions.First();
-            if (!parameterDescription.Type.Equals(DefaultMediaTypes.ApplicationJson))
+            if (!parameterDescription.Type.Equals(DefaultMediaTypes.ApplicationJson) && !parameterDescription.Type.Equals(DefaultMediaTypes.MultipartFormData))
             {
                 return HypermediaResult<ParameterDescription>.Error(HypermediaProblem.InvalidRequest("Only one action type 'application/json' is supported."));
             }
@@ -257,6 +281,11 @@ namespace RESTyard.Client.Resolver
             Uri uri,
             string method,
             string? payload = null);
+
+        protected abstract Task<HypermediaResult<TNetworkResponseMessage>> SendUploadCommandAsync(
+            Uri uri,
+            string method,
+            TUploadPayload payload);
 
         protected abstract Task<HypermediaResult<Unit>> EnsureRequestIsSuccessfulAsync(TNetworkResponseMessage responseMessage);
 

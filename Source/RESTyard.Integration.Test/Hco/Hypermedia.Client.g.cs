@@ -9,7 +9,7 @@ using RESTyard.Client.Hypermedia.Attributes;
 using RESTyard.Client.Hypermedia.Commands;
 
 
-namespace RESTyard.Client.Test.Hypermedia;
+namespace RESTyard.Integration.Test.Hco;
 
 public class DefaultHypermediaClientBuilder
 {
@@ -20,6 +20,8 @@ public class DefaultHypermediaClientBuilder
                 register.Register<HypermediaEntrypointHco>();
                 register.Register<HypermediaCarsRootHco>();
                 register.Register<HypermediaCarHco>();
+                register.Register<CarImageHco>();
+                register.Register<CarInsuranceHco>();
                 register.Register<DerivedCarHco>();
                 register.Register<NextLevelDerivedCarHco>();
                 register.Register<HypermediaCustomersRootHco>();
@@ -32,6 +34,7 @@ public partial record BuyCarParameters(string Brand, int CarId, double? Price = 
 public partial record BuyLamborghiniParameters(string Brand, int CarId, string Color, double? Price = default, int? OptionalProperty = default) : BuyCarParameters(Brand, CarId, Price);
 public partial record BuyLamborghinettaParameters(string Brand, int CarId, string Color, int HorsePower, double? Price = default, int? OptionalProperty = default) : BuyLamborghiniParameters(Brand, CarId, Color, Price, OptionalProperty);
 public partial record NewAddress(string Address);
+public partial record UploadCarImageParameters(string Text, bool Flag);
 
 [HypermediaClientObject("Entrypoint")]
 public partial class HypermediaEntrypointHco : HypermediaClientObject
@@ -63,6 +66,12 @@ public partial class HypermediaCarsRootHco : HypermediaClientObject
     [Mandatory]
     [HypermediaRelations(new[]{ "SuperCar" })]
     public MandatoryHypermediaLink<HypermediaCarHco> SuperCar { get; set; } = default!;
+
+    [HypermediaCommand("UploadCarImage")]
+    public IHypermediaClientFileUploadFunction<CarImageHco, UploadCarImageParameters>? UploadCarImage { get; set; }
+
+    [HypermediaCommand("UploadInsuranceScan")]
+    public IHypermediaClientFileUploadFunction<CarInsuranceHco>? UploadInsuranceScan { get; set; }
 }
 
 [HypermediaClientObject("Car")]
@@ -83,6 +92,22 @@ public partial class HypermediaCarHco : HypermediaClientObject
     public MandatoryHypermediaLink<HypermediaCarHco> Self { get; set; } = default!;
 }
 
+[HypermediaClientObject("CarImage")]
+public partial class CarImageHco : HypermediaClientObject
+{
+    [Mandatory]
+    [HypermediaRelations(new[]{ "self" })]
+    public MandatoryHypermediaLink<CarImageHco> Self { get; set; } = default!;
+}
+
+[HypermediaClientObject("CarInsurance")]
+public partial class CarInsuranceHco : HypermediaClientObject
+{
+    [Mandatory]
+    [HypermediaRelations(new[]{ "self" })]
+    public MandatoryHypermediaLink<CarInsuranceHco> Self { get; set; } = default!;
+}
+
 [HypermediaClientObject("DerivedCar")]
 public partial class DerivedCarHco : HypermediaCarHco
 {
@@ -98,8 +123,8 @@ public partial class DerivedCarHco : HypermediaCarHco
     [HypermediaRelations(new[]{ "item" })]
     public List<HypermediaCustomerHco> Item { get; set; } = default!;
 
-    [HypermediaCommand("Derived")]
-    public IHypermediaClientAction? Derived { get; set; }
+    [HypermediaCommand("DerivedOperation")]
+    public IHypermediaClientAction? DerivedOperation { get; set; }
 }
 
 [HypermediaClientObject("NextLevelDerivedCar")]
@@ -178,6 +203,18 @@ public partial class HypermediaCustomerQueryResultHco : HypermediaClientObject
     [HypermediaRelations(new[]{ "self" })]
     public MandatoryHypermediaLink<HypermediaCustomerQueryResultHco> Self { get; set; } = default!;
 
-    [HypermediaRelations(new[]{ "item" })]
-    public List<HypermediaCustomerHco> Item { get; set; } = default!;
+    [HypermediaRelations(new[]{ "Next" })]
+    public HypermediaLink<HypermediaCustomerQueryResultHco>? Next { get; set; } = default!;
+
+    [HypermediaRelations(new[]{ "Previous" })]
+    public HypermediaLink<HypermediaCustomerQueryResultHco>? Previous { get; set; } = default!;
+
+    [HypermediaRelations(new[]{ "Last" })]
+    public HypermediaLink<HypermediaCustomerQueryResultHco>? Last { get; set; } = default!;
+
+    [HypermediaRelations(new[]{ "All" })]
+    public HypermediaLink<HypermediaCustomerQueryResultHco>? All { get; set; } = default!;
+
+    [HypermediaRelations(new[]{ "Customers" })]
+    public List<HypermediaCustomerHco> Customers { get; set; } = default!;
 }

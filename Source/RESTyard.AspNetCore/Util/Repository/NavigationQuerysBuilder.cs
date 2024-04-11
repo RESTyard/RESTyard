@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using FunicularSwitch;
 using RESTyard.AspNetCore.Query;
 using RESTyard.Relations;
 
@@ -7,9 +8,9 @@ namespace RESTyard.AspNetCore.Util.Repository
 {
     public static class NavigationQuerysBuilder
     {
-        public static NavigationQueries Build<TSortPropertyEnum, TQueryFilter, TEntitiy>(QueryBase<TSortPropertyEnum, TQueryFilter> query, QueryResult<TEntitiy> queryResult)
-        where TSortPropertyEnum : struct
-        where TQueryFilter : IQueryFilter, new()
+        public static NavigationQueries Build<TSortPropertyEnum, TQueryFilter, TEntity>(QueryBase<TSortPropertyEnum, TQueryFilter> query, QueryResult<TEntity> queryResult)
+            where TSortPropertyEnum : struct
+            where TQueryFilter : IQueryFilter, new()
         {
             var result = new NavigationQueries();
             if (!query.Pagination.HasPagination() || queryResult.TotalCountOfEnties <= 0)
@@ -41,6 +42,32 @@ namespace RESTyard.AspNetCore.Util.Repository
 
 
             return result;
+        }
+
+        public static (
+            Option<QueryBase<TSortPropertyEnum, TQueryFilter>> all,
+            Option<QueryBase<TSortPropertyEnum, TQueryFilter>> first,
+            Option<QueryBase<TSortPropertyEnum, TQueryFilter>> next,
+            Option<QueryBase<TSortPropertyEnum, TQueryFilter>> previous,
+            Option<QueryBase<TSortPropertyEnum, TQueryFilter>> last)
+            Create<TSortPropertyEnum, TQueryFilter, TEntity>(
+                QueryBase<TSortPropertyEnum, TQueryFilter> query,
+                QueryResult<TEntity> queryResult)
+            where TSortPropertyEnum : struct
+            where TQueryFilter : IQueryFilter, new()
+        {
+            var none = Option.None<QueryBase<TSortPropertyEnum, TQueryFilter>>();
+            if (!query.Pagination.HasPagination() || queryResult.TotalCountOfEnties <= 0)
+            {
+                return (none, none, none, none, none);
+            }
+
+            return (
+                CreateQueryAll(query),
+                TryCreateQueryFirst(query, queryResult.TotalCountOfEnties, out var firstQuery) ? firstQuery : none,
+                TryCreateQueryNext(query, queryResult.TotalCountOfEnties, out var nextQuery) ? nextQuery : none,
+                TryCreateQueryPrevious(query, queryResult.TotalCountOfEnties, out var previousQuery) ? previousQuery : none,
+                TryCreateQueryLast(query, queryResult.TotalCountOfEnties, out var lastQuery) ? lastQuery : none);
         }
 
         private static bool TryCreateQueryLast<TSortPropertyEnum, TQueryFilter>(
