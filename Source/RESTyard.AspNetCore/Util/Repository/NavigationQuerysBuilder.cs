@@ -108,8 +108,13 @@ namespace RESTyard.AspNetCore.Util.Repository
 
             queryPrevious = queryParameters.Clone();
             queryPrevious.Pagination.PageOffset = queryParameters.Pagination.PageOffset - queryParameters.Pagination.PageSize;
+            
+            // we do not have enough results for the first page
             if (queryPrevious.Pagination.PageOffset < 0)
             {
+                // when moving backwards to first page only show unseen items
+                // changing pagesize will lead to all generated links from then on will be reduced in page size
+                queryPrevious.Pagination.PageSize = queryParameters.Pagination.PageSize + queryPrevious.Pagination.PageOffset;
                 queryPrevious.Pagination.PageOffset = 0;
             }
 
