@@ -23,9 +23,10 @@ internal static class Program
         {
             IsRequired = true,
         };
-        var typeOption = new Option<string>("--type");
-        var languageOption = new Option<string>("--language");
-        var templateOption = new Option<string>("--template");
+        var templateOption = new Option<string>("--template")
+        {
+            IsRequired = true,
+        };
         var outputFileOption = new Option<string>("--output-file")
         {
             IsRequired = true,
@@ -36,8 +37,6 @@ internal static class Program
         var rootCommand = new RootCommand
         {
             schemaFileOption,
-            typeOption,
-            languageOption,
             templateOption,
             outputFileOption,
             namespaceOption,
@@ -48,9 +47,10 @@ internal static class Program
         return new CommandLineBuilder(rootCommand);
     }
 
-    private static async Task RenderTemplate(HypermediaType schema, string templatePath, string outputPath, string? @namespace, string? includeFile)
+    private static async Task RenderTemplate(HypermediaType schema, FileInfo templateFile, string outputPath, string? @namespace, string? includeFile)
     {
-        var template = Template.Parse(await File.ReadAllTextAsync(templatePath), templatePath);
+        var templateContent = await File.ReadAllTextAsync(templateFile.FullName);
+        var template = Template.Parse(templateContent, templateFile.FullName);
         var includeContent = string.IsNullOrEmpty(includeFile) ? string.Empty : await File.ReadAllTextAsync(includeFile);
 
         var scriptObject = new ScriptObject();
@@ -75,15 +75,30 @@ internal static class Program
         string GetMemberName(MemberInfo member) => member.Name;
     }
 
-    private static async Task Run(string schemaFile, string type, string language, string template, string outputFile, string? @namespace = default, string? includeFile = default)
+    private static async Task Run(string schemaFile, string template, string outputFile, string? @namespace = default, string? includeFile = default)
     {
         await using var schemaFileStream = File.OpenRead(schemaFile);
         var schemaSerializer = new XmlSerializer(typeof(HypermediaType));
         if (schemaSerializer.Deserialize(schemaFileStream) is not HypermediaType schema)
             throw new InvalidOperationException("Failed to read schema.");
 
-        var templatePath = string.IsNullOrEmpty(template) ? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", type, $"{language}.sbn") : template;
-        await RenderTemplate(schema, templatePath, outputFile, @namespace, includeFile);
+        var templateFile = TryGetTemplateFile(template);
+        if (templateFile is null)
+            throw new FileNotFoundException($"Template \"{template}\" could not be found.");
+
+        await RenderTemplate(schema, templateFile, outputFile, @namespace, includeFile);
         Console.WriteLine("Done.");
+    }
+
+    private static FileInfo? TryGetTemplateFile(string template)
+    {
+        var installedTemplatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", $"{template}.sbn");
+        if (File.Exists(installedTemplatePath))
+            return new FileInfo(installedTemplatePath);
+
+        if (File.Exists(template))
+            return new FileInfo(template);
+
+        return default;
     }
 }

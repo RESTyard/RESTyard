@@ -6,19 +6,19 @@
     },
     "Generate C# Client": {
       "commandName": "Project",
-      "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --type client --language csharp --output-file ../../../../../RESTyard.Integration.Test/Hco/Hypermedia.Client.g.cs --namespace RESTyard.Integration.Test.Hco"
+      "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --template client/csharp --output-file ../../../../../RESTyard.Integration.Test/Hco/Hypermedia.Client.g.cs --namespace RESTyard.Integration.Test.Hco"
     },
     "Generate TS Client": {
       "commandName": "Project",
-      "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --type client --language typescript --output-file ../../../../../RESTyard.Client.Test/Hypermedia/Hypermedia.Client.g.ts --include-file ../../../../../RESTyard.Client.Test/Hypermedia/include.ts"
+      "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --template client/typescript --output-file ../../../../../RESTyard.Client.Test/Hypermedia/Hypermedia.Client.g.ts --include-file ../../../../../RESTyard.Client.Test/Hypermedia/include.ts"
     },
     "Generate Server": {
       "commandName": "Project",
-      "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --type server --language csharp --output-file ../../../../../CarShack/Hypermedia/Hypermedia.Server.g.cs --namespace CarShack.Hypermedia"
+      "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --template server/csharp --output-file ../../../../../CarShack/Hypermedia/Hypermedia.Server.g.cs --namespace CarShack.Hypermedia"
     },
     "Generate Server Controllers": {
       "commandName": "Project",
-      "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --type server --language csharp-controller --output-file ../../../../../CarShack/Hypermedia/Hypermedia.Server.Controllers.g.cs --namespace CarShack.Hypermedia"
+      "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --template server/csharp-controller --output-file ../../../../../CarShack/Hypermedia/Hypermedia.Server.Controllers.g.cs --namespace CarShack.Hypermedia"
     }
   }
 }
