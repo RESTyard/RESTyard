@@ -1,5 +1,9 @@
 {
   "profiles": {
+    "Help": {
+      "commandName": "Project",
+      "commandLineArgs": "--help"
+    },
     "Generate C# Client": {
       "commandName": "Project",
       "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --type client --language csharp --output-file ../../../../../RESTyard.Integration.Test/Hco/Hypermedia.Client.g.cs --namespace RESTyard.Integration.Test.Hco"

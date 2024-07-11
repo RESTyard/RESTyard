@@ -13,16 +13,23 @@ internal static class Program
 {
     public static Task<int> Main(string[] args) =>
         CreateCommandLine()
+            .UseDefaults()
             .Build()
             .InvokeAsync(args);
 
     private static CommandLineBuilder CreateCommandLine()
     {
-        var schemaFileOption = new Option<string>("--schema-file");
+        var schemaFileOption = new Option<string>("--schema-file")
+        {
+            IsRequired = true,
+        };
         var typeOption = new Option<string>("--type");
         var languageOption = new Option<string>("--language");
         var templateOption = new Option<string>("--template");
-        var outputFileOption = new Option<string>("--output-file");
+        var outputFileOption = new Option<string>("--output-file")
+        {
+            IsRequired = true,
+        };
         var namespaceOption = new Option<string>("--namespace");
         var includeFileOption = new Option<string>("--include-file");
 
