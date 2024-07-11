@@ -1,5 +1,4 @@
-# Roadmap WAHE 2.0
-- create client nugget
+# Roadmap
 - remove SingleParameterBinder and use schema references as discussed in [this thread](https://github.com/kevinswiber/siren/issues/84)
 - refactor HypermediaQueryResult and related to HypermediaActionResult, as it may be needed by other use cases
 - fix: content type of ProblemJson: return "application/problem+json", ensure formatter is pressent

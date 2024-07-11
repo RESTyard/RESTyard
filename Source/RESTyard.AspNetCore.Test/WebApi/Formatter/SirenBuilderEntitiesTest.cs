@@ -30,10 +30,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         [TestMethod]
         public void RepresentationEntitiesTest()
         {
-            var routeName = typeof(EmptyHypermediaObject).Name + "_Route";
+            var routeName = nameof(EmptyHypermediaObject) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(EmptyHypermediaObject), routeName, HttpMethod.GET);
 
-            var routeNameEmbedded = typeof(EmbeddedSubEntity).Name + "_Route";
+            var routeNameEmbedded = nameof(EmbeddedSubEntity) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(EmbeddedSubEntity), routeNameEmbedded, HttpMethod.GET);
 
             var ho = new EmptyHypermediaObject();
@@ -72,10 +72,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         [TestMethod]
         public void LinkEntitiesTest()
         {
-            var routeName = typeof(EmptyHypermediaObject).Name + "_Route";
+            var routeName = nameof(EmptyHypermediaObject) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(EmptyHypermediaObject), routeName, HttpMethod.GET);
 
-            var routeNameEmbedded = typeof(EmbeddedSubEntity).Name + "_Route";
+            var routeNameEmbedded = nameof(EmbeddedSubEntity) + "_Route";
             RouteRegister.AddHypermediaObjectRoute(typeof(EmbeddedSubEntity), routeNameEmbedded, HttpMethod.GET);
             RouteRegister.AddRouteKeyProducer(typeof(EmbeddedSubEntity), new EmbeddedEntityRouteKeyProducer());
 

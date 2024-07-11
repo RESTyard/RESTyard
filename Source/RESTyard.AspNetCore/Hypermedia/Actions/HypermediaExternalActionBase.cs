@@ -23,7 +23,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
         
         public HttpMethod HttpMethod { get; private set; }
 
-        public string AcceptedMediaType { get; private set; }
+        public string? AcceptedMediaType { get; private set; }
 
     }
 }

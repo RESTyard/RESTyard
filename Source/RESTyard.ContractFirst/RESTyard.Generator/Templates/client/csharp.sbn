@@ -11,7 +11,9 @@
     end
 -}}
 #nullable enable
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using RESTyard.Client;
 using RESTyard.Client.Builder;
 using RESTyard.Client.Hypermedia;
@@ -35,19 +37,35 @@ public class DefaultHypermediaClientBuilder
 {{- end }}
             });
 }
-
-{{ for parametersType in TransferParameters ~}}
+{{
+    for parametersType in TransferParameters.Parameters
+        mandatoryArguments = gatherMandatoryParameterArguments parametersType showHidden: false
+        optionalArguments = gatherOptionalParameterArguments parametersType showHidden: false
+        mandatoryParentArguments = gatherMandatoryParameterParentArguments TransferParameters.Parameters parametersType showHidden: false
+        optionalParentArguments = gatherOptionalParameterParentArguments TransferParameters.Parameters parametersType showHidden: false
+        allArguments = mandatoryParentArguments | array.concat mandatoryArguments | array.concat optionalParentArguments | array.concat optionalArguments
+        parentArguments = array.concat (mandatoryParentArguments | array.each @transformMandatoryArgument) (optionalParentArguments | array.each @transformOptionalArgument)
+~}}
 public partial record {{ parametersType.typeName }}(
-    {{- checkProperties parametersType.typeName parametersType.Property }}
-    {{- for property in parametersType.Property | array.filter @isVisibleProperty }}
-        {{- mapNullableType (!property.mandatory) property.type }} {{ property.name }}
+    {{- for arg in allArguments }}
+        {{- arg }}
         {{- if !for.last }}, {{ end }}
-    {{- end }});
+    {{- end }})
+    {{- if isNotEmpty parametersType.parentType }} : {{parametersType.parentType}}(
+        {{- for arg in parentArguments }}
+            {{- arg }}
+            {{- if !for.last }}, {{ end }}
+        {{- end -}}
+    ){{ end }};
 {{ end }}
 {{- for document in Documents }}
 {{- typeName = document.name + "Hco" }}
 [HypermediaClientObject({{ for class in document.Classifications }}"{{ class.class }}"{{ if !for.last }}, {{ end }}{{ end }})]
-public partial class {{ typeName }} : HypermediaClientObject
+public partial class {{ typeName }} : {{ if isNotEmpty document.parentDocument }}
+        {{- document.parentDocument + "Hco" }}
+    {{- else -}}
+        HypermediaClientObject
+    {{- end }}
 {
 {{- checkProperties typeName document.Properties }}
 {{- for property in document.Properties | array.filter @isVisibleProperty }}
@@ -66,7 +84,7 @@ public partial class {{ typeName }} : HypermediaClientObject
     [Mandatory]
 {{- end }}
     [HypermediaRelations(new[]{ "{{ link.rel }}" })]
-    public {{ mapNullableType (!link.mandatory) ("MandatoryHypermediaLink<" + link.document + "Hco>") }} {{ link.rel | string.capitalize }} { get; set; } = default!;
+    public {{ mapNullableType (!link.mandatory) ((iff link.mandatory "Mandatory" "") + "HypermediaLink" + "<" + (iff (isNotEmpty link.document) (link.document + "Hco") ("HypermediaClientObject")) + ">") }} {{ link.rel | string.capitalize }} { get; set; } = default!;
 {{ end }}
 {{-
     for entity in document.Entities
@@ -81,9 +99,17 @@ public partial class {{ typeName }} : HypermediaClientObject
 typeParameters = []
 actionType = ""
 if isEmpty operation.resultDocument
-    actionType = "IHypermediaClientAction"
+    if operation.isUploadAction
+        actionType = "IHypermediaClientFileUploadAction"
+    else
+        actionType = "IHypermediaClientAction"
+    end
 else
-    actionType = "IHypermediaClientFunction"
+    if operation.isUploadAction
+        actionType = 'IHypermediaClientFileUploadFunction'
+    else
+        actionType = "IHypermediaClientFunction"
+    end
     typeParameters = array.add typeParameters (operation.resultDocument + "Hco")
 end
 if isNotEmpty operation.parameterTypeName

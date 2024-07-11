@@ -41,13 +41,26 @@ namespace CarShack.Controllers.Customers
             }
 
             var queryResult = await customerRepository.QueryAsync(query).ConfigureAwait(false);
-            var resultReferences = new List<HypermediaObjectReferenceBase>();
+            var resultReferences = new List<HypermediaCustomerHto>();
             foreach (var customer in queryResult.Entities)
             {
-                resultReferences.Add(new HypermediaObjectReference(customer.ToHto()));
+                resultReferences.Add(customer.ToHto());
             }
 
-            var result = new HypermediaCustomerQueryResultHto(resultReferences, queryResult.TotalCountOfEnties, query);
+            var queries = NavigationQuerysBuilder.Create(query, queryResult);
+            var result = new HypermediaCustomerQueryResultHto(
+                queryResult.TotalCountOfEnties,
+                resultReferences.Count,
+                resultReferences,
+                queries.next.IsSome(),
+                queries.next.GetValueOrDefault(),
+                queries.previous.IsSome(),
+                queries.previous.GetValueOrDefault(),
+                queries.last.IsSome(),
+                queries.last.GetValueOrDefault(),
+                queries.all.IsSome(),
+                queries.all.GetValueOrDefault(),
+                query);
             var navigationQuerys = NavigationQuerysBuilder.Build(query, queryResult);
             result.AddNavigationQueries(navigationQuerys);
            

@@ -12,7 +12,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
     {
         private readonly HypermediaObject reference;
 
-        public HypermediaObjectReference(HypermediaObject hypermediaObject) : base (hypermediaObject.GetType())
+        public HypermediaObjectReference(HypermediaObject hypermediaObject) : base(hypermediaObject.GetType())
         {
             if (hypermediaObject == null)
             {
@@ -26,7 +26,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
         /// Resolves the referenced HypermediaObject
         /// </summary>
         /// <returns>The HypermediaObject.</returns>
-        public override HypermediaObject GetInstance()
+        public override HypermediaObject? GetInstance()
         {
             return this.reference;
         }
@@ -41,12 +41,12 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
             return true;
         }
 
-        public override object GetKey(IKeyProducer keyProducer)
+        public override object? GetKey(IKeyProducer keyProducer)
         {
             return keyProducer.CreateFromHypermediaObject(this.reference);
         }
 
-        public override IHypermediaQuery GetQuery()
+        public override IHypermediaQuery? GetQuery()
         {
             return null;
         }

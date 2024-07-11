@@ -99,7 +99,7 @@ public partial class HypermediaEntrypointHto
     }
 }
 
-public class ExternalActionNoParametersTestOp :HypermediaExternalAction
+public class ExternalActionNoParametersTestOp : HypermediaExternalAction
 {
     public ExternalActionNoParametersTestOp(Uri externalUri, HttpMethod httpMethod) 
         : base(() => true, externalUri, httpMethod)
@@ -107,7 +107,7 @@ public class ExternalActionNoParametersTestOp :HypermediaExternalAction
     }
 }
 
-public class ExternalActionWitParameterTestOp :HypermediaExternalAction<ExternalActionParameters>
+public class ExternalActionWitParameterTestOp : HypermediaExternalAction<ExternalActionParameters>
 {
     public ExternalActionWitParameterTestOp(Uri externalUri,
         HttpMethod httpMethod) 
@@ -165,21 +165,28 @@ public partial class HypermediaCustomersRootHto
 
 public partial class HypermediaCarsRootHto
 {
-    [HypermediaAction(Name = "UploadCarImage", Title = "Upload a car image.")]
-    public UploadCarImageOp UploadCarImage { get; init; }
-    
     [ActivatorUtilitiesConstructor]
     public HypermediaCarsRootHto()
         : this(
-            new HypermediaObjectReference(new HypermediaCarHto("VW", 2)),
-            new {Brand = "Porsche", Id = 5})
+            new UploadCarImageOp(
+                () => true,
+                new FileUploadConfiguration()
+                {
+                    Accept = [".jpg", "image/png", "image/*"],
+                    AllowMultiple = false,
+                    MaxFileSizeBytes = 1024 * 1024 * 4
+                }),
+            new UploadInsuranceScanOp(
+                () => true,
+                new FileUploadConfiguration()
+                {
+                    Accept = [".pdf"],
+                    AllowMultiple = true,
+                    MaxFileSizeBytes = 200,
+                }),
+            DerivedCarHto.CreateKeyObject(id: 2, brand: "VW"),
+            HypermediaCarHto.CreateKeyObject(id: 5, brand: "Porsche"))
     {
-        UploadCarImage = new UploadCarImageOp(() => true, new FileUploadConfiguration
-        {
-            Accept = new List<string> { ".jpg", "image/png", "image/*" },
-            AllowMultiple = false,
-            MaxFileSizeBytes = 1024 * 1024 * 4
-        });
     }
 }
 
@@ -215,13 +222,5 @@ public static class HypermediaMappingExtensions
     public static HypermediaCustomerHto ToHto(this Customer customer)
     {
         return HypermediaCustomerHto.FromDomain(customer);
-    }
-}
-
-public partial class HypermediaCustomerQueryResultHto
-{
-    public HypermediaCustomerQueryResultHto(ICollection<HypermediaObjectReferenceBase> entities, int totalEntities,
-        CustomerQuery query) : this(totalEntities, entities.Count, entities, query)
-    {
     }
 }

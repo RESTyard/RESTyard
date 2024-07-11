@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RESTyard.AspNetCore.WebApi.RouteResolver
 {
@@ -14,6 +15,6 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
 
         void AddRouteKeyProducer(Type attributeRouteType, IKeyProducer keyProducer);
 
-        bool TryGetKeyProducer(Type getType, out IKeyProducer keyProducer);
+        bool TryGetKeyProducer(Type getType, [NotNullWhen(true)] out IKeyProducer? keyProducer);
     }
 }

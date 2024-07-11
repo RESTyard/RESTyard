@@ -15,27 +15,27 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
         readonly bool isComplexKey;
         readonly ImmutableList<Accessor> keyAccessors;
 
-        public static RouteKeyProducer Create(Type hypermediaObjectType, ICollection<string> templateParameterNames)
+        public static RouteKeyProducer Create(Type hypermediaObjectType, ICollection<string?> templateParameterNames)
         {
             var accessors = MakeAccessors(hypermediaObjectType, templateParameterNames);
             return new RouteKeyProducer(accessors);
         }
 
-        static IEnumerable<Accessor> MakeAccessors(Type hypermediaObjectType, ICollection<string> templateParameterNames)
+        static IEnumerable<Accessor> MakeAccessors(Type hypermediaObjectType, ICollection<string?> templateParameterNames)
         {
             var keyProperties = hypermediaObjectType.GetTypeInfo().GetProperties()
-                .Select(p => new {p, att = p.GetCustomAttribute<KeyAttribute>()})
-                .Where(_ => _.att != null)
+                .Select(p => (p, att: p.GetCustomAttribute<KeyAttribute>()))
+                .Where(_ => _.att is not null)
+                .Select(tuple => (tuple.p, att: tuple.att!))
                 .ToImmutableList();
 
-            var paramsWithProperties = keyProperties.Select((k, i) => new
-            {
+            var paramsWithProperties = keyProperties.Select((k, i) => (
                 k.p,
                 k.att,
-                templateParameterName = 
+                templateParameterName: 
                     templateParameterNames.FirstOrDefault(
                         n => i == 0 && k.att.TemplateParameterName == null || n == k.att.TemplateParameterName)
-            }).ToImmutableList();
+            )).ToImmutableList();
 
             var templateParametersWithoutAttributedProperties =
                 templateParameterNames.Except(paramsWithProperties.Select(p => p.templateParameterName))
@@ -55,8 +55,8 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                     $"Type {hypermediaObjectType.Name} contains properties with attribute {nameof(KeyAttribute)} '{string.Join(",", propertiesWithoutTemplateParameter)}'. No template parameters found in route that correspond to those properties.");
             }
 
-            var accessors = paramsWithProperties.Select(_ =>
-                new Accessor(_.templateParameterName, MakeAccessor(hypermediaObjectType, _.p)));
+            var accessors = paramsWithProperties.Select(tuple =>
+                new Accessor(tuple.templateParameterName!, MakeAccessor(hypermediaObjectType, tuple.p)));
             return accessors;
         }
 
@@ -70,7 +70,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             return (Func<object, object>) lambda.Compile();
         }
 
-        RouteKeyProducer(IEnumerable<Accessor> keyAccessors)
+        private RouteKeyProducer(IEnumerable<Accessor> keyAccessors)
         {
             this.keyAccessors = keyAccessors.ToImmutableList();
             isComplexKey = this.keyAccessors.Count > 1;
@@ -79,7 +79,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
         public object CreateFromHypermediaObject(HypermediaObject hypermediaObject)
         {
             var dynamic = new ExpandoObject();
-            var dict = (IDictionary<string, object>)dynamic;
+            var dict = (IDictionary<string, object?>)dynamic;
             foreach (var accessor in keyAccessors)
             {
                 dict.Add(accessor.TemplateParameterName, accessor.GetKey(hypermediaObject));
@@ -87,13 +87,15 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             return dynamic;
         }
 
-        public object CreateFromKeyObject(object keyObject)
+        public object? CreateFromKeyObject(object? keyObject)
         {
             if (isComplexKey)
+            {
                 return keyObject;
+            }
 
             var dynamic = new ExpandoObject();
-            var dict = (IDictionary<string, object>)dynamic;
+            var dict = (IDictionary<string, object?>)dynamic;
             foreach (var accessor in keyAccessors)
             {
                 dict.Add(accessor.TemplateParameterName, keyObject);

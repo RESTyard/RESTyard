@@ -14,9 +14,9 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
     {
         public Type RouteType { get; private set; }
 
-        public Type RouteKeyProducerType { get; private set; }
+        public Type? RouteKeyProducerType { get; private set; }
         
-        public string AcceptedMediaType => null;
+        public string? AcceptedMediaType => null;
 
         /// <summary>
         /// Indicates that this Rout will provide a <see cref="HypermediaObject"/>. It is not required that only this <see cref="HypermediaObject"/> can be returned.
@@ -26,9 +26,9 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
         /// <param name="routeKeyProducerType">If the route template contains a (single) key it is required that the type of teh responsible RouteKeyProducer is given.
         /// This type will be used to create a n instance of the producer and generate the key object used in a UrlHelper to determin the final URL.
         /// </param>
-        public HttpGetHypermediaObject(Type routeType, Type routeKeyProducerType = null)
+        public HttpGetHypermediaObject(Type routeType, Type? routeKeyProducerType = null)
         {
-            Init(routeType, routeKeyProducerType);
+            (Name, RouteType, RouteKeyProducerType) = Init(routeType, routeKeyProducerType);
         }
 
         /// <summary>
@@ -42,9 +42,9 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
         /// </param>y>
 
 
-        public HttpGetHypermediaObject(string template, Type routeType, Type routeKeyProducerType = null) : base (template)
+        public HttpGetHypermediaObject(string template, Type routeType, Type? routeKeyProducerType = null) : base (template)
         {
-            Init(routeType, routeKeyProducerType);
+            (Name, RouteType, RouteKeyProducerType) = Init(routeType, routeKeyProducerType);
 
             var routeTemplate = TemplateParser.Parse(template);
             if (routeTemplate.Parameters.Count > 0 && routeKeyProducerType == null 
@@ -54,13 +54,12 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
             }
         }
 
-        private void Init(Type routeType, Type routeKeyProducerType)
+        private static (string Name, Type RouteType, Type? RouteKeyProducerType) Init(Type routeType, Type? routeKeyProducerType)
         {
             AttributedRouteHelper.EnsureIs<HypermediaObject>(routeType);
             AttributedRouteHelper.EnsureIsRouteKeyProducer(routeKeyProducerType);
-            Name = AttributedRouteHelper.EscapeRouteName("GenericRouteName_HypermediaObject_" + routeType);
-            RouteType = routeType;
-            RouteKeyProducerType = routeKeyProducerType;
+            var name = AttributedRouteHelper.EscapeRouteName("GenericRouteName_HypermediaObject_" + routeType);
+            return (name, routeType, routeKeyProducerType);
         }
     }
 }

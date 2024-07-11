@@ -44,12 +44,6 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         public bool ImplicitHypermediaActionParameterBinders { get; set; } = true;
 
         /// <summary>
-        /// Configuration for Url generation
-        /// </summary>
-        public HypermediaUrlConfig HypermediaUrlConfig { get; set; } = new HypermediaUrlConfig();
-
-
-        /// <summary>
         /// Configuration for hypermedia document generation
         /// </summary>
         public HypermediaConverterConfiguration HypermediaConverterConfiguration { get; set; } = new HypermediaConverterConfiguration();
@@ -62,12 +56,12 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         /// <summary>
         /// If another route register should be used provide a type which derives from <see cref="IRouteRegister"/>
         /// </summary>
-        public Type AlternateRouteRegister = null;
+        public Type? AlternateRouteRegister = null;
         
         /// <summary>
         /// If another query string builder should be used provide a type which derives from <see cref="IQueryStringBuilder"/>
         /// </summary>
-        public Type AlternateQueryStringBuilder = null;
+        public Type? AlternateQueryStringBuilder = null;
     }
 
     public class HypermediaConverterConfiguration

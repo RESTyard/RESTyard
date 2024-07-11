@@ -190,28 +190,28 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
 
     public class DictionaryHolder
     {
-        public Dictionary<string, int> Dictionary { get; set; }
+        public Dictionary<string, int> Dictionary { get; set; } = new();
     }
 
     public class ChildListHolder
     {
-        public List<Child> List { get; set; }
+        public List<Child> List { get; set; } = new();
     }
 
     public class IntListHolder
     {
-        public List<int> List { get; set; }
+        public List<int> List { get; set; } = new();
     }
 
     public class StringListHolder
     {
-        public List<string> List { get; set; }
+        public List<string> List { get; set; } = new();
     }
 
 
     public class Nester
     {
-        public IntListHolder Nested { get; set; }
+        public IntListHolder Nested { get; set; } = new();
     }
 
     public class Child

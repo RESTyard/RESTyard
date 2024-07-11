@@ -9,6 +9,7 @@ using NJsonSchema.Generation;
 using RESTyard.AspNetCore.Util;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 using System.Text.Json;
+using Newtonsoft.Json.Converters;
 
 namespace RESTyard.AspNetCore.JsonSchema
 {
@@ -17,7 +18,13 @@ namespace RESTyard.AspNetCore.JsonSchema
         static readonly JsonSchemaGeneratorSettings JsonSchemaGeneratorSettings = new JsonSchemaGeneratorSettings
         {
             FlattenInheritanceHierarchy = true,
-            DefaultEnumHandling = EnumHandling.String,
+            SerializerSettings = new()
+            {
+                Converters =
+                {
+                    new StringEnumConverter(),
+                },
+            },
         };
 
         public static object Generate(Type type)
@@ -41,6 +48,22 @@ namespace RESTyard.AspNetCore.JsonSchema
 
             foreach (var propertyGroup in keyProperties.GroupBy(p => p.SchemaPropertyName))
             {
+                var allAreCollection = propertyGroup
+                    .All(p => p.Property.PropertyType.GetInterfaces()
+                        .Any(x => x.IsGenericType &&
+                                  x.GetGenericTypeDefinition() == typeof(ICollection<>))
+                              && p.TargetType == propertyGroup.First().TargetType);
+                var allAreNotCollection = propertyGroup
+                    .All(p => !p.Property.PropertyType.GetInterfaces()
+                        .Any(x => x.IsGenericType &&
+                                  x.GetGenericTypeDefinition() == typeof(ICollection<>))
+                              && p.TargetType == propertyGroup.First().TargetType);
+                bool? isSingleUriDeconstruction = allAreCollection ? false : allAreNotCollection ? true : null;
+                if (isSingleUriDeconstruction is null)
+                {
+                    throw new JsonSchemaGenerationException("Attribute KeyFromUri should be applied consistently either as a List or not as a List for a schema name.");
+                }
+                
                 var schemaPropertyName = propertyGroup.Key;
                 if (schema.Properties.ContainsKey(schemaPropertyName))
                 {
@@ -48,7 +71,27 @@ namespace RESTyard.AspNetCore.JsonSchema
                 }
 
                 var isRequired = propertyGroup.Any(p => p.Property.GetCustomAttribute<RequiredAttribute>() != null);
-                var property = new JsonSchemaProperty { Type = JsonObjectType.String, Format = JsonFormatStrings.Uri };
+
+                // If 'isSingleUriDeconstruction' is true then set type = string
+                // Else set type = array of strings
+                JsonSchemaProperty property;
+                if (isSingleUriDeconstruction is true)
+                {
+                    property = new JsonSchemaProperty { Type = JsonObjectType.String, Format = JsonFormatStrings.Uri };
+                }
+                else
+                {
+                    property = new JsonSchemaProperty
+                    {
+                        Type = JsonObjectType.Array,
+                        Item = new NJsonSchema.JsonSchema
+                        {
+                            Type = JsonObjectType.String,
+                            Format = JsonFormatStrings.Uri
+                        }
+                    };
+                }
+
                 //schema factory sets minlength of required uri properties, so do it here as well
                 if (isRequired)
                 {
@@ -173,11 +216,11 @@ namespace RESTyard.AspNetCore.JsonSchema
         public Type TargetType { get; }
         public PropertyInfo Property { get; }
         public string SchemaPropertyName { get; }
-        public string RouteTemplateParameterName { get; }
+        public string? RouteTemplateParameterName { get; }
         public ImmutableArray<string> NestingPropertyNames { get; }
         public string ResolvedRouteTemplateParameterName => RouteTemplateParameterName ?? Property.Name;
 
-        public KeyFromUriProperty(Type targetType, PropertyInfo property, string schemaPropertyName, string routeTemplateParameterName, ImmutableArray<string> nestingPropertyNames)
+        public KeyFromUriProperty(Type targetType, PropertyInfo property, string? schemaPropertyName, string? routeTemplateParameterName, ImmutableArray<string> nestingPropertyNames)
         {
             TargetType = targetType;
             Property = property;

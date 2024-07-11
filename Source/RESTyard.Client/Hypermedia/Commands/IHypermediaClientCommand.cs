@@ -11,6 +11,8 @@ namespace RESTyard.Client.Hypermedia.Commands
         string Title { get; set; }
 
         string Method { get; set; }
+        
+        string Type { get; set; }
 
         Uri Uri { get; set; }
 
@@ -20,7 +22,7 @@ namespace RESTyard.Client.Hypermedia.Commands
 
         bool HasParameters { get; set; }
 
-        List<ParameterDescription> ParameterDescriptions { get; }
+        IReadOnlyList<ParameterDescription> ParameterDescriptions { get; set; }
 
         IHypermediaResolver Resolver { get; set; }
     }

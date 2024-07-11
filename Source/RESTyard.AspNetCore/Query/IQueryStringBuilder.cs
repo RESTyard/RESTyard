@@ -10,6 +10,6 @@ namespace RESTyard.AspNetCore.Query
         /// <param name="sourceObject">The object to serialize, can be null.</param>
         /// <param name="objectPrefix">Prefix prepended to all serialized object properties.</param>
         /// <returns></returns>
-        string CreateQueryString(object sourceObject, string objectPrefix = "");
+        string CreateQueryString(object? sourceObject, string objectPrefix = "");
     }
 }

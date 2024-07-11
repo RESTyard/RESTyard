@@ -106,7 +106,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Extensions
         /// <typeparam name="T">Desired HypermediaObject Type</typeparam>
         /// <param name="entitiesList">Entities List.</param>
         /// <returns></returns>
-        public static IEnumerable<T> GetInstanceByClass<T>(this List<RelatedEntity> entitiesList) where T : HypermediaObject
+        public static IEnumerable<T?> GetInstanceByClass<T>(this List<RelatedEntity> entitiesList) where T : HypermediaObject
         {
             return entitiesList
                 .FilterByClass<T>()

@@ -9,11 +9,10 @@ namespace Extensions.Test.Caching.EmptyCache;
 public class When_TryGetValue : Given_AnEmptyCache
 {
     private readonly bool success;
-    private LinkHcoCacheEntry entry;
 
     public When_TryGetValue()
     {
-        this.success = this.UserCache.TryGetValue(this.TestUri, out this.entry);
+        this.success = this.UserCache.TryGetValue(this.TestUri, out var _);
     }
 
     [Fact]

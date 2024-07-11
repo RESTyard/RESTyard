@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using FunicularSwitch;
 using RESTyard.AspNetCore.Query;
 using RESTyard.Relations;
 
@@ -6,9 +8,9 @@ namespace RESTyard.AspNetCore.Util.Repository
 {
     public static class NavigationQuerysBuilder
     {
-        public static NavigationQueries Build<TSortPropertyEnum, TQueryFilter, TEntitiy>(QueryBase<TSortPropertyEnum, TQueryFilter> query, QueryResult<TEntitiy> queryResult)
-        where TSortPropertyEnum : struct
-        where TQueryFilter : IQueryFilter, new()
+        public static NavigationQueries Build<TSortPropertyEnum, TQueryFilter, TEntity>(QueryBase<TSortPropertyEnum, TQueryFilter> query, QueryResult<TEntity> queryResult)
+            where TSortPropertyEnum : struct
+            where TQueryFilter : IQueryFilter, new()
         {
             var result = new NavigationQueries();
             if (!query.Pagination.HasPagination() || queryResult.TotalCountOfEnties <= 0)
@@ -18,8 +20,7 @@ namespace RESTyard.AspNetCore.Util.Repository
 
             result.AddQuery(DefaultHypermediaRelations.Queries.All, CreateQueryAll(query));
 
-            QueryBase<TSortPropertyEnum, TQueryFilter> createdQuery;
-            if (TryCreateQueryFirst(query, queryResult.TotalCountOfEnties, out createdQuery))
+            if (TryCreateQueryFirst(query, queryResult.TotalCountOfEnties, out var createdQuery))
             {
                 result.AddQuery(DefaultHypermediaRelations.Queries.First, createdQuery);
             }
@@ -43,12 +44,38 @@ namespace RESTyard.AspNetCore.Util.Repository
             return result;
         }
 
+        public static (
+            Option<QueryBase<TSortPropertyEnum, TQueryFilter>> all,
+            Option<QueryBase<TSortPropertyEnum, TQueryFilter>> first,
+            Option<QueryBase<TSortPropertyEnum, TQueryFilter>> next,
+            Option<QueryBase<TSortPropertyEnum, TQueryFilter>> previous,
+            Option<QueryBase<TSortPropertyEnum, TQueryFilter>> last)
+            Create<TSortPropertyEnum, TQueryFilter, TEntity>(
+                QueryBase<TSortPropertyEnum, TQueryFilter> query,
+                QueryResult<TEntity> queryResult)
+            where TSortPropertyEnum : struct
+            where TQueryFilter : IQueryFilter, new()
+        {
+            var none = Option.None<QueryBase<TSortPropertyEnum, TQueryFilter>>();
+            if (!query.Pagination.HasPagination() || queryResult.TotalCountOfEnties <= 0)
+            {
+                return (none, none, none, none, none);
+            }
+
+            return (
+                CreateQueryAll(query),
+                TryCreateQueryFirst(query, queryResult.TotalCountOfEnties, out var firstQuery) ? firstQuery : none,
+                TryCreateQueryNext(query, queryResult.TotalCountOfEnties, out var nextQuery) ? nextQuery : none,
+                TryCreateQueryPrevious(query, queryResult.TotalCountOfEnties, out var previousQuery) ? previousQuery : none,
+                TryCreateQueryLast(query, queryResult.TotalCountOfEnties, out var lastQuery) ? lastQuery : none);
+        }
+
         private static bool TryCreateQueryLast<TSortPropertyEnum, TQueryFilter>(
-        QueryBase<TSortPropertyEnum, TQueryFilter> queryParameters,
-        int queryResultCount,
-        out QueryBase<TSortPropertyEnum, TQueryFilter> queryLast)
-        where TSortPropertyEnum : struct
-        where TQueryFilter : IQueryFilter, new()
+            QueryBase<TSortPropertyEnum, TQueryFilter> queryParameters,
+            int queryResultCount,
+            [NotNullWhen(true)] out QueryBase<TSortPropertyEnum, TQueryFilter>? queryLast)
+            where TSortPropertyEnum : struct
+            where TQueryFilter : IQueryFilter, new()
         {
             if (!HasLastPage(queryParameters, queryResultCount))
             {
@@ -69,7 +96,7 @@ namespace RESTyard.AspNetCore.Util.Repository
         private static bool TryCreateQueryPrevious<TSortPropertyEnum, TQueryFilter>(
             QueryBase<TSortPropertyEnum, TQueryFilter> queryParameters,
             int queryResultCount,
-            out QueryBase<TSortPropertyEnum, TQueryFilter> queryPrevious)
+            [NotNullWhen(true)] out QueryBase<TSortPropertyEnum, TQueryFilter>? queryPrevious)
             where TSortPropertyEnum : struct
             where TQueryFilter : IQueryFilter, new()
         {
@@ -93,7 +120,7 @@ namespace RESTyard.AspNetCore.Util.Repository
         private static bool TryCreateQueryNext<TSortPropertyEnum, TQueryFilter>(
             QueryBase<TSortPropertyEnum, TQueryFilter> queryParameters,
             int queryResultCount,
-            out QueryBase<TSortPropertyEnum, TQueryFilter> queryNext)
+            [NotNullWhen(true)] out QueryBase<TSortPropertyEnum, TQueryFilter>? queryNext)
             where TSortPropertyEnum : struct
             where TQueryFilter : IQueryFilter, new()
         {
@@ -112,7 +139,7 @@ namespace RESTyard.AspNetCore.Util.Repository
         private static bool TryCreateQueryFirst<TSortPropertyEnum, TQueryFilter>(
             QueryBase<TSortPropertyEnum, TQueryFilter> queryParameters,
             int queryResultCount,
-            out QueryBase<TSortPropertyEnum, TQueryFilter> queryFirst)
+            [NotNullWhen(true)] out QueryBase<TSortPropertyEnum, TQueryFilter>? queryFirst)
             where TSortPropertyEnum : struct
             where TQueryFilter : IQueryFilter, new()
             {

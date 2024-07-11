@@ -30,8 +30,6 @@ namespace RESTyard.AspNetCore.Hypermedia
         /// </summary>
         protected HypermediaObject(bool hasSelfLink = true)
         {
-            Init();
-
             if (hasSelfLink)
             {
                 Links.Add(DefaultHypermediaRelations.Self, new HypermediaObjectReference(this));
@@ -39,32 +37,25 @@ namespace RESTyard.AspNetCore.Hypermedia
         }
 
         /// <summary>
-        /// Constructor for HypermediaObject which are acces using a query. Required to propperly build the self Link.
+        /// Constructor for HypermediaObjects which are accessed using a query. Required to properly build the self Link.
         /// </summary>
         protected HypermediaObject(IHypermediaQuery query)
         {
-            Init();
             // hypemedia object is a queryresult so it needs a selflink with query
             Links.Add(DefaultHypermediaRelations.Self, new HypermediaObjectQueryReference(GetType(), query));
-        }
-
-        private void Init()
-        {
-            Entities = new List<RelatedEntity>();
-            Links = new RelationDictionary();
         }
 
         /// <summary>
         /// List of embedded or linked entities which will be included in the formatted output.
         /// </summary>
         [FormatterIgnoreHypermediaProperty]
-        public List<RelatedEntity> Entities { get; set; }
+        public List<RelatedEntity> Entities { get; set; } = new();
 
         /// <summary>
         /// List of links to other HypermediaObjects which will be included in the formatted output.
         /// The key describes the relation to the linked HypermediaObject.
         /// </summary>
         [FormatterIgnoreHypermediaProperty]
-        public RelationDictionary Links { get; private set; }
+        public RelationDictionary Links { get; } = new();
     }
 }

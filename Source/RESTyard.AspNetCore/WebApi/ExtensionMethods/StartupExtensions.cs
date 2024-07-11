@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using RESTyard.AspNetCore.Exceptions;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.JsonSchema;
 using RESTyard.AspNetCore.Query;
@@ -23,18 +25,30 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         /// Adds the Hypermedia Extensions.
         /// By default a Siren Formatters is added and the entry assembly is crawled for Hypermedia route attributes
         /// </summary>
-        public static IServiceCollection AddHypermediaExtensions(this IServiceCollection serviceCollection, Action<HypermediaExtensionsOptions> configureHypermediaOptionsAction = null)
+        public static IServiceCollection AddHypermediaExtensions(this IServiceCollection serviceCollection, Action<HypermediaExtensionsOptions>? configureHypermediaOptionsAction = null)
         {
             var hypermediaOptions = new HypermediaExtensionsOptions();
             configureHypermediaOptionsAction?.Invoke(hypermediaOptions);
             
             serviceCollection.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            serviceCollection.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             serviceCollection.AddSingleton(hypermediaOptions);
-            serviceCollection.AddSingleton<IHypermediaUrlConfig>(hypermediaOptions.HypermediaUrlConfig);
             serviceCollection.AddSingleton(CreateApplicationModel);
             serviceCollection.AddSingletonWithAlternative<IRouteRegister, AttributedRoutesRegister>(hypermediaOptions.AlternateRouteRegister);
             serviceCollection.AddSingletonWithAlternative<IQueryStringBuilder, QueryStringBuilder>(hypermediaOptions.AlternateQueryStringBuilder);
             serviceCollection.AddSingleton<IRouteResolverFactory, RegisterRouteResolverFactory>();
+            serviceCollection.AddScoped<IHypermediaRouteResolver>(sp =>
+            {
+                var factory = sp.GetRequiredService<IRouteResolverFactory>();
+                var accessor = sp.GetRequiredService<IHttpContextAccessor>();
+                var httpContext = accessor.HttpContext;
+                if (httpContext is null)
+                {
+                    throw new HypermediaException(
+                        "Cannot resolve HttpContext from a scope that is not created as part of a request");
+                }
+                return factory.CreateRouteResolver(httpContext);
+            });
             serviceCollection.AddSingleton<IRouteKeyFactory, RouteKeyFactory>();
             serviceCollection.AddSingleton<ISirenHypermediaConverterFactory, SirenHypermediaConverterFactory>();
             serviceCollection.AddSingleton<HypermediaQueryLocationFormatter>();
@@ -125,11 +139,25 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
 
                 return hmoType.GetHmoMethods.Select(_ => _.RouteTemplateFull).ToImmutableArray();
             }, forAttributedActionParametersOnly));
+            options.ModelBinderProviders.Insert(
+                1,
+                new HypermediaParameterFromFormBinderProvider(
+                    t =>
+                    {
+                        if (!applicationModel.HmoTypes.TryGetValue(t, out var hmoType))
+                        {
+                            throw new ArgumentException($"No route found for type {t.BeautifulName()}");
+                        }
+
+                        return hmoType.GetHmoMethods.Select(_ => _.RouteTemplateFull).ToImmutableArray();
+                    },
+                    forAttributedActionParametersOnly));
 
             return options;
         }
 
-        public static IServiceCollection AddSingletonWithAlternative<TInterface, TDefault>(this IServiceCollection serviceCollection, Type alternative) where TDefault : TInterface
+        public static IServiceCollection AddSingletonWithAlternative<TInterface, TDefault>(this IServiceCollection serviceCollection, Type? alternative)
+            where TDefault : TInterface
         {
             var serviceType = typeof(TInterface);
             if (alternative != null && !serviceType.IsAssignableFrom(alternative))
