@@ -1,4 +1,7 @@
-﻿using System;
+﻿using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.NamingConventionBinder;
+using System.CommandLine.Parsing;
 using System.Reflection;
 using System.Xml.Serialization;
 using Scriban;
@@ -6,18 +9,36 @@ using Scriban.Runtime;
 
 namespace RESTyard.Generator;
 
-public static class Program
+internal static class Program
 {
-    public static async Task Main(string schemaFile, string type, string language, string template, string outputFile, string? @namespace = default, string? includeFile = default)
-    {
-        await using var schemaFileStream = File.OpenRead(schemaFile);
-        var schemaSerializer = new XmlSerializer(typeof(HypermediaType));
-        if(schemaSerializer.Deserialize(schemaFileStream) is not HypermediaType schema)
-            throw new InvalidOperationException("Failed to read schema.");
+    public static Task<int> Main(string[] args) =>
+        CreateCommandLine()
+            .Build()
+            .InvokeAsync(args);
 
-        var templatePath = string.IsNullOrEmpty(template) ? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", type, $"{language}.sbn") : template;
-        await RenderTemplate(schema, templatePath, outputFile, @namespace, includeFile);
-        Console.WriteLine("Done.");
+    private static CommandLineBuilder CreateCommandLine()
+    {
+        var schemaFileOption = new Option<string>("--schema-file");
+        var typeOption = new Option<string>("--type");
+        var languageOption = new Option<string>("--language");
+        var templateOption = new Option<string>("--template");
+        var outputFileOption = new Option<string>("--output-file");
+        var namespaceOption = new Option<string>("--namespace");
+        var includeFileOption = new Option<string>("--include-file");
+
+        var rootCommand = new RootCommand
+        {
+            schemaFileOption,
+            typeOption,
+            languageOption,
+            templateOption,
+            outputFileOption,
+            namespaceOption,
+            includeFileOption,
+        };
+        rootCommand.Handler = CommandHandler.Create(Run);
+
+        return new CommandLineBuilder(rootCommand);
     }
 
     private static async Task RenderTemplate(HypermediaType schema, string templatePath, string outputPath, string? @namespace, string? includeFile)
@@ -44,6 +65,18 @@ public static class Program
         var code = await template.RenderAsync(templateContext);
         await File.WriteAllTextAsync(outputPath, code);
 
-        string GetMemberName (MemberInfo member) => member.Name;
+        string GetMemberName(MemberInfo member) => member.Name;
+    }
+
+    private static async Task Run(string schemaFile, string type, string language, string template, string outputFile, string? @namespace = default, string? includeFile = default)
+    {
+        await using var schemaFileStream = File.OpenRead(schemaFile);
+        var schemaSerializer = new XmlSerializer(typeof(HypermediaType));
+        if (schemaSerializer.Deserialize(schemaFileStream) is not HypermediaType schema)
+            throw new InvalidOperationException("Failed to read schema.");
+
+        var templatePath = string.IsNullOrEmpty(template) ? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", type, $"{language}.sbn") : template;
+        await RenderTemplate(schema, templatePath, outputFile, @namespace, includeFile);
+        Console.WriteLine("Done.");
     }
 }
