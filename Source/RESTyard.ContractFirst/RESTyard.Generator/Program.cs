@@ -33,6 +33,8 @@ internal static class Program
         };
         var namespaceOption = new Option<string>("--namespace");
         var includeFileOption = new Option<string>("--include-file");
+        var includeTypeOption = new Option<IEnumerable<string>>("--include-type");
+        var excludeTypeOption = new Option<IEnumerable<string>>("--exclude-type");
 
         var rootCommand = new RootCommand
         {
@@ -41,13 +43,44 @@ internal static class Program
             outputFileOption,
             namespaceOption,
             includeFileOption,
+            includeTypeOption,
+            excludeTypeOption,
         };
         rootCommand.Handler = CommandHandler.Create(Run);
 
         return new CommandLineBuilder(rootCommand);
     }
 
-    private static async Task RenderTemplate(HypermediaType schema, FileInfo templateFile, string outputPath, string? @namespace, string? includeFile)
+    private static void FilterTypes(
+        HypermediaType schema,
+        IReadOnlyCollection<string> includedTypeNames,
+        IReadOnlyCollection<string> excludedTypeNames)
+    {
+        if (includedTypeNames.Any() && excludedTypeNames.Any())
+            Console.WriteLine("[WARNING] Type inclusion always overrides exclusion.");
+
+        schema.TransferParameters.Parameters = Filter(schema.TransferParameters.Parameters, x => x.typeName);
+        schema.Documents = Filter(schema.Documents, x => x.name);
+
+        Func<T, bool> Condition<T>(Func<T, string> nameSelector) => includedTypeNames.Any()
+            ? IsIncluded(nameSelector)
+            : IsNotExcluded(nameSelector);
+
+        Func<T, bool> IsIncluded<T>(Func<T, string> nameSelector) => x => includedTypeNames.Contains(nameSelector(x));
+
+        Func<T, bool> IsNotExcluded<T>(Func<T, string> nameSelector) => x => !excludedTypeNames.Contains(nameSelector(x));
+
+        T[] Filter<T>(IEnumerable<T> sequence, Func<T, string> nameSelector) => sequence
+            .Where(Condition(nameSelector))
+            .ToArray();
+    }
+
+    private static async Task RenderTemplate(
+        HypermediaType schema,
+        FileInfo templateFile,
+        string outputPath,
+        string? @namespace,
+        string? includeFile)
     {
         var templateContent = await File.ReadAllTextAsync(templateFile.FullName);
         var template = Template.Parse(templateContent, templateFile.FullName);
@@ -75,7 +108,14 @@ internal static class Program
         string GetMemberName(MemberInfo member) => member.Name;
     }
 
-    private static async Task Run(string schemaFile, string template, string outputFile, string? @namespace = default, string? includeFile = default)
+    private static async Task Run(
+        string schemaFile,
+        string template,
+        string outputFile,
+        IEnumerable<string> includeType,
+        IEnumerable<string> excludeType,
+        string? @namespace = default,
+        string? includeFile = default)
     {
         await using var schemaFileStream = File.OpenRead(schemaFile);
         var schemaSerializer = new XmlSerializer(typeof(HypermediaType));
@@ -86,7 +126,9 @@ internal static class Program
         if (templateFile is null)
             throw new FileNotFoundException($"Template \"{template}\" could not be found.");
 
+        FilterTypes(schema, includeType.ToList(), excludeType.ToList());
         await RenderTemplate(schema, templateFile, outputFile, @namespace, includeFile);
+        
         Console.WriteLine("Done.");
     }
 
