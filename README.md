@@ -6,7 +6,7 @@ Using the Extensions it is possible to return HypermediaObjects as C# classes. R
 
 Of course there might be some edge cases or flaws. Comments, suggestions, remarks and criticism are very welcome.
 
-For a first feel there is a demo project called [CarShack](https://github.com/bluehands/WebApiHypermediaExtensions/tree/master/Source/CarShack) which shows a great portion of the Extensions in use. It also shows how the routes were intended to be designed, although this is not enforced.
+For a first feel there is a demo project called [CarShack](https://github.com/RESTyard/RESTyard/tree/master/Source/CarShack) which shows a great portion of the Extensions in use. It also shows how the routes were intended to be designed, although this is not enforced.
 
 To develop C# client applications there is a generic REST client. 
 
