@@ -22,9 +22,9 @@
     <Copyright>Copyright 2001-2022 RESTyard Team</Copyright>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/bluehands/WebApiHypermediaExtensions</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/RESTyard/RESTyard</PackageProjectUrl>
     <RepositoryType>Git</RepositoryType>
-    <RepositoryUrl>https://github.com/bluehands/WebApiHypermediaExtensions.git</RepositoryUrl>
+    <RepositoryUrl>https://github.com/RESTyard/RESTyard.git</RepositoryUrl>
     <RepositoryBranch>$(BranchName)</RepositoryBranch>
     <PackageIcon>Ry-Icon_128x128.png</PackageIcon>
 
