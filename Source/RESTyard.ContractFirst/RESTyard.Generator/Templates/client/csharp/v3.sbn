@@ -1,6 +1,6 @@
 
 {{-
-    include "../_common.sbn"
+    include "../../_common.sbn"
 
     func mapNullableType
         if $0
