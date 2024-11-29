@@ -24,7 +24,8 @@ internal static class Program
         {
             IsRequired = true,
         };
-        var templateOption = new Option<string>("--template")
+        var options = GetAllTemplatePaths();
+        var templateOption = new Option<string>("--template", $"Valid options are: {string.Join(", ", options)}")
         {
             IsRequired = true,
         };
@@ -36,7 +37,8 @@ internal static class Program
         var includeFileOption = new Option<string>("--include-file");
         var includeTypeOption = new Option<IEnumerable<string>>("--include-type");
         var excludeTypeOption = new Option<IEnumerable<string>>("--exclude-type");
-        var useDefaultClassificationsOption = new Option<bool>("--use-default-classifications");
+        var useDefaultClassificationsOption = new Option<bool>("--use-default-classifications",
+            "Use the document name as classification if no classification is provided.");
 
         var rootCommand = new RootCommand
         {
@@ -52,6 +54,25 @@ internal static class Program
         rootCommand.Handler = CommandHandler.Create(Run);
 
         return new CommandLineBuilder(rootCommand);
+    }
+
+    private static ImmutableArray<string> GetAllTemplatePaths()
+    {
+        var templatesDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates");
+        if (!Directory.Exists(templatesDirectory))
+        {
+            return [];
+        }
+
+        var clientServerDirectories = new[] { "client", "server" };
+        return
+        [
+            ..clientServerDirectories
+                .SelectMany(dir => Directory.Exists(Path.Combine(templatesDirectory, dir))
+                    ? Directory.GetFiles(Path.Combine(templatesDirectory, dir), "*", SearchOption.AllDirectories)
+                    : [])
+                .Select(filePath => Path.GetRelativePath(templatesDirectory, filePath))
+        ];
     }
 
     private static void FilterTypes(
@@ -71,7 +92,8 @@ internal static class Program
 
         Func<T, bool> IsIncluded<T>(Func<T, string> nameSelector) => x => includedTypeNames.Contains(nameSelector(x));
 
-        Func<T, bool> IsNotExcluded<T>(Func<T, string> nameSelector) => x => !excludedTypeNames.Contains(nameSelector(x));
+        Func<T, bool> IsNotExcluded<T>(Func<T, string> nameSelector) =>
+            x => !excludedTypeNames.Contains(nameSelector(x));
 
         T[] Filter<T>(IEnumerable<T> sequence, Func<T, string> nameSelector) => sequence
             .Where(Condition(nameSelector))
