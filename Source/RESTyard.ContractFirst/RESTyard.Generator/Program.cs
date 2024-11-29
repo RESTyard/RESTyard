@@ -1,4 +1,5 @@
-﻿using System.CommandLine;
+﻿using System.Collections.Immutable;
+using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.NamingConventionBinder;
 using System.CommandLine.Parsing;
@@ -23,7 +24,8 @@ internal static class Program
         {
             IsRequired = true,
         };
-        var templateOption = new Option<string>("--template")
+        var options = GetAllTemplatePaths();
+        var templateOption = new Option<string>("--template", $"Valid options are: {string.Join(", ", options)}")
         {
             IsRequired = true,
         };
@@ -35,6 +37,8 @@ internal static class Program
         var includeFileOption = new Option<string>("--include-file");
         var includeTypeOption = new Option<IEnumerable<string>>("--include-type");
         var excludeTypeOption = new Option<IEnumerable<string>>("--exclude-type");
+        var useDefaultClassificationsOption = new Option<bool>("--use-default-classifications",
+            "Use the document name as classification if no classification is provided.");
 
         var rootCommand = new RootCommand
         {
@@ -45,10 +49,30 @@ internal static class Program
             includeFileOption,
             includeTypeOption,
             excludeTypeOption,
+            useDefaultClassificationsOption
         };
         rootCommand.Handler = CommandHandler.Create(Run);
 
         return new CommandLineBuilder(rootCommand);
+    }
+
+    private static ImmutableArray<string> GetAllTemplatePaths()
+    {
+        var templatesDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates");
+        if (!Directory.Exists(templatesDirectory))
+        {
+            return [];
+        }
+
+        var clientServerDirectories = new[] { "client", "server" };
+        return
+        [
+            ..clientServerDirectories
+                .SelectMany(dir => Directory.Exists(Path.Combine(templatesDirectory, dir))
+                    ? Directory.GetFiles(Path.Combine(templatesDirectory, dir), "*", SearchOption.AllDirectories)
+                    : [])
+                .Select(filePath => Path.GetRelativePath(templatesDirectory, filePath))
+        ];
     }
 
     private static void FilterTypes(
@@ -68,7 +92,8 @@ internal static class Program
 
         Func<T, bool> IsIncluded<T>(Func<T, string> nameSelector) => x => includedTypeNames.Contains(nameSelector(x));
 
-        Func<T, bool> IsNotExcluded<T>(Func<T, string> nameSelector) => x => !excludedTypeNames.Contains(nameSelector(x));
+        Func<T, bool> IsNotExcluded<T>(Func<T, string> nameSelector) =>
+            x => !excludedTypeNames.Contains(nameSelector(x));
 
         T[] Filter<T>(IEnumerable<T> sequence, Func<T, string> nameSelector) => sequence
             .Where(Condition(nameSelector))
@@ -84,7 +109,8 @@ internal static class Program
     {
         var templateContent = await File.ReadAllTextAsync(templateFile.FullName);
         var template = Template.Parse(templateContent, templateFile.FullName);
-        var includeContent = string.IsNullOrEmpty(includeFile) ? string.Empty : await File.ReadAllTextAsync(includeFile);
+        var includeContent =
+            string.IsNullOrEmpty(includeFile) ? string.Empty : await File.ReadAllTextAsync(includeFile);
 
         var scriptObject = new ScriptObject();
         scriptObject.Import(schema, renamer: GetMemberName);
@@ -115,7 +141,8 @@ internal static class Program
         IEnumerable<string> includeType,
         IEnumerable<string> excludeType,
         string? @namespace = default,
-        string? includeFile = default)
+        string? includeFile = default,
+        bool useDefaultClassifications = default)
     {
         await using var schemaFileStream = File.OpenRead(schemaFile);
         var schemaSerializer = new XmlSerializer(typeof(HypermediaType));
@@ -127,9 +154,41 @@ internal static class Program
             throw new FileNotFoundException($"Template \"{template}\" could not be found.");
 
         FilterTypes(schema, includeType.ToList(), excludeType.ToList());
+        if (useDefaultClassifications)
+        {
+            AddDefaultClassificationFromDocumentName(schema);
+        }
+
+        AssertAllDocumentsHaveClassifications(schema);
+
         await RenderTemplate(schema, templateFile, outputFile, @namespace, includeFile);
-        
+
         Console.WriteLine("Done.");
+    }
+
+    private static void AssertAllDocumentsHaveClassifications(HypermediaType schema)
+    {
+        var documentsWithoutClassifications = schema.Documents
+            .Where(d => d.Classifications == null || d.Classifications.Length == 0)
+            .Select(d => d.name)
+            .ToImmutableArray();
+
+        if (documentsWithoutClassifications.Length != 0)
+        {
+            throw new InvalidOperationException(
+                $"The following documents must have classifications: {string.Join(", ", documentsWithoutClassifications)}");
+        }
+    }
+
+    private static void AddDefaultClassificationFromDocumentName(HypermediaType schema)
+    {
+        foreach (var document in schema.Documents)
+        {
+            if ((document.Classifications?.Length ?? 0) == 0)
+            {
+                document.Classifications = [new ClassificationType { @class = document.name }];
+            }
+        }
     }
 
     private static FileInfo? TryGetTemplateFile(string template)
