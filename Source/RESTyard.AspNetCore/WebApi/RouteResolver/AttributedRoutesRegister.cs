@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -92,9 +93,21 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                 var keyProducer = (IKeyProducer)Activator.CreateInstance(hypermediaAttribute.RouteKeyProducerType)!;
                 this.AddRouteKeyProducer(hypermediaAttribute.RouteType, keyProducer);
             }
-            else if (autoAddRouteKeyProducers && !typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(hypermediaAttribute.RouteType))
+            else if (autoAddRouteKeyProducers && !typeof(HypermediaQueryResult).GetTypeInfo()
+                         .IsAssignableFrom(hypermediaAttribute.RouteType))
             {
-                var templateToUse = hypermediaAttribute.Template ?? string.Empty;
+                var routeAttributeTemplate = GetRouteAttributeWithHighestPrecedenceOrDefault(method);
+                if (hypermediaAttribute.Template != null && routeAttributeTemplate != null)
+                {
+                    logger.LogWarning(
+                        "Route '{RouteName}' has a template defined in the RouteAttribute and in the HypermediaAttribute. " +
+                        "The RouteAttribute will be ignored.",
+                        hypermediaAttribute.Name);
+                }
+
+                var templateToUse =
+                    (hypermediaAttribute.Template ?? routeAttributeTemplate) ??
+                    string.Empty;
                 var controllerRouteSegments = GetControllerRouteSegment(method);
 
                 var template = TemplateParser.Parse(controllerRouteSegments + templateToUse);
@@ -105,6 +118,22 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                         RouteKeyProducer.Create(hypermediaAttribute.RouteType, template.Parameters.Select(p => p.Name).ToList()));
                 }
             }
+        }
+
+        private string? GetRouteAttributeWithHighestPrecedenceOrDefault(MethodInfo method)
+        {
+            var customAttributes = method
+                .GetCustomAttributes<RouteAttribute>()
+                .ToImmutableArray();
+            if (customAttributes.Length > 1)
+            {
+                logger.LogWarning(
+                    "Found more than one route attribute on Method '{MethodName}' of Type '{Type}'. Only first attribute will be used to automatically provide a RoutKeyProducer with a template",
+                    method.Name, method.DeclaringType?.Name);
+            }
+
+            return customAttributes
+                .MinBy(route => route.Order)?.Template;
         }
 
         private static void AssertAttributeHasName(HttpMethodAttribute hypermediaAttribute)
@@ -165,7 +194,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                 return string.Empty;
             }
 
-            var template = routeAttributeController.First().Template;
+            var template = routeAttributeController.FirstOrDefault()?.Template;
             return template ?? string.Empty;
         }
     }
