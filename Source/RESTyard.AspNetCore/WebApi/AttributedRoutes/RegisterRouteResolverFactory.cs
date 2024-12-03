@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 using RESTyard.AspNetCore.WebApi.Formatter;
@@ -39,13 +40,36 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
         private static IUrlHelper CreateUrlHelper(HttpContext httpContext)
         {
             var actionContext = httpContext.RequestServices.GetRequiredService<IActionContextAccessor>().ActionContext!;
-            var urlHelper = UrlHelperFactory.GetUrlHelper(actionContext);
-            return urlHelper;
+                var urlHelper = UrlHelperFactory.GetUrlHelper(actionContext);
+                return urlHelper;
         }
 
         public IHypermediaRouteResolver CreateRouteResolver(IUrlHelper urlHelper, IHypermediaUrlConfig urlConfig)
         {
             return new RegisterRouteResolver(urlHelper, this.routeKeyFactory, routeRegister, hypermediaOptions, urlConfig);
+        }
+    }
+    public class RegisterRouteResolverFactory2 : IRouteResolverFactory2
+    {
+        private readonly IRouteRegister routeRegister;
+        private readonly HypermediaExtensionsOptions hypermediaOptions;
+        private readonly IRouteKeyFactory routeKeyFactory;
+
+        public RegisterRouteResolverFactory2(
+            IRouteRegister routeRegister,
+            HypermediaExtensionsOptions hypermediaOptions,
+            IRouteKeyFactory routeKeyFactory)
+        {
+            this.routeRegister = routeRegister;
+            this.hypermediaOptions = hypermediaOptions;
+            this.routeKeyFactory = routeKeyFactory;
+        }
+
+        public IHypermediaRouteResolver CreateRouteResolver(HttpContext httpContext, LinkGenerator linkGenerator)
+        {
+            var hypermediaUrlConfig = HypermediaUrlConfigBuilder.Build(httpContext.Request);
+            var routeResolver = new RegisterRouteResolver2(httpContext, linkGenerator, this.routeKeyFactory, this.routeRegister, this.hypermediaOptions, hypermediaUrlConfig);
+            return routeResolver;
         }
     }
 

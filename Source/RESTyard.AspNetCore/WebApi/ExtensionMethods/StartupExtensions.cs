@@ -37,6 +37,7 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
             serviceCollection.AddSingletonWithAlternative<IRouteRegister, AttributedRoutesRegister>(hypermediaOptions.AlternateRouteRegister);
             serviceCollection.AddSingletonWithAlternative<IQueryStringBuilder, QueryStringBuilder>(hypermediaOptions.AlternateQueryStringBuilder);
             serviceCollection.AddSingleton<IRouteResolverFactory, RegisterRouteResolverFactory>();
+            serviceCollection.AddSingleton<IRouteResolverFactory2, RegisterRouteResolverFactory2>();
             serviceCollection.AddScoped<IHypermediaRouteResolver>(sp =>
             {
                 var factory = sp.GetRequiredService<IRouteResolverFactory>();
