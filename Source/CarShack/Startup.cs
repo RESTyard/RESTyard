@@ -60,7 +60,7 @@ namespace CarShack
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto |
                                            ForwardedHeaders.XForwardedHost;
-                options.KnownNetworks.Add(new IPNetwork(IPAddress.Any, 0));
+                options.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(IPAddress.Any, 0));
             });
             // Initializes and adds the Hypermedia Extensions
             builder.Services.AddHypermediaExtensions(o =>

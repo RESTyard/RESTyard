@@ -8,9 +8,12 @@ using CarShack.Hypermedia;
 using CarShack.Util;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using RESTyard.AspNetCore.Exceptions;
 using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.JsonSchema;
+using RESTyard.AspNetCore.MinimalApi;
+using RESTyard.AspNetCore.MinimalApi.Extensions;
 using RESTyard.AspNetCore.WebApi;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
@@ -28,10 +31,9 @@ namespace CarShack.Controllers.Cars
             this.carsRoot = carsRoot;
         }
 
-        [HttpGetHypermediaObject("", typeof(HypermediaCarsRootHto))]
-        public ActionResult GetRootDocument()
+        public static void MapEndpoints(IEndpointRouteBuilder endpoints)
         {
-            return Ok(carsRoot);
+            endpoints.MapGetHypermediaObject<HypermediaCarsRootHto>("Cars", (HypermediaCarsRootHto rootHto) => HypermediaResults.Ok(rootHto));
         }
 
         // example route with more than one placeholder variable. Mapping of object keys to those parameters when creating links

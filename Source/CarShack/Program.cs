@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using CarShack.Controllers.Cars;
 using CarShack.Controllers.EntryPoint;
 using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
@@ -41,6 +42,7 @@ namespace CarShack
                     .WithExposedHeaders("Location");
             });
             app.MapControllers();
+            CarsController.MapEndpoints(app);
 
             await app.RunAsync();
         }
