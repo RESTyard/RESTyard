@@ -37,6 +37,7 @@ public static class EndpointRouteBuilderExtensions
         routeRegister.AddHypermediaObjectRoute(typeof(THypermediaObject), endpointName, HttpMethod.GET);
         return endpoints
             .MapGet(pattern, requestDelegate)
-            .WithName(endpointName);
+            .WithName(endpointName)
+            .WithMetadata(new ProducesResponseTypeMetadata(200, typeof(THypermediaObject),  [DefaultMediaTypes.Siren]));
     }
 }
