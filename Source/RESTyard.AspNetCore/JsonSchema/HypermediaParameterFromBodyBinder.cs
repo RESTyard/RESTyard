@@ -99,7 +99,7 @@ namespace RESTyard.AspNetCore.JsonSchema
                 }
                 catch (Exception e)
                 {
-                    bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Invalid Json: {e}.");
+                    bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Invalid Json: {e.Message}.");
                     return;
                 }
             }
@@ -120,12 +120,13 @@ namespace RESTyard.AspNetCore.JsonSchema
 
             try
             {
+                
                 bindingContext.Result = ModelBindingResult.Success(serializer.Deserialize(jObject));
                 return;
             }
             catch (Exception e)
             {
-                bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Deserialization failed: {e}");
+                bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Deserialization failed: {e.Message}");
                 return;
             }
         }
