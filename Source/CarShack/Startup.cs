@@ -1,19 +1,14 @@
-﻿using System.Buffers;
-using System.Net;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Console;
-
 using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
 using CarShack.Util.GlobalExceptionHandler;
 using Microsoft.AspNetCore.HttpOverrides;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
+using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 namespace CarShack
 {
