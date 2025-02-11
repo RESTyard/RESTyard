@@ -24,7 +24,7 @@ namespace CarShack.Controllers.Customers
             return new { key = customer.Id };
         }
 
-        public object CreateFromKeyObject(object keyObject)
+        public object CreateFromKeyObject(object? keyObject)
         {
             return new { key = keyObject };
         }

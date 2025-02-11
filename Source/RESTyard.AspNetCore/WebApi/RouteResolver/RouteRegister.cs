@@ -34,7 +34,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             }
         }
 
-        public void AddActionRoute(Type hypermediaActionType, string? routeName, HttpMethod httpMethod, string? acceptableMediaType = null)
+        public void AddActionRoute(Type hypermediaActionType, string routeName, HttpMethod httpMethod, string? acceptableMediaType = null)
         {
             if (!IsHypermediaAction(hypermediaActionType) /*&& !IsGenericHypermediaAction(hypermediaActionType)*/)
             {
@@ -50,7 +50,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             return typeof(HypermediaActionBase).GetTypeInfo().IsAssignableFrom(hypermediaActionType);
         }
 
-        public void AddHypermediaObjectRoute(Type hypermediaObjectType, string? routeName, HttpMethod httpMethod)
+        public void AddHypermediaObjectRoute(Type hypermediaObjectType, string routeName, HttpMethod httpMethod)
         {
             if (!typeof(HypermediaObject).GetTypeInfo().IsAssignableFrom(hypermediaObjectType))
             {
@@ -61,7 +61,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             this.AddRoute(hypermediaObjectType, new RouteInfo(routeName, httpMethod));
         }
 
-        public void AddParameterTypeRoute(Type iHypermediaActionParameter, string? routeName, HttpMethod httpMethod)
+        public void AddParameterTypeRoute(Type iHypermediaActionParameter, string routeName, HttpMethod httpMethod)
         {
             if (!typeof(IHypermediaActionParameter).GetTypeInfo().IsAssignableFrom(iHypermediaActionParameter))
             {

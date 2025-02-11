@@ -46,27 +46,27 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                 switch (hypermediaAttribute)
                 {
                     case HttpGetHypermediaObject httpGetHypermediaObject:
-                        this.AddHypermediaObjectRoute(httpGetHypermediaObject.RouteType, httpGetHypermediaObject.Name, HttpMethod.GET);
+                        this.AddHypermediaObjectRoute(httpGetHypermediaObject.RouteType, httpGetHypermediaObject.Name!, HttpMethod.GET);
                         AddRouteKeyProducer(method, httpGetHypermediaObject);
                         break;
                     case HttpPostHypermediaAction httpPostHypermediaAction:
-                        this.AddActionRoute(httpPostHypermediaAction.RouteType, httpPostHypermediaAction.Name, HttpMethod.POST, httpPostHypermediaAction.AcceptedMediaType);
+                        this.AddActionRoute(httpPostHypermediaAction.RouteType, httpPostHypermediaAction.Name!, HttpMethod.POST, httpPostHypermediaAction.AcceptedMediaType);
                         AddRouteKeyProducer(method, httpPostHypermediaAction);
                         break;
                     case HttpPutHypermediaAction httpPutHypermediaAction:
-                        this.AddActionRoute(httpPutHypermediaAction.RouteType, httpPutHypermediaAction.Name, HttpMethod.PUT, httpPutHypermediaAction.AcceptedMediaType);
+                        this.AddActionRoute(httpPutHypermediaAction.RouteType, httpPutHypermediaAction.Name!, HttpMethod.PUT, httpPutHypermediaAction.AcceptedMediaType);
                         AddRouteKeyProducer(method, httpPutHypermediaAction);
                         break;
                     case HttpDeleteHypermediaAction httpDeleteHypermediaAction:
-                        this.AddActionRoute(httpDeleteHypermediaAction.RouteType, httpDeleteHypermediaAction.Name, HttpMethod.DELETE, httpDeleteHypermediaAction.AcceptedMediaType);
+                        this.AddActionRoute(httpDeleteHypermediaAction.RouteType, httpDeleteHypermediaAction.Name!, HttpMethod.DELETE, httpDeleteHypermediaAction.AcceptedMediaType);
                         AddRouteKeyProducer(method, httpDeleteHypermediaAction);
                         break;
                     case HttpPatchHypermediaAction httpPatchHypermediaAction:
-                        this.AddActionRoute(httpPatchHypermediaAction.RouteType, httpPatchHypermediaAction.Name, HttpMethod.PATCH, httpPatchHypermediaAction.AcceptedMediaType);
+                        this.AddActionRoute(httpPatchHypermediaAction.RouteType, httpPatchHypermediaAction.Name!, HttpMethod.PATCH, httpPatchHypermediaAction.AcceptedMediaType);
                         AddRouteKeyProducer(method, httpPatchHypermediaAction);
                         break;
                     case HttpGetHypermediaActionParameterInfo httpGetHypermediaActionParameterInfo:
-                        this.AddParameterTypeRoute(httpGetHypermediaActionParameterInfo.RouteType, httpGetHypermediaActionParameterInfo.Name, HttpMethod.GET);
+                        this.AddParameterTypeRoute(httpGetHypermediaActionParameterInfo.RouteType, httpGetHypermediaActionParameterInfo.Name!, HttpMethod.GET);
                         AddRouteKeyProducer(method, httpGetHypermediaActionParameterInfo);
                         break;
                     default:
