@@ -130,7 +130,7 @@ public class HypermediaParameterFromFormBinder : IModelBinder
         }
     }
 
-    public async Task BindModelAsync(ModelBindingContext bindingContext)
+    public Task BindModelAsync(ModelBindingContext bindingContext)
     {
         this.CheckModelType(bindingContext)
             .Bind(this.CheckRequestMethod)
@@ -147,6 +147,7 @@ public class HypermediaParameterFromFormBinder : IModelBinder
                 {
                     bindingContext.ModelState.AddModelError(bindingContext.ModelName, error);
                 });
+        return Task.CompletedTask;
 
         Result<JObject?> ExtractParameterObject(HttpRequest request)
         {

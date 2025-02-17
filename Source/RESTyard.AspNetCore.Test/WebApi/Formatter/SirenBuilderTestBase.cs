@@ -2,7 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.Query;
@@ -21,7 +24,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     {
         protected static QueryStringBuilder QueryStringBuilder;
         protected static HypermediaUrlConfig TestUrlConfig;
-        protected static MockUrlHelper UrlHelper;
+        private static HttpContext FakeHttpContext;
         protected RouteRegister RouteRegister;
         protected RegisterRouteResolverFactory RouteResolverFactory;
         protected RouteKeyFactory RouteKeyFactory;
@@ -40,7 +43,12 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
                 Scheme = "scheme"
             };
 
-            UrlHelper = new MockUrlHelper();
+            var services = new ServiceCollection();
+            services.AddSingleton<LinkGenerator, FakeLinkGenerator>();
+            FakeHttpContext = new DefaultHttpContext()
+            {
+                RequestServices = services.BuildServiceProvider(),
+            };
         }
 
         protected void TestInitBase()
@@ -49,7 +57,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             RouteKeyFactory = new RouteKeyFactory(RouteRegister);
             RouteResolverFactory = new RegisterRouteResolverFactory(RouteRegister, new HypermediaExtensionsOptions(), RouteKeyFactory);
 
-            RouteResolver = RouteResolverFactory.CreateRouteResolver(UrlHelper, TestUrlConfig);
+            RouteResolver = RouteResolverFactory.CreateRouteResolver(FakeHttpContext, TestUrlConfig);
             SirenConverter = CreateSirenConverter();
             SirenConverterNoNullProperties = CreateSirenConverter(new HypermediaConverterConfiguration{ WriteNullProperties = false });
         }
