@@ -34,6 +34,7 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
             serviceCollection.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             serviceCollection.AddSingleton(hypermediaOptions);
             serviceCollection.AddSingleton(CreateApplicationModel);
+            serviceCollection.AddTransient<IKeyFromUriService, KeyFromUriService>();
             serviceCollection.AddSingletonWithAlternative<IRouteRegister, AttributedRoutesRegister>(hypermediaOptions.AlternateRouteRegister);
             serviceCollection.AddSingletonWithAlternative<IQueryStringBuilder, QueryStringBuilder>(hypermediaOptions.AlternateQueryStringBuilder);
             serviceCollection.AddSingleton<IRouteResolverFactory, RegisterRouteResolverFactory>();
