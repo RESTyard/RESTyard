@@ -26,6 +26,10 @@ namespace CarShack.Controllers.Customers
 
         public object CreateFromKeyObject(object? keyObject)
         {
+            if (keyObject is HypermediaCustomerHto.Key typedKey)
+            {
+                return new { key = typedKey.Id };
+            }
             return new { key = keyObject };
         }
     }
