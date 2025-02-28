@@ -4,11 +4,9 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text.Json.Serialization;
-using CarShack.Controllers.Cars;
 using CarShack.Domain.Customer;
+using FunicularSwitch;
 using Microsoft.Extensions.DependencyInjection;
-using RESTyard.AspNetCore.Exceptions;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
@@ -93,7 +91,7 @@ public partial class HypermediaEntrypointHto
     
     [ActivatorUtilitiesConstructor]
     public HypermediaEntrypointHto(HypermediaCustomersRootHto customersRoot, HypermediaCarsRootHto carsRoot)
-        : this(new HypermediaObjectReference(customersRoot), new HypermediaObjectReference(carsRoot))
+        : this()
     {
         //Foo = new List<object>() { 5, "wow" };
     }
@@ -154,13 +152,11 @@ public partial class HypermediaCustomersRootHto
                 }
             }),
             new CustomerQuery(),
-            default,
-            1,
-            new HypermediaObjectReference(new ExternalReference(new Uri("http://www.example.com/")).WithAvailableMediaType("text/html")))
+            new(1),
+            new HypermediaObjectReference(new ExternalReference(new Uri("http://www.example.com/")).WithAvailableMediaType("text/html")),
+            Option<HypermediaObjectReferenceBase>.None)
     {
     }
-
-   
 }
 
 public partial class HypermediaCarsRootHto
@@ -184,8 +180,8 @@ public partial class HypermediaCarsRootHto
                     AllowMultiple = true,
                     MaxFileSizeBytes = 200,
                 }),
-            DerivedCarHto.CreateKeyObject(id: 2, brand: "VW"),
-            HypermediaCarHto.CreateKeyObject(id: 5, brand: "Porsche"))
+            new DerivedCarHto.Key(Id: 2, Brand: "VW"),
+            new HypermediaCarHto.Key(Id: 5, Brand: "Porsche"))
     {
     }
 }

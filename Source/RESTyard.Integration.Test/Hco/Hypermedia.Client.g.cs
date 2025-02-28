@@ -189,7 +189,7 @@ public partial class HypermediaCustomerHco : HypermediaClientObject
     public IHypermediaClientAction<MarkAsFavoriteParameters>? MarkAsFavorite { get; set; }
 
     [HypermediaCommand("BuyCar")]
-    public IHypermediaClientAction<BuyCarParameters>? BuyCar { get; set; }
+    public IHypermediaClientFunction<HypermediaCarHco, BuyCarParameters>? BuyCar { get; set; }
 }
 
 [HypermediaClientObject("CustomersQueryResult")]

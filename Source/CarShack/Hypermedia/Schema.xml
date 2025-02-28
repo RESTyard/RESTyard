@@ -122,6 +122,7 @@
         <Link rel="all" document="HypermediaCustomerQueryResult" query="CustomerQuery" mandatory="true" />
         <Link rel="BestCustomer" document="HypermediaCustomer" mandatory="true" />
         <Link rel="GreatSite" mandatory="true" />
+        <Link rel="OkaySite" mandatory="false" />
       </Links>
     </Document>
     <Document name="HypermediaCustomer">
@@ -141,7 +142,7 @@
         <Operation name="CustomerRemove" method="Delete" title="Remove a Customer." />
         <Operation name="MarkAsFavorite" method="Post" title="Marks a Customer as a favorite buyer."
                    parameterTypeName="MarkAsFavoriteParameters" />
-        <Operation name="BuyCar" method="Post" title="Buy a car." parameterTypeName="BuyCarParameters" />
+        <Operation name="BuyCar" method="Post" title="Buy a car." parameterTypeName="BuyCarParameters" resultDocument="HypermediaCar" />
       </Operations>
     </Document>
     <Document name="HypermediaCustomerQueryResult" title="Query result on Customer" isQueryResult="true">
@@ -156,10 +157,10 @@
         <Property name="CurrentEntitiesCount" type="int" />
       </Properties>
 			<Links>
-				<Link rel="Next" document="HypermediaCustomerQueryResult" mandatory="false" />
-				<Link rel="Previous" document="HypermediaCustomerQueryResult" mandatory="false" />
-				<Link rel="Last" document="HypermediaCustomerQueryResult" mandatory="false" />
-				<Link rel="All" document="HypermediaCustomerQueryResult" mandatory="false" />
+				<Link rel="Next" document="HypermediaCustomerQueryResult" query="IHypermediaQuery" mandatory="false" />
+				<Link rel="Previous" document="HypermediaCustomerQueryResult" query="IHypermediaQuery" mandatory="false" />
+				<Link rel="Last" document="HypermediaCustomerQueryResult" query="IHypermediaQuery" mandatory="false" />
+				<Link rel="All" document="HypermediaCustomerQueryResult" query="IHypermediaQuery" mandatory="false" />
 			</Links>
     </Document>
   </Documents>

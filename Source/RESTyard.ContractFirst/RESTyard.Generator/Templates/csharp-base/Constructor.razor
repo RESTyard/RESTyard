@@ -1,0 +1,120 @@
+﻿@inherits RazorTemplateBase
+
+@{
+    var typeName = $"{Document.name}Hto";
+    var arguments = GatherArguments(Document);
+    var parentArguments = GatherParentArguments(Document);
+    var allArguments = parentArguments.Concat(arguments).ToList();
+    @:public @typeName@("(")@string.Join(", ", allArguments)@(")")
+    @: : base(@string.Join(", ", parentArguments.Select(pa => pa.Split(' ').Last()))
+    if (parentArguments.Count == 0)
+    {
+        if (Document.isQueryResult)
+        {
+            <text>query</text>
+        }
+        else if (string.IsNullOrEmpty(Document.parentDocument))
+        {
+            <text>hasSelfLink: @Document.hasSelfLink.ToString().ToLower()</text>
+        }
+    }
+    <text>)</text>
+    @:{
+    foreach (var property in Document.Properties)
+    {
+        @:this.@property.name = @Uncapitalize(@property.name);
+    }
+
+    foreach (var operation in Document.Operations)
+    {
+        @:this.@operation.name = @Uncapitalize(@operation.name);
+    }
+
+    foreach (var entity in Document.Entities)
+    {
+        @:this.Entities.AddRange("@entity.collectionName", @Uncapitalize(@entity.collectionName));
+    }
+
+    foreach (var link in Document.Links)
+    {
+        string linkOptionMatch = "";
+        string linkValue = "";
+        if (string.IsNullOrEmpty(link.document))
+        {
+            linkOptionMatch = Uncapitalize(link.rel);
+            linkValue = link.mandatory ? Uncapitalize(link.rel) : "some";
+        }
+        else
+        {
+            var hasQuery = !string.IsNullOrEmpty(link.query);
+            var linkDocument = Schema.Documents.First(d => d.name == link.document);
+            var hasKey = HasKeyProperties(linkDocument);
+            var reference = "HypermediaObject" + (hasQuery ? "Query" : "Key") + "Reference";
+            var type = $"typeof({link.document}Hto)";
+            var tupleParameter = $"{Uncapitalize(link.rel)}Reference";
+            var queryParameter = $"{Uncapitalize(link.rel)}Query";
+            var keyParameter = $"{Uncapitalize(link.rel)}Key";
+            if (!link.mandatory)
+            {
+                if (hasQuery && hasKey)
+                {
+                    linkOptionMatch = tupleParameter;
+                    queryParameter = "some.Query";
+                    keyParameter = "some.Key";
+                }
+                else if (hasQuery)
+                {
+                    linkOptionMatch = queryParameter;
+                    queryParameter = "some";
+                }
+                else if (hasKey)
+                {
+                    linkOptionMatch = keyParameter;
+                    keyParameter = "some";
+                }
+            }
+            else
+            {
+                if (hasQuery && hasKey)
+                {
+                    queryParameter = $"{tupleParameter}.Query";
+                    keyParameter = $"{tupleParameter}.Key";
+                }
+            }
+
+            var parameters = "";
+            if (hasQuery && hasKey)
+            {
+                parameters = $"{queryParameter}, {keyParameter}";
+            }
+            else if (hasQuery)
+            {
+                parameters = queryParameter;
+            }
+            else if (hasKey)
+            {
+                parameters = keyParameter;
+            }
+            else
+            {
+                parameters = "null";
+            }
+
+            linkValue = $"new {reference}({type}, {parameters})";
+        }
+
+        if (link.mandatory)
+        {
+            @:this.Links.Add("@link.rel", @linkValue);
+        }
+        else
+        {
+            @:@linkOptionMatch@(".")Match(some => this.Links.Add("@link.rel", @linkValue));
+        }
+    }
+    @:}
+}
+
+@code {
+    [Parameter] public DocumentType Document { get; set; } = null!;
+}

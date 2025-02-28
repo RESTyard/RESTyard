@@ -4,7 +4,7 @@ using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
-using RESTyard.AspNetCore.Hypermedia.Links;
+using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.Util.Repository;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
@@ -52,17 +52,13 @@ namespace CarShack.Controllers.Customers
                 queryResult.TotalCountOfEnties,
                 resultReferences.Count,
                 resultReferences,
-                queries.next.IsSome(),
-                queries.next.GetValueOrDefault(),
-                queries.previous.IsSome(),
-                queries.previous.GetValueOrDefault(),
-                queries.last.IsSome(),
-                queries.last.GetValueOrDefault(),
-                queries.all.IsSome(),
-                queries.all.GetValueOrDefault(),
+                queries.next.Map(IHypermediaQuery (some) => some),
+                queries.previous.Map(IHypermediaQuery (some) => some),
+                queries.last.Map(IHypermediaQuery (some) => some),
+                queries.all.Map(IHypermediaQuery (some) => some),
                 query);
-            var navigationQuerys = NavigationQuerysBuilder.Build(query, queryResult);
-            result.AddNavigationQueries(navigationQuerys);
+            var navigationQueries = NavigationQuerysBuilder.Build(query, queryResult);
+            result.AddNavigationQueries(navigationQueries);
            
             return Ok(result);
         }

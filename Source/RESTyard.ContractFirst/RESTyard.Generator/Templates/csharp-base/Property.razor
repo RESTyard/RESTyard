@@ -1,0 +1,15 @@
+﻿@inherits RazorTemplateBase
+
+@if (PropertyType.isKey)
+{
+    <Attribute>Key("@(Uncapitalize(PropertyType.name))")</Attribute>
+}
+@if (PropertyType.hidden)
+{
+    <Attribute>FormatterIgnoreHypermediaProperty</Attribute>
+}
+<PropertyStatement TypeName="@(MapNullableType(!PropertyType.mandatory, PropertyType.type))" PropertyName="@PropertyType.name"></PropertyStatement>
+
+@code {
+    [Parameter] public PropertyType PropertyType { get; set; } = null!;
+}
