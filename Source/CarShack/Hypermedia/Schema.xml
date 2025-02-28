@@ -26,10 +26,12 @@
       <Property name="Address" type="string" mandatory="true" />
     </Parameters>
     <Parameters typeName="UploadCarImageParameters" usedForActions="true" usedForQueries="false">
-        <Property name="Text" type="string" mandatory="true" />
-        <Property name="Flag" type="bool" mandatory="true" />
+      <Property name="Text" type="string" mandatory="true" />
+      <Property name="Flag" type="bool" mandatory="true" />
     </Parameters>
-    <ExternalParameters typeName="MarkAsFavoriteParameters"/>
+    <Parameters typeName="MarkAsFavoriteParameters" usedForActions="true" usedForQueries="false">
+      <Property name="Customer" type="Uri" mandatory="true" />
+    </Parameters>
     <ExternalParameters typeName="CustomerQuery" />
   </TransferParameters>
   <Documents>

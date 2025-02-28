@@ -35,6 +35,7 @@ public partial record BuyLamborghiniParameters(string Brand, int CarId, string C
 public partial record BuyLamborghinettaParameters(string Brand, int CarId, string Color, int HorsePower, double? Price = default, int? OptionalProperty = default) : BuyLamborghiniParameters(Brand, CarId, Color, Price, OptionalProperty);
 public partial record NewAddress(string Address);
 public partial record UploadCarImageParameters(string Text, bool Flag);
+public partial record MarkAsFavoriteParameters(Uri Customer);
 
 [HypermediaClientObject("Entrypoint")]
 public partial class HypermediaEntrypointHco : HypermediaClientObject
@@ -155,6 +156,9 @@ public partial class HypermediaCustomersRootHco : HypermediaClientObject
     [Mandatory]
     [HypermediaRelations(new[]{ "GreatSite" })]
     public MandatoryHypermediaLink<HypermediaClientObject> GreatSite { get; set; } = default!;
+
+    [HypermediaRelations(new[]{ "OkaySite" })]
+    public HypermediaLink<HypermediaClientObject>? OkaySite { get; set; } = default!;
 
     [HypermediaCommand("CreateCustomer")]
     public IHypermediaClientFunction<HypermediaCustomerHco, CreateCustomerParameters>? CreateCustomer { get; set; }

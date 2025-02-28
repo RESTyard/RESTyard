@@ -35,6 +35,7 @@ public partial record BuyLamborghiniParameters(string Brand, int CarId, string C
 public partial record BuyLamborghinettaParameters(string Brand, int CarId, string Color, int HorsePower, double? Price = default, double? HiddenProperty = default, int? OptionalProperty = default) : BuyLamborghiniParameters(Brand, CarId, Color, Price, HiddenProperty, OptionalProperty), IHypermediaQuery, IHypermediaActionParameter;
 public partial record NewAddress(string Address) : IHypermediaActionParameter;
 public partial record UploadCarImageParameters(string Text, bool Flag) : IHypermediaActionParameter;
+public partial record MarkAsFavoriteParameters(Uri Customer) : IHypermediaActionParameter;
 [HypermediaObject(Title = "Entry to the Rest API", Classes = new string[] { "Entrypoint" })]
 public partial class HypermediaEntrypointHto : HypermediaObject
 {

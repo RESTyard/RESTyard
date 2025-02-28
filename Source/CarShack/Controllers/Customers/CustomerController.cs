@@ -10,6 +10,7 @@ using RESTyard.AspNetCore.JsonSchema;
 using RESTyard.AspNetCore.WebApi;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace CarShack.Controllers.Customers
 {
@@ -17,10 +18,14 @@ namespace CarShack.Controllers.Customers
     public class CustomerController : Controller
     {
         private readonly ICustomerRepository customerRepository;
+        private readonly IKeyFromUriService keyFromUriService;
 
-        public CustomerController(ICustomerRepository customerRepository)
+        public CustomerController(
+            ICustomerRepository customerRepository,
+            IKeyFromUriService keyFromUriService)
         {
             this.customerRepository = customerRepository;
+            this.keyFromUriService = keyFromUriService;
         }
 
         #region HypermediaObjects
@@ -45,7 +50,7 @@ namespace CarShack.Controllers.Customers
 
         #region Actions
         [HttpPostHypermediaAction("MyFavoriteCustomers", typeof(HypermediaCustomerHto.MarkAsFavoriteOp))]
-        public async Task<ActionResult> MarkAsFavoriteAction([HypermediaActionParameterFromBody]MarkAsFavoriteParameters favoriteCustomer)
+        public async Task<ActionResult> MarkAsFavoriteAction([HypermediaActionParameterFromBody] MarkAsFavoriteParameters favoriteCustomer)
         {
             if (favoriteCustomer == null)
             {
@@ -61,7 +66,9 @@ namespace CarShack.Controllers.Customers
 
             try
             {
-                var customer = await customerRepository.GetEnitityByKeyAsync(favoriteCustomer.CustomerId).ConfigureAwait(false);
+                var keyFromUri =
+                    this.keyFromUriService.GetKeyFromUri<HypermediaCustomerHto, HypermediaCustomerHto.CustomKey>(favoriteCustomer.Customer);
+                var customer = await customerRepository.GetEnitityByKeyAsync(keyFromUri.Key).ConfigureAwait(false);
                 var hypermediaCustomer = customer.ToHto();
                 
                 // Check can execute here since we need to call business logic and not rely on previously checked value from HTO passed to caller

@@ -76,9 +76,6 @@ public class Country
     [FormatterIgnoreHypermediaProperty] public string LanguageCode { get; set; }
 }
 
-public record MarkAsFavoriteParameters
-    ([property: KeyFromUri(typeof(HypermediaCustomerHto), "Customer")] int CustomerId) : IHypermediaActionParameter;
-
 public partial class HypermediaEntrypointHto
 {
    // public ExternalActionNoParametersTestOp ExternalActionNoParametersNoParametersTest { get; init; } = new ExternalActionNoParametersTestOp(new Uri("http://www.example1.com"), HttpMethod.POST);
@@ -95,6 +92,11 @@ public partial class HypermediaEntrypointHto
     {
         //Foo = new List<object>() { 5, "wow" };
     }
+}
+
+public partial class HypermediaCustomerHto
+{
+    public partial record CustomKey(int Key);
 }
 
 public class ExternalActionNoParametersTestOp : HypermediaExternalAction
