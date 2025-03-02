@@ -2,20 +2,9 @@
 using System.CommandLine.Builder;
 using System.CommandLine.NamingConventionBinder;
 using System.CommandLine.Parsing;
-using System.Reflection;
-using System.Text.Encodings.Web;
 using System.Xml.Serialization;
 using FunicularSwitch.Generators;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using RESTyard.Generator.Templates.csharp_base;
-using Scriban;
-using Scriban.Runtime;
 
 namespace RESTyard.Generator;
 
@@ -111,72 +100,15 @@ internal static class Program
         string? @namespace,
         string? includeFile)
     {
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddSingleton<HtmlEncoder>(NullHtmlEncoder.Default);
-        var sp = services.BuildServiceProvider();
-        var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
         var includeContent = string.IsNullOrEmpty(includeFile) ? string.Empty : await File.ReadAllTextAsync(includeFile);
 
         var code = await templateFile.Match(
-            scribanTemplate: sbn => RenderScribanTemplate(schema, sbn.FileInfo, @namespace, includeContent),
+            scribanTemplate: sbn => ScribanTemplate.Render(schema, sbn.FileInfo, @namespace, includeContent),
             razorTemplate: razor =>
-                RenderRazorTemplate(schema, razor.RazorType, @namespace, sp, loggerFactory, includeContent));
+                RazorTemplate.Render(schema, razor.RazorType, @namespace, includeContent));
+        var formattedCode = await CodeFormatter.Format(code, outputPath);
 
-        await File.WriteAllTextAsync(outputPath, code);
-    }
-
-    private static async Task<string> RenderScribanTemplate(HypermediaType schema, FileInfo templateFile, string? @namespace,
-        string includeContent)
-    {
-        var templateContent = await File.ReadAllTextAsync(templateFile.FullName);
-        var template = Template.Parse(templateContent, templateFile.FullName);
-
-        var scriptObject = new ScriptObject();
-        scriptObject.Import(schema, renamer: GetMemberName);
-        scriptObject.Import(new
-        {
-            Namespace = @namespace,
-            IncludeContent = includeContent,
-        }, renamer: GetMemberName);
-        scriptObject.Import(new CustomFunctions());
-
-        var templateContext = new TemplateContext
-        {
-            MemberRenamer = GetMemberName,
-            TemplateLoader = new DiskLoader(),
-        };
-        templateContext.PushGlobal(scriptObject);
-
-        var code = await template.RenderAsync(templateContext);
-        return code;
-        string GetMemberName(MemberInfo member) => member.Name;
-    }
-
-    private static async Task<string> RenderRazorTemplate(HypermediaType schema, Type componentType, string? @namespace,
-        ServiceProvider sp, ILoggerFactory loggerFactory, string includeContent)
-    {
-        await using var renderer = new HtmlRenderer(sp, loggerFactory);
-
-        var csharp = await renderer.Dispatcher.InvokeAsync(async () =>
-        {
-            var dictionary = new Dictionary<string, object?>()
-            {
-                [nameof(ITemplateBase.Schema)] = schema,
-                [nameof(ITemplateBase.Namespace)] = @namespace,
-                [nameof(ITemplateBase.Includes)] = includeContent,
-            };
-            var parameters = ParameterView.FromDictionary(dictionary);
-            var output = await renderer.RenderComponentAsync(componentType, parameters);
-
-            return output.ToHtmlString();
-        });
-        csharp = string.Join(Environment.NewLine,
-            csharp.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
-                .Where(line => !string.IsNullOrWhiteSpace(line)));
-        var tree = CSharpSyntaxTree.ParseText(csharp);
-        var root = await tree.GetRootAsync();
-        return root.NormalizeWhitespace().ToFullString();
+        await File.WriteAllTextAsync(outputPath, formattedCode);
     }
 
     private static async Task Run(
