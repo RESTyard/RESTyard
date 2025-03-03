@@ -51,6 +51,8 @@ public static class MimeTypes
     <Document Schema="@Schema" DocumentType="@document" />
 }
 
+<KeyFromUriServiceExtensions Schema="@Schema" />
+
 @code {
     [Parameter] public string? Namespace { get; set; }
     [Parameter] public string Includes { get; set; } = null!;

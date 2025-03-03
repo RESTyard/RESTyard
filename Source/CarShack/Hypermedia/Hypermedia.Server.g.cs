@@ -310,3 +310,11 @@ public partial class HypermediaCustomerQueryResultHto : HypermediaQueryResult
         allQuery.Match(some => this.Links.Add("All", new HypermediaObjectQueryReference(typeof(HypermediaCustomerQueryResultHto), some)));
     }
 }
+
+public static partial class KeyFromUriServiceExtensions
+{
+    public static HypermediaCarHto.Key GetHypermediaCarKeyFromUri(this IKeyFromUriService keyFromUriService, Uri uri) => keyFromUriService.GetKeyFromUri<HypermediaCarHto, HypermediaCarHto.Key>(uri);
+    public static CarImageHto.Key GetCarImageKeyFromUri(this IKeyFromUriService keyFromUriService, Uri uri) => keyFromUriService.GetKeyFromUri<CarImageHto, CarImageHto.Key>(uri);
+    public static CarInsuranceHto.Key GetCarInsuranceKeyFromUri(this IKeyFromUriService keyFromUriService, Uri uri) => keyFromUriService.GetKeyFromUri<CarInsuranceHto, CarInsuranceHto.Key>(uri);
+    public static HypermediaCustomerHto.Key GetHypermediaCustomerKeyFromUri(this IKeyFromUriService keyFromUriService, Uri uri) => keyFromUriService.GetKeyFromUri<HypermediaCustomerHto, HypermediaCustomerHto.Key>(uri);
+}

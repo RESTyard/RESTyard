@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using FunicularSwitch;
+using Microsoft.AspNetCore.Components;
 
 namespace RESTyard.Generator.Templates.csharp_base;
 
@@ -39,11 +40,6 @@ public class RazorTemplateBase : ComponentBase
     public List<PropertyType> GetKeyProperties(DocumentType document)
     {
         return document.Properties.Where(p => p.isKey).ToList();
-    }
-
-    public ParameterType FindParentParameters(string name)
-    {
-        return Schema.TransferParameters.Parameters.First(p => p.typeName == name);
     }
 
     public string TransformMandatoryArgument(string argument)
@@ -120,21 +116,21 @@ public class RazorTemplateBase : ComponentBase
 
     public List<string> GatherParentArguments(DocumentType document)
     {
-        var result = new List<string>();
-        var currentDocument = document;
-        while (!string.IsNullOrEmpty(currentDocument.parentDocument))
-        {
-            currentDocument = Schema.Documents.First(d => d.name == currentDocument.parentDocument);
-            result.InsertRange(0, GatherArguments(currentDocument));
-        }
-
-        return result;
+        return EnumerateParents(document)
+            .Reverse()
+            .SelectMany(GatherArguments)
+            .ToList();
     }
 
     public bool HasKeyProperties(DocumentType document)
     {
-        var hasOwnKeyProperties = document.Properties?.Any(p => p.isKey) ?? false;
-        return hasOwnKeyProperties || (string.IsNullOrEmpty(document.parentDocument) ? false : HasKeyProperties(Schema.Documents.First(d => d.name == document.parentDocument)));
+        return EnumerateParents(document, includeSelf: true)
+            .Any(HasOwnKeyProperties);
+    }
+
+    public static bool HasOwnKeyProperties(DocumentType document)
+    {
+        return document.Properties.Any(p => p.isKey);
     }
 
     public List<string> GatherMandatoryParameterArguments(ParameterType parameterType, bool showHidden)
@@ -162,27 +158,41 @@ public class RazorTemplateBase : ComponentBase
 
     public List<string> GatherMandatoryParameterParentArguments(ParameterType parameterType, bool showHidden)
     {
-        var result = new List<string>();
-        var currentParameters = parameterType;
-        while (!string.IsNullOrEmpty(currentParameters.parentType))
-        {
-            currentParameters = FindParentParameters(currentParameters.parentType);
-            result.InsertRange(0, GatherMandatoryParameterArguments(currentParameters, showHidden: showHidden));
-        }
-
-        return result;
+        return EnumerateParents(parameterType)
+            .Reverse()
+            .SelectMany(parent => GatherMandatoryParameterArguments(parent, showHidden: showHidden))
+            .ToList();
     }
 
     public List<string> GatherOptionalParameterParentArguments(ParameterType parameterType, bool showHidden)
     {
-        var result = new List<string>();
+        return EnumerateParents(parameterType)
+            .Reverse()
+            .SelectMany(parent => GatherOptionalParameterArguments(parent, showHidden: showHidden))
+            .ToList();
+    }
+
+    public IEnumerable<DocumentType> EnumerateParents(DocumentType document, bool includeSelf = false)
+    {
+        var currentDocument = document;
+        if (includeSelf)
+        {
+            yield return currentDocument;
+        }
+        while (!string.IsNullOrEmpty(currentDocument.parentDocument))
+        {
+            currentDocument = this.Schema.Documents.First(d => d.name == currentDocument.parentDocument);
+            yield return currentDocument;
+        }
+    }
+
+    public IEnumerable<ParameterType> EnumerateParents(ParameterType parameterType)
+    {
         var currentParameters = parameterType;
         while (!string.IsNullOrEmpty(currentParameters.parentType))
         {
-            currentParameters = FindParentParameters(currentParameters.parentType);
-            result.InsertRange(0, GatherOptionalParameterArguments(currentParameters, showHidden: showHidden));
+            currentParameters = this.Schema.TransferParameters.Parameters.First(p => p.typeName == currentParameters.parentType);
+            yield return currentParameters;
         }
-
-        return result;
     }
 }
