@@ -153,7 +153,7 @@ internal static class Program
 
         return template.Split('/', '\\') switch
         {
-            ["server", "csharp", "v5"] => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp.V5)),
+            ["server", "csharp", "v4.4"] => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp.V4_4)),
             _ => null,
         };
     }

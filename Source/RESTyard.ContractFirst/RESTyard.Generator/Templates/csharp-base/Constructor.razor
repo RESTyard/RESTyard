@@ -4,38 +4,21 @@
     var typeName = $"{Document.name}Hto";
     var arguments = GatherArguments(Document);
     var parentArguments = GatherParentArguments(Document);
-    var allArguments = parentArguments.Concat(arguments).ToList();
-    @:public @typeName@("(")@string.Join(", ", allArguments)@(")")
-    @: : base(@string.Join(", ", parentArguments.Select(pa => pa.Split(' ').Last()))
+    var allArgumentsString = string.Join(", ", parentArguments.Concat(arguments));
+    var parentArgumentsString = string.Join(", ", parentArguments.Select(pa => pa.Split(' ').Last()));
     if (parentArguments.Count == 0)
     {
         if (Document.isQueryResult)
         {
-            <text>query</text>
+            parentArgumentsString = "query";
         }
-        else if (string.IsNullOrEmpty(Document.parentDocument))
+        else
         {
-            <text>hasSelfLink: @Document.hasSelfLink.ToString().ToLower()</text>
+            parentArgumentsString = $"hasSelfLink: {Document.hasSelfLink.ToString().ToLower()}";
         }
     }
-    <text>)</text>
-    @:{
-    foreach (var property in Document.Properties)
-    {
-        @:this.@property.name = @Uncapitalize(@property.name);
-    }
 
-    foreach (var operation in Document.Operations)
-    {
-        @:this.@operation.name = @Uncapitalize(@operation.name);
-    }
-
-    foreach (var entity in Document.Entities)
-    {
-        @:this.Entities.AddRange("@entity.collectionName", @Uncapitalize(@entity.collectionName));
-    }
-
-    foreach (var link in Document.Links)
+    var links = Document.Links.Select(link =>
     {
         string linkOptionMatch = "";
         string linkValue = "";
@@ -103,16 +86,36 @@
             linkValue = $"new {reference}({type}, {parameters})";
         }
 
-        if (link.mandatory)
+        return (link.mandatory, linkOptionMatch, link.rel, linkValue);
+    });
+}
+
+public @typeName (@allArgumentsString)
+    : base(@parentArgumentsString)
+{
+    @foreach (var property in Document.Properties)
+    {
+        @:this.@property.name = @Uncapitalize(@property.name);
+    }
+    @foreach (var operation in Document.Operations)
+    {
+        @:this.@operation.name = @Uncapitalize(@operation.name);
+    }
+    @foreach (var entity in Document.Entities)
+    {
+        @:this.Entities.AddRange("@entity.collectionName", @Uncapitalize(@entity.collectionName));
+    }
+    @foreach (var (isMandatory, match, rel, value) in links)
+    {
+        if (isMandatory)
         {
-            @:this.Links.Add("@link.rel", @linkValue);
+            @:this.Links.Add("@rel", @value);
         }
         else
         {
-            @:@linkOptionMatch@(".")Match(some => this.Links.Add("@link.rel", @linkValue));
+            @:@match@(".")Match(some => this.Links.Add("@rel", @value));
         }
     }
-    @:}
 }
 
 @code {
