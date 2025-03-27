@@ -66,8 +66,7 @@ namespace CarShack.Controllers.Customers
 
             try
             {
-                var keyFromUri =
-                    this.keyFromUriService.GetKeyFromUri<HypermediaCustomerHto, HypermediaCustomerHto.CustomKey>(favoriteCustomer.Customer);
+                var keyFromUri = this.keyFromUriService.GetHypermediaCustomerKeyFromUri(favoriteCustomer.Customer);
                 var customer = await customerRepository.GetEnitityByKeyAsync(keyFromUri.Key).ConfigureAwait(false);
                 var hypermediaCustomer = customer.ToHto();
                 

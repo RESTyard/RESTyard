@@ -46,7 +46,6 @@ public class KeyFromUriServiceTests
     public class Controller : ControllerBase
     {
         [HttpGetHypermediaObject("{intKey:int}/{key}", typeof(TestHto))]
-        //[HttpGet("{intKey:int}/{key}")]
         public async Task<IActionResult> Get(string key, int intKey)
         {
             await Task.Delay(5);
