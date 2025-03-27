@@ -66,17 +66,17 @@ namespace CarShack.Controllers.Customers
 
             try
             {
-                var keyFromUri = this.keyFromUriService.GetHypermediaCustomerKeyFromUri(favoriteCustomer.Customer);
+                var keyFromUri = this.keyFromUriService.GetKeyFromUri<HypermediaCustomerHto, HypermediaCustomerHto.CustomKey>(favoriteCustomer.Customer);
                 var customer = await customerRepository.GetEnitityByKeyAsync(keyFromUri.Key).ConfigureAwait(false);
                 var hypermediaCustomer = customer.ToHto();
-                
+
                 // Check can execute here since we need to call business logic and not rely on previously checked value from HTO passed to caller
                 if (customer.IsFavorite)
                 {
                     return this.CanNotExecute();
                 }
-                
-                DoMarkAsFavorite(hypermediaCustomer, customer); 
+
+                DoMarkAsFavorite(hypermediaCustomer, customer);
                 return Ok();
             }
             catch (EntityNotFoundException)
