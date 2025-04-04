@@ -5,7 +5,6 @@
     var operationType = operation.name + "Op";
     <Attribute>HypermediaAction(Name = "@operation.name", Title = "@operation.title")</Attribute>
     <PropertyStatement TypeName="@operationType" PropertyName="@operation.name" />
-    <text>@Environment.NewLine</text>
 }
 
 @code {

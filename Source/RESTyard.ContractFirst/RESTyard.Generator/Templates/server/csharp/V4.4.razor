@@ -2,6 +2,15 @@
 @using RESTyard.Generator.Templates.csharp_base
 @inherits RazorTemplateBase
 @implements ITemplateBase
+
+@{
+    ContentTypes.AddRange(
+        from document in Schema.Documents
+        from link in document.Links
+        where !string.IsNullOrEmpty(link.contentType)
+        select link.contentType);
+}
+
 #nullable enable
 using System;
 using System.Collections;
@@ -21,14 +30,6 @@ using RESTyard.AspNetCore.WebApi.RouteResolver;
 @if (!string.IsNullOrEmpty(Namespace))
 {
     @:namespace @Namespace;
-}
-
-@{
-    ContentTypes.AddRange(
-        from document in Schema.Documents
-        from link in document.Links
-        where !string.IsNullOrEmpty(link.contentType)
-        select link.contentType);
 }
 
 public static class MimeTypes

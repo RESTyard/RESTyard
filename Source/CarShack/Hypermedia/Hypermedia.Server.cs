@@ -84,14 +84,6 @@ public partial class HypermediaEntrypointHto
     //public List<object> Foo { get; set; } = new List<object>();
 
     public Type MyType { get; set; } = typeof(HypermediaEntrypointHto);
-    
-    
-    [ActivatorUtilitiesConstructor]
-    public HypermediaEntrypointHto(HypermediaCustomersRootHto customersRoot, HypermediaCarsRootHto carsRoot)
-        : this()
-    {
-        //Foo = new List<object>() { 5, "wow" };
-    }
 }
 
 public partial class HypermediaCustomerHto
@@ -135,8 +127,8 @@ public partial class HypermediaCustomersRootHto
     [ActivatorUtilitiesConstructor]
     public HypermediaCustomersRootHto()
         : this(
-            new CreateCustomerOp(() => true),
-            new CreateQueryOp(() => true,  new CustomerQuery
+            createCustomer: new CreateCustomerOp(() => true),
+            createQuery: new CreateQueryOp(() => true,  new CustomerQuery
             {
                 Filter = new CustomerFilter
                 {
@@ -153,10 +145,10 @@ public partial class HypermediaCustomersRootHto
                     SortType = SortTypes.Ascending
                 }
             }),
-            new CustomerQuery(),
-            new(1),
-            new HypermediaObjectReference(new ExternalReference(new Uri("http://www.example.com/")).WithAvailableMediaType("text/html")),
-            Option<HypermediaObjectReferenceBase>.None)
+            allQuery: new CustomerQuery(),
+            bestCustomerKey: new(1),
+            greatSite: new HypermediaObjectReference(new ExternalReference(new Uri("http://www.example.com/")).WithAvailableMediaType("text/html")),
+            okaySite: Option<HypermediaObjectReferenceBase>.None)
     {
     }
 }

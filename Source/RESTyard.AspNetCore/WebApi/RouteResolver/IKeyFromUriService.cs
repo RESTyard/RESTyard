@@ -1,4 +1,5 @@
 ﻿using System;
+using FunicularSwitch;
 using RESTyard.AspNetCore.Hypermedia;
 
 namespace RESTyard.AspNetCore.WebApi.RouteResolver;
@@ -13,6 +14,6 @@ public interface IKeyFromUriService
     /// <typeparam name="TKey">The key type, to resolve the correct parameter types and to return a typed result</typeparam>
     /// <param name="uri">The Uri</param>
     /// <returns>The key created from the values in the Uri</returns>
-    TKey GetKeyFromUri<THto, TKey>(Uri uri)
+    Result<TKey> GetKeyFromUri<THto, TKey>(Uri uri)
         where THto : HypermediaObject;
 }

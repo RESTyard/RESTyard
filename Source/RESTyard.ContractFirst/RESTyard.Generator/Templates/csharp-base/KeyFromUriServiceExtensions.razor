@@ -1,10 +1,10 @@
 ﻿@inherits RazorTemplateBase
 <Class Name="KeyFromUriServiceExtensions" IsStatic="true">
-	@foreach (var document in Schema.Documents.Where(d => HasOwnKeyProperties(d)))
+	@foreach (var document in Schema.Documents.Where(HasOwnKeyProperties))
 	{
 		var typeName = $"{document.name}Hto";
 		var keyName = $"{typeName}.Key";
-		@:public static @keyName @($"Get{document.name}KeyFromUri(")this IKeyFromUriService keyFromUriService, Uri uri)
+		@:public static Result<@keyName> @($"Get{document.name}KeyFromUri(")this IKeyFromUriService keyFromUriService, Uri uri)
 		@:    => keyFromUriService.GetKeyFromUri<@typeName, @keyName>(uri);
 	}
 </Class>

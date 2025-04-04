@@ -30,7 +30,7 @@ internal static class Program
                           server
                             /csharp
                               /v4
-                              /v5
+                              /v4.4
                             /csharp-controller
                               /v4
                             /csharp-policies
@@ -95,14 +95,14 @@ internal static class Program
 
     private static async Task RenderTemplate(
         HypermediaType schema,
-        TemplateInfo templateFile,
+        TemplateInfo template,
         string outputPath,
         string? @namespace,
         string? includeFile)
     {
         var includeContent = string.IsNullOrEmpty(includeFile) ? string.Empty : await File.ReadAllTextAsync(includeFile);
 
-        var code = await templateFile.Match(
+        var code = await template.Match(
             scribanTemplate: sbn => ScribanTemplate.Render(schema, sbn.FileInfo, @namespace, includeContent),
             razorTemplate: razor =>
                 RazorTemplate.Render(schema, razor.RazorType, @namespace, includeContent));

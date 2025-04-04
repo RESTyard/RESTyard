@@ -37,7 +37,7 @@ namespace CarShack.Controllers.Customers
         {
             try
             {
-                var customer = await customerRepository.GetEnitityByKeyAsync(key).ConfigureAwait(false);
+                var customer = await customerRepository.GetEntityByKeyAsync(key).ConfigureAwait(false);
                 var result = HypermediaCustomerHto.FromDomain(customer);
                 return Ok(result);
             }
@@ -67,7 +67,11 @@ namespace CarShack.Controllers.Customers
             try
             {
                 var keyFromUri = this.keyFromUriService.GetKeyFromUri<HypermediaCustomerHto, HypermediaCustomerHto.CustomKey>(favoriteCustomer.Customer);
-                var customer = await customerRepository.GetEnitityByKeyAsync(keyFromUri.Key).ConfigureAwait(false);
+                if (keyFromUri.IsError)
+                {
+                    return this.BadRequest();
+                }
+                var customer = await customerRepository.GetEntityByKeyAsync(keyFromUri.GetValueOrThrow().Key).ConfigureAwait(false);
                 var hypermediaCustomer = customer.ToHto();
 
                 // Check can execute here since we need to call business logic and not rely on previously checked value from HTO passed to caller
@@ -119,7 +123,7 @@ namespace CarShack.Controllers.Customers
             {
                 //shortcut for get car from repository
                 var car = new HypermediaCarHto(parameter.Brand, parameter.CarId);
-                var customer = await customerRepository.GetEnitityByKeyAsync(key).ConfigureAwait(false);
+                var customer = await customerRepository.GetEntityByKeyAsync(key).ConfigureAwait(false);
                 //do what has to be done
                 return this.Created(new HypermediaObjectKeyReference(typeof(HypermediaCarHto), new HypermediaCarHto.Key(parameter.CarId, parameter.Brand)));
             }
@@ -143,7 +147,7 @@ namespace CarShack.Controllers.Customers
 
             try
             {
-                var customer = await customerRepository.GetEnitityByKeyAsync(key).ConfigureAwait(false);
+                var customer = await customerRepository.GetEntityByKeyAsync(key).ConfigureAwait(false);
                 var hypermediaCustomer = customer.ToHto();
                 // Can execute logic is NOT checked, but is always true
                 DoMove(hypermediaCustomer, customer, newAddress);

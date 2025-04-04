@@ -20,9 +20,10 @@ namespace RESTyard.Generator
 
         private static async Task<string> Normalize(string code)
         {
-            var trimmed = string.Join(Environment.NewLine,
-                        code.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
-                            .Where(line => !string.IsNullOrWhiteSpace(line)));
+            var trimmed = string.Join(
+                Environment.NewLine,
+                code.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+                    .Where(line => !string.IsNullOrWhiteSpace(line)));
             var tree = CSharpSyntaxTree.ParseText(trimmed);
             var root = await tree.GetRootAsync();
             var normalized = root.NormalizeWhitespace().ToFullString();

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Reflection;
+using FunicularSwitch;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.WebUtilities;
@@ -18,25 +20,49 @@ public class KeyFromUriService : IKeyFromUriService
         this.applicationModel = applicationModel;
     }
 
-    public TKey GetKeyFromUri<THto, TKey>(Uri uri)
+    public Result<TKey> GetKeyFromUri<THto, TKey>(Uri uri)
         where THto : HypermediaObject
     {
-        var matchers = GetTemplateMatchers<THto>();
+        var result =
+            from matchers in GetTemplateMatchers<THto>()
+            from values in GetValuesFromRequest(matchers, uri)
+            from ctor in GetConstructor<TKey>()
+            from parameters in GetParameters(ctor, values)
+            from key in Invoke<TKey>(ctor, parameters)
+            select key;
 
-        if (matchers.Count == 0)
+        return result;
+    }
+
+    private Result<IImmutableList<TemplateMatcher>> GetTemplateMatchers<THto>()
+    {
+        if (!this.applicationModel.HmoTypes.TryGetValue(typeof(THto), out var hmoType))
         {
-            throw new ArgumentException("");
+            return Result.Error<IImmutableList<TemplateMatcher>>($"HTO {typeof(THto).BeautifulName()} not registered in application model");
         }
 
+        if (!hmoType.GetHmoMethods.Any())
+        {
+            return Result.Error<IImmutableList<TemplateMatcher>>($"No route found for type {typeof(THto).BeautifulName()}");
+        }
+
+        var templates = hmoType.GetHmoMethods
+            .Select(m => m.RouteTemplateFull)
+            .ToList();
+
+        var matchers = templates.Select(RouteMatcher.GetTemplateMatcher).ToImmutableList();
+
+        return Result.Ok<IImmutableList<TemplateMatcher>>(matchers);
+    }
+
+    private static Result<RouteValueDictionary> GetValuesFromRequest(IImmutableList<TemplateMatcher> matchers, Uri uri)
+    {
         RouteValueDictionary? values = null;
-        if (!matchers.Any(tm => tm.TryGetValuesFromRequest(
-                uri.LocalPath,
-                out values)))
+        if (!matchers.Any(tm => tm.TryGetValuesFromRequest(uri.LocalPath, out values)))
         {
-            // TODO need to do the extra trimming here also?
-            throw new ArgumentException("");
+            return Result.Error<RouteValueDictionary>($"Given URI '{uri.LocalPath}' does not match any route for the requested type");
         }
-
+        
         if (!string.IsNullOrEmpty(uri.Query))
         {
             var query = QueryHelpers.ParseQuery(uri.Query);
@@ -46,32 +72,53 @@ public class KeyFromUriService : IKeyFromUriService
                 values!.Add(q.Key, value);
             }
         }
+        
+        return Result.Ok(values!);
+    }
 
-        var ctor = typeof(TKey).GetConstructors().First();
+    private static Result<ConstructorInfo> GetConstructor<TKey>()
+    {
+        var constructor = typeof(TKey).GetConstructors().FirstOrDefault();
+        if (constructor is null)
+        {
+            return Result.Error<ConstructorInfo>($"No suitable constructor found for Key {typeof(TKey).BeautifulName()}");
+        }
+
+        return Result.Ok(constructor);
+    }
+
+    private static Result<object?[]> GetParameters(ConstructorInfo ctor, RouteValueDictionary values)
+    {
         var parameterDescriptions = ctor.GetParameters();
         var parameters = new object?[parameterDescriptions.Length];
         for (int i = 0; i < parameterDescriptions.Length; i += 1)
         {
-            var value = values![parameterDescriptions[i].Name!];
-            parameters[i] = Convert.ChangeType(value, parameterDescriptions[i].ParameterType);
+            var parameterDescription = parameterDescriptions[i];
+            if (!values.TryGetValue(parameterDescription.Name!, out var value))
+            {
+                return Result.Error<object?[]>($"Parameter {parameterDescription.Name!} not present in route values");
+            }
+
+            try
+            {
+                parameters[i] = Convert.ChangeType(value, parameterDescription.ParameterType);
+            }
+            catch (Exception e)
+            {
+                return Result.Error<object?[]>(
+                    $"Exception thrown while attempting to convert {value} to {parameterDescription.ParameterType.BeautifulName()}: {e}");
+            }
         }
 
-        return (TKey)ctor.Invoke(parameters);
+        return Result.Ok(parameters);
     }
 
-    private IImmutableList<TemplateMatcher> GetTemplateMatchers<THto>()
-    {
-        if (!this.applicationModel.HmoTypes.TryGetValue(typeof(THto), out var hmoType))
-        {
-            throw new ArgumentException($"No route found for type {typeof(THto).BeautifulName()}");
-        }
-
-        var templates = hmoType.GetHmoMethods
-            .Select(m => m.RouteTemplateFull)
-            .ToList();
-
-        var matchers = templates.Select(RouteMatcher.GetTemplateMatcher).ToImmutableList();
-
-        return matchers;
-    }
+    private static Result<TKey> Invoke<TKey>(ConstructorInfo ctor, object?[] parameters)
+        => Result.Try(
+            () =>
+            {
+                var result = ctor.Invoke(parameters);
+                return Result.Ok((TKey)result);
+            },
+            e => $"Exception while attempting to invoke constructor for type {typeof(TKey).BeautifulName()}: {e}");
 }

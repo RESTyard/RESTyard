@@ -5,7 +5,7 @@ namespace RESTyard.AspNetCore.Util.Repository
 {
     public interface IRepository<TEntity, in TKey, in TQuery>
     {
-        Task<TEntity> GetEnitityByKeyAsync(TKey key);
+        Task<TEntity> GetEntityByKeyAsync(TKey key);
 
         Task<QueryResult<TEntity>> QueryAsync(TQuery query);
 
