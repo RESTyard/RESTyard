@@ -16,6 +16,10 @@
       "commandName": "Project",
       "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --template server/csharp/v4 --output-file ../../../../../CarShack/Hypermedia/Hypermedia.Server.g.cs --namespace CarShack.Hypermedia"
     },
+    "Generate Server with default classifications": {
+      "commandName": "Project",
+      "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --template server/csharp/v4 --output-file ../../../../../CarShack/Hypermedia/Hypermedia.Server.g.cs --namespace CarShack.Hypermedia --use-default-classifications"
+    },
     "Generate Server Controllers": {
       "commandName": "Project",
       "commandLineArgs": "--schema-file ../../../../../CarShack/Hypermedia/Schema.xml --template server/csharp-controller/v4 --output-file ../../../../../CarShack/Hypermedia/Hypermedia.Server.Controllers.g.cs --namespace CarShack.Hypermedia"
