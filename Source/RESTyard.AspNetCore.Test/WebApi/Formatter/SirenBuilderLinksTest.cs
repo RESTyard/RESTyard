@@ -364,7 +364,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             var linksArray = (JArray)siren["links"];
             Assert.AreEqual(linksArray.Count, ho.Links.Count);
 
-            var internalRoute = $"{TestUrlConfig.Scheme}://{TestUrlConfig.Host}/{routeName}/";
+            var internalRoute = $"{TestUrlConfig.Scheme}://{TestUrlConfig.Host}/{routeName}";
             var i = 0;
             foreach (var jToken in linksArray)
             {

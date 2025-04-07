@@ -1,0 +1,38 @@
+﻿@inherits RazorTemplateBase
+
+@{
+    List<string> parentOrInterfaces = [];
+    var mandatoryArguments = GatherMandatoryParameterArguments(ParametersType, showHidden: true);
+    var optionalArguments = GatherOptionalParameterArguments(ParametersType, showHidden: true);
+    var mandatoryParentArguments = GatherMandatoryParameterParentArguments(ParametersType, showHidden: true);
+    var optionalParentArguments = GatherOptionalParameterParentArguments(ParametersType, showHidden: true);
+    var allArgumentsList = mandatoryParentArguments.Concat(mandatoryArguments).Concat(optionalParentArguments).Concat(optionalArguments).ToList();
+
+    var allArguments = string.Join(", ", allArgumentsList);
+
+    if (!string.IsNullOrEmpty(ParametersType.parentType))
+    {
+        var parentArgumentsList = mandatoryParentArguments.Select(TransformMandatoryArgument).Concat(optionalParentArguments.Select(TransformOptionalArgument)).ToList();
+        var parentArguments = string.Join(", ", parentArgumentsList);
+        parentOrInterfaces.Add($"{ParametersType.parentType}({parentArguments})");
+    }
+    if (ParametersType.usedForQueries)
+    {
+        parentOrInterfaces.Add("IHypermediaQuery");
+    }
+    if (ParametersType.usedForActions)
+    {
+        parentOrInterfaces.Add("IHypermediaActionParameter");
+    }
+}
+
+public partial record @ParametersType.typeName@("(")@allArguments@(")")
+@if (parentOrInterfaces.Any())
+{
+    @: @(":") @string.Join(", ", parentOrInterfaces)@(";")
+}
+
+
+@code {
+    [Parameter] public ParameterType ParametersType { get; set; } = null!;
+}

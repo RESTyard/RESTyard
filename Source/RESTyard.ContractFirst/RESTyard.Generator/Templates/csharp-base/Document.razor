@@ -1,0 +1,24 @@
+﻿@inherits RazorTemplateBase
+
+@{
+    var typeName = $"{DocumentType.name}Hto";
+    var baseType = string.IsNullOrEmpty(DocumentType.parentDocument) ? (DocumentType.isQueryResult ? "HypermediaQueryResult" : "HypermediaObject") : DocumentType.parentDocument + "Hto";
+    var classes = string.Join(", ", DocumentType.Classifications.Select(c => $"\"{c.@class}\""));
+    CheckProperties(DocumentType.name, DocumentType.Properties);
+}
+
+<Attribute>HypermediaObject(Title = "@DocumentType.title", Classes = new string[] { @classes })</Attribute>
+<Class Name="@typeName" Inherits="@baseType">
+    @foreach (var property in DocumentType.Properties)
+    {
+        <Property Schema="@Schema" PropertyType="@property"/>
+    }
+    <OperationProperties Schema="@Schema" List="@DocumentType.Operations"/>
+    <Constructor Schema="@Schema" Document="@DocumentType"/>
+    <KeyRecord Schema="@Schema" Document="@DocumentType"/>
+    <OperationClasses Schema="@Schema" Document="@DocumentType"/>
+</Class>
+
+@code {
+    [Parameter] public DocumentType DocumentType { get; set; } = null!;
+}

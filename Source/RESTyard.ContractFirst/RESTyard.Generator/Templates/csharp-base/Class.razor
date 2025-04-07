@@ -1,0 +1,13 @@
+﻿@("")public @(IsStatic ? "static" : "") @(IsAbstract ? "abstract" : "") @(IsPartial ? "partial" : "") class @Name @(Inherits != null ? $": {Inherits}" : "")
+{
+@ChildContent
+}
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; } = null!;
+    [Parameter] public bool IsAbstract { get; set; } = false;
+    [Parameter] public bool IsPartial { get; set; } = true;
+    [Parameter] public bool IsStatic { get; set; } = false;
+    [Parameter] public string Name { get; set; } = "";
+    [Parameter] public string? Inherits { get; set; }
+}

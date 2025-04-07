@@ -1,0 +1,52 @@
+﻿@inherits RazorTemplateBase
+
+@{
+    foreach (var operation in Document.Operations)
+    {
+        var typeParameters = new List<string>();
+        var actionType = "";
+        if (operation.isUploadAction)
+        {
+            actionType = "FileUploadHypermediaAction";
+        }
+        else
+        {
+            actionType = "HypermediaAction";
+        }
+
+        if (!string.IsNullOrEmpty(operation.parameterTypeName))
+        {
+            typeParameters.Add(operation.parameterTypeName);
+        }
+
+        if (typeParameters.Any())
+        {
+            var parametersString = string.Join(", ", typeParameters);
+            actionType += $"<{parametersString}>";
+        }
+        var canExecuteArg = $"Func<bool> canExecute{operation.name}";
+        var parameterArg = "";
+        var parameterValue = "";
+        if (operation.isUploadAction)
+        {
+            parameterArg += ", FileUploadConfiguration? fileUploadConfiguration = null";
+            parameterValue += ", fileUploadConfiguration";
+        }
+
+        if (!string.IsNullOrEmpty(operation.parameterTypeName))
+        {
+            parameterArg += $", {operation.parameterTypeName}? prefilledValues = default";
+            parameterValue += ", prefilledValues";
+        }
+
+        var operationClassName = $"{operation.name}Op";
+        <Class Name="@operationClassName" Inherits="@actionType">
+        public @operationClassName@("(")@(canExecuteArg)@parameterArg)
+            : base(canExecute@(operation.name)@parameterValue) { }
+        </Class>
+    }
+}
+
+@code {
+    [Parameter] public DocumentType Document { get; set; } = null!;
+}

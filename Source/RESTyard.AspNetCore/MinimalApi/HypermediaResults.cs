@@ -31,8 +31,7 @@ public sealed class Ok<THypermediaObject> : IResult
 
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
-        var routeResolver = httpContext.RequestServices.GetRequiredService<IRouteResolverFactory2>().CreateRouteResolver(httpContext, linkGenerator);
+        var routeResolver = httpContext.RequestServices.GetRequiredService<IRouteResolverFactory>().CreateRouteResolver(httpContext);
         var converter = httpContext.RequestServices.GetRequiredService<ISirenHypermediaConverterFactory>()
             .CreateSirenConverter(routeResolver);
         var sirenJson = converter.ConvertToString(this.Value);

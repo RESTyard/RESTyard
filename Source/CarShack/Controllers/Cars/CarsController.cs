@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using CarShack.Hypermedia;
 using CarShack.Util;
+using FunicularSwitch;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -68,7 +69,7 @@ namespace CarShack.Controllers.Cars
                     derivedProperty: "some text",
                     derivedOperation: new(() => false),
                     item: [],
-                    hasDerivedLink: false, derivedLinkKey: null);
+                    derivedLinkKey: Option<HypermediaCustomerHto.Key>.None);
                 return Ok(result);
             }
             catch (EntityNotFoundException)

@@ -9,6 +9,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
     /// Json schema for the parameter type (when created with <see cref="JsonSchemaFactory"/>) will expose an Uri property for every distinct <see cref="SchemaPropertyName"/>. 
     /// Use the <see cref="StartupExtensions.AddHypermediaParameterBinders"/> method to configure how binders are added for action parameter types using <see cref="KeyFromUriAttribute"/>  
     /// </summary>
+    [Obsolete(message: $"Use {nameof(IKeyFromUriService)} instead")]
     [AttributeUsage(AttributeTargets.Property)]
     public class KeyFromUriAttribute : Attribute
     {

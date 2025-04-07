@@ -4,11 +4,9 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text.Json.Serialization;
-using CarShack.Controllers.Cars;
 using CarShack.Domain.Customer;
+using FunicularSwitch;
 using Microsoft.Extensions.DependencyInjection;
-using RESTyard.AspNetCore.Exceptions;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
@@ -78,9 +76,6 @@ public class Country
     [FormatterIgnoreHypermediaProperty] public string LanguageCode { get; set; }
 }
 
-public record MarkAsFavoriteParameters
-    ([property: KeyFromUri(typeof(HypermediaCustomerHto), "Customer")] int CustomerId) : IHypermediaActionParameter;
-
 public partial class HypermediaEntrypointHto
 {
    // public ExternalActionNoParametersTestOp ExternalActionNoParametersNoParametersTest { get; init; } = new ExternalActionNoParametersTestOp(new Uri("http://www.example1.com"), HttpMethod.POST);
@@ -89,14 +84,11 @@ public partial class HypermediaEntrypointHto
     //public List<object> Foo { get; set; } = new List<object>();
 
     public Type MyType { get; set; } = typeof(HypermediaEntrypointHto);
-    
-    
-    [ActivatorUtilitiesConstructor]
-    public HypermediaEntrypointHto(HypermediaCustomersRootHto customersRoot, HypermediaCarsRootHto carsRoot)
-        : this(new HypermediaObjectReference(customersRoot), new HypermediaObjectReference(carsRoot))
-    {
-        //Foo = new List<object>() { 5, "wow" };
-    }
+}
+
+public partial class HypermediaCustomerHto
+{
+    public partial record CustomKey(int Key);
 }
 
 public class ExternalActionNoParametersTestOp : HypermediaExternalAction
@@ -135,8 +127,8 @@ public partial class HypermediaCustomersRootHto
     [ActivatorUtilitiesConstructor]
     public HypermediaCustomersRootHto()
         : this(
-            new CreateCustomerOp(() => true),
-            new CreateQueryOp(() => true,  new CustomerQuery
+            createCustomer: new CreateCustomerOp(() => true),
+            createQuery: new CreateQueryOp(() => true,  new CustomerQuery
             {
                 Filter = new CustomerFilter
                 {
@@ -153,14 +145,12 @@ public partial class HypermediaCustomersRootHto
                     SortType = SortTypes.Ascending
                 }
             }),
-            new CustomerQuery(),
-            default,
-            1,
-            new HypermediaObjectReference(new ExternalReference(new Uri("http://www.example.com/")).WithAvailableMediaType("text/html")))
+            allQuery: new CustomerQuery(),
+            bestCustomerKey: new(1),
+            greatSite: new HypermediaObjectReference(new ExternalReference(new Uri("http://www.example.com/")).WithAvailableMediaType("text/html")),
+            okaySite: Option<HypermediaObjectReferenceBase>.None)
     {
     }
-
-   
 }
 
 public partial class HypermediaCarsRootHto
@@ -184,8 +174,8 @@ public partial class HypermediaCarsRootHto
                     AllowMultiple = true,
                     MaxFileSizeBytes = 200,
                 }),
-            DerivedCarHto.CreateKeyObject(id: 2, brand: "VW"),
-            HypermediaCarHto.CreateKeyObject(id: 5, brand: "Porsche"))
+            new DerivedCarHto.Key(Id: 2, Brand: "VW"),
+            new HypermediaCarHto.Key(Id: 5, Brand: "Porsche"))
     {
     }
 }
