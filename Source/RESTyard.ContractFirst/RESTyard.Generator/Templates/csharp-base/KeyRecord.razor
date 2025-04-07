@@ -1,0 +1,22 @@
+﻿@inherits RazorTemplateBase
+
+@{
+    var keyProperties = GetKeyProperties(Document);
+    if (keyProperties.Count > 0)
+    {
+        var propertyString = string.Join(", ", keyProperties.Select(kp => $"{MapNullableType(!kp.mandatory, kp.type)} {kp.name}"));
+        <Record Name="Key" Parameters="@propertyString" Inherits="KeyBase">
+            protected override @("IEnumerable<KeyValuePair<string, object?>>") EnumerateKeysForLinkGeneration()
+            {
+                @foreach (var property in keyProperties)
+                {
+                    @:yield return new KeyValuePair<string, object?>("@(Uncapitalize(property.name))", this.@property.name);
+                }
+            }
+        </Record>
+    }
+}
+
+@code {
+    [Parameter] public DocumentType Document { get; set; } = null!;
+}
