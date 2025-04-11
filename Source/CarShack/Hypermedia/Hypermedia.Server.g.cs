@@ -23,8 +23,8 @@ public partial record CreateCustomerParameters(string Name) : IHypermediaActionP
 public partial record BuyCarParameters(string Brand, int CarId, double? Price = default, double? HiddenProperty = default) : IHypermediaActionParameter;
 public partial record BuyLamborghiniParameters(string Brand, int CarId, string Color, double? Price = default, double? HiddenProperty = default, int? OptionalProperty = default) : BuyCarParameters(Brand, CarId, Price, HiddenProperty), IHypermediaQuery, IHypermediaActionParameter;
 public partial record BuyLamborghinettaParameters(string Brand, int CarId, string Color, int HorsePower, double? Price = default, double? HiddenProperty = default, int? OptionalProperty = default) : BuyLamborghiniParameters(Brand, CarId, Color, Price, HiddenProperty, OptionalProperty), IHypermediaQuery, IHypermediaActionParameter;
-public partial record NewAddress(string Address) : IHypermediaActionParameter;
-public partial record SomeDataTransferObject(string Value);
+public partial record NewAddress(AddressTo Address) : IHypermediaActionParameter;
+public partial record AddressTo(string Street, string Number, string City, string ZipCode);
 public partial record UploadCarImageParameters(string Text, bool Flag) : IHypermediaActionParameter;
 public partial record MarkAsFavoriteParameters(Uri Customer) : IHypermediaActionParameter;
 [HypermediaObject(Title = "Entry to the Rest API", Classes = new string[] { "Entrypoint" })]
@@ -219,7 +219,7 @@ public partial class HypermediaCustomerHto : HypermediaObject
     public int Id { get; set; }
     public int? Age { get; set; }
     public string? FullName { get; set; }
-    public string? Address { get; set; }
+    public AddressTo? Address { get; set; }
     public bool IsFavorite { get; set; }
 
     [HypermediaAction(Name = "CustomerMove", Title = "A Customer moved to a new location.")]
@@ -234,7 +234,7 @@ public partial class HypermediaCustomerHto : HypermediaObject
     [HypermediaAction(Name = "BuyCar", Title = "Buy a car.")]
     public BuyCarOp BuyCar { get; set; }
 
-    public HypermediaCustomerHto(int id, int? age, string? fullName, string? address, bool isFavorite, CustomerMoveOp customerMove, CustomerRemoveOp customerRemove, MarkAsFavoriteOp markAsFavorite, BuyCarOp buyCar) : base(hasSelfLink: true)
+    public HypermediaCustomerHto(int id, int? age, string? fullName, AddressTo? address, bool isFavorite, CustomerMoveOp customerMove, CustomerRemoveOp customerRemove, MarkAsFavoriteOp markAsFavorite, BuyCarOp buyCar) : base(hasSelfLink: true)
     {
         this.Id = id;
         this.Age = age;

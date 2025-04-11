@@ -80,8 +80,12 @@ public class IntegrationTests : IClassFixture<CarShackWaf>, IAsyncLifetime
 
         var customer = customersAll.Should().BeOk().Which.Customers.First();
 
-        var newAddress = "New Address";
-        var actionResult = await customer.CustomerMove.ExecuteAsync(new NewAddress(Address: newAddress), this.Resolver);
+        var newAddress = new AddressTo(
+            Street: "New Street",
+            Number: "5",
+            City: "New City",
+            ZipCode: "54321");
+        var actionResult = await customer.CustomerMove!.ExecuteAsync(new NewAddress(Address: newAddress), this.Resolver);
 
         var refreshResult = await customer.Self.ResolveAsync();
         actionResult.Should().BeOk();
