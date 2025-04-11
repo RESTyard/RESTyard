@@ -19,20 +19,6 @@ public static class MimeTypes
     public const string APPLICATION_VND_SIREN_JSON = "application/vnd.siren+json";
 }
 
-/// <summary>
-/// Defines a base for HTO keys such that they can be passed to <see cref = "LinkGenerator"/> and their values be recognized
-/// </summary>
-public abstract record KeyBase<THto>() : IEnumerable<KeyValuePair<string, object?>> where THto : HypermediaObject
-{
-    IEnumerator<KeyValuePair<string, object?>> IEnumerable<KeyValuePair<string, object?>>.GetEnumerator() => EnumerateKeysForLinkGeneration().GetEnumerator();
-    IEnumerator IEnumerable.GetEnumerator() => EnumerateKeysForLinkGeneration().GetEnumerator();
-    protected abstract IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration();
-    public HypermediaObjectReferenceBase ToHypermediaObjectReference()
-    {
-        return new HypermediaObjectKeyReference(typeof(THto), this);
-    }
-}
-
 public partial record CreateCustomerParameters(string Name) : IHypermediaActionParameter;
 public partial record BuyCarParameters(string Brand, int CarId, double? Price = default, double? HiddenProperty = default) : IHypermediaActionParameter;
 public partial record BuyLamborghiniParameters(string Brand, int CarId, string Color, double? Price = default, double? HiddenProperty = default, int? OptionalProperty = default) : BuyCarParameters(Brand, CarId, Price, HiddenProperty), IHypermediaQuery, IHypermediaActionParameter;
@@ -104,7 +90,7 @@ public partial class HypermediaCarHto : HypermediaObject
         this.MostPopularIn = mostPopularIn;
     }
 
-    public partial record Key(int? Id, string? Brand) : KeyBase<HypermediaCarHto>
+    public partial record Key(int? Id, string? Brand) : HypermediaObjectKeyBase<HypermediaCarHto>
     {
         protected override IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration()
         {
@@ -126,7 +112,7 @@ public partial class CarImageHto : HypermediaObject
         this.Filename = filename;
     }
 
-    public partial record Key(string? Filename) : KeyBase<CarImageHto>
+    public partial record Key(string? Filename) : HypermediaObjectKeyBase<CarImageHto>
     {
         protected override IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration()
         {
@@ -147,7 +133,7 @@ public partial class CarInsuranceHto : HypermediaObject
         this.Filename = filename;
     }
 
-    public partial record Key(string? Filename) : KeyBase<CarInsuranceHto>
+    public partial record Key(string? Filename) : HypermediaObjectKeyBase<CarInsuranceHto>
     {
         protected override IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration()
         {
@@ -261,7 +247,7 @@ public partial class HypermediaCustomerHto : HypermediaObject
         this.BuyCar = buyCar;
     }
 
-    public partial record Key(int Id) : KeyBase<HypermediaCustomerHto>
+    public partial record Key(int Id) : HypermediaObjectKeyBase<HypermediaCustomerHto>
     {
         protected override IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration()
         {
