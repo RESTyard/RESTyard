@@ -125,7 +125,7 @@ namespace CarShack.Controllers.Customers
                 var car = new HypermediaCarHto(parameter.Brand, parameter.CarId);
                 var customer = await customerRepository.GetEntityByKeyAsync(key).ConfigureAwait(false);
                 //do what has to be done
-                return this.Created(new HypermediaObjectKeyReference(typeof(HypermediaCarHto), new HypermediaCarHto.Key(parameter.CarId, parameter.Brand)));
+                return this.Created(new HypermediaCarHto.Key(parameter.CarId, parameter.Brand).ToHypermediaObjectReference());
             }
             catch (EntityNotFoundException)
             {

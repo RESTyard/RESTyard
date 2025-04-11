@@ -22,11 +22,15 @@ public static class MimeTypes
 /// <summary>
 /// Defines a base for HTO keys such that they can be passed to <see cref = "LinkGenerator"/> and their values be recognized
 /// </summary>
-public abstract record KeyBase() : IEnumerable<KeyValuePair<string, object?>>
+public abstract record KeyBase<THto>() : IEnumerable<KeyValuePair<string, object?>> where THto : HypermediaObject
 {
     IEnumerator<KeyValuePair<string, object?>> IEnumerable<KeyValuePair<string, object?>>.GetEnumerator() => EnumerateKeysForLinkGeneration().GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => EnumerateKeysForLinkGeneration().GetEnumerator();
     protected abstract IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration();
+    public HypermediaObjectReferenceBase ToHypermediaObjectReference()
+    {
+        return new HypermediaObjectKeyReference(typeof(THto), this);
+    }
 }
 
 public partial record CreateCustomerParameters(string Name) : IHypermediaActionParameter;
@@ -34,6 +38,7 @@ public partial record BuyCarParameters(string Brand, int CarId, double? Price = 
 public partial record BuyLamborghiniParameters(string Brand, int CarId, string Color, double? Price = default, double? HiddenProperty = default, int? OptionalProperty = default) : BuyCarParameters(Brand, CarId, Price, HiddenProperty), IHypermediaQuery, IHypermediaActionParameter;
 public partial record BuyLamborghinettaParameters(string Brand, int CarId, string Color, int HorsePower, double? Price = default, double? HiddenProperty = default, int? OptionalProperty = default) : BuyLamborghiniParameters(Brand, CarId, Color, Price, HiddenProperty, OptionalProperty), IHypermediaQuery, IHypermediaActionParameter;
 public partial record NewAddress(string Address) : IHypermediaActionParameter;
+public partial record SomeDataTransferObject(string Value);
 public partial record UploadCarImageParameters(string Text, bool Flag) : IHypermediaActionParameter;
 public partial record MarkAsFavoriteParameters(Uri Customer) : IHypermediaActionParameter;
 [HypermediaObject(Title = "Entry to the Rest API", Classes = new string[] { "Entrypoint" })]
@@ -99,7 +104,7 @@ public partial class HypermediaCarHto : HypermediaObject
         this.MostPopularIn = mostPopularIn;
     }
 
-    public partial record Key(int? Id, string? Brand) : KeyBase
+    public partial record Key(int? Id, string? Brand) : KeyBase<HypermediaCarHto>
     {
         protected override IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration()
         {
@@ -121,7 +126,7 @@ public partial class CarImageHto : HypermediaObject
         this.Filename = filename;
     }
 
-    public partial record Key(string? Filename) : KeyBase
+    public partial record Key(string? Filename) : KeyBase<CarImageHto>
     {
         protected override IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration()
         {
@@ -142,7 +147,7 @@ public partial class CarInsuranceHto : HypermediaObject
         this.Filename = filename;
     }
 
-    public partial record Key(string? Filename) : KeyBase
+    public partial record Key(string? Filename) : KeyBase<CarInsuranceHto>
     {
         protected override IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration()
         {
@@ -256,7 +261,7 @@ public partial class HypermediaCustomerHto : HypermediaObject
         this.BuyCar = buyCar;
     }
 
-    public partial record Key(int Id) : KeyBase
+    public partial record Key(int Id) : KeyBase<HypermediaCustomerHto>
     {
         protected override IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration()
         {

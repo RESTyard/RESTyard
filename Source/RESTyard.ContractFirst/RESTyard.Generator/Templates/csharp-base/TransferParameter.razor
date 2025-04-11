@@ -29,9 +29,9 @@
 public partial record @ParametersType.typeName@("(")@allArguments@(")")
 @if (parentOrInterfaces.Any())
 {
-    @: @(":") @string.Join(", ", parentOrInterfaces)@(";")
+    @: @(":") @string.Join(", ", parentOrInterfaces)
 }
-
+@(";")
 
 @code {
     [Parameter] public ParameterType ParametersType { get; set; } = null!;

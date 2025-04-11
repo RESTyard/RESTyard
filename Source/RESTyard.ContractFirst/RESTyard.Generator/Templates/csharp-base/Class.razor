@@ -1,4 +1,13 @@
-﻿@("")public @(IsStatic ? "static" : "") @(IsAbstract ? "abstract" : "") @(IsPartial ? "partial" : "") class @Name @(Inherits != null ? $": {Inherits}" : "")
+﻿@{
+    var modifiers = string.Join(
+        " ",
+        IsStatic ? "static" : "",
+        IsAbstract ? "abstract" : "",
+        IsPartial ? "partial" : "");
+    var inheritance = Inherits != null ? $": {Inherits}" : "";
+}
+
+public @modifiers class @Name @inheritance @GenericConstraints
 {
 @ChildContent
 }
@@ -10,4 +19,5 @@
     [Parameter] public bool IsStatic { get; set; } = false;
     [Parameter] public string Name { get; set; } = "";
     [Parameter] public string? Inherits { get; set; }
+    [Parameter] public string GenericConstraints { get; set; } = "";
 }

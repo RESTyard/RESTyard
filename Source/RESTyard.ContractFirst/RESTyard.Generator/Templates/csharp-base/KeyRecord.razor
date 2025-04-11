@@ -5,7 +5,9 @@
     if (keyProperties.Count > 0)
     {
         var propertyString = string.Join(", ", keyProperties.Select(kp => $"{MapNullableType(!kp.mandatory, kp.type)} {kp.name}"));
-        <Record Name="Key" Parameters="@propertyString" Inherits="KeyBase">
+        var htoName = Document.name + "Hto";
+        var baseName = $"KeyBase<{htoName}>";
+        <Record Name="Key" Parameters="@propertyString" Inherits="@baseName">
             protected override @("IEnumerable<KeyValuePair<string, object?>>") EnumerateKeysForLinkGeneration()
             {
                 @foreach (var property in keyProperties)

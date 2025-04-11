@@ -204,4 +204,32 @@ public class IntegrationTests : IClassFixture<CarShackWaf>, IAsyncLifetime
         var imageResult = await this.Client.GetByteArrayAsync(imageLink.Uri);
         imageResult.Should().BeEquivalentTo(new byte[] { 1, 2, 3, 4 });
     }
+
+    [Fact]
+    public async Task BuyCar()
+    {
+        // Given
+        var apiRoot = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint);
+        var customersResult = await apiRoot
+            .NavigateAsync(l => l.CustomersRoot);
+        var carsResult = await apiRoot
+            .NavigateAsync(l => l.CarsRoot);
+
+        var customersRoot = customersResult.Should().BeOk().Which;
+        var carsRoot = carsResult.Should().BeOk().Which;
+        var niceCar = (await carsRoot.NiceCar.ResolveAsync()).Should().BeOk().Which;
+        var createCustomerResult = await customersRoot.CreateCustomer!
+            .ExecuteAsync(new CreateCustomerParameters("Jasper"), this.Resolver)
+            .Bind(l => l.ResolveAsync());
+        var customer = createCustomerResult.Should().BeOk().Which;
+        
+        // When
+        var buyResult = await customer.BuyCar
+            .ExecuteAsync(new BuyCarParameters(niceCar.Brand!, niceCar.Id!.Value, Price: 100), this.Resolver)
+            .Bind(l => l.ResolveAsync());
+        
+        // Then
+        var boughtCar = buyResult.Should().BeOk().Which;
+        boughtCar.Id.Should().Be(niceCar.Id);
+    }
 }

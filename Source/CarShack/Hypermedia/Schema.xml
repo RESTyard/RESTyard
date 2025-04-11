@@ -25,6 +25,9 @@
     <Parameters typeName="NewAddress" usedForQueries="false" usedForActions="true">
       <Property name="Address" type="string" mandatory="true" />
     </Parameters>
+    <Parameters typeName="SomeDataTransferObject" usedForActions="false" usedForQueries="false">
+      <Property name="Value" type="string" mandatory="true" />
+    </Parameters>
     <Parameters typeName="UploadCarImageParameters" usedForActions="true" usedForQueries="false">
       <Property name="Text" type="string" mandatory="true" />
       <Property name="Flag" type="bool" mandatory="true" />
