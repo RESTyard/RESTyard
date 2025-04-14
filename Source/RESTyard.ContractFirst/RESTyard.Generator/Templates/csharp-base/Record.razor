@@ -1,4 +1,12 @@
-﻿public @(IsAbstract ? "abstract" : "") @(IsPartial ? "partial" : "") record @Name@("(")@Parameters) @(Inherits != null ? $": {Inherits}" : "")
+﻿@{
+    var modifiers = string.Join(
+        " ",
+        IsAbstract ? "abstract" : "",
+        IsPartial ? "partial" : "");
+    var inheritance = Inherits != null ? $": {Inherits}" : "";
+}
+
+public @modifiers record @Name@("(")@Parameters) @inheritance @GenericConstraints
 {
 @ChildContent
 }
@@ -10,4 +18,5 @@
     [Parameter] public string Name { get; set; } = "";
     [Parameter] public string Parameters { get; set; } = "";
     [Parameter] public string? Inherits { get; set; }
+    [Parameter] public string GenericConstraints { get; set; } = "";
 }

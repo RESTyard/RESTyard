@@ -19,21 +19,12 @@ public static class MimeTypes
     public const string APPLICATION_VND_SIREN_JSON = "application/vnd.siren+json";
 }
 
-/// <summary>
-/// Defines a base for HTO keys such that they can be passed to <see cref = "LinkGenerator"/> and their values be recognized
-/// </summary>
-public abstract record KeyBase() : IEnumerable<KeyValuePair<string, object?>>
-{
-    IEnumerator<KeyValuePair<string, object?>> IEnumerable<KeyValuePair<string, object?>>.GetEnumerator() => EnumerateKeysForLinkGeneration().GetEnumerator();
-    IEnumerator IEnumerable.GetEnumerator() => EnumerateKeysForLinkGeneration().GetEnumerator();
-    protected abstract IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration();
-}
-
 public partial record CreateCustomerParameters(string Name) : IHypermediaActionParameter;
 public partial record BuyCarParameters(string Brand, int CarId, double? Price = default, double? HiddenProperty = default) : IHypermediaActionParameter;
 public partial record BuyLamborghiniParameters(string Brand, int CarId, string Color, double? Price = default, double? HiddenProperty = default, int? OptionalProperty = default) : BuyCarParameters(Brand, CarId, Price, HiddenProperty), IHypermediaQuery, IHypermediaActionParameter;
 public partial record BuyLamborghinettaParameters(string Brand, int CarId, string Color, int HorsePower, double? Price = default, double? HiddenProperty = default, int? OptionalProperty = default) : BuyLamborghiniParameters(Brand, CarId, Color, Price, HiddenProperty, OptionalProperty), IHypermediaQuery, IHypermediaActionParameter;
-public partial record NewAddress(string Address) : IHypermediaActionParameter;
+public partial record NewAddress(AddressTo Address) : IHypermediaActionParameter;
+public partial record AddressTo(string Street, string Number, string City, string ZipCode);
 public partial record UploadCarImageParameters(string Text, bool Flag) : IHypermediaActionParameter;
 public partial record MarkAsFavoriteParameters(Uri Customer) : IHypermediaActionParameter;
 [HypermediaObject(Title = "Entry to the Rest API", Classes = new string[] { "Entrypoint" })]
@@ -99,7 +90,7 @@ public partial class HypermediaCarHto : HypermediaObject
         this.MostPopularIn = mostPopularIn;
     }
 
-    public partial record Key(int? Id, string? Brand) : KeyBase
+    public partial record Key(int? Id, string? Brand) : HypermediaObjectKeyBase<HypermediaCarHto>
     {
         protected override IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration()
         {
@@ -121,7 +112,7 @@ public partial class CarImageHto : HypermediaObject
         this.Filename = filename;
     }
 
-    public partial record Key(string? Filename) : KeyBase
+    public partial record Key(string? Filename) : HypermediaObjectKeyBase<CarImageHto>
     {
         protected override IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration()
         {
@@ -142,7 +133,7 @@ public partial class CarInsuranceHto : HypermediaObject
         this.Filename = filename;
     }
 
-    public partial record Key(string? Filename) : KeyBase
+    public partial record Key(string? Filename) : HypermediaObjectKeyBase<CarInsuranceHto>
     {
         protected override IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration()
         {
@@ -228,7 +219,7 @@ public partial class HypermediaCustomerHto : HypermediaObject
     public int Id { get; set; }
     public int? Age { get; set; }
     public string? FullName { get; set; }
-    public string? Address { get; set; }
+    public AddressTo? Address { get; set; }
     public bool IsFavorite { get; set; }
 
     [HypermediaAction(Name = "CustomerMove", Title = "A Customer moved to a new location.")]
@@ -243,7 +234,7 @@ public partial class HypermediaCustomerHto : HypermediaObject
     [HypermediaAction(Name = "BuyCar", Title = "Buy a car.")]
     public BuyCarOp BuyCar { get; set; }
 
-    public HypermediaCustomerHto(int id, int? age, string? fullName, string? address, bool isFavorite, CustomerMoveOp customerMove, CustomerRemoveOp customerRemove, MarkAsFavoriteOp markAsFavorite, BuyCarOp buyCar) : base(hasSelfLink: true)
+    public HypermediaCustomerHto(int id, int? age, string? fullName, AddressTo? address, bool isFavorite, CustomerMoveOp customerMove, CustomerRemoveOp customerRemove, MarkAsFavoriteOp markAsFavorite, BuyCarOp buyCar) : base(hasSelfLink: true)
     {
         this.Id = id;
         this.Age = age;
@@ -256,7 +247,7 @@ public partial class HypermediaCustomerHto : HypermediaObject
         this.BuyCar = buyCar;
     }
 
-    public partial record Key(int Id) : KeyBase
+    public partial record Key(int Id) : HypermediaObjectKeyBase<HypermediaCustomerHto>
     {
         protected override IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration()
         {

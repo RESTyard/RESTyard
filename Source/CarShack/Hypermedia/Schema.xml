@@ -23,7 +23,13 @@
       <Property name="HorsePower" type="int" mandatory="true" />
     </Parameters>
     <Parameters typeName="NewAddress" usedForQueries="false" usedForActions="true">
-      <Property name="Address" type="string" mandatory="true" />
+      <Property name="Address" type="AddressTo" mandatory="true" />
+    </Parameters>
+    <Parameters typeName="AddressTo" usedForActions="false" usedForQueries="false">
+      <Property name="Street" type="string" mandatory="true" />
+      <Property name="Number" type="string" mandatory="true" />
+      <Property name="City" type="string" mandatory="true" />
+      <Property name="ZipCode" type="string" mandatory="true" />
     </Parameters>
     <Parameters typeName="UploadCarImageParameters" usedForActions="true" usedForQueries="false">
       <Property name="Text" type="string" mandatory="true" />
@@ -135,7 +141,7 @@
         <Property name="Id" type="int" hidden="true" mandatory="true" isKey="true" />
         <Property name="Age" type="int" />
         <Property name="FullName" type="string" />
-        <Property name="Address" type="string" />
+        <Property name="Address" type="AddressTo" />
         <Property name="IsFavorite" type="bool" mandatory="true" />
       </Properties>
       <Operations>

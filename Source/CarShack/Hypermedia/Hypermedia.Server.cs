@@ -17,6 +17,16 @@ using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace CarShack.Hypermedia;
 
+public partial record AddressTo
+{
+    public static AddressTo Create(Address domainAddress)
+        => new(
+            Street: domainAddress.Street,
+            Number: domainAddress.Number,
+            City: domainAddress.City,
+            ZipCode: domainAddress.ZipCode);
+}
+
 public class CustomerQuery : QueryBase<CustomerSortProperties, CustomerFilter>
 {
     // required by Web Api to instanciate when a route is called
@@ -147,7 +157,7 @@ public partial class HypermediaCustomersRootHto
             }),
             allQuery: new CustomerQuery(),
             bestCustomerKey: new(1),
-            greatSite: new HypermediaObjectReference(new ExternalReference(new Uri("http://www.example.com/")).WithAvailableMediaType("text/html")),
+            greatSite: new HypermediaObjectReference(new ExternalReference(new Uri("https://www.example.com/")).WithAvailableMediaType("text/html")),
             okaySite: Option<HypermediaObjectReferenceBase>.None)
     {
     }
@@ -189,7 +199,7 @@ public partial class HypermediaCustomerHto
             customer.Id,
             customer.Age,
             customer.Name,
-            customer.Address,
+            AddressTo.Create(customer.Address),
             customer.IsFavorite,
             new CustomerMoveOp(() => true),
             new CustomerRemoveOp(() => true),

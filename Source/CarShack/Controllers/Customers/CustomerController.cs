@@ -125,7 +125,7 @@ namespace CarShack.Controllers.Customers
                 var car = new HypermediaCarHto(parameter.Brand, parameter.CarId);
                 var customer = await customerRepository.GetEntityByKeyAsync(key).ConfigureAwait(false);
                 //do what has to be done
-                return this.Created(new HypermediaObjectKeyReference(typeof(HypermediaCarHto), new HypermediaCarHto.Key(parameter.CarId, parameter.Brand)));
+                return this.Created(new HypermediaCarHto.Key(parameter.CarId, parameter.Brand).ToHypermediaObjectReference());
             }
             catch (EntityNotFoundException)
             {
@@ -212,13 +212,17 @@ namespace CarShack.Controllers.Customers
         
         private static void DoMove(HypermediaCustomerHto hto, Customer customer, NewAddress newAddress)
         {
-            // semantic validation is busyness logic
-            if (string.IsNullOrEmpty(newAddress.Address))
+            // semantic validation is business logic
+            if (string.IsNullOrEmpty(newAddress.Address.Street))
                 throw new ActionParameterValidationException("New customer address may not be null or empty.");
 
-            // call busyness logic here
-            customer.Address = newAddress.Address;
-            hto.Address = customer.Address;
+            // call business logic here
+            hto.Address = newAddress.Address;
+            customer.Address = new Address(
+                Street: newAddress.Address.Street,
+                Number: newAddress.Address.Number,
+                City: newAddress.Address.City,
+                ZipCode: newAddress.Address.ZipCode);
         }
 
         #endregion

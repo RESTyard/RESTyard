@@ -1,8 +1,0 @@
-﻿@("/// <summary>")
-@("/// Defines a base for HTO keys such that they can be passed to <see cref=\"LinkGenerator\"/> and their values be recognized")
-@("/// </summary>")
-<Record Name="KeyBase" IsAbstract="true" IsPartial="false" Inherits="IEnumerable<KeyValuePair<string, object?>>">
-    @("IEnumerator<KeyValuePair<string, object?>> IEnumerable<KeyValuePair<string, object?>>.GetEnumerator()") => EnumerateKeysForLinkGeneration().GetEnumerator();
-    @("IEnumerator IEnumerable.GetEnumerator()") => EnumerateKeysForLinkGeneration().GetEnumerator();
-    protected abstract @("IEnumerable<KeyValuePair<string, object?>>") EnumerateKeysForLinkGeneration();
-</Record>
