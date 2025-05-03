@@ -18,7 +18,7 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         /// <param name="controller"></param>
         /// <param name="hypermediaObject">The created HypermediaObject</param>
         /// <returns></returns>
-        public static ActionResult Created(this ControllerBase controller, HypermediaObject hypermediaObject)
+        public static ActionResult Created(this ControllerBase controller, IHypermediaObject hypermediaObject)
         {
             return controller.Ok(new HypermediaEntityLocation(new HypermediaObjectReference(hypermediaObject), HttpStatusCode.Created));
         }

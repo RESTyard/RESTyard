@@ -10,7 +10,7 @@ namespace RESTyard.AspNetCore.Hypermedia;
 /// Any Key record inheriting from <see cref="HypermediaObjectKeyBase{THto}"/> can be passed to a <see cref="LinkGenerator"/> as the values parameter and will be used to initialize a <see cref="RouteValueDictionary"/>
 /// </summary>
 /// <typeparam name="THto">The <see cref="HypermediaObject"/> that this key record describes.</typeparam>
-public abstract record HypermediaObjectKeyBase<THto>() : IEnumerable<KeyValuePair<string, object?>> where THto : HypermediaObject
+public abstract record HypermediaObjectKeyBase<THto>() : IEnumerable<KeyValuePair<string, object?>> where THto : IHypermediaObject
 {
     IEnumerator<KeyValuePair<string, object?>> IEnumerable<KeyValuePair<string, object?>>.GetEnumerator()
         => EnumerateKeysForLinkGeneration().GetEnumerator();

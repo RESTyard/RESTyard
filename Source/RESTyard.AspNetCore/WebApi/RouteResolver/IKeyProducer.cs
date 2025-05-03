@@ -17,7 +17,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
         /// </summary>
         /// <param name="hypermediaObject"></param>
         /// <returns></returns>
-        object CreateFromHypermediaObject(HypermediaObject hypermediaObject);
+        object CreateFromHypermediaObject(IHypermediaObject hypermediaObject);
 
         /// <summary>
         /// Must generate a anonymous object which is passed to an UrlHelper which generates a Route for a HypermediaObject.

@@ -14,8 +14,13 @@
         }
         else
         {
-            parentArgumentsString = $"hasSelfLink: {Document.hasSelfLink.ToString().ToLower()}";
+            parentArgumentsString = "";
         }
+    }
+
+    if (!string.IsNullOrEmpty(parentArgumentsString))
+    {
+        parentArgumentsString = $" : base({parentArgumentsString})";
     }
 
     var links = Document.Links.Select(link =>
@@ -90,8 +95,7 @@
     });
 }
 
-public @typeName (@allArgumentsString)
-    : base(@parentArgumentsString)
+public @typeName (@allArgumentsString)@parentArgumentsString
 {
     @foreach (var property in Document.Properties)
     {
@@ -101,20 +105,28 @@ public @typeName (@allArgumentsString)
     {
         @:this.@operation.name = @Uncapitalize(@operation.name);
     }
+    this.EmbeddedEntities =
+    [
     @foreach (var entity in Document.Entities)
     {
-        @:this.Entities.AddRange("@entity.collectionName", @Uncapitalize(@entity.collectionName));
+        @:..@Uncapitalize(@entity.collectionName)@(".")Select(x => new EmbeddedEntity("@entity.collectionName", new HypermediaObjectReference(x))),
     }
+    ];
+    this.Links = [];
     @foreach (var (isMandatory, match, rel, value) in links)
     {
         if (isMandatory)
         {
-            @:this.Links.Add("@rel", @value);
+            @:this.Links.Add(new Link("@rel", @value));
         }
         else
         {
-            @:@match@(".")Match(some => this.Links.Add("@rel", @value));
+            @:@match@(".")Match(some => this.Links.Add(new Link("@rel", @value)));
         }
+    }
+    @if (Document.hasSelfLink)
+    {
+        @:this.Self = new Link(DefaultHypermediaRelations.Self, new HypermediaObjectReference(this));
     }
 }
 

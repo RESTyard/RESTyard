@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using NJsonSchema;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.JsonSchema;
 using RESTyard.AspNetCore.Test.Helpers;
 using RESTyard.AspNetCore.Test.Hypermedia;
@@ -49,7 +50,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
             // ReSharper restore UnusedMember.Local
         }
 
-        class MyHypermediaObject : HypermediaObject
+        class MyHypermediaObject : IHypermediaObject
         {
         }
     }
@@ -99,7 +100,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
             // ReSharper restore UnusedMember.Local
         }
 
-        class MyHypermediaObject : HypermediaObject
+        class MyHypermediaObject : IHypermediaObject
         {
         }
     }
@@ -174,7 +175,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
             // ReSharper restore UnusedAutoPropertyAccessor.Local
         }
 
-        class MyHypermediaObject : HypermediaObject
+        class MyHypermediaObject : IHypermediaObject
         {
         }
     }
@@ -252,7 +253,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
             // ReSharper restore UnusedAutoPropertyAccessor.Local
         }
 
-        class MyHypermediaObject : HypermediaObject
+        class MyHypermediaObject : IHypermediaObject
         {
         }
     }
@@ -275,7 +276,8 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
             getHmoMethods.Select(s => s.RouteTemplate).Should().BeEquivalentTo("Route/To/Hmo1/{key}", "Route/To/Hmo2/{key}");
         }
 
-        public abstract class BaseHmo : HypermediaObject
+        [HypermediaObject(Classes = ["BaseHmo"])]
+        public abstract class BaseHmo : IHypermediaObject
         {
             [AspNetCore.WebApi.RouteResolver.Key]
             public string Key { get; }
@@ -286,6 +288,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
             }
         }
 
+        [HypermediaObject(Classes = ["DerivedHmo1"])]
         public class DerivedHmo1 : BaseHmo
         {
             public DerivedHmo1(string key) : base(key)
@@ -293,6 +296,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
             }
         }
 
+        [HypermediaObject(Classes = ["DerivedHmo2"])]
         public class DerivedHmo2 : BaseHmo
         {
             public DerivedHmo2(string key) : base(key)

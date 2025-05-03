@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.Util;
@@ -33,14 +34,14 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             var ho = new NoSelfLinkHypermediaObject();
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(NoSelfLinkHypermediaObject));
+            AssertClassName(siren, nameof(NoSelfLinkHypermediaObject));
             AssertEmptyProperties(siren);
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
 
             Assert.IsTrue(siren["links"].Type == JTokenType.Array);
             var linksArray = (JArray)siren["links"];
-            Assert.AreEqual(linksArray.Count, ho.Links.Count);
+            Assert.AreEqual(linksArray.Count, 0);
         }
 
         [TestMethod]
@@ -60,20 +61,20 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             var link2Rel = "Link2";
 
             var ho = new LinkingHypermediaObject();
-            ho.Links.Add(link1Rel, new HypermediaObjectReference(hoLink1));
-            ho.Links.Add(link2Rel, new HypermediaObjectReference(hoLink2));
+            ho.Links.Add(new(link1Rel, new HypermediaObjectReference(hoLink1)));
+            ho.Links.Add(new(link2Rel, new HypermediaObjectReference(hoLink2)));
 
 
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(LinkingHypermediaObject));
+            AssertClassName(siren, nameof(LinkingHypermediaObject));
             AssertEmptyProperties(siren);
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
 
             Assert.IsTrue(siren["links"].Type == JTokenType.Array);
             var linksArray = (JArray)siren["links"];
-            Assert.AreEqual(linksArray.Count, ho.Links.Count);
+            Assert.AreEqual(linksArray.Count, 3);
 
             AssertHasLink(linksArray, DefaultHypermediaRelations.Self, routeNameLinking);
             AssertHasLink(linksArray, link1Rel, routeNameLinked1);
@@ -93,18 +94,18 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             RouteRegister.AddRouteKeyProducer(typeof(LinkedHypermediaObjectWithKey), new LinkedHypermediaObjectWithKeyRouteKeyProvider());
 
             var ho = new LinkingHypermediaObject();
-            ho.Links.Add(link1Rel, new HypermediaObjectReference(hoLink1));
+            ho.Links.Add(new(link1Rel, new HypermediaObjectReference(hoLink1)));
 
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(LinkingHypermediaObject));
+            AssertClassName(siren, nameof(LinkingHypermediaObject));
             AssertEmptyProperties(siren);
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
 
             Assert.IsTrue(siren["links"].Type == JTokenType.Array);
             var linksArray = (JArray)siren["links"];
-            Assert.AreEqual(linksArray.Count, ho.Links.Count);
+            Assert.AreEqual(linksArray.Count, 2);
 
             AssertHasLink(linksArray, DefaultHypermediaRelations.Self, routeNameLinking);
             AssertHasLinkWithKey(linksArray, link1Rel, routeNameLinked1, "{ key = 42 }");
@@ -126,19 +127,19 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             var hoLink2 = new Linked2HypermediaObject();
 
             var ho = new LinkingHypermediaObject();
-            ho.Links.Add(duplicateRel, new HypermediaObjectReference(hoLink1));
-            ho.Links.Add(duplicateRel, new HypermediaObjectReference(hoLink2));
+            ho.Links.Add(new(duplicateRel, new HypermediaObjectReference(hoLink1)));
+            ho.Links.Add(new(duplicateRel, new HypermediaObjectReference(hoLink2)));
 
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(LinkingHypermediaObject));
+            AssertClassName(siren, nameof(LinkingHypermediaObject));
             AssertEmptyProperties(siren);
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
 
             Assert.IsTrue(siren["links"].Type == JTokenType.Array);
             var linksArray = (JArray)siren["links"];
-            Assert.AreEqual(linksArray.Count, ho.Links.Count);
+            Assert.AreEqual(linksArray.Count, 2);
 
             AssertHasLink(linksArray, duplicateRel, routeNameLinked2);
         }
@@ -155,18 +156,18 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             var multiRel = new List<string> {"RelA", "RelB"};
 
             var ho = new LinkingHypermediaObject();
-            ho.Links.Add(multiRel, new HypermediaObjectReference(hoLink1));
+            ho.Links.Add(new(multiRel, new HypermediaObjectReference(hoLink1)));
 
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(LinkingHypermediaObject));
+            AssertClassName(siren, nameof(LinkingHypermediaObject));
             AssertEmptyProperties(siren);
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
 
             Assert.IsTrue(siren["links"].Type == JTokenType.Array);
             var linksArray = (JArray)siren["links"];
-            Assert.AreEqual(linksArray.Count, ho.Links.Count);
+            Assert.AreEqual(linksArray.Count, 2);
 
             AssertHasLink(linksArray, multiRel, routeNameLinked1);
         }
@@ -188,19 +189,19 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             var link2Rel = "Link2";
 
             var ho = new LinkingHypermediaObject();
-            ho.Links.Add(link1Rel, new HypermediaObjectKeyReference(typeof(Linked1HypermediaObject), 5));
-            ho.Links.Add(link2Rel, new HypermediaObjectKeyReference(typeof(Linked2HypermediaObject), "AStringkey"));
+            ho.Links.Add(new(link1Rel, new HypermediaObjectKeyReference(typeof(Linked1HypermediaObject), 5)));
+            ho.Links.Add(new(link2Rel, new HypermediaObjectKeyReference(typeof(Linked2HypermediaObject), "AStringkey")));
 
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(LinkingHypermediaObject));
+            AssertClassName(siren, nameof(LinkingHypermediaObject));
             AssertEmptyProperties(siren);
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
 
             Assert.IsTrue(siren["links"].Type == JTokenType.Array);
             var linksArray = (JArray)siren["links"];
-            Assert.AreEqual(linksArray.Count, ho.Links.Count);
+            Assert.AreEqual(linksArray.Count, 3);
 
             AssertHasLink(linksArray, DefaultHypermediaRelations.Self, routeNameLinking);
             AssertHasLinkWithKey(linksArray, link1Rel, routeNameLinked1, "{ key = 5 }");
@@ -226,19 +227,19 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             var queryObject2 = new QueryObject { ABool = false, AInt = 5 };
 
             var ho = new LinkingHypermediaObject();
-            ho.Links.Add(link1Rel, new HypermediaObjectQueryReference(typeof(Linked1HypermediaObject), queryObject1));
-            ho.Links.Add(link2Rel, new HypermediaObjectQueryReference(typeof(LinkedHypermediaObjectWithKey), queryObject2, 3));
+            ho.Links.Add(new(link1Rel, new HypermediaObjectQueryReference(typeof(Linked1HypermediaObject), queryObject1)));
+            ho.Links.Add(new(link2Rel, new HypermediaObjectQueryReference(typeof(LinkedHypermediaObjectWithKey), queryObject2, 3)));
 
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(LinkingHypermediaObject));
+            AssertClassName(siren, nameof(LinkingHypermediaObject));
             AssertEmptyProperties(siren);
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
 
             Assert.IsTrue(siren["links"].Type == JTokenType.Array);
             var linksArray = (JArray)siren["links"];
-            Assert.AreEqual(linksArray.Count, ho.Links.Count);
+            Assert.AreEqual(linksArray.Count, 3);
 
             AssertHasLink(linksArray, DefaultHypermediaRelations.Self, routeNameLinking);
             AssertHasLinkWithQuery(linksArray, link1Rel, routeNameLinked1, QueryStringBuilder.CreateQueryString(queryObject1));
@@ -271,14 +272,14 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
                 new List<string>()
             };
             
-            ho.Links.Add(rels[0], new ExternalReference(new Uri(externalUri)));
-            ho.Links.Add(rels[1], new ExternalReference(new Uri(externalUri)).WithAvailableMediaType(availableMediaType1));
-            ho.Links.Add(rels[2], new ExternalReference(new Uri(externalUri)).WithAvailableMediaTypes(availableMediaTypes2));
-            ho.Links.Add(rels[3], new ExternalReference(new Uri(externalUri)).WithAvailableMediaTypes(Array.Empty<string>()));
+            ho.Links.Add(new(rels[0], new HypermediaObjectReference(new ExternalReference(new Uri(externalUri)))));
+            ho.Links.Add(new(rels[1], new HypermediaObjectReference(new ExternalReference(new Uri(externalUri)).WithAvailableMediaType(availableMediaType1))));
+            ho.Links.Add(new(rels[2], new HypermediaObjectReference(new ExternalReference(new Uri(externalUri)).WithAvailableMediaTypes(availableMediaTypes2))));
+            ho.Links.Add(new(rels[3], new HypermediaObjectReference(new ExternalReference(new Uri(externalUri)).WithAvailableMediaTypes(Array.Empty<string>()))));
 
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(ExternalUsingHypermediaObject));
+            AssertClassName(siren, nameof(ExternalUsingHypermediaObject));
             AssertEmptyProperties(siren);
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
@@ -348,14 +349,14 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             };
 
             var routeName = "ARouteName";
-            ho.Links.Add(rels[0], new InternalReference(routeName));
-            ho.Links.Add(rels[1], new InternalReference(routeName).WithAvailableMediaType(availableMediaType1));
-            ho.Links.Add(rels[2], new InternalReference(routeName).WithAvailableMediaTypes(availableMediaTypes2));
-            ho.Links.Add(rels[3], new InternalReference(routeName).WithAvailableMediaTypes( Array.Empty<string>()));
+            ho.Links.Add(new(rels[0], new HypermediaObjectReference(new InternalReference(routeName))));
+            ho.Links.Add(new(rels[1], new HypermediaObjectReference(new InternalReference(routeName).WithAvailableMediaType(availableMediaType1))));
+            ho.Links.Add(new(rels[2], new HypermediaObjectReference(new InternalReference(routeName).WithAvailableMediaTypes(availableMediaTypes2))));
+            ho.Links.Add(new(rels[3], new HypermediaObjectReference(new InternalReference(routeName).WithAvailableMediaTypes( Array.Empty<string>()))));
 
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(InternalUsingHypermediaObject));
+            AssertClassName(siren, nameof(InternalUsingHypermediaObject));
             AssertEmptyProperties(siren);
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
@@ -391,7 +392,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
     public class Linked1HypermediaObjectRouteKeyProducer : IKeyProducer
     {
-        public object CreateFromHypermediaObject(HypermediaObject hypermediaObject)
+        public object CreateFromHypermediaObject(IHypermediaObject hypermediaObject)
         {
             throw new NotImplementedException();
         }
@@ -404,7 +405,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
     public class Linked2HypermediaObjectRouteKeyProducer : IKeyProducer
     {
-        public object CreateFromHypermediaObject(HypermediaObject hypermediaObject)
+        public object CreateFromHypermediaObject(IHypermediaObject hypermediaObject)
         {
             throw new NotImplementedException();
         }
@@ -415,46 +416,53 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         }
     }
 
-    public class NoSelfLinkHypermediaObject : HypermediaObject
+    [HypermediaObject(Classes = [nameof(NoSelfLinkHypermediaObject)])]
+    public class NoSelfLinkHypermediaObject : IHypermediaObject
     {
-        public NoSelfLinkHypermediaObject() :base(false)
+        public NoSelfLinkHypermediaObject()
         {
         }
     }
 
-    public class LinkingHypermediaObject : HypermediaObject
+    [HypermediaObject(Classes = [nameof(LinkingHypermediaObject)])]
+    public class LinkingHypermediaObject : IHypermediaObject
     {
+        public List<Link> Links { get; } = [];
+
+        public Link Self => new Link(DefaultHypermediaRelations.Self,
+            new HypermediaObjectKeyReference(typeof(LinkingHypermediaObject)));
     }
 
-    public class ExternalUsingHypermediaObject : HypermediaObject
+    [HypermediaObject(Classes = [nameof(ExternalUsingHypermediaObject)])]
+    public class ExternalUsingHypermediaObject : IHypermediaObject
     {
-        public ExternalUsingHypermediaObject() : base(false)
-        {
-        }
+        public List<Link> Links { get; } = [];
     }
     
-    public class InternalUsingHypermediaObject : HypermediaObject
+    [HypermediaObject(Classes = [nameof(InternalUsingHypermediaObject)])]
+    public class InternalUsingHypermediaObject : IHypermediaObject
     {
-        public InternalUsingHypermediaObject() : base(false)
-        {
-        }
+        public List<Link> Links { get; } = [];
     }
 
-    public class Linked1HypermediaObject : HypermediaObject
-    {
-    }
-
-    public class Linked2HypermediaObject : HypermediaObject
+    [HypermediaObject(Classes = [nameof(Linked1HypermediaObject)])]
+    public class Linked1HypermediaObject : IHypermediaObject
     {
     }
 
-    public class Linked3HypermediaObject : HypermediaObject
+    [HypermediaObject(Classes = [nameof(Linked2HypermediaObject)])]
+    public class Linked2HypermediaObject : IHypermediaObject
+    {
+    }
+
+    [HypermediaObject(Classes = [nameof(Linked3HypermediaObject)])]
+    public class Linked3HypermediaObject : IHypermediaObject
     {
     }
 
     public class LinkedHypermediaObjectWithKeyRouteKeyProvider : IKeyProducer
     {
-        public object CreateFromHypermediaObject(HypermediaObject hypermediaObject)
+        public object CreateFromHypermediaObject(IHypermediaObject hypermediaObject)
         {
             var ho = (LinkedHypermediaObjectWithKey) hypermediaObject;
             return new {key = ho.Id};
@@ -466,7 +474,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
        }
     }
 
-    public class LinkedHypermediaObjectWithKey : HypermediaObject
+    [HypermediaObject(Classes = [nameof(LinkedHypermediaObjectWithKey)])]
+    public class LinkedHypermediaObjectWithKey : IHypermediaObject
     {
         public  int Id { get; set; }
     }

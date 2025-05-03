@@ -7,7 +7,7 @@ namespace RESTyard.AspNetCore.Hypermedia
     /// <summary>
     /// A Entity which is related to a HypermediaObject.
     /// </summary>
-    public class RelatedEntity
+    public abstract class RelatedEntity
     {
         /// <summary>
         /// Describes the relations that the related entity has to the embedding entity.
@@ -25,7 +25,7 @@ namespace RESTyard.AspNetCore.Hypermedia
         /// </summary>
         /// <param name="relations">List of relations as string, should at least contain one relation.</param>
         /// <param name="reference">Reference to the related Entity.</param>
-        public RelatedEntity(IReadOnlyCollection<string> relations, HypermediaObjectReferenceBase reference)
+        protected RelatedEntity(IReadOnlyCollection<string> relations, HypermediaObjectReferenceBase reference)
         {
             Relations = new List<string>(relations);
             Reference = reference;
@@ -36,10 +36,32 @@ namespace RESTyard.AspNetCore.Hypermedia
         /// </summary>
         /// <param name="relation">Relation string.</param>
         /// <param name="reference">Reference to the related Entity.</param>
-        public RelatedEntity(string relation, HypermediaObjectReferenceBase reference)
+        protected RelatedEntity(string relation, HypermediaObjectReferenceBase reference)
         {
             Relations = new List<string>{relation};
             Reference = reference;
+        }
+    }
+
+    public class Link : RelatedEntity
+    {
+        public Link(IReadOnlyCollection<string> relations, HypermediaObjectReferenceBase reference) : base(relations, reference)
+        {
+        }
+
+        public Link(string relation, HypermediaObjectReferenceBase reference) : base(relation, reference)
+        {
+        }
+    }
+
+    public class EmbeddedEntity : RelatedEntity
+    {
+        public EmbeddedEntity(IReadOnlyCollection<string> relations, HypermediaObjectReferenceBase reference) : base(relations, reference)
+        {
+        }
+
+        public EmbeddedEntity(string relation, HypermediaObjectReferenceBase reference) : base(relation, reference)
+        {
         }
     }
 }

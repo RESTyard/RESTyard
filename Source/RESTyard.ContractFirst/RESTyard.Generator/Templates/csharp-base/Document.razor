@@ -2,7 +2,7 @@
 
 @{
     var typeName = $"{DocumentType.name}Hto";
-    var baseType = string.IsNullOrEmpty(DocumentType.parentDocument) ? (DocumentType.isQueryResult ? "HypermediaQueryResult" : "HypermediaObject") : DocumentType.parentDocument + "Hto";
+    var baseType = string.IsNullOrEmpty(DocumentType.parentDocument) ? (DocumentType.isQueryResult ? "HypermediaQueryResult" : "IHypermediaObject") : DocumentType.parentDocument + "Hto";
     var classes = string.Join(", ", DocumentType.Classifications.Select(c => $"\"{c.@class}\""));
     CheckProperties(DocumentType.name, DocumentType.Properties);
 }
@@ -12,6 +12,12 @@
     @foreach (var property in DocumentType.Properties)
     {
         <Property Schema="@Schema" PropertyType="@property"/>
+    }
+    <PropertyStatement TypeName="IList<Link>" PropertyName="Links" />
+    <PropertyStatement TypeName="IList<EmbeddedEntity>" PropertyName="EmbeddedEntities" />
+    @if (DocumentType.hasSelfLink)
+    {
+        <PropertyStatement TypeName="Link" PropertyName="Self" />
     }
     <OperationProperties Schema="@Schema" List="@DocumentType.Operations"/>
     <Constructor Schema="@Schema" Document="@DocumentType"/>

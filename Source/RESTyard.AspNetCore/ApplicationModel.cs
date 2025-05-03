@@ -5,8 +5,8 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using RESTyard.AspNetCore.Extensions;
-using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.Util;
 using RESTyard.AspNetCore.Util.Extensions;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
@@ -40,7 +40,7 @@ namespace RESTyard.AspNetCore
 
             var hmoTypes = implementingAssemblies
                 .SelectMany(a => a?.GetTypes()
-                    .Where(t => typeof(HypermediaObject).GetTypeInfo().IsAssignableFrom(t))
+                    .Where(AttributedRouteHelper.Has<HypermediaObjectAttribute>)
                     .Select(t => new HmoType(t, FindGetMethods(controllerTypes, t)))
                         ?? Enumerable.Empty<HmoType>()
                 ).ToImmutableDictionary(_ => _.Type);

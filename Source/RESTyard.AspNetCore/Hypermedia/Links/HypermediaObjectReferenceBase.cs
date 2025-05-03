@@ -1,7 +1,9 @@
 using System;
 using System.Reflection;
 using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.Query;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace RESTyard.AspNetCore.Hypermedia.Links
@@ -12,11 +14,11 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
 
         protected HypermediaObjectReferenceBase(Type hypermediaObjectType)
         {
-            if (!typeof(HypermediaObject).GetTypeInfo().IsAssignableFrom(hypermediaObjectType))
+            if (!AttributedRouteHelper.Has<HypermediaObjectAttribute>(hypermediaObjectType))
             {
-                throw new HypermediaException($"Type does not derive from {typeof(HypermediaObject)}.");
+                throw new HypermediaException($"Type does not have {typeof(HypermediaObjectAttribute)}.");
             }
-
+            
             this.HypermediaObjectType = hypermediaObjectType;
         }
 
@@ -29,7 +31,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
         /// Derived classes may choose to return the actual referenced <see cref="HypermediaObject"/>
         /// </summary>
         /// <returns></returns>
-        public abstract HypermediaObject? GetInstance();
+        public abstract IHypermediaObject? GetInstance();
 
         /// <summary>
         ///  Indicates if this reference is backed by a instance.

@@ -4,7 +4,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing.Template;
 using RESTyard.AspNetCore.Exceptions;
-using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
@@ -56,7 +56,7 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
 
         private static (string Name, Type RouteType, Type? RouteKeyProducerType) Init(Type routeType, Type? routeKeyProducerType)
         {
-            AttributedRouteHelper.EnsureIs<HypermediaObject>(routeType);
+            AttributedRouteHelper.EnsureHas<HypermediaObjectAttribute>(routeType);
             AttributedRouteHelper.EnsureIsRouteKeyProducer(routeKeyProducerType);
             var name = AttributedRouteHelper.EscapeRouteName("GenericRouteName_HypermediaObject_" + routeType);
             return (name, routeType, routeKeyProducerType);
