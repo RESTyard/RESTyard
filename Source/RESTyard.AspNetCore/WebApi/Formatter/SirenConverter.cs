@@ -78,6 +78,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             SirenAddEntities(hypermediaObject, sirenJson);
             AddActions(hypermediaObject, sirenJson);
             AddLinks(hypermediaObject, sirenJson);
+            AssertNoBaseRelatedEntities(hypermediaObject);
 
             return sirenJson;
         }
@@ -325,12 +326,12 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             var embeddedEntities = GetAllEntities<EmbeddedEntity>(hypermediaObject);
             var jEntities = new JArray();
 
-            foreach (var embeddedEntity in embeddedEntities)
+            foreach (var (embeddedEntity, relations) in embeddedEntities)
             {
                 if (embeddedEntity.Reference.IsResolved())
                 {
                     var entitySiren = CreateSirenInternal(embeddedEntity.Reference.GetInstance()!, true,
-                        embeddedEntity.Relations);
+                        relations);
                     jEntities.Add(entitySiren);
                 }
                 else
@@ -356,7 +357,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                         }
                     }
 
-                    AddEmbeddedEntityRelations(jLink, embeddedEntity.Relations);
+                    AddEmbeddedEntityRelations(jLink, relations);
                     jLink.Add("href", resolvedAddress);
                     jEntities.Add(jLink);
                 }
@@ -369,9 +370,9 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
         {
             var hypermediaLinks = GetAllEntities<Link>(hypermediaObject);
             var dictionary = new Dictionary<IReadOnlyCollection<string>, HypermediaObjectReferenceBase>(new StringReadOnlyCollectionComparer());
-            foreach (var link in hypermediaLinks)
+            foreach (var (link, rel) in hypermediaLinks)
             {
-                dictionary[link.Relations] = link.Reference;
+                dictionary[rel] = link.Reference;
             }
             var jLinks = new JArray();
 
@@ -398,7 +399,22 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             sirenJson.Add("links", jLinks);
         }
 
-        private IEnumerable<TRelatedEntity> GetAllEntities<TRelatedEntity>(IHypermediaObject hypermediaObject)
+        private void AssertNoBaseRelatedEntities(IHypermediaObject hypermediaObject)
+        {
+            var nonSpecificProperties = hypermediaObject.GetType()
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .Where(IsRelatedEntityProperty<RelatedEntity>)
+                .Where(p => !IsRelatedEntityProperty<Link>(p))
+                .Where(p => !IsRelatedEntityProperty<EmbeddedEntity>(p))
+                .ToList();
+            if (nonSpecificProperties.Count > 0)
+            {
+                throw new HypermediaException(
+                    $"Properties {string.Join(", ", nonSpecificProperties.Select(p => p.Name))} of type {hypermediaObject.GetType().BeautifulName()} are neither {nameof(Link)} not {nameof(EmbeddedEntity)}");
+            }
+        }
+
+        private IEnumerable<(TRelatedEntity Entity, string[] Rel)> GetAllEntities<TRelatedEntity>(IHypermediaObject hypermediaObject)
             where TRelatedEntity : RelatedEntity
         {
             var type = hypermediaObject.GetType();
@@ -408,6 +424,12 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 .Where(IsRelatedEntityProperty<TRelatedEntity>)
                 .SelectMany(property =>
                 {
+                    var attribute = property.GetCustomAttribute<RelationsAttribute>();
+                    if (attribute is null)
+                    {
+                        throw new HypermediaException(
+                            $"missing {nameof(RelationsAttribute)} on property {property.Name} of type {hypermediaObject.GetType().BeautifulName()}");
+                    }
                     var result = property.GetMethod!.Invoke(hypermediaObject, []);
                     if (result is null)
                     {
@@ -416,12 +438,12 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                     if (AttributedRouteHelper.Is<TRelatedEntity>(property.PropertyType))
                     {
                         var singleEntity = (TRelatedEntity)result;
-                        return [singleEntity];
+                        return [(singleEntity, attribute.Rel)];
                     }
                     else if (AttributedRouteHelper.Is<IEnumerable<TRelatedEntity>>(property.PropertyType))
                     {
                         var multiple = (IEnumerable<TRelatedEntity>)result;
-                        return multiple;
+                        return multiple.Select(m => (m, attribute.Rel));
                     }
                     else
                     {

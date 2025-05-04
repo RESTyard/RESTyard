@@ -105,28 +105,24 @@ public @typeName (@allArgumentsString)@parentArgumentsString
     {
         @:this.@operation.name = @Uncapitalize(@operation.name);
     }
-    this.EmbeddedEntities =
-    [
     @foreach (var entity in Document.Entities)
     {
-        @:..@Uncapitalize(@entity.collectionName)@(".")Select(x => new EmbeddedEntity("@entity.collectionName", new HypermediaObjectReference(x))),
+        @:this.@Capitalize(entity.collectionName) = @Uncapitalize(@entity.collectionName)@(".")Select(x => new EmbeddedEntity(new HypermediaObjectReference(x))).ToList();
     }
-    ];
-    this.Links = [];
-    @foreach (var (isMandatory, match, rel, value) in links)
+    @foreach (var (isMandatory, match, rel,value) in links)
     {
         if (isMandatory)
         {
-            @:this.Links.Add(new Link("@rel", @value));
+            @:this.@(Capitalize(rel)) = new Link(@value);
         }
         else
         {
-            @:@match@(".")Match(some => this.Links.Add(new Link("@rel", @value)));
+            @:this.@(Capitalize(rel)) = @match@(".")Map(some => new Link(@value)).GetValueOrDefault();
         }
     }
     @if (Document.hasSelfLink)
     {
-        @:this.Self = new Link(DefaultHypermediaRelations.Self, new HypermediaObjectReference(this));
+        @:this.Self = new Link(new HypermediaObjectReference(this));
     }
 }
 

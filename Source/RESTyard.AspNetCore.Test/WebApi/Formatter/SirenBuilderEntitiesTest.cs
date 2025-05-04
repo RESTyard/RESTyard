@@ -40,11 +40,11 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             var ho = new EmptyHypermediaObject();
             var relation1 = "Embedded";
             var embeddedHo1 = new EmbeddedSubEntity();
-            ho.Entities.Add(new(relation1, new HypermediaObjectReference(embeddedHo1)));
+            ho.Embedded.Add(new(new HypermediaObjectReference(embeddedHo1)));
 
             var relationsList2 = new List<string> { "RelationA", "RelationB" };
             var embeddedHo2 = new EmbeddedSubEntity {ABool = true, AInt = 3};
-            ho.Entities.Add(new(relationsList2, new HypermediaObjectReference(embeddedHo2)));
+            ho.Multiple.Add(new(new HypermediaObjectReference(embeddedHo2)));
 
             var siren = SirenConverter.ConvertToJson(ho);
 
@@ -55,7 +55,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
             Assert.IsTrue(siren["entities"].Type == JTokenType.Array);
             var entitiesArray = (JArray)siren["entities"];
-            Assert.AreEqual(entitiesArray.Count, ho.Entities.Count);
+            Assert.AreEqual(entitiesArray.Count, 2);
 
             var embeddedEntityObject = (JObject)siren["entities"][0];
             AssertClassName(embeddedEntityObject, nameof(EmbeddedSubEntity));
@@ -83,11 +83,11 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             var ho = new EmptyHypermediaObject();
 
             var relation1 = "Embedded";
-            ho.Entities.Add(new(relation1, new HypermediaObjectKeyReference(typeof(EmbeddedSubEntity), 6)));
+            ho.Embedded.Add(new(new HypermediaObjectKeyReference(typeof(EmbeddedSubEntity), 6)));
 
             var relationsList2 = new List<string> { "RelationA", "RelationB" };
             var query = new EmbeddedQueryObject {AInt = 2};
-            ho.Entities.Add(new(relationsList2, new HypermediaObjectQueryReference(typeof(EmbeddedSubEntity), query, 3)));
+            ho.Multiple.Add(new(new HypermediaObjectQueryReference(typeof(EmbeddedSubEntity), query, 3)));
 
             var siren = SirenConverter.ConvertToJson(ho);
 
@@ -98,7 +98,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
             Assert.IsTrue(siren["entities"].Type == JTokenType.Array);
             var entitiesArray = (JArray)siren["entities"];
-            Assert.AreEqual(entitiesArray.Count, ho.Entities.Count);
+            Assert.AreEqual(entitiesArray.Count, 2);
 
             var embeddedEntityObject = (JObject)siren["entities"][0];
             AssertRelations(embeddedEntityObject, new List<string> { relation1 });
@@ -136,8 +136,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             public bool ABool { get; set; }
             public int AInt { get; set; }
 
-            public Link Self => new Link(DefaultHypermediaRelations.Self,
-                new HypermediaObjectKeyReference(typeof(EmbeddedSubEntity)));
+            [Relations([DefaultHypermediaRelations.Self])]
+            public Link Self => new Link(new HypermediaObjectKeyReference(typeof(EmbeddedSubEntity)));
         }
 
         public class EmbeddedQueryObject : IHypermediaQuery

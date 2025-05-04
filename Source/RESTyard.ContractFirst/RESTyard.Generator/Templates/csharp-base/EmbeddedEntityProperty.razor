@@ -1,0 +1,12 @@
+﻿@inherits RazorTemplateBase
+
+@{
+    var entityType = $"List<EmbeddedEntity>";
+}
+
+<Attribute>Relations(["@EntityType.collectionName"])</Attribute>
+<PropertyStatement TypeName="@entityType" PropertyName="@Capitalize(EntityType.collectionName)" />
+
+@code {
+    [Parameter] public EntityType EntityType { get; set; } = null!;
+}

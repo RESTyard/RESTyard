@@ -21,11 +21,10 @@ namespace RESTyard.AspNetCore.Hypermedia
         protected HypermediaQueryResult(IHypermediaQuery query)
         {
             Query = query;
-            Self = new Link(
-                [DefaultHypermediaRelations.Self],
-                new HypermediaObjectQueryReference(GetType(), query));
+            Self = new Link(new HypermediaObjectQueryReference(GetType(), query));
         }
         
+        [Relations([DefaultHypermediaRelations.Self])]
         public Link Self { get; }
     }
 }

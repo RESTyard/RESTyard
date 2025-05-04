@@ -57,11 +57,6 @@ namespace CarShack.Controllers.Customers
                 queries.last.Map(IHypermediaQuery (some) => some),
                 queries.all.Map(IHypermediaQuery (some) => some),
                 query);
-            var navigationQueries = NavigationQuerysBuilder.Build(query, queryResult);
-            foreach (var link in navigationQueries.ToLinks<HypermediaCustomerQueryResultHto>())
-            {
-                result.Links.Add(link);
-            }
            
             return Ok(result);
         }

@@ -1,0 +1,12 @@
+﻿@inherits RazorTemplateBase
+
+@{
+    var linkType = MapNullableType(!LinkType.mandatory, $"Link");
+}
+
+<Attribute>Relations(["@LinkType.rel"])</Attribute>
+<PropertyStatement TypeName="@linkType" PropertyName="@Capitalize(LinkType.rel)" />
+
+@code {
+    [Parameter] public LinkType LinkType { get; set; } = null!;
+}

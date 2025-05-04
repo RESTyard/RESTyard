@@ -11,7 +11,11 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
     [HypermediaObject(Classes = [nameof(EmptyHypermediaObject)])]
     public class EmptyHypermediaObject : IHypermediaObject
     {
-        public List<EmbeddedEntity> Entities { get; } = [];
+        [Relations(["Embedded"])]
+        public List<EmbeddedEntity> Embedded { get; } = [];
+        
+        [Relations(["RelationA", "RelationB"])]
+        public List<EmbeddedEntity> Multiple { get; } = [];
     }
 
     [HypermediaObject(Title = "A Title", Classes = ["CustomClass1", "CustomClass2"])]
