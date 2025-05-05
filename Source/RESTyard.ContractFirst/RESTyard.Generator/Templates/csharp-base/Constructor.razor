@@ -117,7 +117,7 @@ public @typeName (@allArgumentsString)@parentArgumentsString
     @foreach (var entity in Document.Entities)
     {
         var hto = $"<{entity.document}Hto>";
-        @:this.@Capitalize(entity.collectionName) = @Uncapitalize(@entity.collectionName)@(".")Select(x => new EmbeddedEntity@(hto)(new HypermediaObjectReference(x))).ToList();
+        @:this.@Capitalize(entity.collectionName) = @Uncapitalize(@entity.collectionName)@(".")Select(x => EmbeddedEntity.Embed@(hto)(x)).ToList();
     }
     @foreach (var (isMandatory, match, rel, hto, value) in links)
     {

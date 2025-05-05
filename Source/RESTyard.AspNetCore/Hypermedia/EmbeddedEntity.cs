@@ -4,12 +4,14 @@ namespace RESTyard.AspNetCore.Hypermedia;
 
 public interface IEmbeddedEntity : IRelatedEntity;
 
+public interface IEmbeddedEntity<out THto> : IEmbeddedEntity;
+
 public static class EmbeddedEntity
 {
-    public static EmbeddedEntity<THto> Embed<THto>(THto hto) where THto : IHypermediaObject
+    public static IEmbeddedEntity<THto> Embed<THto>(THto hto) where THto : IHypermediaObject
         => new EmbeddedEntity<THto>(new HypermediaObjectReference(hto));
 }
     
 public record EmbeddedEntity<THto>(HypermediaObjectReferenceBase Reference)
-    : IEmbeddedEntity
+    : IEmbeddedEntity<THto>
     where THto : IHypermediaObject;

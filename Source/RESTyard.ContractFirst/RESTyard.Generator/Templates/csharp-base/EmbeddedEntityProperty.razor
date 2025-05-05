@@ -2,7 +2,7 @@
 
 @{
     var documentType = $"<{EntityType.document}Hto>";
-    var entityType = $"List<EmbeddedEntity{documentType}>";
+    var entityType = $"List<IEmbeddedEntity{documentType}>";
 }
 
 <Attribute>Relations(["@EntityType.collectionName"])</Attribute>

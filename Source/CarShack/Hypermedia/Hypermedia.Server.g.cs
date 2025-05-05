@@ -183,7 +183,7 @@ public partial class DerivedCarHto : HypermediaCarHto
     public ILink<HypermediaCustomerHto>? DerivedLink { get; set; }
 
     [Relations(["item"])]
-    public List<EmbeddedEntity<HypermediaCustomerHto>> Item { get; set; }
+    public List<IEmbeddedEntity<HypermediaCustomerHto>> Item { get; set; }
 
     [Relations([DefaultHypermediaRelations.Self])]
     public new ILink<DerivedCarHto> Self { get; set; }
@@ -195,7 +195,7 @@ public partial class DerivedCarHto : HypermediaCarHto
     {
         this.DerivedProperty = derivedProperty;
         this.DerivedOperation = derivedOperation;
-        this.Item = item.Select(x => new EmbeddedEntity<HypermediaCustomerHto>(new HypermediaObjectReference(x))).ToList();
+        this.Item = item.Select(x => EmbeddedEntity.Embed<HypermediaCustomerHto>(x)).ToList();
         this.DerivedLink = derivedLinkKey.Map(some => Link.ByKey<HypermediaCustomerHto>(some)).GetValueOrDefault();
         this.Self = Link.To(this);
     }
@@ -387,7 +387,7 @@ public partial class HypermediaCustomerQueryResultHto : HypermediaQueryResult
     public ILink<HypermediaCustomerQueryResultHto>? All { get; set; }
 
     [Relations(["Customers"])]
-    public List<EmbeddedEntity<HypermediaCustomerHto>> Customers { get; set; }
+    public List<IEmbeddedEntity<HypermediaCustomerHto>> Customers { get; set; }
 
     [Relations([DefaultHypermediaRelations.Self])]
     public new ILink<HypermediaCustomerQueryResultHto> Self { get; set; }
@@ -396,7 +396,7 @@ public partial class HypermediaCustomerQueryResultHto : HypermediaQueryResult
     {
         this.TotalEntities = totalEntities;
         this.CurrentEntitiesCount = currentEntitiesCount;
-        this.Customers = customers.Select(x => new EmbeddedEntity<HypermediaCustomerHto>(new HypermediaObjectReference(x))).ToList();
+        this.Customers = customers.Select(x => EmbeddedEntity.Embed<HypermediaCustomerHto>(x)).ToList();
         this.Next = nextQuery.Map(some => Link.ByQuery<HypermediaCustomerQueryResultHto>(some)).GetValueOrDefault();
         this.Previous = previousQuery.Map(some => Link.ByQuery<HypermediaCustomerQueryResultHto>(some)).GetValueOrDefault();
         this.Last = lastQuery.Map(some => Link.ByQuery<HypermediaCustomerQueryResultHto>(some)).GetValueOrDefault();
