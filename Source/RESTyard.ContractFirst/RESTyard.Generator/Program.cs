@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 
 namespace RESTyard.Generator;
 
-internal static class Program
+public static class Program
 {
     public static Task<int> Main(string[] args) =>
         CreateCommandLine()
@@ -95,6 +95,7 @@ internal static class Program
 
     private static async Task RenderTemplate(
         HypermediaType schema,
+        string templatePath,
         TemplateInfo template,
         string outputPath,
         string? @namespace,
@@ -106,7 +107,15 @@ internal static class Program
             scribanTemplate: sbn => ScribanTemplate.Render(schema, sbn.FileInfo, @namespace, includeContent),
             razorTemplate: razor =>
                 RazorTemplate.Render(schema, razor.RazorType, @namespace, includeContent));
-        var formattedCode = await CodeFormatter.Format(code, outputPath);
+        string formattedCode;
+        if (templatePath.Contains("csharp"))
+        {
+            formattedCode = await CodeFormatter.Format(code, outputPath);
+        }
+        else
+        {
+            formattedCode = code;
+        }
 
         await File.WriteAllTextAsync(outputPath, formattedCode);
     }
@@ -133,7 +142,7 @@ internal static class Program
         }
 
         FilterTypes(schema, includeType.ToList(), excludeType.ToList());
-        await RenderTemplate(schema, templateFile, outputFile, @namespace, includeFile);
+        await RenderTemplate(schema, template, templateFile, outputFile, @namespace, includeFile);
         
         Console.WriteLine("Done.");
     }
