@@ -40,11 +40,11 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             var ho = new EmptyHypermediaObject();
             var relation1 = "Embedded";
             var embeddedHo1 = new EmbeddedSubEntity();
-            ho.Embedded.Add(new(new HypermediaObjectReference(embeddedHo1)));
+            ho.Embedded.Add(EmbeddedEntity.Embed(embeddedHo1));
 
             var relationsList2 = new List<string> { "RelationA", "RelationB" };
             var embeddedHo2 = new EmbeddedSubEntity {ABool = true, AInt = 3};
-            ho.Multiple.Add(new(new HypermediaObjectReference(embeddedHo2)));
+            ho.Multiple.Add(EmbeddedEntity.Embed(embeddedHo2));
 
             var siren = SirenConverter.ConvertToJson(ho);
 
@@ -83,11 +83,11 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             var ho = new EmptyHypermediaObject();
 
             var relation1 = "Embedded";
-            ho.Embedded.Add(new(new HypermediaObjectKeyReference(typeof(EmbeddedSubEntity), 6)));
+            ho.Embedded.Add(new EmbeddedEntity<EmbeddedSubEntity>(new HypermediaObjectKeyReference(typeof(EmbeddedSubEntity), 6)));
 
             var relationsList2 = new List<string> { "RelationA", "RelationB" };
             var query = new EmbeddedQueryObject {AInt = 2};
-            ho.Multiple.Add(new(new HypermediaObjectQueryReference(typeof(EmbeddedSubEntity), query, 3)));
+            ho.Multiple.Add(new EmbeddedEntity<EmbeddedSubEntity>(new HypermediaObjectQueryReference(typeof(EmbeddedSubEntity), query, 3)));
 
             var siren = SirenConverter.ConvertToJson(ho);
 

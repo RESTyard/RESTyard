@@ -10,10 +10,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
     public class EmptyHypermediaObject : IHypermediaObject
     {
         [Relations(["Embedded"])]
-        public List<EmbeddedEntity<SirenBuilderEntitiesTest.EmbeddedSubEntity>> Embedded { get; } = [];
+        public List<IEmbeddedEntity<SirenBuilderEntitiesTest.EmbeddedSubEntity>> Embedded { get; } = [];
         
         [Relations(["RelationA", "RelationB"])]
-        public List<EmbeddedEntity<SirenBuilderEntitiesTest.EmbeddedSubEntity>> Multiple { get; } = [];
+        public List<IEmbeddedEntity<SirenBuilderEntitiesTest.EmbeddedSubEntity>> Multiple { get; } = [];
     }
 
     [HypermediaObject(Title = "A Title", Classes = ["CustomClass1", "CustomClass2"])]
