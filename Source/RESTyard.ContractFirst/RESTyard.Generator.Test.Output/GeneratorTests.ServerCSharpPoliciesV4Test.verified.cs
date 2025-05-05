@@ -1,8 +1,7 @@
 ﻿#nullable enable
-using server._csharp._v4;
 using RESTyard.Generator.Test.Output;
 
-namespace server._csharp_policies._v4;
+namespace server._csharp._v4;
 public static class PermissionScopes
 {
     public const string BASIC = "Basic";

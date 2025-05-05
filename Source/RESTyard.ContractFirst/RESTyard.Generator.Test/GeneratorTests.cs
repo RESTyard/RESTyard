@@ -127,7 +127,7 @@ public class GeneratorTests
         await RunGeneratorAsync(
             "server/csharp-policies/v4",
             outputFile: "server_policies_v4.cs",
-            includeNamespaces: [TemplateToNamespace("server/csharp/v4")]);
+            @namespace: TemplateToNamespace("server/csharp/v4"));
 
         await Verify("server_policies_v4.cs");
     }
