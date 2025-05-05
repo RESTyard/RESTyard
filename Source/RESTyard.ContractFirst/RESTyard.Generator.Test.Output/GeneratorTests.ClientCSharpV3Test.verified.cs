@@ -95,7 +95,7 @@ public partial class DerivedHco : ChildHco
 {
     [Mandatory]
     [HypermediaRelations(new[] { "self" })]
-    public MandatoryHypermediaLink<DerivedHco> Self { get; set; } = default!;
+    public new MandatoryHypermediaLink<DerivedHco> Self { get; set; } = default!;
 }
 
 [HypermediaClientObject()]
