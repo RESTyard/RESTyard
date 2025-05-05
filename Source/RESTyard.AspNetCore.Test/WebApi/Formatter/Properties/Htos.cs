@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
-using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Test.Helpers;
-using RESTyard.Relations;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 {
@@ -12,10 +10,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
     public class EmptyHypermediaObject : IHypermediaObject
     {
         [Relations(["Embedded"])]
-        public List<EmbeddedEntity> Embedded { get; } = [];
+        public List<EmbeddedEntity<SirenBuilderEntitiesTest.EmbeddedSubEntity>> Embedded { get; } = [];
         
         [Relations(["RelationA", "RelationB"])]
-        public List<EmbeddedEntity> Multiple { get; } = [];
+        public List<EmbeddedEntity<SirenBuilderEntitiesTest.EmbeddedSubEntity>> Multiple { get; } = [];
     }
 
     [HypermediaObject(Title = "A Title", Classes = ["CustomClass1", "CustomClass2"])]

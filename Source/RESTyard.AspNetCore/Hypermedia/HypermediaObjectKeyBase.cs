@@ -6,11 +6,11 @@ using RESTyard.AspNetCore.Hypermedia.Links;
 namespace RESTyard.AspNetCore.Hypermedia;
 
 /// <summary>
-/// Base class for records that describe the key properties for a <see cref="HypermediaObject"/>.
+/// Base class for records that describe the key properties for an <see cref="IHypermediaObject"/>.
 /// Any Key record inheriting from <see cref="HypermediaObjectKeyBase{THto}"/> can be passed to a <see cref="LinkGenerator"/> as the values parameter and will be used to initialize a <see cref="RouteValueDictionary"/>
 /// </summary>
-/// <typeparam name="THto">The <see cref="HypermediaObject"/> that this key record describes.</typeparam>
-public abstract record HypermediaObjectKeyBase<THto>() : IEnumerable<KeyValuePair<string, object?>> where THto : IHypermediaObject
+/// <typeparam name="THto">The <see cref="IHypermediaObject"/> that this key record describes.</typeparam>
+public abstract record HypermediaObjectKeyBase<THto>() : IHypermediaObjectKey<THto> where THto : IHypermediaObject
 {
     IEnumerator<KeyValuePair<string, object?>> IEnumerable<KeyValuePair<string, object?>>.GetEnumerator()
         => EnumerateKeysForLinkGeneration().GetEnumerator();

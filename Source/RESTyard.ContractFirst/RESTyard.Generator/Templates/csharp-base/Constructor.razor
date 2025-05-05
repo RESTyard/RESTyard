@@ -30,15 +30,15 @@
         if (string.IsNullOrEmpty(link.document))
         {
             linkOptionMatch = Uncapitalize(link.rel);
-            linkValue = link.mandatory ? Uncapitalize(link.rel) : "some";
+            var parameter = link.mandatory ? Uncapitalize(link.rel) : "some";
+            linkValue = $"Link.External({parameter})";
         }
         else
         {
             var hasQuery = !string.IsNullOrEmpty(link.query);
             var linkDocument = Schema.Documents.First(d => d.name == link.document);
             var hasKey = HasKeyProperties(linkDocument);
-            var reference = "HypermediaObject" + (hasQuery ? "Query" : "Key") + "Reference";
-            var type = $"typeof({link.document}Hto)";
+            var type = $"{link.document}Hto";
             var tupleParameter = $"{Uncapitalize(link.rel)}Reference";
             var queryParameter = $"{Uncapitalize(link.rel)}Query";
             var keyParameter = $"{Uncapitalize(link.rel)}Key";
@@ -88,10 +88,19 @@
                 parameters = "null";
             }
 
-            linkValue = $"new {reference}({type}, {parameters})";
+            var staticMethod = "";
+            if (hasQuery)
+            {
+                staticMethod = "ByQuery";
+            }
+            else
+            {
+                staticMethod = "ByKey";
+            }
+            linkValue = $"Link.{staticMethod}<{type}>({parameters})";
         }
 
-        return (link.mandatory, linkOptionMatch, link.rel, linkValue);
+        return (link.mandatory, linkOptionMatch, link.rel, string.IsNullOrEmpty(link.document) ? "" : $"{link.document}Hto", linkValue);
     });
 }
 
@@ -107,22 +116,23 @@ public @typeName (@allArgumentsString)@parentArgumentsString
     }
     @foreach (var entity in Document.Entities)
     {
-        @:this.@Capitalize(entity.collectionName) = @Uncapitalize(@entity.collectionName)@(".")Select(x => new EmbeddedEntity(new HypermediaObjectReference(x))).ToList();
+        var hto = $"<{entity.document}Hto>";
+        @:this.@Capitalize(entity.collectionName) = @Uncapitalize(@entity.collectionName)@(".")Select(x => new EmbeddedEntity@(hto)(new HypermediaObjectReference(x))).ToList();
     }
-    @foreach (var (isMandatory, match, rel,value) in links)
+    @foreach (var (isMandatory, match, rel, hto, value) in links)
     {
         if (isMandatory)
         {
-            @:this.@(Capitalize(rel)) = new Link(@value);
+            @:this.@(Capitalize(rel)) = @value;
         }
         else
         {
-            @:this.@(Capitalize(rel)) = @match@(".")Map(some => new Link(@value)).GetValueOrDefault();
+            @:this.@(Capitalize(rel)) = @match@(".")Map(some => @value).GetValueOrDefault();
         }
     }
     @if (Document.hasSelfLink)
     {
-        @:this.Self = new Link(new HypermediaObjectReference(this));
+        @:this.Self = Link.To(this);
     }
 }
 

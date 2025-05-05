@@ -323,7 +323,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
         private void SirenAddEntities(IHypermediaObject hypermediaObject, JObject sirenJson)
         {
-            var embeddedEntities = GetAllEntities<EmbeddedEntity>(hypermediaObject);
+            var embeddedEntities = GetAllEntities<IEmbeddedEntity>(hypermediaObject);
             var jEntities = new JArray();
 
             foreach (var (embeddedEntity, relations) in embeddedEntities)
@@ -368,7 +368,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
         private void AddLinks(IHypermediaObject hypermediaObject, JObject sirenJson)
         {
-            var hypermediaLinks = GetAllEntities<Link>(hypermediaObject);
+            var hypermediaLinks = GetAllEntities<ILink>(hypermediaObject);
             var dictionary = new Dictionary<IReadOnlyCollection<string>, HypermediaObjectReferenceBase>(new StringReadOnlyCollectionComparer());
             foreach (var (link, rel) in hypermediaLinks)
             {
@@ -403,19 +403,19 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
         {
             var nonSpecificProperties = hypermediaObject.GetType()
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .Where(IsRelatedEntityProperty<RelatedEntity>)
-                .Where(p => !IsRelatedEntityProperty<Link>(p))
-                .Where(p => !IsRelatedEntityProperty<EmbeddedEntity>(p))
+                .Where(IsRelatedEntityProperty<IRelatedEntity>)
+                .Where(p => !IsRelatedEntityProperty<ILink>(p))
+                .Where(p => !IsRelatedEntityProperty<IEmbeddedEntity>(p))
                 .ToList();
             if (nonSpecificProperties.Count > 0)
             {
                 throw new HypermediaException(
-                    $"Properties {string.Join(", ", nonSpecificProperties.Select(p => p.Name))} of type {hypermediaObject.GetType().BeautifulName()} are neither {nameof(Link)} not {nameof(EmbeddedEntity)}");
+                    $"Properties {string.Join(", ", nonSpecificProperties.Select(p => p.Name))} of type {hypermediaObject.GetType().BeautifulName()} are neither {nameof(ILink)} not {nameof(IEmbeddedEntity)}");
             }
         }
 
         private IEnumerable<(TRelatedEntity Entity, string[] Rel)> GetAllEntities<TRelatedEntity>(IHypermediaObject hypermediaObject)
-            where TRelatedEntity : RelatedEntity
+            where TRelatedEntity : IRelatedEntity
         {
             var type = hypermediaObject.GetType();
             var properties = type
@@ -455,7 +455,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
         }
 
         private static bool IsRelatedEntityProperty<TRelatedEntity>(PropertyInfo p)
-            where TRelatedEntity : RelatedEntity
+            where TRelatedEntity : IRelatedEntity
             => AttributedRouteHelper.Is<TRelatedEntity>(p.PropertyType) ||
                AttributedRouteHelper.Is<IEnumerable<TRelatedEntity>>(p.PropertyType);
 
@@ -586,7 +586,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             var type = propertyObject.GetType();
             var publicProperties = type.GetTypeInfo()
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(p => !IsRelatedEntityProperty<RelatedEntity>(p));
+                .Where(p => !IsRelatedEntityProperty<IRelatedEntity>(p));
 
             var jProperties = new JObject();
             foreach (var publicProperty in publicProperties)

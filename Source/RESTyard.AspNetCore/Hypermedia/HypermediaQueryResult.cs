@@ -9,7 +9,7 @@ namespace RESTyard.AspNetCore.Hypermedia
     /// <summary>
     /// Base class for query results.
     /// </summary>
-    public abstract class HypermediaQueryResult : IHypermediaObject
+    public abstract class HypermediaQueryResult : IHypermediaQueryResult, IHypermediaObject
     {
         [FormatterIgnoreHypermediaProperty]
         public IHypermediaQuery Query { get; }
@@ -21,10 +21,10 @@ namespace RESTyard.AspNetCore.Hypermedia
         protected HypermediaQueryResult(IHypermediaQuery query)
         {
             Query = query;
-            Self = new Link(new HypermediaObjectQueryReference(GetType(), query));
+            Self = new(new HypermediaObjectQueryReference(GetType(), query));
         }
         
         [Relations([DefaultHypermediaRelations.Self])]
-        public Link Self { get; }
+        public Link<HypermediaQueryResult> Self { get; }
     }
 }

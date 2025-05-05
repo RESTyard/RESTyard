@@ -137,7 +137,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             public int AInt { get; set; }
 
             [Relations([DefaultHypermediaRelations.Self])]
-            public Link Self => new Link(new HypermediaObjectKeyReference(typeof(EmbeddedSubEntity)));
+            public ILink<EmbeddedSubEntity> Self => Link.To(this);
         }
 
         public class EmbeddedQueryObject : IHypermediaQuery
