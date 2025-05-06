@@ -12,7 +12,7 @@
         {
             parentArgumentsString = "query";
         }
-        else
+        else if (string.IsNullOrEmpty(Document.parentDocument))
         {
             parentArgumentsString = $"hasSelfLink: {Document.hasSelfLink.ToString().ToLower()}";
         }
@@ -54,6 +54,10 @@
                 {
                     linkOptionMatch = keyParameter;
                     keyParameter = "some";
+                }
+                else
+                {
+                    linkOptionMatch = keyParameter;
                 }
             }
             else

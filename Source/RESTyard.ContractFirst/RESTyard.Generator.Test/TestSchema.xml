@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<Hypermedia xmlns="http://schema.bluehands.de/2022/Hypermedia.xsd">
+    <TransferParameters>
+        <Parameters typeName="TP1" usedForActions="false" usedForQueries="false">
+            <Property name="Property" type="string" />
+        </Parameters>
+        <Parameters typeName="TP2" usedForActions="true" usedForQueries="false">
+            <Property name="Property" type="string" />
+        </Parameters>
+        <Parameters typeName="TP3" usedForActions="false" usedForQueries="true">
+            <Property name="Property" type="string" />
+        </Parameters>
+        <Parameters typeName="TP4" usedForActions="true" usedForQueries="true">
+            <Property name="Property" type="string" />
+        </Parameters>
+        <Parameters typeName="TP11" usedForActions="false" usedForQueries="false" parentType="TP1">
+            <Property name="Property2" type="string" />
+        </Parameters>
+        <Parameters typeName="TP12" usedForActions="true" usedForQueries="false" parentType="TP2">
+            <Property name="Property2" type="string" />
+        </Parameters>
+        <Parameters typeName="TP13" usedForActions="false" usedForQueries="true" parentType="TP3">
+            <Property name="Property2" type="string" />
+        </Parameters>
+        <Parameters typeName="TP14" usedForActions="true" usedForQueries="true" parentType="TP4">
+            <Property name="Property2" type="string" />
+        </Parameters>
+        <Parameters typeName="WithProperties" usedForActions="false" usedForQueries="false">
+            <Property name="Property" type="string" />
+            <Property name="HiddenProperty" type="string" hidden="true" />
+            <Property name="KeyProperty" type="string" isKey="true" />
+            <Property name="OptionalProperty" type="string" mandatory="false" />
+            <Property name="HiddenKeyProperty" type="string" hidden="true" isKey="true" />
+            <Property name="HiddenOptionalProperty" type="string" hidden="true" mandatory="false" />
+            <Property name="KeyOptionalProperty" type="string" isKey="true" mandatory="false" />
+            <Property name="HiddenKeyOptionalProperty" type="string" hidden="true" isKey="true" mandatory="false" />
+        </Parameters>
+        <Parameters typeName="DerivedWithProperties" usedForQueries="false" usedForActions="false" parentType="WithProperties">
+            <Property name="DerivedProperty" type="bool" />
+        </Parameters>
+        <Parameters typeName="QueryHtoQuery" usedForActions="false" usedForQueries="true">
+            <Property name="SomeInt" type="int" />
+        </Parameters>
+        <ExternalParameters typeName="External" />
+    </TransferParameters>
+    <Documents>
+        <Document name="Base" title="A base document">
+            <Classifications>
+                <Classification class="Base"/>
+            </Classifications>
+            <Properties>
+                <Property name="Id" type="double" isKey="true" />
+                <Property name="Property" type="List&lt;int&gt;" mandatory="true" />
+            </Properties>
+            <Entities>
+                <Entity collectionName="item" document="Child" />
+            </Entities>
+            <Operations>
+                <Operation name="Operation" method="Post" title="Operation" />
+                <Operation name="WithParameter" method="Patch" parameterTypeName="TP2" />
+                <Operation name="WithResult" method="Patch" resultDocument="Child" />
+                <Operation name="WithParameterAndResult" method="Patch" parameterTypeName="External" resultDocument="Child" />
+                <Operation name="Upload" method="Delete" isUploadAction="true" />
+                <Operation name="UploadWithParameter" method="Post" isUploadAction="true" parameterTypeName="TP12" />
+            </Operations>
+            <Links>
+                <Link mandatory="true" rel="dependency" document="Child" />
+                <Link mandatory="false" rel="dependency2" document="Child" />
+                <Link mandatory="true" rel="byQuery" document="Query" query="QueryHtoQuery" contentType="application/json" />
+                <Link mandatory="true" rel="external" />
+            </Links>
+            <Policies>
+                <Permissions authorize="true">
+                    <Permission scope="Basic"/>
+                </Permissions>
+            </Policies>
+        </Document>
+        <Document name="Child">
+            <Classifications>
+                <Classification class="First"/>
+                <Classification class="Second"/>
+            </Classifications>
+        </Document>
+        <Document name="Derived" parentDocument="Child">
+            <Classifications>
+                <Classification class="Third"/>
+            </Classifications>
+        </Document>
+        <Document name="NoSelfLink" hasSelfLink="false" />
+        <Document name="Query" isQueryResult="true">
+            <Properties>
+                <Property name="NormalKey" type="int" isKey="true" />
+                <Property name="QueryKey" type="string" isKey="true" />
+                <Property name="NotAKey" type="double" isKey="false" />
+            </Properties>
+        </Document>
+    </Documents>
+</Hypermedia>
