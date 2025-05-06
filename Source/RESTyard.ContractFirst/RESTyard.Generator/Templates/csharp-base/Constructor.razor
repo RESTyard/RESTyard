@@ -12,7 +12,7 @@
         {
             parentArgumentsString = "query";
         }
-        else
+        else if (string.IsNullOrEmpty(Document.parentDocument))
         {
             parentArgumentsString = "";
         }
@@ -59,6 +59,10 @@
                 {
                     linkOptionMatch = keyParameter;
                     keyParameter = "some";
+                }
+                else
+                {
+                    linkOptionMatch = keyParameter;
                 }
             }
             else

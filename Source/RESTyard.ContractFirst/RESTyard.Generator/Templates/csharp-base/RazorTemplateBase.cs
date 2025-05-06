@@ -14,9 +14,19 @@ public class RazorTemplateBase : ComponentBase
         return nullable ? $"{type}?" : type;
     }
 
-    public string MapOption(bool hasSome, string type)
+    public string MapOption(bool isOption, string type)
     {
-        return hasSome ? $"Option<{type}>" : type;
+        return isOption ? $"Option<{type}>" : type;
+    }
+
+    public string Capitalize(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return text;
+        }
+
+        return $"{text[..1].ToUpper()}{text[1..]}";
     }
 
     public string Capitalize(string text)
@@ -113,6 +123,11 @@ public class RazorTemplateBase : ComponentBase
                 else if (hasKey)
                 {
                     var keyType = MapOption(!link.mandatory, $"{linkDocument.name}Hto.Key");
+                    result.Add($"{keyType} {Uncapitalize(link.rel)}Key");
+                }
+                else if (!link.mandatory)
+                {
+                    var keyType = MapOption(isOption: true, type: "Unit");
                     result.Add($"{keyType} {Uncapitalize(link.rel)}Key");
                 }
             }
