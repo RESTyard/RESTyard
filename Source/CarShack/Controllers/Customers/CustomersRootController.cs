@@ -98,11 +98,10 @@ namespace CarShack.Controllers.Customers
         
         private async Task<HypermediaCustomerHto> CreateCustomer(CreateCustomerParameters createCustomerParameters)
         {
-          
-                var customer = CustomerService.CreateRandomCustomer();
-                customer.Name = createCustomerParameters.Name;
-                await customerRepository.AddEntityAsync(customer).ConfigureAwait(false);
-                return customer.ToHto();
+            var customer = CustomerService.CreateRandomCustomer(isFavorite: false);
+            customer.Name = createCustomerParameters.Name;
+            await customerRepository.AddEntityAsync(customer).ConfigureAwait(false);
+            return customer.ToHto();
         }
 #endregion
     }

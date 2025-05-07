@@ -10,19 +10,20 @@ using RESTyard.Client.Reader;
 using RESTyard.Client.Resolver;
 using RESTyard.Integration.Test.Fixtures;
 using RESTyard.Integration.Test.Hco;
+using Xunit.Abstractions;
 
 namespace RESTyard.Integration.Test;
 
-public class IntegrationTests : IClassFixture<CarShackWaf>, IAsyncLifetime
+public class IntegrationTests : IAsyncLifetime
 {
     private static readonly Uri ApiEntryPoint = new Uri($"{CarShackWaf.BaseUrl}/EntryPoint");
     
     private readonly CarShackWaf carShackFactory;
     private readonly IHttpHypermediaResolverFactory apiResolverFactory;
 
-    public IntegrationTests(CarShackWaf carShackFactory)
+    public IntegrationTests(ITestOutputHelper outputHelper)
     {
-        this.carShackFactory = carShackFactory;
+        this.carShackFactory = new(outputHelper);
 
         this.apiResolverFactory = DefaultHypermediaClientBuilder
             .CreateBuilder()
@@ -97,11 +98,13 @@ public class IntegrationTests : IClassFixture<CarShackWaf>, IAsyncLifetime
     public async Task CallAction_MarkAsFavorite()
     {
         var apiRoot = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint);
-        var customersAll = await apiRoot
-            .NavigateAsync(l => l.CustomersRoot)
-            .NavigateAsync(l => l.All);
+        var customersRootResult = await apiRoot
+            .NavigateAsync(l => l.CustomersRoot);
+        var customersRoot = customersRootResult.Should().BeOk().Which;
+        (await customersRoot.CreateCustomer.ExecuteAsync(new CreateCustomerParameters("Name"), this.Resolver)).Should().BeOk();
+        var customersAll = await customersRoot.All.ResolveAsync();
 
-        var customer = customersAll.Should().BeOk().Which.Customers.First();
+        var customer = customersAll.Should().BeOk().Which.Customers.First(c => !c.IsFavorite);
         if (!customer.MarkAsFavorite.CanExecute)
         {
             Assert.Fail("Action can not be run on server, not offered.");
@@ -119,8 +122,9 @@ public class IntegrationTests : IClassFixture<CarShackWaf>, IAsyncLifetime
     public async Task CallAction_CreateQuery()
     {
         var apiRoot = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint);
-        var customersRoot = await apiRoot.NavigateAsync(l => l.CustomersRoot);
-
+        var customersRootResult = await apiRoot.NavigateAsync(l => l.CustomersRoot);
+        var customersRoot = customersRootResult.Should().BeOk().Which;
+        
         var query = new CustomerQuery
         {
             Filter = new CustomerFilter { MinAge = 22 },
@@ -128,13 +132,18 @@ public class IntegrationTests : IClassFixture<CarShackWaf>, IAsyncLifetime
             Pagination = new Pagination { PageOffset = 2, PageSize = 3 }
         };
 
-        var resultResource = await customersRoot.Should().BeOk().Which.CreateQuery!.ExecuteAsync(query, this.Resolver);
-        resultResource
+        var resultResource = await customersRoot.CreateQuery!.ExecuteAsync(query, this.Resolver);
+        var link = resultResource
             .Should()
             .BeOk()
-            .Which
-            .Should()
-            .NotBeNull();
+            .Which;
+        var result = await link.ResolveAsync();
+        var queryResult = result.Should().BeOk().Which;
+        queryResult.Customers.Should().HaveCount(3);
+        queryResult.All?.Uri.Should().NotBeNull();
+        queryResult.Next?.Uri.Should().NotBeNull();
+        queryResult.Previous?.Uri.Should().NotBeNull();
+        queryResult.TotalEntities.Should().Be(20);
     }
 
     [Fact]
