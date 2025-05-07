@@ -37,8 +37,8 @@
             var parameter = link.mandatory ? Uncapitalize(link.rel) : "some";
             linkValue = Version switch
             {
-                { Major: 5 } => $"Link.External({parameter})",
-                _ => parameter,
+                { Major: 4 } => parameter,
+                _ => $"Link.External({parameter})",
             };
         }
         else
@@ -174,7 +174,7 @@ public @typeName (@allArgumentsString)@parentArgumentsString
                 break;
         }
     }
-    @if (Document.hasSelfLink && Version.Major >= 5)
+    @if (Document.hasSelfLink && Version is { Major: >= 5 })
     {
         @:this.Self = Link.To(this);
     }

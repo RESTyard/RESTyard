@@ -7,8 +7,8 @@
         ? (DocumentType.isQueryResult
             ? "HypermediaQueryResult"
             : Version switch {
-                { Major: 5 } => "IHypermediaObject",
-                _ => "HypermediaObject"})
+                { Major: 4 } => "HypermediaObject",
+                _ => "IHypermediaObject"})
         : DocumentType.parentDocument + "Hto";
     var parentHasSelfLink = !string.IsNullOrEmpty(DocumentType.parentDocument) || DocumentType.isQueryResult;
     var classes = string.Join(", ", DocumentType.Classifications.Select(c => $"\"{c.@class}\""));
