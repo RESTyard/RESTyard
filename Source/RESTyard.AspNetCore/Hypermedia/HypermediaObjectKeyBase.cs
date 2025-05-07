@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Routing;
 using RESTyard.AspNetCore.Hypermedia.Links;
@@ -28,6 +29,7 @@ public abstract record HypermediaObjectKeyBase<THto>() : IHypermediaObjectKey<TH
     /// Creates a <see cref="HypermediaObjectReferenceBase"/> that describes the reference to a <typeparamref name="THto"/> with the key parameters described by this key record.
     /// </summary>
     /// <returns>The reference.</returns>
+    [Obsolete("use Link.ByKey() to get a reference to a Hto by key")]
     public HypermediaObjectReferenceBase ToHypermediaObjectReference()
     {
         return new HypermediaObjectKeyReference(typeof(THto), this);

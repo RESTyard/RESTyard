@@ -4,6 +4,7 @@ using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
+using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.Util.Repository;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
@@ -78,7 +79,7 @@ namespace CarShack.Controllers.Customers
             }
 
             // Will create a Location header with a URI to the result.
-            return this.CreatedQuery(typeof(HypermediaCustomerQueryResultHto), query);
+            return this.Created(Link.ByQuery<HypermediaCustomerQueryResultHto>(query));
         }
 
         [HttpPostHypermediaAction("CreateCustomer", typeof(HypermediaCustomersRootHto.CreateCustomerOp))]
@@ -92,7 +93,7 @@ namespace CarShack.Controllers.Customers
             var createdCustomer = await CreateCustomer(createCustomerParameters);
 
             // Will create a Location header with a URI to the result.
-            return this.Created(createdCustomer);
+            return this.Created(Link.To(createdCustomer));
         }
         
         private async Task<HypermediaCustomerHto> CreateCustomer(CreateCustomerParameters createCustomerParameters)
