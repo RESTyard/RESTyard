@@ -21,10 +21,10 @@ using Microsoft.AspNetCore.Routing;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
-using RESTyard.AspNetCore.Hypermedia.Extensions;
 using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
+using RESTyard.Relations;
 @Includes
 
 @if (!string.IsNullOrEmpty(Namespace))
@@ -47,7 +47,7 @@ public static class MimeTypes
 
 @foreach (var document in Schema.Documents)
 {
-    <Document Schema="@Schema" DocumentType="@document" Version="new Version(4, 4)" />
+    <Document Schema="@Schema" DocumentType="@document" Version="new Version(5, 0)" />
 }
 
 <KeyFromUriServiceExtensions Schema="@Schema" />

@@ -50,6 +50,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.Generator.Test", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.Generator.Test.Output", "RESTyard.ContractFirst\RESTyard.Generator.Test.Output\RESTyard.Generator.Test.Output.csproj", "{8361CD7D-397D-43E3-A09F-7FCB1B6F47A8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.Generator.Test.OutputV5", "RESTyard.ContractFirst\RESTyard.Generator.Test.OutputV5\RESTyard.Generator.Test.OutputV5.csproj", "{BDBCD45B-05DA-4D5D-9637-D0585F61642E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

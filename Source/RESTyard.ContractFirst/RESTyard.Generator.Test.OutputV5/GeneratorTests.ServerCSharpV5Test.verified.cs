@@ -8,13 +8,13 @@ using Microsoft.AspNetCore.Routing;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
-using RESTyard.AspNetCore.Hypermedia.Extensions;
 using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
+using RESTyard.Relations;
 using RESTyard.Generator.Test.Output;
 
-namespace server._csharp._v4._4;
+namespace server._csharp._v5;
 public static class MimeTypes
 {
     public const string APPLICATION_JSON = "application/json";
@@ -33,11 +33,29 @@ public partial record WithProperties(string? Property = default, string? HiddenP
 public partial record DerivedWithProperties(string? Property = default, string? HiddenProperty = default, string? KeyProperty = default, string? OptionalProperty = default, string? HiddenKeyProperty = default, string? HiddenOptionalProperty = default, string? KeyOptionalProperty = default, string? HiddenKeyOptionalProperty = default, bool? DerivedProperty = default) : WithProperties(Property, HiddenProperty, KeyProperty, OptionalProperty, HiddenKeyProperty, HiddenOptionalProperty, KeyOptionalProperty, HiddenKeyOptionalProperty);
 public partial record QueryHtoQuery(int? SomeInt = default) : IHypermediaQuery;
 [HypermediaObject(Title = "A base document", Classes = new string[] { "Base" })]
-public partial class BaseHto : HypermediaObject
+public partial class BaseHto : IHypermediaObject
 {
     [Key("id")]
     public double? Id { get; set; }
     public List<int> Property { get; set; }
+
+    [Relations(["dependency"])]
+    public ILink<ChildHto> Dependency { get; set; }
+
+    [Relations(["dependency2"])]
+    public ILink<ChildHto>? Dependency2 { get; set; }
+
+    [Relations(["byQuery"])]
+    public ILink<QueryHto> ByQuery { get; set; }
+
+    [Relations(["external"])]
+    public ExternalLink External { get; set; }
+
+    [Relations(["item"])]
+    public List<IEmbeddedEntity<ChildHto>> Item { get; set; }
+
+    [Relations([DefaultHypermediaRelations.Self])]
+    public ILink<BaseHto> Self { get; set; }
 
     [HypermediaAction(Name = "Operation", Title = "Operation")]
     public OperationOp Operation { get; set; }
@@ -57,7 +75,7 @@ public partial class BaseHto : HypermediaObject
     [HypermediaAction(Name = "UploadWithParameter", Title = "")]
     public UploadWithParameterOp UploadWithParameter { get; set; }
 
-    public BaseHto(double? id, List<int> property, OperationOp operation, WithParameterOp withParameter, WithResultOp withResult, WithParameterAndResultOp withParameterAndResult, UploadOp upload, UploadWithParameterOp uploadWithParameter, IEnumerable<ChildHto> item, Option<Unit> dependency2Key, (QueryHtoQuery Query, QueryHto.Key Key) byQueryReference, HypermediaObjectReferenceBase external) : base(hasSelfLink: true)
+    public BaseHto(double? id, List<int> property, OperationOp operation, WithParameterOp withParameter, WithResultOp withResult, WithParameterAndResultOp withParameterAndResult, UploadOp upload, UploadWithParameterOp uploadWithParameter, IEnumerable<ChildHto> item, Option<Unit> dependency2Key, (QueryHtoQuery Query, QueryHto.Key Key) byQueryReference, HypermediaObjectReferenceBase external)
     {
         this.Id = id;
         this.Property = property;
@@ -67,11 +85,12 @@ public partial class BaseHto : HypermediaObject
         this.WithParameterAndResult = withParameterAndResult;
         this.Upload = upload;
         this.UploadWithParameter = uploadWithParameter;
-        this.Entities.AddRange("item", item);
-        this.Links.Add("dependency", new HypermediaObjectKeyReference(typeof(ChildHto), null));
-        dependency2Key.Match(some => this.Links.Add("dependency2", new HypermediaObjectKeyReference(typeof(ChildHto), null)));
-        this.Links.Add("byQuery", new HypermediaObjectQueryReference(typeof(QueryHto), byQueryReference.Query, byQueryReference.Key));
-        this.Links.Add("external", external);
+        this.Item = item.Select(x => EmbeddedEntity.Embed<ChildHto>(x)).ToList();
+        this.Dependency = Link.ByKey<ChildHto>(null);
+        this.Dependency2 = dependency2Key.Map(some => Link.ByKey<ChildHto>(null)).GetValueOrDefault();
+        this.ByQuery = Link.ByQuery<QueryHto>(byQueryReference.Query, byQueryReference.Key);
+        this.External = Link.External(external);
+        this.Self = Link.To(this);
     }
 
     public partial record Key(double? Id) : HypermediaObjectKeyBase<BaseHto>
@@ -126,25 +145,33 @@ public partial class BaseHto : HypermediaObject
 }
 
 [HypermediaObject(Title = "", Classes = new string[] { "First", "Second" })]
-public partial class ChildHto : HypermediaObject
+public partial class ChildHto : IHypermediaObject
 {
-    public ChildHto() : base(hasSelfLink: true)
+    [Relations([DefaultHypermediaRelations.Self])]
+    public ILink<ChildHto> Self { get; set; }
+
+    public ChildHto()
     {
+        this.Self = Link.To(this);
     }
 }
 
 [HypermediaObject(Title = "", Classes = new string[] { "Third" })]
 public partial class DerivedHto : ChildHto
 {
+    [Relations([DefaultHypermediaRelations.Self])]
+    public new ILink<DerivedHto> Self { get; set; }
+
     public DerivedHto()
     {
+        this.Self = Link.To(this);
     }
 }
 
 [HypermediaObject(Title = "", Classes = new string[] { })]
-public partial class NoSelfLinkHto : HypermediaObject
+public partial class NoSelfLinkHto : IHypermediaObject
 {
-    public NoSelfLinkHto() : base(hasSelfLink: false)
+    public NoSelfLinkHto()
     {
     }
 }
@@ -159,11 +186,15 @@ public partial class QueryHto : HypermediaQueryResult
     public string? QueryKey { get; set; }
     public double? NotAKey { get; set; }
 
+    [Relations([DefaultHypermediaRelations.Self])]
+    public new ILink<QueryHto> Self { get; set; }
+
     public QueryHto(int? normalKey, string? queryKey, double? notAKey, IHypermediaQuery query) : base(query)
     {
         this.NormalKey = normalKey;
         this.QueryKey = queryKey;
         this.NotAKey = notAKey;
+        this.Self = Link.To(this);
     }
 
     public partial record Key(int? NormalKey, string? QueryKey) : HypermediaObjectKeyBase<QueryHto>

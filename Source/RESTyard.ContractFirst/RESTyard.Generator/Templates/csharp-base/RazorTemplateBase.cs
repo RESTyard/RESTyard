@@ -29,16 +29,6 @@ public class RazorTemplateBase : ComponentBase
         return $"{text[..1].ToUpper()}{text[1..]}";
     }
 
-    public string Capitalize(string text)
-    {
-        if (string.IsNullOrEmpty(text))
-        {
-            return text;
-        }
-
-        return $"{text[..1].ToUpper()}{text[1..]}";
-    }
-
     public string Uncapitalize(string text)
     {
         if (string.IsNullOrEmpty(text))

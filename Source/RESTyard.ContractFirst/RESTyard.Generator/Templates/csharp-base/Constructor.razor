@@ -14,7 +14,11 @@
         }
         else if (string.IsNullOrEmpty(Document.parentDocument))
         {
-            parentArgumentsString = "";
+            parentArgumentsString = Version switch
+            {
+                { Major: 4 } => $"hasSelfLink: {Document.hasSelfLink.ToString().ToLower()}",
+                _ => "",
+            };
         }
     }
 
@@ -31,7 +35,11 @@
         {
             linkOptionMatch = Uncapitalize(link.rel);
             var parameter = link.mandatory ? Uncapitalize(link.rel) : "some";
-            linkValue = $"Link.External({parameter})";
+            linkValue = Version switch
+            {
+                { Major: 5 } => $"Link.External({parameter})",
+                _ => parameter,
+            };
         }
         else
         {
@@ -101,10 +109,19 @@
             {
                 staticMethod = "ByKey";
             }
-            linkValue = $"Link.{staticMethod}<{type}>({parameters})";
+
+            linkValue = Version switch
+            {
+                { Major: 4 } => $"new HypermediaObject{(hasQuery ? "Query" : "Key")}Reference(typeof({type}), {parameters})",
+                _ => $"Link.{staticMethod}<{type}>({parameters})",
+            };
         }
 
-        return (link.mandatory, linkOptionMatch, link.rel, string.IsNullOrEmpty(link.document) ? "" : $"{link.document}Hto", linkValue);
+        return Version switch
+        {
+            { Major: 4 } => (link.mandatory, linkOptionMatch, link.rel, "", linkValue),
+            _ => (link.mandatory, linkOptionMatch, link.rel, string.IsNullOrEmpty(link.document) ? "" : $"{link.document}Hto", linkValue),
+        };
     });
 }
 
@@ -120,21 +137,44 @@ public @typeName (@allArgumentsString)@parentArgumentsString
     }
     @foreach (var entity in Document.Entities)
     {
-        var hto = $"<{entity.document}Hto>";
-        @:this.@Capitalize(entity.collectionName) = @Uncapitalize(@entity.collectionName)@(".")Select(x => EmbeddedEntity.Embed@(hto)(x)).ToList();
+        switch (Version)
+        {
+            case { Major: 4 }:
+                @:this.Entities.AddRange("@entity.collectionName", @Uncapitalize(@entity.collectionName));
+                break;
+            default:
+                var hto = $"<{entity.document}Hto>";
+                @:this.@Capitalize(entity.collectionName) = @Uncapitalize(@entity.collectionName)@(".")Select(x => EmbeddedEntity.Embed@(hto)(x)).ToList();
+                break;
+        }
     }
     @foreach (var (isMandatory, match, rel, hto, value) in links)
     {
-        if (isMandatory)
+        switch (Version)
         {
-            @:this.@(Capitalize(rel)) = @value;
-        }
-        else
-        {
-            @:this.@(Capitalize(rel)) = @match@(".")Map(some => @value).GetValueOrDefault();
+            case { Major: 4 }:
+                if (isMandatory)
+                {
+                    @:this.Links.Add("@rel", @value);
+                }
+                else
+                {
+                    @:@match@(".")Match(some => this.Links.Add("@rel", @value));
+                }
+                break;
+            default:
+                if (isMandatory)
+                {
+                    @:this.@(Capitalize(rel)) = @value;
+                }
+                else
+                {
+                    @:this.@(Capitalize(rel)) = @match@(".")Map(some => @value).GetValueOrDefault();
+                }
+                break;
         }
     }
-    @if (Document.hasSelfLink)
+    @if (Document.hasSelfLink && Version.Major >= 5)
     {
         @:this.Self = Link.To(this);
     }
@@ -142,4 +182,5 @@ public @typeName (@allArgumentsString)@parentArgumentsString
 
 @code {
     [Parameter] public DocumentType Document { get; set; } = null!;
+    [Parameter] public Version Version { get; set; } = null!;
 }
