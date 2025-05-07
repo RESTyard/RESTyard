@@ -86,6 +86,14 @@
             <Classifications>
                 <Classification class="Third"/>
             </Classifications>
+            <Properties>
+                <Property name="InheritedText" type="string" mandatory="true" />
+            </Properties>
+        </Document>
+        <Document name="SecondLevelDerived" parentDocument="Derived">
+            <Classifications>
+                <Classification class="Fourth"/>
+            </Classifications>
         </Document>
         <Document name="NoSelfLink" hasSelfLink="false" />
         <Document name="Query" isQueryResult="true">

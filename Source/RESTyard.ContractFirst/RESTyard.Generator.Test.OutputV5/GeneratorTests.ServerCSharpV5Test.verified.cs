@@ -159,10 +159,25 @@ public partial class ChildHto : IHypermediaObject
 [HypermediaObject(Title = "", Classes = new string[] { "Third" })]
 public partial class DerivedHto : ChildHto
 {
+    public string InheritedText { get; set; }
+
     [Relations([DefaultHypermediaRelations.Self])]
     public new ILink<DerivedHto> Self { get; set; }
 
-    public DerivedHto()
+    public DerivedHto(string inheritedText)
+    {
+        this.InheritedText = inheritedText;
+        this.Self = Link.To(this);
+    }
+}
+
+[HypermediaObject(Title = "", Classes = new string[] { "Fourth" })]
+public partial class SecondLevelDerivedHto : DerivedHto
+{
+    [Relations([DefaultHypermediaRelations.Self])]
+    public new ILink<SecondLevelDerivedHto> Self { get; set; }
+
+    public SecondLevelDerivedHto(string inheritedText) : base(inheritedText)
     {
         this.Self = Link.To(this);
     }
