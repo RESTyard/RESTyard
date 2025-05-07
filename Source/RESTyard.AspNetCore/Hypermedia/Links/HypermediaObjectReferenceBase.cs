@@ -28,7 +28,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
         public abstract bool CanResolve();
 
         /// <summary>
-        /// Derived classes may choose to return the actual referenced <see cref="HypermediaObject"/>
+        /// Derived classes may choose to return the actual referenced <see cref="IHypermediaObject"/>
         /// </summary>
         /// <returns></returns>
         public abstract IHypermediaObject? GetInstance();
@@ -42,7 +42,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
         ///  Creates a object which can be used as key for the referenced. 
         /// </summary>
         /// <param name="keyProducer"></param>
-        /// <returns>The key object to this <see cref="HypermediaObject"/> or null if it has no key.</returns>
+        /// <returns>The key object to this <see cref="IHypermediaObject"/> or null if it has no key.</returns>
         public abstract object? GetKey(IKeyProducer keyProducer);
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
         public abstract IHypermediaQuery? GetQuery();
 
         /// <summary>
-        /// Get the referenced <see cref="HypermediaObject"/> type
+        /// Get the referenced <see cref="IHypermediaObject"/> type
         /// </summary>
         /// <returns>Referenced Type</returns>
         public Type GetHypermediaType()

@@ -34,8 +34,8 @@ public class IntegrationTests : IAsyncLifetime
             .CreateHttpHypermediaResolverFactory();
     }
 
-    protected HttpClient Client { get; private set; }
-    protected IHypermediaResolver Resolver { get; private set; }
+    protected HttpClient Client { get; private set; } = null!;
+    protected IHypermediaResolver Resolver { get; private set; } = null!;
     protected HttpClient CreateClient() => this.carShackFactory.CreateClient();
 
     public Task InitializeAsync()
@@ -101,11 +101,11 @@ public class IntegrationTests : IAsyncLifetime
         var customersRootResult = await apiRoot
             .NavigateAsync(l => l.CustomersRoot);
         var customersRoot = customersRootResult.Should().BeOk().Which;
-        (await customersRoot.CreateCustomer.ExecuteAsync(new CreateCustomerParameters("Name"), this.Resolver)).Should().BeOk();
+        (await customersRoot.CreateCustomer!.ExecuteAsync(new CreateCustomerParameters("Name"), this.Resolver)).Should().BeOk();
         var customersAll = await customersRoot.All.ResolveAsync();
 
         var customer = customersAll.Should().BeOk().Which.Customers.First(c => !c.IsFavorite);
-        if (!customer.MarkAsFavorite.CanExecute)
+        if (!customer.MarkAsFavorite!.CanExecute)
         {
             Assert.Fail("Action can not be run on server, not offered.");
         }
@@ -157,7 +157,7 @@ public class IntegrationTests : IAsyncLifetime
             .NavigateAsync(l => l.CustomersRoot).NavigateAsync(l => l.All);
         var allFluent2 = await apiRoot.NavigateAsync(l => l.CustomersRoot).NavigateAsync(l => l.All);
         var optionalFluent = await apiRoot.NavigateAsync(l => l.CustomersRoot).NavigateAsync(l => l.All)
-            .NavigateAsync(l => l.Next);
+            .NavigateAsync(l => l.Next!);
     }
 
     [Fact]
@@ -179,7 +179,7 @@ public class IntegrationTests : IAsyncLifetime
             new HypermediaFileUploadActionParameter(
                 FileDefinitions:
                 [
-                    new(async () => new MemoryStream([5, 6, 7, 8]), "Scan", "Scan.pdf"),
+                    new(() => Task.FromResult<Stream>(new MemoryStream([5, 6, 7, 8])), "Scan", "Scan.pdf"),
                 ]),
             this.Resolver);
         var link = uploadResult.Should().BeOk().Which;
@@ -206,7 +206,7 @@ public class IntegrationTests : IAsyncLifetime
             new HypermediaFileUploadActionParameter<UploadCarImageParameters>(
                 FileDefinitions: new List<FileDefinition>()
                 {
-                    new(async () => new MemoryStream(new byte[] { 1, 2, 3, 4 }), "Bytes", "Bytes.txt"),
+                    new(() => Task.FromResult<Stream>(new MemoryStream([1, 2, 3, 4])), "Bytes", "Bytes.txt"),
                 },
                 new(
                     "Text",
@@ -237,7 +237,7 @@ public class IntegrationTests : IAsyncLifetime
         var customer = createCustomerResult.Should().BeOk().Which;
         
         // When
-        var buyResult = await customer.BuyCar
+        var buyResult = await customer.BuyCar!
             .ExecuteAsync(new BuyCarParameters(niceCar.Brand!, niceCar.Id!.Value, Price: 100), this.Resolver)
             .Bind(l => l.ResolveAsync());
         
