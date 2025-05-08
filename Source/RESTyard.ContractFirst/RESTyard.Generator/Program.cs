@@ -31,6 +31,7 @@ public static class Program
                             /csharp
                               /v4
                               /v4.4
+                              /v5
                             /csharp-controller
                               /v4
                             /csharp-policies
@@ -163,6 +164,7 @@ public static class Program
         return template.Split('/', '\\') switch
         {
             ["server", "csharp", "v4.4"] => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp.V4_4)),
+            ["server", "csharp", "v5"] => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp.V5)),
             _ => null,
         };
     }

@@ -67,12 +67,12 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             return new SirenConverter(RouteResolver, QueryStringBuilder, configuration);
         }
 
-        public static void AssertDefaultClassName(JObject obj, Type type)
+        public static void AssertClassName(JObject obj, string name)
         {
             Assert.IsTrue(obj["class"].Type == JTokenType.Array);
             var classArray = (JArray)obj["class"];
             Assert.AreEqual(1, classArray.Count);
-            Assert.IsTrue(obj["class"].First.ToString() == type.BeautifulName());
+            Assert.IsTrue(obj["class"].First.ToString() == name);
         }
 
         public static void AssertHasOnlySelfLink(JObject obj, string routeName)
@@ -83,6 +83,13 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
             Assert.AreEqual(DefaultHypermediaRelations.Self, obj["links"].First["rel"].First.ToString());
             AssertRoute(obj["links"].First["href"].ToString(), routeName);
+        }
+
+        public static void AssertHasNoLinks(JObject obj)
+        {
+            Assert.IsTrue(obj["links"].Type == JTokenType.Array);
+            var linksArray = (JArray)obj["links"];
+            Assert.AreEqual(0, linksArray.Count);
         }
 
         public static void AssertEmptyActions(JObject obj)

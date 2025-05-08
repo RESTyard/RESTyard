@@ -17,6 +17,7 @@ public class DefaultHypermediaClientBuilder
         register.Register<BaseHco>();
         register.Register<ChildHco>();
         register.Register<DerivedHco>();
+        register.Register<SecondLevelDerivedHco>();
         register.Register<NoSelfLinkHco>();
         register.Register<QueryHco>();
     });
@@ -94,8 +95,19 @@ public partial class ChildHco : HypermediaClientObject
 public partial class DerivedHco : ChildHco
 {
     [Mandatory]
+    public string InheritedText { get; set; } = default!;
+
+    [Mandatory]
     [HypermediaRelations(new[] { "self" })]
     public new MandatoryHypermediaLink<DerivedHco> Self { get; set; } = default!;
+}
+
+[HypermediaClientObject("Fourth")]
+public partial class SecondLevelDerivedHco : DerivedHco
+{
+    [Mandatory]
+    [HypermediaRelations(new[] { "self" })]
+    public new MandatoryHypermediaLink<SecondLevelDerivedHco> Self { get; set; } = default!;
 }
 
 [HypermediaClientObject()]

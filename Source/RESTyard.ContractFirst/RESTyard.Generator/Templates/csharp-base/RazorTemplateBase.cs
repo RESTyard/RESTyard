@@ -49,7 +49,14 @@ public class RazorTemplateBase : ComponentBase
 
     public List<PropertyType> GetKeyProperties(DocumentType document)
     {
-        return document.Properties.Where(p => p.isKey).ToList();
+        return EnumerateParents(document, includeSelf: true)
+            .SelectMany(GetOwnKeyProperties)
+            .ToList();
+    }
+
+    protected static IEnumerable<PropertyType> GetOwnKeyProperties(DocumentType d)
+    {
+        return d.Properties.Where(p => p.isKey);
     }
 
     public string TransformMandatoryArgument(string argument)

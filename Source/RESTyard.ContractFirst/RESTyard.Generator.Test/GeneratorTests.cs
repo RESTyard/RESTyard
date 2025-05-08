@@ -86,9 +86,9 @@ public class GeneratorTests
     /// Generate into different project such that if the output does not compile, the test can still be executed.
     /// </summary>
     /// <param name="file"></param>
-    private async Task Verify(string file)
+    private async Task Verify(string file, string outputSuffix = "")
         => await VerifyFile(file)
-            .UseDirectory("../RESTyard.Generator.Test.Output");
+            .UseDirectory($"../RESTyard.Generator.Test.Output{outputSuffix}");
 
     [Fact]
     public async Task ServerCSharpV4Test()
@@ -108,6 +108,16 @@ public class GeneratorTests
             outputFile: "server_v4.4.cs");
 
         await Verify("server_v4.4.cs");
+    }
+
+    [Fact]
+    public async Task ServerCSharpV5Test()
+    {
+        await RunGeneratorAsync(
+            "server/csharp/v5",
+            outputFile: "server_v5.cs");
+
+        await Verify("server_v5.cs", outputSuffix: "V5");
     }
 
     [Fact]

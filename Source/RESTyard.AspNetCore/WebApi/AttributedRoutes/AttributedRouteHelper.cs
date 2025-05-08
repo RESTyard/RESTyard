@@ -26,9 +26,14 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
             Debug.Assert(IsRouteKeyProducer(routeKeyProducerType));
         }
 
-        private static bool Is<T>(Type hypermediaObjectType)
+        public static bool Is<T>(Type hypermediaObjectType)
         {
             return typeof(T).GetTypeInfo().IsAssignableFrom(hypermediaObjectType);
+        }
+
+        public static bool Has<T>(Type hypermediaObjectType) where T : Attribute
+        {
+            return hypermediaObjectType.GetCustomAttribute<T>() != null;
         }
 
         public static void EnsureIs<T>(Type hypermediaObjectType)
@@ -36,6 +41,14 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
             if (!Is<T>(hypermediaObjectType))
             {
                 throw new HypermediaRouteException($"RouteType must be a {typeof(T).Name}");
+            }
+        }
+
+        public static void EnsureHas<T>(Type hypermediaObjectType) where T : Attribute
+        {
+            if (!Has<T>(hypermediaObjectType))
+            {
+                throw new HypermediaRouteException($"RouteType must have attribute {typeof(T).Name}");
             }
         }
 

@@ -133,7 +133,18 @@ public partial class ChildHto : HypermediaObject
 [HypermediaObject(Title = "", Classes = new string[] { "Third" })]
 public partial class DerivedHto : ChildHto
 {
-    public DerivedHto() : base()
+    public string InheritedText { get; set; }
+
+    public DerivedHto(string inheritedText) : base()
+    {
+        this.InheritedText = inheritedText;
+    }
+}
+
+[HypermediaObject(Title = "", Classes = new string[] { "Fourth" })]
+public partial class SecondLevelDerivedHto : DerivedHto
+{
+    public SecondLevelDerivedHto(string inheritedText) : base(inheritedText)
     {
     }
 }

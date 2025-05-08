@@ -118,9 +118,19 @@ export class ChildHco extends HypermediaObject {
 
 export class DerivedHco extends ChildHco {
     constructor(
+        public readonly InheritedText: string,
         public readonly self: HypermediaLink<DerivedHco>
     ) {
         super(self);
+    }
+}
+
+export class SecondLevelDerivedHco extends DerivedHco {
+    constructor(
+        InheritedText: string,
+        public override readonly self: HypermediaLink<SecondLevelDerivedHco>
+    ) {
+        super(InheritedText, self);
     }
 }
 

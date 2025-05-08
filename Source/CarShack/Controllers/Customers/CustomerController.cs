@@ -5,7 +5,7 @@ using CarShack.Hypermedia;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
 using RESTyard.AspNetCore.Exceptions;
-using RESTyard.AspNetCore.Hypermedia.Links;
+using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.JsonSchema;
 using RESTyard.AspNetCore.WebApi;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
@@ -125,7 +125,7 @@ namespace CarShack.Controllers.Customers
                 var car = new HypermediaCarHto(parameter.Brand, parameter.CarId);
                 var customer = await customerRepository.GetEntityByKeyAsync(key).ConfigureAwait(false);
                 //do what has to be done
-                return this.Created(new HypermediaCarHto.Key(parameter.CarId, parameter.Brand).ToHypermediaObjectReference());
+                return this.Created(Link.ByKey(new HypermediaCarHto.Key(parameter.CarId, parameter.Brand)));
             }
             catch (EntityNotFoundException)
             {

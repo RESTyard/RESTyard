@@ -8,8 +8,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\RESTyard.AspNetCore\RESTyard.AspNetCore.csproj" />
       <ProjectReference Include="..\..\RESTyard.Client\RESTyard.Client.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="RESTyard.AspNetCore" Version="4.4.0-develop-20250414.1" />
     </ItemGroup>
 
 </Project>

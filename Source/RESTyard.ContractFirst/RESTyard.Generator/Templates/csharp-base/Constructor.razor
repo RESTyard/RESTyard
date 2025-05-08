@@ -14,8 +14,17 @@
         }
         else if (string.IsNullOrEmpty(Document.parentDocument))
         {
-            parentArgumentsString = $"hasSelfLink: {Document.hasSelfLink.ToString().ToLower()}";
+            parentArgumentsString = Version switch
+            {
+                { Major: 4 } => $"hasSelfLink: {Document.hasSelfLink.ToString().ToLower()}",
+                _ => "",
+            };
         }
+    }
+
+    if (!string.IsNullOrEmpty(parentArgumentsString))
+    {
+        parentArgumentsString = $" : base({parentArgumentsString})";
     }
 
     var links = Document.Links.Select(link =>
@@ -25,15 +34,19 @@
         if (string.IsNullOrEmpty(link.document))
         {
             linkOptionMatch = Uncapitalize(link.rel);
-            linkValue = link.mandatory ? Uncapitalize(link.rel) : "some";
+            var parameter = link.mandatory ? Uncapitalize(link.rel) : "some";
+            linkValue = Version switch
+            {
+                { Major: 4 } => parameter,
+                _ => $"Link.External({parameter})",
+            };
         }
         else
         {
             var hasQuery = !string.IsNullOrEmpty(link.query);
             var linkDocument = Schema.Documents.First(d => d.name == link.document);
             var hasKey = HasKeyProperties(linkDocument);
-            var reference = "HypermediaObject" + (hasQuery ? "Query" : "Key") + "Reference";
-            var type = $"typeof({link.document}Hto)";
+            var type = $"{link.document}Hto";
             var tupleParameter = $"{Uncapitalize(link.rel)}Reference";
             var queryParameter = $"{Uncapitalize(link.rel)}Query";
             var keyParameter = $"{Uncapitalize(link.rel)}Key";
@@ -87,15 +100,32 @@
                 parameters = "null";
             }
 
-            linkValue = $"new {reference}({type}, {parameters})";
+            var staticMethod = "";
+            if (hasQuery)
+            {
+                staticMethod = "ByQuery";
+            }
+            else
+            {
+                staticMethod = "ByKey";
+            }
+
+            linkValue = Version switch
+            {
+                { Major: 4 } => $"new HypermediaObject{(hasQuery ? "Query" : "Key")}Reference(typeof({type}), {parameters})",
+                _ => $"Link.{staticMethod}<{type}>({parameters})",
+            };
         }
 
-        return (link.mandatory, linkOptionMatch, link.rel, linkValue);
+        return Version switch
+        {
+            { Major: 4 } => (link.mandatory, linkOptionMatch, link.rel, "", linkValue),
+            _ => (link.mandatory, linkOptionMatch, link.rel, string.IsNullOrEmpty(link.document) ? "" : $"{link.document}Hto", linkValue),
+        };
     });
 }
 
-public @typeName (@allArgumentsString)
-    : base(@parentArgumentsString)
+public @typeName (@allArgumentsString)@parentArgumentsString
 {
     @foreach (var property in Document.Properties)
     {
@@ -107,21 +137,50 @@ public @typeName (@allArgumentsString)
     }
     @foreach (var entity in Document.Entities)
     {
-        @:this.Entities.AddRange("@entity.collectionName", @Uncapitalize(@entity.collectionName));
+        switch (Version)
+        {
+            case { Major: 4 }:
+                @:this.Entities.AddRange("@entity.collectionName", @Uncapitalize(@entity.collectionName));
+                break;
+            default:
+                var hto = $"<{entity.document}Hto>";
+                @:this.@Capitalize(entity.collectionName) = @Uncapitalize(@entity.collectionName)@(".")Select(x => EmbeddedEntity.Embed@(hto)(x)).ToList();
+                break;
+        }
     }
-    @foreach (var (isMandatory, match, rel, value) in links)
+    @foreach (var (isMandatory, match, rel, hto, value) in links)
     {
-        if (isMandatory)
+        switch (Version)
         {
-            @:this.Links.Add("@rel", @value);
+            case { Major: 4 }:
+                if (isMandatory)
+                {
+                    @:this.Links.Add("@rel", @value);
+                }
+                else
+                {
+                    @:@match@(".")Match(some => this.Links.Add("@rel", @value));
+                }
+                break;
+            default:
+                if (isMandatory)
+                {
+                    @:this.@(Capitalize(rel)) = @value;
+                }
+                else
+                {
+                    @:this.@(Capitalize(rel)) = @match@(".")Map(some => @value).GetValueOrDefault();
+                }
+                break;
         }
-        else
-        {
-            @:@match@(".")Match(some => this.Links.Add("@rel", @value));
-        }
+    }
+    @if (Document.hasSelfLink && Version is { Major: >= 5 })
+    {
+        @:this.Self = Link.To(this);
     }
 }
 
 @code {
     [Parameter] public DocumentType Document { get; set; } = null!;
+    [Parameter] public Version Version { get; set; } = null!;
 }

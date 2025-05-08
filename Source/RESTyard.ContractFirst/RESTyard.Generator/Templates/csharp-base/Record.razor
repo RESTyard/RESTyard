@@ -1,6 +1,7 @@
 ﻿@{
     var modifiers = string.Join(
         " ",
+        HasNewKeyword ? "new" : "",
         IsAbstract ? "abstract" : "",
         IsPartial ? "partial" : "");
     var inheritance = Inherits != null ? $": {Inherits}" : "";
@@ -15,6 +16,7 @@ public @modifiers record @Name@("(")@Parameters) @inheritance @GenericConstraint
     [Parameter] public RenderFragment ChildContent { get; set; } = null!;
     [Parameter] public bool IsAbstract { get; set; } = false;
     [Parameter] public bool IsPartial { get; set; } = true;
+    [Parameter] public bool HasNewKeyword { get; set; } = false;
     [Parameter] public string Name { get; set; } = "";
     [Parameter] public string Parameters { get; set; } = "";
     [Parameter] public string? Inherits { get; set; }

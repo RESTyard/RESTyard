@@ -7,9 +7,11 @@ using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
+using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.WebApi.Formatter;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 using RESTyard.MediaTypes;
+using RESTyard.Relations;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 {
@@ -68,10 +70,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(ActionsHypermediaObject));
+            AssertClassName(siren, nameof(ActionsHypermediaObject));
             AssertEmptyProperties(siren);
             AssertEmptyEntities(siren);
-            AssertHasOnlySelfLink(siren, routeName);
+            AssertHasNoLinks(siren);
 
             var actions = siren["actions"]
                 .Should().NotBeNull()
@@ -229,7 +231,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             }
         }
 
-        public class ActionsHypermediaObject : HypermediaObject
+        [HypermediaObject(Classes = [nameof(ActionsHypermediaObject)])]
+        public class ActionsHypermediaObject : IHypermediaObject
         {
             [FormatterIgnoreHypermediaProperty]
             public HypermediaActionNoArgument ActionToIgnore { get; private set; }         // should not be in siren

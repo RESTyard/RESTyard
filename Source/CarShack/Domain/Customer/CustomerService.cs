@@ -12,9 +12,9 @@ namespace CarShack.Domain.Customer
 
         private static int InternalIdCounter;
 
-        public static Customer CreateRandomCustomer()
+        public static Customer CreateRandomCustomer(bool? isFavorite = null)
         {
-            var result = new Customer(InternalIdCounter, nameGenerator.GenerateNext(), random.Next(14, 99), adressGenerator.GenerateNext(), random.Next(0, 2) == 0);
+            var result = new Customer(InternalIdCounter, nameGenerator.GenerateNext(), random.Next(14, 99), adressGenerator.GenerateNext(), isFavorite: isFavorite ?? random.Next(0, 2) == 0);
             InternalIdCounter++;
             return result;
 

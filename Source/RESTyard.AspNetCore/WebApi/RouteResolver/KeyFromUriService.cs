@@ -21,7 +21,7 @@ public class KeyFromUriService : IKeyFromUriService
     }
 
     public Result<TKey> GetKeyFromUri<THto, TKey>(Uri uri)
-        where THto : HypermediaObject
+        where THto : IHypermediaObject
     {
         var result =
             from matchers in GetTemplateMatchers<THto>()

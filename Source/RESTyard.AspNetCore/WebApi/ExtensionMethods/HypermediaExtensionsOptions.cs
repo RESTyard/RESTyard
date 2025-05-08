@@ -14,7 +14,7 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
     public class HypermediaExtensionsOptions
     {
         /// <summary>
-        /// Enable to return a default route if a linked <see cref="HypermediaObject"/> has no corresponding route.
+        /// Enable to return a default route if a linked <see cref="IHypermediaObject"/> has no corresponding route.
         /// </summary>
         public bool ReturnDefaultRouteForUnknownHto { get; set; }
 

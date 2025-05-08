@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Net.Mime;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -10,7 +8,7 @@ using FunicularSwitch;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RESTyard.AspNetCore.Exceptions;
-using RESTyard.AspNetCore.Hypermedia.Links;
+using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.JsonSchema;
 using RESTyard.AspNetCore.WebApi;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
@@ -128,7 +126,7 @@ namespace CarShack.Controllers.Cars
             // In short, it is necessary to restrict and verify the upload
             var path = await SaveToBinDir(originalFilename, payloadFile);
 
-            return this.Created(new HypermediaObjectReference(new CarImageHto(Path.GetFileName(path))));
+            return this.Created(Link.To(new CarImageHto(Path.GetFileName(path))));
         }
 
         [HttpPostHypermediaAction(
@@ -148,7 +146,7 @@ namespace CarShack.Controllers.Cars
             var payloadFile = files[0];
             var path = await SaveToBinDir(payloadFile.FileName, payloadFile);
 
-            return this.Created(new HypermediaObjectReference(new CarInsuranceHto(Path.GetFileName(path))));
+            return this.Created(Link.To(new CarInsuranceHto(Path.GetFileName(path))));
         }
 
         private static async Task<string> SaveToBinDir(string originalFilename, IFormFile payloadFile)

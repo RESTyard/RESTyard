@@ -73,6 +73,16 @@ public class DerivedController : ControllerBase
 }
 
 [Route("api/[controller]")]
+public class SecondLevelDerivedController : ControllerBase
+{
+    [HttpGetHypermediaObject("<stub>", typeof(SecondLevelDerivedHto))]
+    public Task<IActionResult> GetAsync()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+[Route("api/[controller]")]
 public class NoSelfLinkController : ControllerBase
 {
 }

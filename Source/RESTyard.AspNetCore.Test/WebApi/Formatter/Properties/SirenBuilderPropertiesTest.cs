@@ -31,11 +31,11 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             var ho = new EmptyHypermediaObject();
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(EmptyHypermediaObject));
+            AssertClassName(siren, nameof(EmptyHypermediaObject));
             AssertEmptyProperties(siren);
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
-            AssertHasOnlySelfLink(siren, routeName);
+            AssertHasNoLinks(siren);
         }
 
         [TestMethod]
@@ -61,7 +61,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             AssertEmptyProperties(siren);
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
-            AssertHasOnlySelfLink(siren, routeName);
+            AssertHasNoLinks(siren);
         }
 
         [TestMethod]
@@ -84,10 +84,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             var ho = new AttributedPropertyHypermediaObject();
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(AttributedPropertyHypermediaObject));
+            AssertClassName(siren, nameof(AttributedPropertyHypermediaObject));
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
-            AssertHasOnlySelfLink(siren, routeName);
+            AssertHasNoLinks(siren);
 
             var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
@@ -127,10 +127,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             var ho = new PropertyHypermediaObject();
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(PropertyHypermediaObject));
+            AssertClassName(siren, nameof(PropertyHypermediaObject));
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
-            AssertHasOnlySelfLink(siren, routeName);
+            AssertHasNoLinks(siren);
 
             var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
@@ -146,10 +146,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             var ho = new PropertyHypermediaObject();
             var siren = SirenConverterNoNullProperties.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(PropertyHypermediaObject));
+            AssertClassName(siren, nameof(PropertyHypermediaObject));
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
-            AssertHasOnlySelfLink(siren, routeName);
+            AssertHasNoLinks(siren);
 
             var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
@@ -185,10 +185,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             };
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(PropertyHypermediaObject));
+            AssertClassName(siren, nameof(PropertyHypermediaObject));
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
-            AssertHasOnlySelfLink(siren, routeName);
+            AssertHasNoLinks(siren);
 
             var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 

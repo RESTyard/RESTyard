@@ -19,7 +19,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
             routeKeyProducer = RouteKeyProducer.Create(typeof(MyHypermediaObject), new[] { "id1" });
         }
 
-        class MyHypermediaObject : HypermediaObject
+        class MyHypermediaObject : IHypermediaObject
         {
             [Key]
             public string Key { get; }
@@ -50,7 +50,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
             routeKeyProducer = RouteKeyProducer.Create(typeof(MyHypermediaObject), new[] {"id2", "id1"});
         }
 
-        class MyHypermediaObject : HypermediaObject
+        class MyHypermediaObject : IHypermediaObject
         {
             [Key("id1")]
             public string Key1 { get; }

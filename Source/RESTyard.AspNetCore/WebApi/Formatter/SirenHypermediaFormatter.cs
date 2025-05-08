@@ -1,10 +1,11 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using RESTyard.AspNetCore.Exceptions;
 using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 using RESTyard.MediaTypes;
 
@@ -24,11 +25,11 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
         public override bool CanWriteResult(OutputFormatterCanWriteContext context)
         {
-            if (!(context.Object is HypermediaObject))
+            if (context.Object is null || !AttributedRouteHelper.Has<HypermediaObjectAttribute>(context.Object.GetType()))
             {
                 return false;
             }
-
+            
             var contentType = context.ContentType.ToString();
             if (string.IsNullOrEmpty(contentType))
             {
@@ -45,10 +46,9 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
         
         public override async Task WriteAsync(OutputFormatterWriteContext context)
         {
-            var hypermediaObject = context.Object as HypermediaObject;
-            if (hypermediaObject == null)
+            if (context.Object is not IHypermediaObject hypermediaObject || !AttributedRouteHelper.Has<HypermediaObjectAttribute>(context.Object.GetType()))
             {
-                throw new HypermediaFormatterException("Formatter expected a HypermediaObject but is not.");
+                throw new HypermediaFormatterException($"Formatter expected an {nameof(IHypermediaObject)} with a {nameof(HypermediaObjectAttribute)}, but at least one of those conditions is not fulfilled.");
             }
 
             // context influences how routes are resolved

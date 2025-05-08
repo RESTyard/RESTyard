@@ -5,6 +5,7 @@ using FunicularSwitch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 
@@ -37,7 +38,7 @@ public class KeyFromUriServiceTests
         var uri = new Uri("https://some.uri");
         
         // When
-        var values = service.GetKeyFromUri<HypermediaObject, string>(uri);
+        var values = service.GetKeyFromUri<IHypermediaObject, string>(uri);
         
         // Then
         values.Should().BeError().Which.Should().Contain("application model");
@@ -133,7 +134,8 @@ public class KeyFromUriServiceTests
         values.Should().BeError().Which.Should().Contain("invoke");
     }
 
-    public class TestHto : HypermediaObject
+    [HypermediaObject(Classes = [nameof(TestHto)])]
+    public class TestHto : IHypermediaObject
     {
         public TestHto(string key)
         {
@@ -164,7 +166,8 @@ public class KeyFromUriServiceTests
         }
     }
 
-    public class HtoWithoutGet : HypermediaObject
+    [HypermediaObject(Classes = [nameof(HtoWithoutGet)])]
+    public class HtoWithoutGet : IHypermediaObject
     {
         
     }

@@ -194,8 +194,7 @@ public partial class HypermediaCustomerHto
 {
     public static HypermediaCustomerHto FromDomain(Customer customer)
     {
-        HypermediaCustomerHto hto = default!;
-        hto = new HypermediaCustomerHto(
+        var hto = new HypermediaCustomerHto(
             customer.Id,
             customer.Age,
             customer.Name,
@@ -203,8 +202,8 @@ public partial class HypermediaCustomerHto
             customer.IsFavorite,
             new CustomerMoveOp(() => true),
             new CustomerRemoveOp(() => true),
-            new MarkAsFavoriteOp(() => !hto!.IsFavorite),
-            new BuyCarOp(() => true, default!));
+            new MarkAsFavoriteOp(() => !customer.IsFavorite),
+            new BuyCarOp(() => true, default));
         return hto;
     }
 }
