@@ -48,7 +48,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
         {
             if (context.Object is not IHypermediaObject hypermediaObject || !AttributedRouteHelper.Has<HypermediaObjectAttribute>(context.Object.GetType()))
             {
-                throw new HypermediaFormatterException("Formatter expected a non-null object, but is null.");
+                throw new HypermediaFormatterException($"Formatter expected an {nameof(IHypermediaObject)} with a {nameof(HypermediaObjectAttribute)}, but at least one of those conditions is not fulfilled.");
             }
 
             // context influences how routes are resolved

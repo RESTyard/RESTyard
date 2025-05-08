@@ -1,4 +1,3 @@
-using System;
 using RESTyard.AspNetCore.Hypermedia;
 
 namespace RESTyard.AspNetCore.WebApi.Formatter
