@@ -160,7 +160,7 @@ namespace RESTyard.AspNetCore.JsonSchema
     {
         public static ImmutableArray<KeyFromUriProperty> GetKeyFromUriProperties(this Type type)
         {
-            var typesWithPotentialProperties = GetTypeInfoWithNestedTypes(type, ImmutableArray<string>.Empty);
+            var typesWithPotentialProperties = GetTypeInfoWithNestedTypes(type, ImmutableArray<string>.Empty, []);
             var result = new List<KeyFromUriProperty>();
             foreach (var typeWithPotentialProperty in typesWithPotentialProperties)
             {
@@ -177,19 +177,27 @@ namespace RESTyard.AspNetCore.JsonSchema
             return result.ToImmutableArray();
         }
 
-        private static IEnumerable<NestingInfo> GetTypeInfoWithNestedTypes(Type type, ImmutableArray<string> nestingPropertyNames)
+        private static IEnumerable<NestingInfo> GetTypeInfoWithNestedTypes(Type type, ImmutableArray<string> nestingPropertyNames, HashSet<Type> handledTypes)
         {
+            if (!handledTypes.Add(type))
+            {
+                yield break;
+            }
+
             var typeInfo = type.GetTypeInfo();
             yield return new NestingInfo(typeInfo, nestingPropertyNames);
 
-            foreach (var propertyInfo in typeInfo.GetProperties())
+            foreach (var propertyInfo in typeInfo.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 if (propertyInfo.PropertyType.IsValueType)
                 {
                     continue;
                 }
 
-                var nestedTypes = GetTypeInfoWithNestedTypes(propertyInfo.PropertyType, nestingPropertyNames.Add(propertyInfo.Name));
+                var nestedTypes = GetTypeInfoWithNestedTypes(
+                    propertyInfo.PropertyType,
+                    nestingPropertyNames.Add(propertyInfo.Name),
+                    handledTypes);
                 foreach (var nestedType in nestedTypes)
                 {
                     yield return nestedType;
