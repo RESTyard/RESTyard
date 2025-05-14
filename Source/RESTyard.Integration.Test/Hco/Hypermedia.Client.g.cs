@@ -109,7 +109,7 @@ public partial class DerivedCarHco : HypermediaCarHco
 
     [Mandatory]
     [HypermediaRelations(new[] { "self" })]
-    public MandatoryHypermediaLink<DerivedCarHco> Self { get; set; } = default!;
+    public new MandatoryHypermediaLink<DerivedCarHco> Self { get; set; } = default!;
 
     [HypermediaRelations(new[] { "DerivedLink" })]
     public HypermediaLink<HypermediaCustomerHco>? DerivedLink { get; set; } = default!;
@@ -128,7 +128,7 @@ public partial class NextLevelDerivedCarHco : DerivedCarHco
 
     [Mandatory]
     [HypermediaRelations(new[] { "self" })]
-    public MandatoryHypermediaLink<NextLevelDerivedCarHco> Self { get; set; } = default!;
+    public new MandatoryHypermediaLink<NextLevelDerivedCarHco> Self { get; set; } = default!;
 }
 
 [HypermediaClientObject("CustomersRoot")]
@@ -157,7 +157,7 @@ public partial class HypermediaCustomersRootHco : HypermediaClientObject
     public IHypermediaClientFunction<HypermediaCustomerHco, CreateCustomerParameters>? CreateCustomer { get; set; }
 
     [HypermediaCommand("CreateQuery")]
-    public IHypermediaClientAction<CustomerQuery>? CreateQuery { get; set; }
+    public IHypermediaClientFunction<HypermediaCustomerQueryResultHco, CustomerQuery>? CreateQuery { get; set; }
 }
 
 [HypermediaClientObject("Customer")]

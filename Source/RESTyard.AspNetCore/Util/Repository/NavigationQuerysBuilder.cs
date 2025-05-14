@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using FunicularSwitch;
 using RESTyard.AspNetCore.Query;
 using RESTyard.Relations;

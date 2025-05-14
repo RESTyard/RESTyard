@@ -27,7 +27,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
             return false;
         }
 
-        public override HypermediaObject? GetInstance()
+        public override IHypermediaObject? GetInstance()
         {
             return null;
         }
@@ -47,7 +47,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
             return null;
         }
 
-        class ExternalObject : HypermediaObject
+        class ExternalObject : IHypermediaObject
         {
 
         }

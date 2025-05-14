@@ -4,9 +4,9 @@ using RESTyard.AspNetCore.Hypermedia.Attributes;
 
 namespace RESTyard.AspNetCore.Hypermedia
 {
-    public class DirectReferenceBase<TDerived> :  HypermediaObject where TDerived : DirectReferenceBase<TDerived>
+    public class DirectReferenceBase<TDerived> : IHypermediaObject where TDerived : DirectReferenceBase<TDerived>
     {
-        protected DirectReferenceBase() : base(false) { }
+        protected DirectReferenceBase() { }
 
         [FormatterIgnoreHypermediaProperty]
         public IReadOnlyCollection<string> AvailableMediaTypes { get; private set; } = Array.Empty<string>();

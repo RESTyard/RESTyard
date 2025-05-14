@@ -7,9 +7,9 @@ namespace RESTyard.Integration.Test.Hco;
 
 public class CustomerQuery
 {
-    public CustomerFilter Filter { get; set; }
-    public SortOptions SortBy { get; set; }
-    public Pagination Pagination { get; set; }
+    public CustomerFilter Filter { get; set; } = new();
+    public SortOptions SortBy { get; set; } = new();
+    public Pagination Pagination { get; set; } = new();
 }
 
 public class Pagination
@@ -20,8 +20,8 @@ public class Pagination
 
 public class SortOptions
 {
-    public string PropertyName { get; set; }
-    public string SortType { get; set; }
+    public string PropertyName { get; set; } = "";
+    public string SortType { get; set; } = "";
 }
 
 public class CustomerFilter

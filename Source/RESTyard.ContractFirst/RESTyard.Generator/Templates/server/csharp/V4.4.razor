@@ -47,7 +47,7 @@ public static class MimeTypes
 
 @foreach (var document in Schema.Documents)
 {
-    <Document Schema="@Schema" DocumentType="@document" />
+    <Document Schema="@Schema" DocumentType="@document" Version="new Version(4, 4)" />
 }
 
 <KeyFromUriServiceExtensions Schema="@Schema" />

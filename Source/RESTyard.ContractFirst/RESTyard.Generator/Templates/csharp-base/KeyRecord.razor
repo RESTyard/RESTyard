@@ -6,8 +6,9 @@
     {
         var propertyString = string.Join(", ", keyProperties.Select(kp => $"{MapNullableType(!kp.mandatory, kp.type)} {kp.name}"));
         var htoName = Document.name + "Hto";
+        var hasParent = !string.IsNullOrEmpty(Document.parentDocument);
         var baseName = $"HypermediaObjectKeyBase<{htoName}>";
-        <Record Name="Key" Parameters="@propertyString" Inherits="@baseName">
+        <Record Name="Key" Parameters="@propertyString" Inherits="@baseName" HasNewKeyword="@hasParent">
             protected override @("IEnumerable<KeyValuePair<string, object?>>") EnumerateKeysForLinkGeneration()
             {
                 @foreach (var property in keyProperties)

@@ -124,7 +124,7 @@
         <Operation name="CreateCustomer" method="Post" title="Request creation of a new Customer."
                    parameterTypeName="CreateCustomerParameters" resultDocument="HypermediaCustomer" />
         <Operation name="CreateQuery" method="Post" title="Query the Customers collection."
-                   parameterTypeName="CustomerQuery" />
+                   parameterTypeName="CustomerQuery" resultDocument="HypermediaCustomerQueryResult" />
       </Operations>
       <Links>
         <Link rel="all" document="HypermediaCustomerQueryResult" query="CustomerQuery" mandatory="true" />
@@ -157,19 +157,19 @@
       <Classifications>
         <Classification class="CustomersQueryResult" />
       </Classifications>
-	    <Entities>
-		    <Entity collectionName="Customers" document="HypermediaCustomer" />
-	    </Entities>
       <Properties>
         <Property name="TotalEntities" type="int" />
         <Property name="CurrentEntitiesCount" type="int" />
       </Properties>
-			<Links>
-				<Link rel="Next" document="HypermediaCustomerQueryResult" query="IHypermediaQuery" mandatory="false" />
-				<Link rel="Previous" document="HypermediaCustomerQueryResult" query="IHypermediaQuery" mandatory="false" />
-				<Link rel="Last" document="HypermediaCustomerQueryResult" query="IHypermediaQuery" mandatory="false" />
-				<Link rel="All" document="HypermediaCustomerQueryResult" query="IHypermediaQuery" mandatory="false" />
-			</Links>
+      <Entities>
+        <Entity collectionName="Customers" document="HypermediaCustomer" />
+      </Entities>
+      <Links>
+        <Link rel="Next" document="HypermediaCustomerQueryResult" query="IHypermediaQuery" mandatory="false" />
+        <Link rel="Previous" document="HypermediaCustomerQueryResult" query="IHypermediaQuery" mandatory="false" />
+        <Link rel="Last" document="HypermediaCustomerQueryResult" query="IHypermediaQuery" mandatory="false" />
+        <Link rel="All" document="HypermediaCustomerQueryResult" query="IHypermediaQuery" mandatory="false" />
+      </Links>
     </Document>
   </Documents>
 </Hypermedia>
