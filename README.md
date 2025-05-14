@@ -26,3 +26,18 @@ Documentation can be found here: [RESTyard-Docs](https://restyard.github.io/REST
 
 Formerly this project was named `Web Api Hypermedia Extensions`. We move to a new name so
 we have a whole namespace for partner projects and it is more easy to find.
+
+## 💚 Many thanks to our dear sponsors
+
+<div style="display: flex; justify-content: space-around; align-items: flex-start;">
+  <div style="margin-right: 10px;"> 
+    <a href="https://www.bluehands.de" target="_blank" rel="noopener noreferrer">
+      <img src="media/sponsors/bluehands-logo.png" alt="bluehands sponsor logo" style="height: 80px; width: auto; object-fit: cover;">
+    </a>
+  </div>
+  <div style="margin-right: 10px;"> 
+    <a href="https://data-cybernetics.com" target="_blank" rel="noopener noreferrer">
+      <img src="media/sponsors/datacybernetics-logo.png" alt="data cybernetics sponsor logo" style="height: 80px; width: auto; object-fit: cover;">
+    </a>
+  </div>
+</div>
