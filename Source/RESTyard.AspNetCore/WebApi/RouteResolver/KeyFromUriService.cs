@@ -78,7 +78,7 @@ public class KeyFromUriService : IKeyFromUriService
 
     private static Result<ConstructorInfo> GetConstructor<TKey>()
     {
-        var constructor = typeof(TKey).GetConstructors().FirstOrDefault();
+        var constructor = typeof(TKey).GetConstructors().FirstOrDefault(c => c.GetParameters().Length != 0);
         if (constructor is null)
         {
             return Result.Error<ConstructorInfo>($"No suitable constructor found for Key {typeof(TKey).BeautifulName()}");

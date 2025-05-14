@@ -133,6 +133,24 @@ public class KeyFromUriServiceTests
         // Then
         values.Should().BeError().Which.Should().Contain("invoke");
     }
+    
+    [TestMethod]
+    public void KeyHasMultipleConstructors_TheConstructorWithParametersIsChosen()
+    {
+        // Given
+        var applicationModel = ApplicationModel.Create([typeof(TestHto).Assembly]);
+        var service = new KeyFromUriService(applicationModel);
+        var uri = new Uri("https://api.local:1234/Test/15/some-key?someOther=42");
+        
+        // When
+        var values = service.GetKeyFromUri<TestHto, ClassWithMultipleConstructors>(uri);
+        
+        // Then
+        var result = values.Should().BeOk().Which;
+        result.Key.Should().Be("some-key");
+        result.IntKey.Should().Be(15);
+        result.SomeOther.Should().Be(42);
+    }
 
     [HypermediaObject(Classes = [nameof(TestHto)])]
     public class TestHto : IHypermediaObject
@@ -177,6 +195,24 @@ public class KeyFromUriServiceTests
         private ClassWithoutPublicConstructor()
         {
                 
+        }
+    }
+
+    public class ClassWithMultipleConstructors
+    {
+        public string Key { get; }
+        public int IntKey { get; }
+        public double SomeOther { get; }
+
+        public ClassWithMultipleConstructors() : this("Hi", 1, 0.5d)
+        {
+        }
+
+        public ClassWithMultipleConstructors(string key, int intKey, double someOther)
+        {
+            Key = key;
+            IntKey = intKey;
+            SomeOther = someOther;
         }
     }
 
