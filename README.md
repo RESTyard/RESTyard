@@ -16,7 +16,7 @@ The Extensions: [https://www.nuget.org/packages/RESTyard.AspNetCore](https://www
 The Client: [https://www.nuget.org/packages/RESTyard.Client/](https://www.nuget.org/packages/RESTyard.Client/)
 
 ## UI client
-There is a partner project which aims for a generic UI client: [HypermediaUi](https://github.com/MathiasReichardt/HypermediaUi)
+There is a partner project which aims for a generic UI client: [HypermediaUi](https://github.com/RESTyard/HypermediaUI)
 
 ## Documentation
 
