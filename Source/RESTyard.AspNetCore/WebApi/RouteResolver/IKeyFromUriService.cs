@@ -15,5 +15,5 @@ public interface IKeyFromUriService
     /// <param name="uri">The Uri</param>
     /// <returns>The key created from the values in the Uri</returns>
     Result<TKey> GetKeyFromUri<THto, TKey>(Uri uri)
-        where THto : HypermediaObject;
+        where THto : IHypermediaObject;
 }

@@ -24,6 +24,10 @@ public partial class DerivedHto
 {
 }
 
+public partial class SecondLevelDerivedHto
+{
+}
+
 public partial class NoSelfLinkHto
 {
 }

@@ -47,7 +47,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             defaultRouteSegmentForUnknownHto = hypermediaOptions.DefaultRouteSegmentForUnknownHto;
         }
 
-        public ResolvedRoute ObjectToRoute(HypermediaObject hypermediaObject)
+        public ResolvedRoute ObjectToRoute(IHypermediaObject hypermediaObject)
         {
             var lookupType = hypermediaObject.GetType();
             var routeKeys = routeKeyFactory.GetHypermediaRouteKeys(hypermediaObject);
@@ -102,7 +102,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             return GetRouteByType(lookupType, routeKeys);
         }
 
-        public ResolvedRoute ActionToRoute(HypermediaObject actionHostObject, HypermediaActionBase action)
+        public ResolvedRoute ActionToRoute(IHypermediaObject actionHostObject, HypermediaActionBase action)
         {
             var lookupType = action.GetType();
             var routeKeys = routeKeyFactory.GetActionRouteKeys(action, actionHostObject);
