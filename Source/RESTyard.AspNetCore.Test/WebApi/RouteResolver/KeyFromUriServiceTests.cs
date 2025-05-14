@@ -152,6 +152,24 @@ public class KeyFromUriServiceTests
         result.SomeOther.Should().Be(42);
     }
 
+    [TestMethod]
+    public void GuidAsKeyType_IsResolvedProperly()
+    {
+        // Given
+        var applicationModel = ApplicationModel.Create([typeof(TestHto).Assembly]);
+        var service = new KeyFromUriService(applicationModel);
+        var guid = "821516ed-8f2b-4a23-9e30-5e9781a6490a";
+        var uri = new Uri($"https://api.local:1234/Test/AllTypes/15/{guid}");
+        
+        // When
+        var values = service.GetKeyFromUri<AllKeyTypesHto, AllKeyTypesHto.KeyRecord>(uri);
+        
+        // Then
+        var result = values.Should().BeOk().Which;
+        result.IntKey.Should().Be(15);
+        result.GuidKey.Should().Be(new Guid(guid));
+    }
+
     [HypermediaObject(Classes = [nameof(TestHto)])]
     public class TestHto : IHypermediaObject
     {
@@ -182,6 +200,18 @@ public class KeyFromUriServiceTests
                 throw new Exception("BOOM");
             }
         }
+    }
+
+    [HypermediaObject(Classes = ["AllKeyTypes"])]
+    public class AllKeyTypesHto : IHypermediaObject
+    {
+        [Key]
+        public int IntKey { get; set; }
+        
+        [Key]
+        public Guid GuidKey { get; set; }
+
+        public record KeyRecord(int IntKey, Guid GuidKey);
     }
 
     [HypermediaObject(Classes = [nameof(HtoWithoutGet)])]
@@ -224,6 +254,12 @@ public class KeyFromUriServiceTests
         {
             await Task.Delay(5);
             return this.Problem("not implemented");
+        }
+
+        [HttpGetHypermediaObject("AllTypes/{intKey}/{guidKey}", typeof(AllKeyTypesHto))]
+        public IActionResult GetAllKeyTypesHto(int intKey, Guid guidKey)
+        {
+            return this.Ok();
         }
     }
 }

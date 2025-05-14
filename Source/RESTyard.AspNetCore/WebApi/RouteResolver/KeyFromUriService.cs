@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using FunicularSwitch;
@@ -94,14 +95,14 @@ public class KeyFromUriService : IKeyFromUriService
         for (int i = 0; i < parameterDescriptions.Length; i += 1)
         {
             var parameterDescription = parameterDescriptions[i];
-            if (!values.TryGetValue(parameterDescription.Name!, out var value))
+            if (!values.TryGetValue(parameterDescription.Name!, out var value) || value is null)
             {
                 return Result.Error<object?[]>($"Parameter {parameterDescription.Name!} not present in route values");
             }
 
             try
             {
-                parameters[i] = Convert.ChangeType(value, parameterDescription.ParameterType);
+                parameters[i] = TypeDescriptor.GetConverter(parameterDescription.ParameterType).ConvertFrom(value);
             }
             catch (Exception e)
             {
