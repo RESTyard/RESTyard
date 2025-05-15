@@ -10,9 +10,9 @@ namespace CarShack.Util.GlobalExceptionHandler
 {
     public class GlobalExceptionFilter : IExceptionFilter, IDisposable
     {
-        private readonly ILogger logger;
+        private readonly ILogger? logger;
 
-        public GlobalExceptionFilter(ILoggerFactory logger)
+        public GlobalExceptionFilter(ILoggerFactory? logger)
         {
             if (logger != null)
             {
@@ -29,10 +29,7 @@ namespace CarShack.Util.GlobalExceptionHandler
                 TypeSwitch.Default(() => GenericResponse(context))
             );
 
-            if (this.logger != null)
-            {
-                this.logger.LogError("GlobalExceptionFilter", context.Exception);
-            }
+            this.logger?.LogError("GlobalExceptionFilter: {0}", context.Exception);
         }
 
         private void HandleUnauthorizedAccessException(ExceptionContext context)

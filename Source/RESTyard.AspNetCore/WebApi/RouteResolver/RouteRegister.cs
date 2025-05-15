@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using RESTyard.AspNetCore.Exceptions;
-using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 
 namespace RESTyard.AspNetCore.WebApi.RouteResolver
 {
@@ -34,7 +35,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             }
         }
 
-        public void AddActionRoute(Type hypermediaActionType, string? routeName, HttpMethod httpMethod, string? acceptableMediaType = null)
+        public void AddActionRoute(Type hypermediaActionType, string routeName, HttpMethod httpMethod, string? acceptableMediaType = null)
         {
             if (!IsHypermediaAction(hypermediaActionType) /*&& !IsGenericHypermediaAction(hypermediaActionType)*/)
             {
@@ -50,18 +51,18 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             return typeof(HypermediaActionBase).GetTypeInfo().IsAssignableFrom(hypermediaActionType);
         }
 
-        public void AddHypermediaObjectRoute(Type hypermediaObjectType, string? routeName, HttpMethod httpMethod)
+        public void AddHypermediaObjectRoute(Type hypermediaObjectType, string routeName, HttpMethod httpMethod)
         {
-            if (!typeof(HypermediaObject).GetTypeInfo().IsAssignableFrom(hypermediaObjectType))
+            if (!AttributedRouteHelper.Has<HypermediaObjectAttribute>(hypermediaObjectType))
             {
                 throw new RouteRegisterException(
-                    $"Type {hypermediaObjectType} must derive from {nameof(HypermediaObject)}.");
+                    $"Type {hypermediaObjectType} must be attributed with {nameof(HypermediaObjectAttribute)}.");
             }
 
             this.AddRoute(hypermediaObjectType, new RouteInfo(routeName, httpMethod));
         }
 
-        public void AddParameterTypeRoute(Type iHypermediaActionParameter, string? routeName, HttpMethod httpMethod)
+        public void AddParameterTypeRoute(Type iHypermediaActionParameter, string routeName, HttpMethod httpMethod)
         {
             if (!typeof(IHypermediaActionParameter).GetTypeInfo().IsAssignableFrom(iHypermediaActionParameter))
             {

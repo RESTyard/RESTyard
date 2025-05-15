@@ -21,7 +21,7 @@ namespace CarShack.Domain.Customer
             CustomerList = CustomerService.GenerateRandomCustomersList(22);
         }
 
-        public Task<Customer> GetEnitityByKeyAsync(int key)
+        public Task<Customer> GetEntityByKeyAsync(int key)
         {
             var result = CustomerList.FirstOrDefault(c => c.Id == key);
             if (result == null)

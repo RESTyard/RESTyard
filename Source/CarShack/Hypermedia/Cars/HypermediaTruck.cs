@@ -5,7 +5,7 @@ namespace CarShack.Hypermedia.Cars
 {
     // this HTO has no route. Exists to demonstrate the use of ReturnDefaultRouteForUnknownHto.
     [HypermediaObject(Title = "A truck", Classes = new[] { "Truck" })]
-    public class HypermediaTruck : HypermediaObject
+    public class HypermediaTruck : IHypermediaObject
     {
         public string Brand { get; set; }
 

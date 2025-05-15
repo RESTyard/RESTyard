@@ -76,7 +76,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             isComplexKey = this.keyAccessors.Count > 1;
         }
 
-        public object CreateFromHypermediaObject(HypermediaObject hypermediaObject)
+        public object CreateFromHypermediaObject(IHypermediaObject hypermediaObject)
         {
             var dynamic = new ExpandoObject();
             var dict = (IDictionary<string, object?>)dynamic;
@@ -89,7 +89,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
 
         public object? CreateFromKeyObject(object? keyObject)
         {
-            if (isComplexKey)
+            if (isComplexKey || keyObject is IEnumerable<KeyValuePair<string, object?>>)
             {
                 return keyObject;
             }

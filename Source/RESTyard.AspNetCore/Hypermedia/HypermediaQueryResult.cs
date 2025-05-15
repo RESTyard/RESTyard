@@ -2,13 +2,14 @@
 using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Query;
+using RESTyard.Relations;
 
 namespace RESTyard.AspNetCore.Hypermedia
 {
     /// <summary>
     /// Base class for query results.
     /// </summary>
-    public abstract class HypermediaQueryResult : HypermediaObject 
+    public abstract class HypermediaQueryResult : IHypermediaQueryResult, IHypermediaObject
     {
         [FormatterIgnoreHypermediaProperty]
         public IHypermediaQuery Query { get; }
@@ -17,22 +18,13 @@ namespace RESTyard.AspNetCore.Hypermedia
         /// Base class for query results.
         /// </summary>
         /// <param name="query">The query used to retrieve this result.</param>
-        protected HypermediaQueryResult(IHypermediaQuery query) : base (query)
+        protected HypermediaQueryResult(IHypermediaQuery query)
         {
             Query = query;
+            Self = new Link<HypermediaQueryResult>(new HypermediaObjectQueryReference(GetType(), query));
         }
-
-        /// <summary>
-        /// Adds all Queries from a NavigationQueries as Link using this hypermediaObject type target.
-        /// Existing if a Query is added for which a Link with the same relation exists it is replaced.
-        /// </summary>
-        /// <param name="navigationQueries">The Queries to add</param>
-        public void AddNavigationQueries(NavigationQueries navigationQueries)
-        {
-            foreach (var navigationQuery in navigationQueries.Queries)
-            {
-                Links.Add(navigationQuery.Key, new HypermediaObjectQueryReference(GetType(), navigationQuery.Value));
-            }
-        }
+        
+        [Relations([DefaultHypermediaRelations.Self])]
+        public ILink<HypermediaQueryResult> Self { get; }
     }
 }

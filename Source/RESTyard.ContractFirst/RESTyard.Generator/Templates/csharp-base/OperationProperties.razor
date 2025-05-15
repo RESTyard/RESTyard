@@ -1,0 +1,12 @@
+﻿@inherits RazorTemplateBase
+
+@foreach (var operation in List)
+{
+    var operationType = operation.name + "Op";
+    <Attribute>HypermediaAction(Name = "@operation.name", Title = "@operation.title")</Attribute>
+    <PropertyStatement TypeName="@operationType" PropertyName="@operation.name" />
+}
+
+@code {
+    [Parameter] public OperationType[] List { get; set; } = [];
+}

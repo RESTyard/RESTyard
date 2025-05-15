@@ -15,7 +15,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             this.routeRegister = routeRegister;
         }
 
-        public object GetHypermediaRouteKeys(HypermediaObject hypermediaObject)
+        public object GetHypermediaRouteKeys(IHypermediaObject hypermediaObject)
         {
             if (!this.routeRegister.TryGetKeyProducer(hypermediaObject.GetType(), out var keyProducer))
             {
@@ -41,7 +41,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             return key;
         }
 
-        public object GetActionRouteKeys(HypermediaActionBase action, HypermediaObject actionHostObject)
+        public object GetActionRouteKeys(HypermediaActionBase action, IHypermediaObject actionHostObject)
         {
             if (!this.routeRegister.TryGetKeyProducer(action.GetType(), out var keyProducer) 
                 && !this.routeRegister.TryGetKeyProducer(actionHostObject.GetType(), out keyProducer))

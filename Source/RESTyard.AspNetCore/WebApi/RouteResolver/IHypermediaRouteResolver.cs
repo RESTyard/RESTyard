@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using FunicularSwitch;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
@@ -12,11 +11,11 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
     /// </summary>
     public interface IHypermediaRouteResolver
     {
-        ResolvedRoute ObjectToRoute(HypermediaObject hypermediaObject);
+        ResolvedRoute ObjectToRoute(IHypermediaObject hypermediaObject);
 
         ResolvedRoute ReferenceToRoute(HypermediaObjectReferenceBase reference);
 
-        ResolvedRoute ActionToRoute(HypermediaObject hypermediaObject, HypermediaActionBase reference);
+        ResolvedRoute ActionToRoute(IHypermediaObject hypermediaObject, HypermediaActionBase reference);
 
         ResolvedRoute TypeToRoute(Type actionParameterType);
 

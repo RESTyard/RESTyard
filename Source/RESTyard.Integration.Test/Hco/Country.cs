@@ -13,8 +13,3 @@ public class Country
     
     public int Population { get; set; }
 }
-
-public record MarkAsFavoriteParameters(string Customer)
-{
-    public static MarkAsFavoriteParameters FromCustomer(HypermediaCustomerHco c) => new(c.Self.Uri!.ToString());
-}

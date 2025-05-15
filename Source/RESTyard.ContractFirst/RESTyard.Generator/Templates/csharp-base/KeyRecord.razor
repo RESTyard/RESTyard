@@ -1,0 +1,25 @@
+﻿@inherits RazorTemplateBase
+
+@{
+    var keyProperties = GetKeyProperties(Document);
+    if (keyProperties.Count > 0)
+    {
+        var propertyString = string.Join(", ", keyProperties.Select(kp => $"{MapNullableType(!kp.mandatory, kp.type)} {kp.name}"));
+        var htoName = Document.name + "Hto";
+        var hasParent = !string.IsNullOrEmpty(Document.parentDocument);
+        var baseName = $"HypermediaObjectKeyBase<{htoName}>";
+        <Record Name="Key" Parameters="@propertyString" Inherits="@baseName" HasNewKeyword="@hasParent">
+            protected override @("IEnumerable<KeyValuePair<string, object?>>") EnumerateKeysForLinkGeneration()
+            {
+                @foreach (var property in keyProperties)
+                {
+                    @:yield return new KeyValuePair<string, object?>("@(Uncapitalize(property.name))", this.@property.name);
+                }
+            }
+        </Record>
+    }
+}
+
+@code {
+    [Parameter] public DocumentType Document { get; set; } = null!;
+}

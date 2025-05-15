@@ -1,7 +1,9 @@
 using System;
 using System.Reflection;
 using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.Query;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace RESTyard.AspNetCore.Hypermedia.Links
@@ -12,11 +14,11 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
 
         protected HypermediaObjectReferenceBase(Type hypermediaObjectType)
         {
-            if (!typeof(HypermediaObject).GetTypeInfo().IsAssignableFrom(hypermediaObjectType))
+            if (!AttributedRouteHelper.Has<HypermediaObjectAttribute>(hypermediaObjectType))
             {
-                throw new HypermediaException($"Type does not derive from {typeof(HypermediaObject)}.");
+                throw new HypermediaException($"Type does not have {typeof(HypermediaObjectAttribute)}.");
             }
-
+            
             this.HypermediaObjectType = hypermediaObjectType;
         }
 
@@ -26,10 +28,10 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
         public abstract bool CanResolve();
 
         /// <summary>
-        /// Derived classes may choose to return the actual referenced <see cref="HypermediaObject"/>
+        /// Derived classes may choose to return the actual referenced <see cref="IHypermediaObject"/>
         /// </summary>
         /// <returns></returns>
-        public abstract HypermediaObject? GetInstance();
+        public abstract IHypermediaObject? GetInstance();
 
         /// <summary>
         ///  Indicates if this reference is backed by a instance.
@@ -40,7 +42,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
         ///  Creates a object which can be used as key for the referenced. 
         /// </summary>
         /// <param name="keyProducer"></param>
-        /// <returns>The key object to this <see cref="HypermediaObject"/> or null if it has no key.</returns>
+        /// <returns>The key object to this <see cref="IHypermediaObject"/> or null if it has no key.</returns>
         public abstract object? GetKey(IKeyProducer keyProducer);
 
         /// <summary>
@@ -50,7 +52,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
         public abstract IHypermediaQuery? GetQuery();
 
         /// <summary>
-        /// Get the referenced <see cref="HypermediaObject"/> type
+        /// Get the referenced <see cref="IHypermediaObject"/> type
         /// </summary>
         /// <returns>Referenced Type</returns>
         public Type GetHypermediaType()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using CarShack.Domain.Customer;
 
 namespace CarShack.Util
 {
@@ -29,6 +30,8 @@ namespace CarShack.Util
             "Magnolia Avenue"
         };
 
+        private readonly Range numbers = 1..500;
+
         private readonly List<string> cities = new List<string>()
         {
             "Ahmedabad",
@@ -53,6 +56,7 @@ namespace CarShack.Util
             "Beijing"
         };
 
+        private readonly Range zipCodes = 12345..56789;
 
         private readonly Random rand;
 
@@ -66,10 +70,17 @@ namespace CarShack.Util
             this.rand = new Random((int)seed);
         }
 
-        public string GenerateNext()
+        public Address GenerateNext()
         {
-            var adress = streets[rand.Next(0, streets.Count - 1)] + " " + rand.Next(1,500) + " " + cities[rand.Next(0, cities.Count - 1)];
-            return adress;
+            var street = streets[rand.Next(0, streets.Count - 1)];
+            var number = rand.Next(numbers.Start.Value, numbers.End.Value);
+            var city = cities[rand.Next(0, cities.Count - 1)];
+            var zipCode = rand.Next(zipCodes.Start.Value, zipCodes.End.Value);
+            return new Address(
+                Street: street,
+                Number: number.ToString(),
+                City: city,
+                ZipCode: zipCode.ToString());
         }
     }
 }

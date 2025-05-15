@@ -7,10 +7,10 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
 {
     public interface IRouteKeyFactory
     {
-        object GetHypermediaRouteKeys(HypermediaObject hypermediaObject);
+        object GetHypermediaRouteKeys(IHypermediaObject hypermediaObject);
 
         object GetHypermediaRouteKeys(HypermediaObjectReferenceBase reference);
 
-        object GetActionRouteKeys(HypermediaActionBase action, HypermediaObject actionHostObject);
+        object GetActionRouteKeys(HypermediaActionBase action, IHypermediaObject actionHostObject);
     }
 }

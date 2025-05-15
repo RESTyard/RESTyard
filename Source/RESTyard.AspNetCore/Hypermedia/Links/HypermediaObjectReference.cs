@@ -10,9 +10,9 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
     /// </summary>
     public class HypermediaObjectReference : HypermediaObjectReferenceBase
     {
-        private readonly HypermediaObject reference;
+        private readonly IHypermediaObject reference;
 
-        public HypermediaObjectReference(HypermediaObject hypermediaObject) : base(hypermediaObject.GetType())
+        public HypermediaObjectReference(IHypermediaObject hypermediaObject) : base(hypermediaObject.GetType())
         {
             if (hypermediaObject == null)
             {
@@ -26,7 +26,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
         /// Resolves the referenced HypermediaObject
         /// </summary>
         /// <returns>The HypermediaObject.</returns>
-        public override HypermediaObject? GetInstance()
+        public override IHypermediaObject? GetInstance()
         {
             return this.reference;
         }
@@ -49,11 +49,6 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
         public override IHypermediaQuery? GetQuery()
         {
             return null;
-        }
-
-        public static implicit operator HypermediaObjectReference(HypermediaObject hypermediaObject)
-        {
-            return new HypermediaObjectReference(hypermediaObject);
         }
     }
 }

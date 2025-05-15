@@ -268,3 +268,7 @@ __pycache__/
 # tools/
 /Source/Nuget
 *.AssemblyAttributes
+
+# Verify
+*.received.*
+*.received/

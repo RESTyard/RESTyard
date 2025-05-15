@@ -66,7 +66,7 @@ public class When_generating_json_schema_from_type_containing_a_list : AsyncTest
        public List<Guid> Guids { get; set; } = new();
    }
 
-   class MyHypermediaObject : HypermediaObject;
+   class MyHypermediaObject : IHypermediaObject;
 }
 
 [TestClass]
@@ -110,7 +110,7 @@ public class When_generating_json_schema_from_type_containing_a_list_and_not_a_l
         public Guid Guid { get; set; } = new();
     }
 
-    class MyHypermediaObject : HypermediaObject;
+    class MyHypermediaObject : IHypermediaObject;
 }
 
 [TestClass]
@@ -171,8 +171,8 @@ public class When_generating_json_schema_from_type_containing_two_types_and_a_li
         public Guid Guid2 { get; set; } = new();
     }
 
-    class MyHypermediaObject : HypermediaObject;
-    class MyHypermediaObject2 : HypermediaObject;
+    class MyHypermediaObject : IHypermediaObject;
+    class MyHypermediaObject2 : IHypermediaObject;
 }
 
 [TestClass]
@@ -209,8 +209,8 @@ public class When_generating_json_schema_with_same_name_for_both_a_collection_an
         public Guid Guid2 { get; set; } = new();
     }
 
-    class MyHypermediaObject : HypermediaObject;
-    class MyHypermediaObject2 : HypermediaObject;
+    class MyHypermediaObject : IHypermediaObject;
+    class MyHypermediaObject2 : IHypermediaObject;
 }
 
 [TestClass]
@@ -241,8 +241,8 @@ public class When_generating_json_schema_with_same_name_for_multiple_target_type
         public Guid Guid2 { get; set; } = new();
     }
 
-    class MyHypermediaObject : HypermediaObject;
-    class MyHypermediaObject2 : HypermediaObject;
+    class MyHypermediaObject : IHypermediaObject;
+    class MyHypermediaObject2 : IHypermediaObject;
 }
 // End: Schema generation tests
 
@@ -302,7 +302,7 @@ public class When_deserializing_a_list_parameter_with_keyfromuri_attribute : Tes
         public Uri Uri { get; set; }
     }
 
-    class MyHypermediaObject : HypermediaObject;
+    class MyHypermediaObject : IHypermediaObject;
 }
 
 [TestClass]
@@ -366,7 +366,7 @@ public class When_deserializing_both_list_and_nonlist_parameters_with_keyfromuri
         public Uri Uri { get; set; }
     }
 
-    class MyHypermediaObject : HypermediaObject;
+    class MyHypermediaObject : IHypermediaObject;
 }
 
 [TestClass]
@@ -427,7 +427,7 @@ public class When_deserializing_both_list_and_nonlist_parameters_with_keyfromuri
         public Uri Uri { get; set; }
     }
 
-    class MyHypermediaObject : HypermediaObject;
+    class MyHypermediaObject : IHypermediaObject;
 }
 
 [TestClass]
@@ -491,8 +491,8 @@ public class When_deserializing_multiple_types_of_parameters_with_keyfromuri_att
         public Uri Uri { get; set; }
     }
 
-    class MyHypermediaObject : HypermediaObject;
-    class MyHypermediaObject2 : HypermediaObject;
+    class MyHypermediaObject : IHypermediaObject;
+    class MyHypermediaObject2 : IHypermediaObject;
 }
 
 
@@ -551,8 +551,8 @@ public class When_deserializing_multiple_types_of_parameters_with_keyfromuri_att
         public Uri Uri { get; set; }
     }
 
-    class MyHypermediaObject : HypermediaObject;
-    class MyHypermediaObject2 : HypermediaObject;
+    class MyHypermediaObject : IHypermediaObject;
+    class MyHypermediaObject2 : IHypermediaObject;
 }
 
 // End: Deserialization tests

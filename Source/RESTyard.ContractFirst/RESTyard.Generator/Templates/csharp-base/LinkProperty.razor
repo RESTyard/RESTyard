@@ -1,0 +1,13 @@
+﻿@inherits RazorTemplateBase
+
+@{
+    var linkType = !string.IsNullOrEmpty(LinkType.document) ? $"ILink<{LinkType.document}Hto>" : "ExternalLink";
+    linkType = MapNullableType(!LinkType.mandatory, linkType);
+}
+
+<Attribute>Relations(["@LinkType.rel"])</Attribute>
+<PropertyStatement TypeName="@linkType" PropertyName="@Capitalize(LinkType.rel)" />
+
+@code {
+    [Parameter] public LinkType LinkType { get; set; } = null!;
+}

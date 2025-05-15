@@ -13,7 +13,7 @@ namespace CarShack.Controllers.Customers
     // application startup. For automatic registration use KeyAttribute on property Id of HypermediaCustomer. Look at HypermediaCar uses implicit KeyProducers.
     public class CustomerRouteKeyProducer : IKeyProducer
     {
-        public object CreateFromHypermediaObject(HypermediaObject hypermediaObject)
+        public object CreateFromHypermediaObject(IHypermediaObject hypermediaObject)
         {
             if (!(hypermediaObject is HypermediaCustomerHto customer))
             {
@@ -24,8 +24,12 @@ namespace CarShack.Controllers.Customers
             return new { key = customer.Id };
         }
 
-        public object CreateFromKeyObject(object keyObject)
+        public object CreateFromKeyObject(object? keyObject)
         {
+            if (keyObject is HypermediaCustomerHto.Key typedKey)
+            {
+                return new { key = typedKey.Id };
+            }
             return new { key = keyObject };
         }
     }
