@@ -89,7 +89,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
 
         public object? CreateFromKeyObject(object? keyObject)
         {
-            if (isComplexKey)
+            if (isComplexKey || keyObject is IEnumerable<KeyValuePair<string, object?>>)
             {
                 return keyObject;
             }
