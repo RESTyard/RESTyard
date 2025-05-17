@@ -24,7 +24,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             this.logger = logger;
             var assembliesToCrawl = hypermediaOptions.ControllerAndHypermediaAssemblies.Length > 0
                 ? hypermediaOptions.ControllerAndHypermediaAssemblies
-                : Assembly.GetEntryAssembly()?.Yield() ?? Enumerable.Empty<Assembly>();
+                : Assembly.GetEntryAssembly()?.Yield() ?? [];
 
             foreach (var assemblyToCrawl in assembliesToCrawl)
             {
