@@ -9,6 +9,7 @@ using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
 {
+    [Obsolete($"Use {nameof(HttpGetAttribute)} in combination with {nameof(HypermediaEndpointAttribute)}")]
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
     public class HttpGetHypermediaObject : HttpGetAttribute, IHaveRouteInfo
     {
@@ -32,13 +33,13 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
         }
 
         /// <summary>
-        /// Indicates that this Rout will provide a <see cref="HypermediaObject"/>. It is not required that only this <see cref="HypermediaObject"/> can be returned.
-        /// This route will be referenced if it's type is used in a <see cref="HypermediaObject"/>.
+        /// Indicates that this Route will provide an <see cref="IHypermediaObject"/>. It is not required that only this <see cref="IHypermediaObject"/> can be returned.
+        /// This route will be referenced if it's type is used in an <see cref="IHypermediaObject"/>.
         /// </summary>
         /// <param name="template">The route template.</param>
-        /// <param name="routeType">The type of the <see cref="HypermediaObject"/> assiciated with this route. No other Route may have the same type.</param>
+        /// <param name="routeType">The type of the <see cref="IHypermediaObject"/> associated with this route. No other Route may have the same type.</param>
         /// <param name="routeKeyProducerType">If the route template contains a (single) key it is required that the type of teh responsible RouteKeyProducer is given.
-        /// This type will be used to create a n instance of the producer and generate the key object used in a UrlHelper to determin the final URL.
+        /// This type will be used to create a n instance of the producer and generate the key object used in a UrlHelper to determine the final URL.
         /// </param>y>
 
 

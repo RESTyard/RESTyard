@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using RESTyard.AspNetCore.Extensions;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
@@ -72,6 +73,31 @@ namespace RESTyard.AspNetCore
 
         static ControllerMethod? GetControllerMethodOrNull(MethodInfo methodInfo, ControllerType controllerType)
         {
+            var endpointAttribute = methodInfo.GetCustomAttribute<HypermediaEndpointAttribute>();
+            if (endpointAttribute is not null)
+            {
+                var httpAttribute = methodInfo.GetCustomAttribute<HttpMethodAttribute>();
+                return httpAttribute switch
+                {
+                    HttpGetAttribute => new GetHmoMethod(endpointAttribute.RouteType, httpAttribute.Template,
+                        controllerType, methodInfo.Name),
+                    HttpPostAttribute or HttpPutAttribute or HttpPatchAttribute or HttpDeleteAttribute => new ActionMethod(endpointAttribute.ActionType!, httpAttribute.Template,
+                        controllerType, methodInfo.Name),
+                    _ => null
+                };
+            }
+
+            var parameterInfoAttribute = methodInfo.GetCustomAttribute<HypermediaParameterInfoAttribute>();
+            if (parameterInfoAttribute is not null)
+            {
+                var httpGetAttribute = methodInfo.GetCustomAttribute<HttpGetAttribute>();
+                if (httpGetAttribute is not null)
+                {
+                    return new GetActionParameterInfoMethod(parameterInfoAttribute.RouteType, httpGetAttribute.Template,
+                        controllerType, methodInfo.Name);
+                }
+            }
+            
             var httpGetHypermediaObject = methodInfo.GetCustomAttribute<HttpGetHypermediaObject>();
             if (httpGetHypermediaObject != null)
             {
