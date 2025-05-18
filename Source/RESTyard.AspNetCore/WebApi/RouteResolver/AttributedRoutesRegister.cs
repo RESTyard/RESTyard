@@ -41,40 +41,56 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                 {
                     AssertAttributeHasName(endpointAttribute);
 
-                    switch (httpAttribute)
+                    switch (endpointAttribute)
                     {
-                        case HttpGetAttribute:
-                            this.AddHypermediaObjectRoute(endpointAttribute.RouteType, endpointAttribute.EndpointName, HttpMethod.GET);
+                        case IHypermediaObjectEndpointMetadata htoEndpoint:
+                            switch (httpAttribute)
+                            {
+                                case HttpGetAttribute:
+                                    this.AddHypermediaObjectRoute(htoEndpoint.RouteType, htoEndpoint.EndpointName, HttpMethod.GET);
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException(nameof(httpAttribute),
+                                        $"Invalid http attribute: {httpAttribute.GetType().Name} on {nameof(HypermediaObjectEndpointAttribute<IHypermediaObject>)}");
+                            }
+                            this.AddRouteKeyProducer(method, htoEndpoint, httpAttribute);
+
                             break;
-                        case HttpPostAttribute:
-                            this.AddActionRoute(endpointAttribute.ActionType!, endpointAttribute.EndpointName, HttpMethod.POST, endpointAttribute.AcceptedMediaType);
+                        case IHypermediaActionEndpointMetadata actionEndpoint:
+                            switch (httpAttribute)
+                            {
+                                case HttpPostAttribute:
+                                    this.AddActionRoute(actionEndpoint.ActionType, actionEndpoint.EndpointName, HttpMethod.POST, actionEndpoint.AcceptedMediaType);
+                                    break;
+                                case HttpPutAttribute:
+                                    this.AddActionRoute(actionEndpoint.ActionType, actionEndpoint.EndpointName, HttpMethod.PUT, actionEndpoint.AcceptedMediaType);
+                                    break;
+                                case HttpPatchAttribute:
+                                    this.AddActionRoute(actionEndpoint.ActionType, actionEndpoint.EndpointName, HttpMethod.PATCH, actionEndpoint.AcceptedMediaType);
+                                    break;
+                                case HttpDeleteAttribute:
+                                    this.AddActionRoute(actionEndpoint.ActionType, actionEndpoint.EndpointName, HttpMethod.DELETE, actionEndpoint.AcceptedMediaType);
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException(nameof(httpAttribute),
+                                        $"Invalid http attribute: {httpAttribute.GetType().Name} on {nameof(HypermediaActionEndpointAttribute<IHypermediaObject>)}");
+                            }
+
                             break;
-                        case HttpPutAttribute:
-                            this.AddActionRoute(endpointAttribute.ActionType!, endpointAttribute.EndpointName, HttpMethod.PUT, endpointAttribute.AcceptedMediaType);
+                        case IHypermediaActionParameterInfoEndpointMetadata actionParameterInfoMetadata:
+                            switch (httpAttribute)
+                            {
+                                case HttpGetAttribute:
+                                    this.AddParameterTypeRoute(actionParameterInfoMetadata.RouteType, actionParameterInfoMetadata.EndpointName, HttpMethod.GET);
+                                    break;
+                                default:
+                                    throw new HypermediaException(
+                                        $"Unsupported HTTP verb {httpAttribute.GetType().BeautifulName()} on parameter info endpoint");
+                            }
+
                             break;
-                        case HttpPatchAttribute:
-                            this.AddActionRoute(endpointAttribute.ActionType!, endpointAttribute.EndpointName, HttpMethod.PATCH, endpointAttribute.AcceptedMediaType);
-                            break;
-                        case HttpDeleteAttribute:
-                            this.AddActionRoute(endpointAttribute.ActionType!, endpointAttribute.EndpointName, HttpMethod.DELETE, endpointAttribute.AcceptedMediaType);
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(httpAttribute),
-                                $"Unknown http attribute: {httpAttribute.GetType().Name}");
                     }
-                    this.AddRouteKeyProducer(method, endpointAttribute, httpAttribute);
-                }
-                else if (TryGetHypermediaEndpoint<HypermediaParameterInfoAttribute>(method, out var parameterInfoAttribute, out httpAttribute))
-                {
-                    if (httpAttribute is HttpGetAttribute httpGetAttribute)
-                    {
-                        this.AddParameterTypeRoute(parameterInfoAttribute.RouteType, parameterInfoAttribute.EndpointName, HttpMethod.GET);
-                    }
-                    else
-                    {
-                        throw new HypermediaException(
-                            $"Unsupported HTTP verb {httpAttribute.GetType().BeautifulName()} on parameter info endpoint");
-                    }
+
                 }
                 else if (TryGetSingleHypermediaAttribute(method, out var hypermediaAttribute))
                 {
@@ -152,7 +168,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             }
         }
 
-        private void AddRouteKeyProducer(MethodInfo method, HypermediaEndpointAttribute hypermediaAttribute, HttpMethodAttribute httpAttribute)
+        private void AddRouteKeyProducer(MethodInfo method, IHypermediaObjectEndpointMetadata hypermediaAttribute, HttpMethodAttribute httpAttribute)
         {
             var autoAddRouteKeyProducers = httpAttribute is HttpGetAttribute;
           

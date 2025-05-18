@@ -58,13 +58,13 @@ public class ApplicationModelTests : AssemblyBasedTestBase
                 [Route("Test")]
                 public class Controller : ControllerBase
                 {
-                    [HttpGet("Get"), HypermediaEndpoint(typeof({{nameof(ExampleHto)}}))]
+                    [HttpGet("Get"), HypermediaObjectEndpoint<{{nameof(ExampleHto)}}>]
                     public IActionResult Get() => this.Ok();
                     
-                    [HttpPost("Post"), HypermediaEndpoint(typeof({{nameof(ExampleHto)}}), "{{nameof(ExampleHto.DoSomething)}}")]
+                    [HttpPost("Post"), HypermediaActionEndpoint<{{nameof(ExampleHto)}}>("{{nameof(ExampleHto.DoSomething)}}")]
                     public IActionResult Post() => this.Ok();
                     
-                    [HttpGet("Info"), HypermediaParameterInfo(typeof({{nameof(ExampleHto)}}.{{nameof(ExampleHto.BasicParameter)}}))]
+                    [HttpGet("Info"), HypermediaActionParameterInfoEndpoint<{{nameof(ExampleHto)}}.{{nameof(ExampleHto.BasicParameter)}}>]
                     public IActionResult Info() => this.Ok();
                 }
                 """),

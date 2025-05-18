@@ -77,25 +77,16 @@ namespace RESTyard.AspNetCore
             if (endpointAttribute is not null)
             {
                 var httpAttribute = methodInfo.GetCustomAttribute<HttpMethodAttribute>();
-                return httpAttribute switch
+                return (endpointAttribute, httpAttribute) switch
                 {
-                    HttpGetAttribute => new GetHmoMethod(endpointAttribute.RouteType, httpAttribute.Template,
-                        controllerType, methodInfo.Name),
-                    HttpPostAttribute or HttpPutAttribute or HttpPatchAttribute or HttpDeleteAttribute => new ActionMethod(endpointAttribute.ActionType!, httpAttribute.Template,
-                        controllerType, methodInfo.Name),
+                    (IHypermediaObjectEndpointMetadata htoMetadata, HttpGetAttribute)
+                        => new GetHmoMethod(htoMetadata.RouteType, httpAttribute.Template, controllerType, methodInfo.Name),
+                    (IHypermediaActionEndpointMetadata actionMetadata, HttpPostAttribute or HttpPutAttribute or HttpPatchAttribute or HttpDeleteAttribute)
+                        => new ActionMethod(actionMetadata.ActionType, httpAttribute.Template, controllerType, methodInfo.Name),
+                    (IHypermediaActionParameterInfoEndpointMetadata actionParameterInfoMetadata, HttpGetAttribute)
+                        => new GetActionParameterInfoMethod(actionParameterInfoMetadata.RouteType, httpAttribute.Template, controllerType, methodInfo.Name),
                     _ => null
                 };
-            }
-
-            var parameterInfoAttribute = methodInfo.GetCustomAttribute<HypermediaParameterInfoAttribute>();
-            if (parameterInfoAttribute is not null)
-            {
-                var httpGetAttribute = methodInfo.GetCustomAttribute<HttpGetAttribute>();
-                if (httpGetAttribute is not null)
-                {
-                    return new GetActionParameterInfoMethod(parameterInfoAttribute.RouteType, httpGetAttribute.Template,
-                        controllerType, methodInfo.Name);
-                }
             }
             
             var httpGetHypermediaObject = methodInfo.GetCustomAttribute<HttpGetHypermediaObject>();

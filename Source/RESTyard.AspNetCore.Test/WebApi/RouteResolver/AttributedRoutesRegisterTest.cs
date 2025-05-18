@@ -47,7 +47,7 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
                 public class Controller : ControllerBase
                 {
                     [HttpGet("Get")]
-                    [HypermediaEndpoint(typeof({{nameof(ExampleHto)}}))]
+                    [HypermediaObjectEndpoint<{{nameof(ExampleHto)}}>]
                     public IActionResult Get() => this.Ok();
                 }
                 """),
@@ -118,7 +118,7 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
                   public class Controller : ControllerBase
                   {
                       [Http{{methodString}}("{{methodString}}")]
-                      [HypermediaEndpoint(typeof({{nameof(ExampleHto)}}), "{{nameof(ExampleHto.DoSomething)}}")]
+                      [HypermediaActionEndpoint<{{nameof(ExampleHto)}}>("{{nameof(ExampleHto.DoSomething)}}")]
                       public IActionResult {{methodString}}() => this.Ok();
                   }
                   """),
@@ -165,7 +165,7 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
                   public class Controller : ControllerBase
                   {
                       [HttpGet("Info")]
-                      [HypermediaParameterInfo(typeof({{nameof(ExampleHto)}}.{{nameof(ExampleHto.BasicParameter)}}))]
+                      [HypermediaActionParameterInfoEndpoint<{{nameof(ExampleHto)}}.{{nameof(ExampleHto.BasicParameter)}}>]
                       public IActionResult Info() => this.Ok();
                   }
                   """),

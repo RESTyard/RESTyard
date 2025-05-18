@@ -1,9 +1,10 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
+using RESTyard.AspNetCore.Hypermedia;
 
 namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
 {
-    [Obsolete($"Use {nameof(HttpPatchAttribute)} in combination with {nameof(HypermediaEndpointAttribute)}")]
+    [Obsolete($"Use {nameof(HttpPatchAttribute)} in combination with {nameof(HypermediaActionEndpointAttribute<IHypermediaObject>)}")]
     public class HttpPatchHypermediaAction : HttpMethodHypermediaAction
     {
         /// <inheritdoc />
