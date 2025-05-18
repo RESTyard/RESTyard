@@ -57,25 +57,19 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
 
                             break;
                         case IHypermediaActionEndpointMetadata actionEndpoint:
-                            switch (httpAttribute)
-                            {
-                                case HttpPostAttribute:
-                                    this.AddActionRoute(actionEndpoint.ActionType, actionEndpoint.EndpointName, HttpMethod.POST, actionEndpoint.AcceptedMediaType);
-                                    break;
-                                case HttpPutAttribute:
-                                    this.AddActionRoute(actionEndpoint.ActionType, actionEndpoint.EndpointName, HttpMethod.PUT, actionEndpoint.AcceptedMediaType);
-                                    break;
-                                case HttpPatchAttribute:
-                                    this.AddActionRoute(actionEndpoint.ActionType, actionEndpoint.EndpointName, HttpMethod.PATCH, actionEndpoint.AcceptedMediaType);
-                                    break;
-                                case HttpDeleteAttribute:
-                                    this.AddActionRoute(actionEndpoint.ActionType, actionEndpoint.EndpointName, HttpMethod.DELETE, actionEndpoint.AcceptedMediaType);
-                                    break;
-                                default:
-                                    throw new ArgumentOutOfRangeException(nameof(httpAttribute),
-                                        $"Invalid http attribute: {httpAttribute.GetType().Name} on {nameof(HypermediaActionEndpointAttribute<IHypermediaObject>)}");
-                            }
-
+                            this.AddActionRoute(
+                                actionEndpoint.ActionType,
+                                actionEndpoint.EndpointName,
+                                httpAttribute switch
+                                {
+                                    HttpPostAttribute => HttpMethod.POST,
+                                    HttpPutAttribute => HttpMethod.PUT,
+                                    HttpPatchAttribute => HttpMethod.PATCH,
+                                    HttpDeleteAttribute => HttpMethod.DELETE,
+                                    _ => throw new ArgumentOutOfRangeException(nameof(httpAttribute),
+                                        $"Invalid http attribute: {httpAttribute.GetType().Name} on {nameof(HypermediaActionEndpointAttribute<IHypermediaObject>)}"),
+                                },
+                                actionEndpoint.AcceptedMediaType);
                             break;
                         case IHypermediaActionParameterInfoEndpointMetadata actionParameterInfoMetadata:
                             switch (httpAttribute)
