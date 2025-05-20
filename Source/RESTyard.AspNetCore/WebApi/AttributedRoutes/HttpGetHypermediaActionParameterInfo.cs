@@ -4,6 +4,7 @@ using RESTyard.AspNetCore.Hypermedia.Actions;
 
 namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
 {
+    [Obsolete($"Use {nameof(HttpGetAttribute)} in combination with {nameof(HypermediaActionParameterInfoEndpointAttribute<IHypermediaActionParameter>)}")]
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
     public class HttpGetHypermediaActionParameterInfo : HttpGetAttribute, IHaveRouteInfo
     {

@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Reflection;
 using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.Util;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
@@ -17,7 +18,7 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
             if (!IsRouteKeyProducer(routeKeyProducerType))
             {
                 throw new HypermediaRouteException(
-                    $"{nameof(HttpGetHypermediaObject)} requires a {nameof(IKeyProducer)} type.");
+                    $"{routeKeyProducerType?.BeautifulName() ?? "NULL"} must implement {nameof(IKeyProducer)}.");
             }
         }
 

@@ -32,7 +32,7 @@ namespace CarShack.Controllers.Customers
         // Route to the HypermediaCustomer. References to HypermediaCustomer type will be resolved to this route.
         // This RouteTemplate also contains a key, so a RouteKeyProducer can be provided. In this case the RouteKeyProducer
         // could be ommited and KeyAttribute could be used on HypermediaCustomer instead.
-        [HttpGetHypermediaObject("{key:int}", typeof(HypermediaCustomerHto), typeof(CustomerRouteKeyProducer))]
+        [HttpGet("{key:int}"), HypermediaObjectEndpoint<HypermediaCustomerHto>(typeof(CustomerRouteKeyProducer))]
         public async Task<ActionResult> GetEntity(int key)
         {
             try
@@ -104,7 +104,7 @@ namespace CarShack.Controllers.Customers
             }
         }
 
-        [HttpPostHypermediaAction("{key:int}/BuysCar", typeof(HypermediaCustomerHto.BuyCarOp))]
+        [HttpPost("{key:int}/BuysCar"), HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.BuyCar))]
         public async Task<ActionResult> BuyCar(int key, BuyCarParameters parameter)
         {
             if (parameter == null)
@@ -230,7 +230,7 @@ namespace CarShack.Controllers.Customers
         #region TypeRoutes
         // Provide type information for Action parameters. Does not depend on a specific customer. Optional when using
         // MvcOptionsExtension.AutoDeliverActionParameterSchemas
-        [HttpGetHypermediaActionParameterInfo("NewAddressType", typeof(NewAddress))]
+        [HttpGet("NewAddressType"), HypermediaActionParameterInfoEndpoint<NewAddress>]
         public ActionResult NewAddressType()
         {
             var schema = JsonSchemaFactory.Generate(typeof(NewAddress));
