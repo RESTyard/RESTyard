@@ -21,22 +21,18 @@
     {
         <Property Schema="@Schema" PropertyType="@property"/>
     }
-    @if (Version is { Major: >= 5 })
+    @foreach (var link in DocumentType.Links)
     {
-        foreach (var link in DocumentType.Links)
-        {
-            <LinkProperty Schema="@Schema" LinkType="@link"/>
-        }
-
-        foreach (var embeddedEntity in DocumentType.Entities)
-        {
-            <EmbeddedEntityProperty Schema="@Schema" EntityType="@embeddedEntity"/>
-        }
-        @if (DocumentType.hasSelfLink)
-        {
-            <Attribute>Relations([DefaultHypermediaRelations.Self])</Attribute>
-            <PropertyStatement TypeName="@selfLinkType" PropertyName="Self" HasNewKeyword="@parentHasSelfLink" />
-        }
+        <LinkProperty Schema="@Schema" LinkType="@link"/>
+    }
+    @foreach (var embeddedEntity in DocumentType.Entities)
+    {
+        <EmbeddedEntityProperty Schema="@Schema" EntityType="@embeddedEntity"/>
+    }
+    @if (DocumentType.hasSelfLink)
+    {
+        <Attribute>Relations([DefaultHypermediaRelations.Self])</Attribute>
+        <PropertyStatement TypeName="@selfLinkType" PropertyName="Self" HasNewKeyword="@parentHasSelfLink" />
     }
     <OperationProperties Schema="@Schema" List="@DocumentType.Operations"/>
     <Constructor Schema="@Schema" Document="@DocumentType" Version="@Version" />
