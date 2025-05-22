@@ -34,6 +34,8 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
             serviceCollection.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             serviceCollection.AddSingleton(hypermediaOptions);
             serviceCollection.AddSingleton(CreateApplicationModel);
+            serviceCollection.AddEndpointsApiExplorer();
+            serviceCollection.AddSingleton<IHypermediaApiExplorer, HypermediaApiExplorer>();
             serviceCollection.AddTransient<IKeyFromUriService, KeyFromUriService>();
             serviceCollection.AddSingletonWithAlternative<IRouteRegister, AttributedRoutesRegister>(hypermediaOptions.AlternateRouteRegister);
             serviceCollection.AddSingletonWithAlternative<IQueryStringBuilder, QueryStringBuilder>(hypermediaOptions.AlternateQueryStringBuilder);
@@ -69,7 +71,6 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         internal class ConfigureMvcOptionsForHypermediaExtensions : IConfigureOptions<MvcOptions>
         {
             private readonly HypermediaExtensionsOptions hypermediaOptions;
-            private readonly ApplicationModel applicationModel;
             private readonly HypermediaQueryLocationFormatter hypermediaQueryLocationFormatter;
             private readonly HypermediaEntityLocationFormatter hypermediaEntityLocationFormatter;
             private readonly HypermediaLinkLocationFormatter hypermediaLinkLocationFormatter;
@@ -77,14 +78,12 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
 
             public ConfigureMvcOptionsForHypermediaExtensions(
                 HypermediaExtensionsOptions hypermediaOptions, 
-                ApplicationModel applicationModel,
                 HypermediaQueryLocationFormatter hypermediaQueryLocationFormatter,
                 HypermediaEntityLocationFormatter hypermediaEntityLocationFormatter,
                 HypermediaLinkLocationFormatter hypermediaLinkLocationFormatter,
                 SirenHypermediaFormatter sirenHypermediaFormatter)
             {
                 this.hypermediaOptions = hypermediaOptions;
-                this.applicationModel = applicationModel;
                 this.hypermediaQueryLocationFormatter = hypermediaQueryLocationFormatter;
                 this.hypermediaEntityLocationFormatter = hypermediaEntityLocationFormatter;
                 this.hypermediaLinkLocationFormatter = hypermediaLinkLocationFormatter;
@@ -98,7 +97,7 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
                     hypermediaEntityLocationFormatter,
                     hypermediaLinkLocationFormatter,
                     sirenHypermediaFormatter);
-                options.AddHypermediaParameterBinders(hypermediaOptions, applicationModel);
+                options.AddHypermediaParameterBinders(hypermediaOptions);
             }
         }
 
@@ -135,34 +134,15 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         /// </summary>
         /// <param name="options"></param>
         /// <param name="hypermediaOptions"></param>
-        /// <param name="applicationModel">Model of the HTO objects and controllers</param>
         /// <returns></returns>
-        public static MvcOptions AddHypermediaParameterBinders(this MvcOptions options, HypermediaExtensionsOptions hypermediaOptions, ApplicationModel applicationModel)
+        public static MvcOptions AddHypermediaParameterBinders(
+            this MvcOptions options,
+            HypermediaExtensionsOptions hypermediaOptions)
         {
             var forAttributedActionParametersOnly = !hypermediaOptions.ImplicitHypermediaActionParameterBinders;
 
-            options.ModelBinderProviders.Insert(0, new HypermediaParameterFromBodyBinderProvider(t =>
-            {
-                if (!applicationModel.HmoTypes.TryGetValue(t, out var hmoType))
-                {
-                    throw new ArgumentException($"No route found for type {t.BeautifulName()}");
-                }
-
-                return hmoType.GetHmoMethods.Select(_ => _.RouteTemplateFull).ToImmutableArray();
-            }, forAttributedActionParametersOnly));
-            options.ModelBinderProviders.Insert(
-                1,
-                new HypermediaParameterFromFormBinderProvider(
-                    t =>
-                    {
-                        if (!applicationModel.HmoTypes.TryGetValue(t, out var hmoType))
-                        {
-                            throw new ArgumentException($"No route found for type {t.BeautifulName()}");
-                        }
-
-                        return hmoType.GetHmoMethods.Select(_ => _.RouteTemplateFull).ToImmutableArray();
-                    },
-                    forAttributedActionParametersOnly));
+            options.ModelBinderProviders.Insert(0, new HypermediaParameterFromBodyBinderProvider(forAttributedActionParametersOnly));
+            options.ModelBinderProviders.Insert(1, new HypermediaParameterFromFormBinderProvider(forAttributedActionParametersOnly));
 
             return options;
         }

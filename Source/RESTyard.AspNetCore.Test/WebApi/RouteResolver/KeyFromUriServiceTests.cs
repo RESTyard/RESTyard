@@ -4,6 +4,7 @@ using FluentAssertions;
 using FunicularSwitch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
@@ -14,12 +15,20 @@ namespace RESTyard.AspNetCore.Test.WebApi.RouteResolver;
 [TestClass]
 public class KeyFromUriServiceTests
 {
+    private IHypermediaApiExplorer CreateExplorer(string[] templates)
+    {
+        var mock = new Mock<IHypermediaApiExplorer>();
+        mock.Setup(e => e.GetFullRouteTemplateFor(It.IsAny<Type>()))
+            .Returns(templates);
+        return mock.Object;
+    }
+
     [TestMethod]
     public void Test()
     {
         // Given
-        var applicationModel = ApplicationModel.Create([typeof(TestHto).Assembly]);
-        var service = new KeyFromUriService(applicationModel);
+        var apiExplorer = CreateExplorer(["Test/{intKey:int}/{key}"]);
+        var service = new KeyFromUriService(apiExplorer);
         var uri = new Uri("https://api.local:1234/Test/15/some-key?someOther=42");
         
         // When
@@ -33,23 +42,23 @@ public class KeyFromUriServiceTests
     public void TypeNotRegistered_ReturnsError()
     {
         // Given
-        var applicationModel = ApplicationModel.Create([typeof(TestHto).Assembly]);
-        var service = new KeyFromUriService(applicationModel);
+        var apiExplorer = CreateExplorer([]);
+        var service = new KeyFromUriService(apiExplorer);
         var uri = new Uri("https://some.uri");
         
         // When
         var values = service.GetKeyFromUri<IHypermediaObject, string>(uri);
         
         // Then
-        values.Should().BeError().Which.Should().Contain("application model");
+        values.Should().BeError().Which.Should().Contain("route");
     }
 
     [TestMethod]
     public void TypeWithoutGetMethod_ReturnsError()
     {
         // Given
-        var applicationModel = ApplicationModel.Create([typeof(TestHto).Assembly]);
-        var service = new KeyFromUriService(applicationModel);
+        var apiExplorer = CreateExplorer([]);
+        var service = new KeyFromUriService(apiExplorer);
         var uri = new Uri("https://some.uri");
         
         // When
@@ -63,8 +72,8 @@ public class KeyFromUriServiceTests
     public void UriDoesNotMatch_ReturnsError()
     {
         // Given
-        var applicationModel = ApplicationModel.Create([typeof(TestHto).Assembly]);
-        var service = new KeyFromUriService(applicationModel);
+        var apiExplorer = CreateExplorer(["Test/{intKey:int}/{key}"]);
+        var service = new KeyFromUriService(apiExplorer);
         var uri = new Uri("https://api.local:1234/HiThere");
         
         // When
@@ -78,8 +87,8 @@ public class KeyFromUriServiceTests
     public void KeyHasNoPublicConstructor_ReturnsError()
     {
         // Given
-        var applicationModel = ApplicationModel.Create([typeof(TestHto).Assembly]);
-        var service = new KeyFromUriService(applicationModel);
+        var apiExplorer = CreateExplorer(["Test/{intKey:int}/{key}"]);
+        var service = new KeyFromUriService(apiExplorer);
         var uri = new Uri("https://api.local:1234/Test/15/some-key?someOther=42");
         
         // When
@@ -93,8 +102,8 @@ public class KeyFromUriServiceTests
     public void NamesOfRouteAndKeyMismatch_ReturnsError()
     {
         // Given
-        var applicationModel = ApplicationModel.Create([typeof(TestHto).Assembly]);
-        var service = new KeyFromUriService(applicationModel);
+        var apiExplorer = CreateExplorer(["Test/{intKey:int}/{key}"]);
+        var service = new KeyFromUriService(apiExplorer);
         var uri = new Uri("https://api.local:1234/Test/15/some-key?someOther=42");
         
         // When
@@ -108,8 +117,8 @@ public class KeyFromUriServiceTests
     public void TypeOfRouteAndKeyMismatch_ReturnsError()
     {
         // Given
-        var applicationModel = ApplicationModel.Create([typeof(TestHto).Assembly]);
-        var service = new KeyFromUriService(applicationModel);
+        var apiExplorer = CreateExplorer(["Test/{intKey:int}/{key}"]);
+        var service = new KeyFromUriService(apiExplorer);
         var uri = new Uri("https://api.local:1234/Test/15/some-key?someOther=42");
         
         // When
@@ -123,8 +132,8 @@ public class KeyFromUriServiceTests
     public void ExceptionInConstructor_ReturnsError()
     {
         // Given
-        var applicationModel = ApplicationModel.Create([typeof(TestHto).Assembly]);
-        var service = new KeyFromUriService(applicationModel);
+        var apiExplorer = CreateExplorer(["Test/{intKey:int}/{key}"]);
+        var service = new KeyFromUriService(apiExplorer);
         var uri = new Uri("https://api.local:1234/Test/15/some-key?someOther=42");
         
         // When
@@ -138,8 +147,8 @@ public class KeyFromUriServiceTests
     public void KeyHasMultipleConstructors_TheConstructorWithParametersIsChosen()
     {
         // Given
-        var applicationModel = ApplicationModel.Create([typeof(TestHto).Assembly]);
-        var service = new KeyFromUriService(applicationModel);
+        var apiExplorer = CreateExplorer(["Test/{intKey:int}/{key}"]);
+        var service = new KeyFromUriService(apiExplorer);
         var uri = new Uri("https://api.local:1234/Test/15/some-key?someOther=42");
         
         // When
@@ -156,8 +165,8 @@ public class KeyFromUriServiceTests
     public void GuidAsKeyType_IsResolvedProperly()
     {
         // Given
-        var applicationModel = ApplicationModel.Create([typeof(TestHto).Assembly]);
-        var service = new KeyFromUriService(applicationModel);
+        var apiExplorer = CreateExplorer(["Test/AllTypes/{intKey}/{guidKey}"]);
+        var service = new KeyFromUriService(apiExplorer);
         var guid = "821516ed-8f2b-4a23-9e30-5e9781a6490a";
         var uri = new Uri($"https://api.local:1234/Test/AllTypes/15/{guid}");
         

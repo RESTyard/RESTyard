@@ -5,7 +5,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
     public class RouteInfo
     {
         public string Name { get; }
-        public HttpMethod HttpMethod { get; }
+        public string? HttpMethod { get; }
         public string? AcceptableMediaType { get; }
 
         public static RouteInfo Empty()
@@ -13,9 +13,9 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             return EmptyRoute;
         }
 
-        private static readonly RouteInfo EmptyRoute = new RouteInfo(string.Empty, HttpMethod.Undefined);
+        private static readonly RouteInfo EmptyRoute = new RouteInfo(string.Empty, null);
 
-        public RouteInfo(string name, HttpMethod httpMethod, string? acceptableMediaType = null)
+        public RouteInfo(string name, string? httpMethod, string? acceptableMediaType = null)
         {
             this.Name = name;
             this.HttpMethod = httpMethod;

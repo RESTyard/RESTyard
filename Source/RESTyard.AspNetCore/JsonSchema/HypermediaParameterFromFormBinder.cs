@@ -19,12 +19,10 @@ namespace RESTyard.AspNetCore.JsonSchema;
 
 public class HypermediaParameterFromFormBinderProvider : IModelBinderProvider
 {
-    private readonly Func<Type, ImmutableArray<string>> getRouteTemplateForType;
     private readonly bool explicitUsage;
 
-    public HypermediaParameterFromFormBinderProvider(Func<Type, ImmutableArray<string>> getRouteTemplateForType, bool explicitUsage = false)
+    public HypermediaParameterFromFormBinderProvider(bool explicitUsage = false)
     {
-        this.getRouteTemplateForType = getRouteTemplateForType;
         this.explicitUsage = explicitUsage;
     }
 
@@ -34,7 +32,7 @@ public class HypermediaParameterFromFormBinderProvider : IModelBinderProvider
         if (ParameterIsHypermediaFileUploadActionType(modelType)
             && (ThisBinderIsSelectedOnMethod(context) || this.UseThisBinderImplicit(context)))
         {
-            return new HypermediaParameterFromFormBinder(modelType, getRouteTemplateForType);
+            return new HypermediaParameterFromFormBinder(modelType);
         }
 
         return null;
@@ -78,7 +76,7 @@ public class HypermediaParameterFromFormBinder : IModelBinder
     private readonly Type wrapperModelType;
     private readonly Option<(Type ParameterModelType, JsonDeserializer ModelDeserializer)> parameterModelInfo;
 
-    public HypermediaParameterFromFormBinder(Type modelType, Func<Type, ImmutableArray<string>> getRouteTemplatesForType)
+    public HypermediaParameterFromFormBinder(Type modelType)
     {
         this.wrapperModelType = modelType;
         this.parameterModelInfo = modelType.GenericTypeArguments
@@ -86,7 +84,7 @@ public class HypermediaParameterFromFormBinder : IModelBinder
             .ToOption()
             .Map(parameterModelType => (
                 parameterModelType,
-                new JsonDeserializer(parameterModelType, getRouteTemplatesForType)));
+                new JsonDeserializer(parameterModelType)));
     }
 
     private Result<ModelBindingContext> CheckModelType(ModelBindingContext bindingContext)

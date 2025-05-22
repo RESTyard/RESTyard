@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
 using RESTyard.AspNetCore.Exceptions;
 using RESTyard.AspNetCore.Hypermedia;
@@ -12,13 +13,15 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
 {
     [Obsolete($"Use {nameof(HttpGetAttribute)} in combination with {nameof(HypermediaObjectEndpointAttribute<IHypermediaObject>)}")]
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-    public class HttpGetHypermediaObject : HttpGetAttribute, IHaveRouteInfo
+    public class HttpGetHypermediaObject : HttpGetAttribute, IHaveRouteInfo, IHypermediaObjectEndpointMetadata
     {
         public Type RouteType { get; private set; }
 
         public Type? RouteKeyProducerType { get; private set; }
         
         public string? AcceptedMediaType => null;
+
+        string IEndpointNameMetadata.EndpointName => this.Name!;
 
         /// <summary>
         /// Indicates that this Route will provide a <see cref="IHypermediaObject"/>. It is not required that only this <see cref="IHypermediaObject"/> can be returned.

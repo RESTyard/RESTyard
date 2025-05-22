@@ -5,6 +5,7 @@ using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 namespace CarShack.Controllers.EntryPoint
 {
     [Route("[controller]/")]
+    [ApiController]
     public class EntryPointController : Controller
     {
         private readonly HypermediaEntrypointHto hypermediaEntryPoint;

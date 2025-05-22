@@ -1,7 +1,9 @@
 ﻿using System;
+using Microsoft.AspNetCore.Http;
 
 namespace RESTyard.AspNetCore.WebApi.RouteResolver
 {
+    [Obsolete($"Please use Microsoft.AspNetCore.Http.{nameof(HttpMethods)}")]
     public enum HttpMethod
     {
         Undefined = 0,

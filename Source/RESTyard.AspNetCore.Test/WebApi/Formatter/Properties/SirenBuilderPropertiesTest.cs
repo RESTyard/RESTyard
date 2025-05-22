@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.Test.Helpers;
-using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 {
@@ -25,8 +25,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         [TestMethod]
         public void EmptyObjectTest()
         {
-            var routeName = typeof(EmptyHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(EmptyHypermediaObject), routeName, HttpMethod.GET);
+            var routeName = nameof(EmptyHypermediaObject) + "_Route";
+            RouteRegister.AddHypermediaObjectRoute(typeof(EmptyHypermediaObject), routeName, HttpMethods.Get);
 
             var ho = new EmptyHypermediaObject();
             var siren = SirenConverter.ConvertToJson(ho);
@@ -41,8 +41,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         [TestMethod]
         public void AttributedEmptyObjectTest()
         {
-            var routeName = typeof(AttributedEmptyHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(AttributedEmptyHypermediaObject), routeName, HttpMethod.GET);
+            var routeName = nameof(AttributedEmptyHypermediaObject) + "_Route";
+            RouteRegister.AddHypermediaObjectRoute(typeof(AttributedEmptyHypermediaObject), routeName, HttpMethods.Get);
 
             var ho = new AttributedEmptyHypermediaObject();
             var siren = SirenConverter.ConvertToJson(ho);
@@ -68,8 +68,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         [ExpectedException(typeof(ArgumentException))]
         public void PropertyDuplicateObjectTest()
         {
-            var routeName = typeof(PropertyDuplicateHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyDuplicateHypermediaObject), routeName, HttpMethod.GET);
+            var routeName = nameof(PropertyDuplicateHypermediaObject) + "_Route";
+            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyDuplicateHypermediaObject), routeName, HttpMethods.Get);
 
             var ho = new PropertyDuplicateHypermediaObject();
             SirenConverter.ConvertToJson(ho);
@@ -78,8 +78,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         [TestMethod]
         public void AttributedPropertyTest()
         {
-            var routeName = typeof(AttributedPropertyHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(AttributedPropertyHypermediaObject), routeName, HttpMethod.GET);
+            var routeName = nameof(AttributedPropertyHypermediaObject) + "_Route";
+            RouteRegister.AddHypermediaObjectRoute(typeof(AttributedPropertyHypermediaObject), routeName, HttpMethods.Get);
 
             var ho = new AttributedPropertyHypermediaObject();
             var siren = SirenConverter.ConvertToJson(ho);
@@ -121,8 +121,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         [TestMethod]
         public void PropertyDefaultsObjectTest()
         {
-            var routeName = typeof(PropertyHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyHypermediaObject), routeName, HttpMethod.GET);
+            var routeName = nameof(PropertyHypermediaObject) + "_Route";
+            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyHypermediaObject), routeName, HttpMethods.Get);
 
             var ho = new PropertyHypermediaObject();
             var siren = SirenConverter.ConvertToJson(ho);
@@ -140,8 +140,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         [TestMethod]
         public void PropertyDefaultsObjectWriteNoNullPropertiesTest()
         {
-            var routeName = typeof(PropertyHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyHypermediaObject), routeName, HttpMethod.GET);
+            var routeName = nameof(PropertyHypermediaObject) + "_Route";
+            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyHypermediaObject), routeName, HttpMethods.Get);
 
             var ho = new PropertyHypermediaObject();
             var siren = SirenConverterNoNullProperties.ConvertToJson(ho);
@@ -159,8 +159,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         [TestMethod]
         public void PropertyObjectTest()
         {
-            var routeName = typeof(PropertyHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyHypermediaObject), routeName, HttpMethod.GET);
+            var routeName = nameof(PropertyHypermediaObject) + "_Route";
+            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyHypermediaObject), routeName, HttpMethods.Get);
 
             var ho = new PropertyHypermediaObject
             {

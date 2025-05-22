@@ -172,7 +172,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 jAction.Add("title", hypermediaActionAttribute.Title);
             }
 
-            jAction.Add("method", resolvedRoute.HttpMethod.ToString()); //TODO get method from rout resolver
+            jAction.Add("method", resolvedRoute.HttpMethod ?? "Undefined"); //TODO get method from rout resolver
             jAction.Add("href", resolvedRoute.Url);
         }
 

@@ -24,7 +24,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     {
         protected static QueryStringBuilder QueryStringBuilder;
         protected static HypermediaUrlConfig TestUrlConfig;
-        private static HttpContext FakeHttpContext;
+        protected HttpContext FakeHttpContext;
         protected RouteRegister RouteRegister;
         protected RegisterRouteResolverFactory RouteResolverFactory;
         protected RouteKeyFactory RouteKeyFactory;
@@ -42,20 +42,22 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
                 Host = new HostString("myhost", 1234),
                 Scheme = "scheme"
             };
-
-            var services = new ServiceCollection();
-            services.AddSingleton<LinkGenerator, FakeLinkGenerator>();
-            FakeHttpContext = new DefaultHttpContext()
-            {
-                RequestServices = services.BuildServiceProvider(),
-            };
         }
 
         protected void TestInitBase()
         {
             RouteRegister = new RouteRegister();
             RouteKeyFactory = new RouteKeyFactory(RouteRegister);
-            RouteResolverFactory = new RegisterRouteResolverFactory(RouteRegister, new HypermediaExtensionsOptions(), RouteKeyFactory);
+            RouteResolverFactory = new RegisterRouteResolverFactory(new HypermediaExtensionsOptions());
+            
+            var services = new ServiceCollection();
+            services.AddSingleton<LinkGenerator, FakeLinkGenerator>();
+            services.AddSingleton<IRouteRegister>(RouteRegister);
+            services.AddSingleton<IRouteKeyFactory>(RouteKeyFactory);
+            FakeHttpContext = new DefaultHttpContext()
+            {
+                RequestServices = services.BuildServiceProvider(),
+            };
 
             RouteResolver = RouteResolverFactory.CreateRouteResolver(FakeHttpContext, TestUrlConfig);
             SirenConverter = CreateSirenConverter();

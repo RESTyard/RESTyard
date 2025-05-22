@@ -15,10 +15,21 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
         /// </summary>
         public TParameter? PrefilledValues { protected set;  get; }
 
+        [Obsolete($"Please use overload without {nameof(HttpMethod)} enum")]
         public HypermediaExternalAction(
             Func<bool> canExecute,
             Uri externalUri,
             HttpMethod httpMethod,
+            string acceptedMediaType = DefaultMediaTypes.ApplicationJson,
+            TParameter? prefilledValues = null) 
+            : this(canExecute, externalUri, httpMethod.ToString(), acceptedMediaType, prefilledValues)
+        {
+        }
+        
+        public HypermediaExternalAction(
+            Func<bool> canExecute,
+            Uri externalUri,
+            string httpMethod,
             string acceptedMediaType = DefaultMediaTypes.ApplicationJson,
             TParameter? prefilledValues = null) 
             : base(canExecute, externalUri, httpMethod, acceptedMediaType)
@@ -26,9 +37,19 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
             PrefilledValues = prefilledValues;
         }
 
+        [Obsolete($"Please use overload without {nameof(HttpMethod)} enum")]
         public HypermediaExternalAction(
             Uri externalUri,
             HttpMethod httpMethod,
+            string acceptedMediaType = DefaultMediaTypes.ApplicationJson,
+            TParameter? prefilledValues = null)
+            : this(() => true, externalUri, httpMethod.ToString(), acceptedMediaType, prefilledValues)
+        {
+        }
+        
+        public HypermediaExternalAction(
+            Uri externalUri,
+            string httpMethod,
             string acceptedMediaType = DefaultMediaTypes.ApplicationJson,
             TParameter? prefilledValues = null)
             : base(() => true, externalUri, httpMethod, acceptedMediaType)
@@ -49,15 +70,28 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
     /// </summary>
     public abstract class HypermediaExternalAction : HypermediaExternalActionBase
     {
+        [Obsolete($"Please use overload without {nameof(HttpMethod)} enum")]
         protected HypermediaExternalAction(
             Func<bool> canExecute,
             Uri externalUri,
             HttpMethod httpMethod) 
+            : this(canExecute, externalUri, httpMethod.ToString()) { }
+        
+        protected HypermediaExternalAction(
+            Func<bool> canExecute,
+            Uri externalUri,
+            string httpMethod) 
             : base(canExecute, externalUri, httpMethod) { }
 
+        [Obsolete($"Please use overload without {nameof(HttpMethod)} enum")]
         protected HypermediaExternalAction(
             Uri externalUri,
             HttpMethod httpMethod)
+            : this(() => true, externalUri, httpMethod.ToString()) { }
+        
+        protected HypermediaExternalAction(
+            Uri externalUri,
+            string httpMethod)
             : base(() => true, externalUri, httpMethod) { }
 
         public override object? GetPrefilledParameter()

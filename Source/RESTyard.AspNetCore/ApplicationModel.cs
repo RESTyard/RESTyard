@@ -16,9 +16,7 @@ namespace RESTyard.AspNetCore
 {
     public class ApplicationModel
     {
-        public ImmutableDictionary<Type, HmoType> HmoTypes { get; }
         public ImmutableDictionary<Type, ActionParameterType> ActionParameterTypes { get; }
-        public ImmutableArray<ControllerType> ControllerTypes { get; }
 
         public static ApplicationModel Create(Assembly[] assemblies)
         {
@@ -29,46 +27,27 @@ namespace RESTyard.AspNetCore
             var controllerTypes = implementingAssemblies
                 .SelectMany(a => a?.GetTypes()
                     .Where(t => typeof(ControllerBase).GetTypeInfo().IsAssignableFrom(t))
-                    .Select(t =>
-                    {
-                        return new ControllerType(t,
-                            controllerType => t.GetTypeInfo().GetMethods().Select(m => GetControllerMethodOrNull(m, controllerType)).WhereNotNull()
-                            );
-                    })
-                    ?? Enumerable.Empty<ControllerType>()
-                        )
+                    .Select(t => new ControllerType(t,
+                        controllerType => t.GetTypeInfo().GetMethods().Select(m => GetControllerMethodOrNull(m, controllerType)).WhereNotNull()
+                    )) ?? [])
                 .ToImmutableArray();
-
-            var hmoTypes = implementingAssemblies
-                .SelectMany(a => a?.GetTypes()
-                    .Where(AttributedRouteHelper.Has<HypermediaObjectAttribute>)
-                    .Select(t => new HmoType(t, FindGetMethods(controllerTypes, t)))
-                        ?? Enumerable.Empty<HmoType>()
-                ).ToImmutableDictionary(_ => _.Type);
 
             var actionParameterTypes = implementingAssemblies
                 .SelectMany(a => a?.GetTypes()
                     .Where(t => typeof(IHypermediaActionParameter).GetTypeInfo().IsAssignableFrom(t))
                     .Select(t => new ActionParameterType(t, FindGetParameterInfoMethodOrNull(controllerTypes, t)))
-                        ?? Enumerable.Empty<ActionParameterType>()
+                        ?? []
                 ).ToImmutableDictionary(_ => _.Type);
 
-            return new ApplicationModel(hmoTypes, actionParameterTypes, controllerTypes);
+            return new ApplicationModel(actionParameterTypes);
         }
 
         static GetActionParameterInfoMethod? FindGetParameterInfoMethodOrNull(ImmutableArray<ControllerType> controllerTypes, Type type)
         {
-            return controllerTypes.SelectMany(t => t.Methods).OfType<GetActionParameterInfoMethod>()
-                .FirstOrDefault(m => m.ActionParameterType == type);
-        }
-
-        static IEnumerable<GetHmoMethod> FindGetMethods(ImmutableArray<ControllerType> controllerTypes, Type type)
-        {
             return controllerTypes
                 .SelectMany(t => t.Methods)
-                .OfType<GetHmoMethod>()
-                .Where(m => type.GetTypeInfo().IsAssignableFrom(m.HmoType))
-                .OrderBy(m => m.HmoType == type ? 0 : 1);
+                .OfType<GetActionParameterInfoMethod>()
+                .FirstOrDefault(m => type.IsAssignableFrom(m.ActionParameterType));
         }
 
         static ControllerMethod? GetControllerMethodOrNull(MethodInfo methodInfo, ControllerType controllerType)
@@ -125,32 +104,9 @@ namespace RESTyard.AspNetCore
             return null;
         }
 
-        public ApplicationModel(ImmutableDictionary<Type, HmoType> hmoTypes, ImmutableDictionary<Type, ActionParameterType> actionParameterTypes, ImmutableArray<ControllerType> controllerTypes)
+        public ApplicationModel(ImmutableDictionary<Type, ActionParameterType> actionParameterTypes)
         {
-            HmoTypes = hmoTypes;
             ActionParameterTypes = actionParameterTypes;
-            ControllerTypes = controllerTypes;
-        }
-
-        public class HmoType
-        {
-            public Type Type { get; }
-
-            /// <summary>
-            /// Should be single method for concrete hypermedia object. For a hmo base type should be all get methods of types derived from that type.
-            /// </summary>
-            public ImmutableArray<GetHmoMethod> GetHmoMethods { get; }
-
-            public HmoType(Type type, IEnumerable<GetHmoMethod> getHmoMethods)
-            {
-                Type = type;
-                GetHmoMethods = getHmoMethods.ToImmutableArray();
-            }
-
-            public override string ToString()
-            {
-                return $"{Type.BeautifulName()}, Get routes: {string.Join(",", GetHmoMethods.Select(g => g.RouteTemplateFull))}";
-            }
         }
 
         public class ActionParameterType

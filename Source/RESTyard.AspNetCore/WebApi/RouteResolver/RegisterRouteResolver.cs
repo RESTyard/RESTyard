@@ -68,7 +68,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                 }
 
                 // we assume GET here since external references will be links only for now
-                return new ResolvedRoute(externalReferenceObject.ExternalUri.ToString(), HttpMethod.GET, externalReferenceObject.AvailableMediaTypes);
+                return new ResolvedRoute(externalReferenceObject.ExternalUri.ToString(), HttpMethods.Get, externalReferenceObject.AvailableMediaTypes);
             }
 
             if (internalReferenceTypeInfo.IsAssignableFrom(lookupType))
@@ -79,7 +79,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                 }
 
                 // we assume get here since external references will be links only for now
-                var routeInfo = new RouteInfo(internalReference.RouteName, HttpMethod.GET);
+                var routeInfo = new RouteInfo(internalReference.RouteName, HttpMethods.Get);
                 var resolvedInternalRouteOption = RouteUrl(routeInfo, internalReference.RouteParameters);
 
                 return resolvedInternalRouteOption.Match(
@@ -95,7 +95,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
             {
                 // we assume GET here since will it be links or embedded entities only for now
                 // for links ExternalReference is simpler and offers MediaTypes
-                return new ResolvedRoute(hypermediaExternalObjectReference.Uri.ToString(), HttpMethod.GET);
+                return new ResolvedRoute(hypermediaExternalObjectReference.Uri.ToString(), HttpMethods.Get);
             }
 
             var routeKeys = routeKeyFactory.GetHypermediaRouteKeys(reference);
@@ -185,7 +185,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
         {
             if (returnDefaultRouteForUnknownHto)
             {
-                return new ResolvedRoute($"{hypermediaUrlConfig.Scheme}://{hypermediaUrlConfig.Host.ToUriComponent()}/{defaultRouteSegmentForUnknownHto}", HttpMethod.Undefined);
+                return new ResolvedRoute($"{hypermediaUrlConfig.Scheme}://{hypermediaUrlConfig.Host.ToUriComponent()}/{defaultRouteSegmentForUnknownHto}", null);
             }
 
             throw new RouteResolverException($"Route to type '{lookupType.Name}' not found in RouteRegister.");
