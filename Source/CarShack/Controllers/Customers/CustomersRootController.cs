@@ -13,6 +13,7 @@ using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 namespace CarShack.Controllers.Customers
 {
     [Route("Customers/")]
+    [ApiController]
     public class CustomersRootController : Controller
     {
         private readonly HypermediaCustomersRootHto customersRoot;

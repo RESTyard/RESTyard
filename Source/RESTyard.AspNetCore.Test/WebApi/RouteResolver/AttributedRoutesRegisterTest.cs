@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Reflection;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace RESTyard.AspNetCore.Test.WebApi.RouteResolver;
@@ -10,8 +8,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.RouteResolver;
 [TestClass]
 public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
 {
-    private static AttributedRoutesRegister CreateRegister(Assembly assembly) => new AttributedRoutesRegister(
-        new HypermediaExtensionsOptions() { ControllerAndHypermediaAssemblies = [assembly] },
+    private static AttributedRoutesRegister CreateRegister(IHypermediaApiExplorer apiExplorer) => new AttributedRoutesRegister(
+        apiExplorer,
         null!);
 
     [TestMethod]
@@ -21,6 +19,7 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
             CreateFile(
                 $$"""
                 [Route("Test")]
+                [ApiController]
                 public class Controller : ControllerBase
                 {
                     [HttpGetHypermediaObject("Get", typeof({{nameof(ExampleHto)}}))]
@@ -29,7 +28,8 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
                 """),
             GetExampleHtoCode(),
         ]);
-        var register = CreateRegister(assembly);
+        var apiExplorer = CreateApiExplorer(assembly);
+        var register = CreateRegister(apiExplorer);
         var type = GetType<ExampleHto>(assembly);
         register.TryGetRoute(type, out var info).Should().BeTrue();
         info.HttpMethod.Should().Be(HttpMethod.GET);
@@ -44,6 +44,7 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
             CreateFile(
                 $$"""
                 [Route("Test")]
+                [ApiController]
                 public class Controller : ControllerBase
                 {
                     [HttpGet("Get")]
@@ -53,7 +54,8 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
                 """),
             GetExampleHtoCode(),
         ]);
-        var register = CreateRegister(assembly);
+        var apiExplorer = CreateApiExplorer(assembly);
+        var register = CreateRegister(apiExplorer);
         var type = GetType<ExampleHto>(assembly);
         register.TryGetRoute(type, out var info).Should().BeTrue();
         info.HttpMethod.Should().Be(HttpMethod.GET);
@@ -80,6 +82,7 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
             CreateFile(
                 $$"""
                   [Route("Test")]
+                  [ApiController]
                   public class Controller : ControllerBase
                   {
                       [Http{{methodString}}HypermediaAction("{{methodString}}", typeof({{nameof(ExampleHto)}}.{{nameof(ExampleHto.BasicOp)}}))]
@@ -88,7 +91,8 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
                   """),
             GetExampleHtoCode(),
         ]);
-        var register = CreateRegister(assembly);
+        var apiExplorer = CreateApiExplorer(assembly);
+        var register = CreateRegister(apiExplorer);
         var type = GetType<ExampleHto.BasicOp>(assembly);
         register.TryGetRoute(type, out var info).Should().BeTrue();
         info.HttpMethod.Should().Be(method);
@@ -115,6 +119,7 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
             CreateFile(
                 $$"""
                   [Route("Test")]
+                  [ApiController]
                   public class Controller : ControllerBase
                   {
                       [Http{{methodString}}("{{methodString}}")]
@@ -124,7 +129,8 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
                   """),
             GetExampleHtoCode(),
         ]);
-        var register = CreateRegister(assembly);
+        var apiExplorer = CreateApiExplorer(assembly);
+        var register = CreateRegister(apiExplorer);
         var type = GetType<ExampleHto.BasicOp>(assembly);
         register.TryGetRoute(type, out var info).Should().BeTrue();
         info.HttpMethod.Should().Be(method);
@@ -139,6 +145,7 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
             CreateFile(
                 $$"""
                   [Route("Test")]
+                  [ApiController]
                   public class Controller : ControllerBase
                   {
                       [HttpGetHypermediaActionParameterInfo("Info", typeof({{nameof(ExampleHto)}}.{{nameof(ExampleHto.BasicParameter)}}))]
@@ -147,7 +154,8 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
                   """),
             GetExampleHtoCode(),
         ]);
-        var register = CreateRegister(assembly);
+        var apiExplorer = CreateApiExplorer(assembly);
+        var register = CreateRegister(apiExplorer);
         var type = GetType<ExampleHto.BasicParameter>(assembly);
         register.TryGetRoute(type, out var info).Should().BeTrue();
         info.HttpMethod.Should().Be(HttpMethod.GET);
@@ -162,6 +170,7 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
             CreateFile(
                 $$"""
                   [Route("Test")]
+                  [ApiController]
                   public class Controller : ControllerBase
                   {
                       [HttpGet("Info")]
@@ -171,7 +180,8 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
                   """),
             GetExampleHtoCode(),
         ]);
-        var register = CreateRegister(assembly);
+        var apiExplorer = CreateApiExplorer(assembly);
+        var register = CreateRegister(apiExplorer);
         var type = GetType<ExampleHto.BasicParameter>(assembly);
         register.TryGetRoute(type, out var info).Should().BeTrue();
         info.HttpMethod.Should().Be(HttpMethod.GET);

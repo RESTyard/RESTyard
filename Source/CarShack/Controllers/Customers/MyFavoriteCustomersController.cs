@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace CarShack.Controllers.Customers
 {
     [Route("MyFavoriteCustomers")]
+    [ApiController]
     public class MyFavoriteCustomersController : Controller
     {
         private readonly ICustomerRepository customerRepository;

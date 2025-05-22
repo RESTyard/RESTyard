@@ -18,6 +18,7 @@ using RESTyard.MediaTypes;
 namespace CarShack.Controllers.Cars
 {
     [Route("Cars/")]
+    [ApiController]
     public class CarsController : Controller
     {
         private readonly HypermediaCarsRootHto carsRoot;
