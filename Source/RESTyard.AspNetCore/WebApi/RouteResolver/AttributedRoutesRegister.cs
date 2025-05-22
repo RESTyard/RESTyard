@@ -34,7 +34,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                         throw new ArgumentOutOfRangeException(nameof(apiDescription.HttpMethod),
                             apiDescription.HttpMethod, apiDescription.HttpMethod);
                     }
-                    this.AddHypermediaObjectRoute(htoEndpoint.RouteType, htoEndpoint.EndpointName, HttpMethod.GET);
+                    this.AddHypermediaObjectRoute(htoEndpoint.RouteType, htoEndpoint.EndpointName, HttpMethods.Get);
                     this.AddRouteKeyProducer(apiDescription, htoEndpoint);
                 }
 
@@ -42,13 +42,18 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                     .OfType<IHypermediaActionEndpointMetadata>().FirstOrDefault();
                 if (actionEndpoint is not null)
                 {
-                    var httpMethod = GetHttpMethod(apiDescription.HttpMethod);
-                    if (httpMethod is not (HttpMethod.POST or HttpMethod.PUT or HttpMethod.PATCH or HttpMethod.DELETE))
+                    var httpMethod = apiDescription.HttpMethod;
+                    var isValid = httpMethod is not null
+                                  && (HttpMethods.IsPost(httpMethod)
+                                      || HttpMethods.IsPut(httpMethod)
+                                      || HttpMethods.IsPatch(httpMethod)
+                                      || HttpMethods.IsDelete(httpMethod));
+                    if (!isValid)
                     {
                         throw new ArgumentOutOfRangeException(nameof(apiDescription.HttpMethod),
                             apiDescription.HttpMethod, apiDescription.HttpMethod);
                     }
-                    this.AddActionRoute(actionEndpoint.ActionType, actionEndpoint.EndpointName, httpMethod, actionEndpoint.AcceptedMediaType);
+                    this.AddActionRoute(actionEndpoint.ActionType, actionEndpoint.EndpointName, httpMethod!, actionEndpoint.AcceptedMediaType);
                 }
 
                 var actionParameterInfoEndpoint = apiDescription.ActionDescriptor.EndpointMetadata
@@ -62,7 +67,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                     }
 
                     this.AddParameterTypeRoute(actionParameterInfoEndpoint.RouteType,
-                        actionParameterInfoEndpoint.EndpointName, HttpMethod.GET);
+                        actionParameterInfoEndpoint.EndpointName, HttpMethods.Get);
                 }
             }
         }
@@ -94,39 +99,6 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                         hmoEndpoint.RouteType,
                         RouteKeyProducer.Create(hmoEndpoint.RouteType, template.Parameters.Select(p => p.Name).ToList()));
                 }
-            }
-        }
-
-        private static HttpMethod GetHttpMethod(string? httpMethod)
-        {
-            if (httpMethod is null)
-            {
-                throw new ArgumentNullException(nameof(httpMethod));
-            }
-
-            if (HttpMethods.IsGet(httpMethod))
-            {
-                return HttpMethod.GET;
-            }
-            else if (HttpMethods.IsPost(httpMethod))
-            {
-                return HttpMethod.POST;
-            }
-            else if (HttpMethods.IsPut(httpMethod))
-            {
-                return HttpMethod.PUT;
-            }
-            else if (HttpMethods.IsPatch(httpMethod))
-            {
-                return HttpMethod.PATCH;
-            }
-            else if (HttpMethods.IsDelete(httpMethod))
-            {
-                return HttpMethod.DELETE;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException(nameof(httpMethod), httpMethod, httpMethod);
             }
         }
     }

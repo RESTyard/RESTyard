@@ -1,5 +1,5 @@
-﻿using System;
-using FluentAssertions;
+﻿using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 
@@ -32,7 +32,7 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
         var register = CreateRegister(apiExplorer);
         var type = GetType<ExampleHto>(assembly);
         register.TryGetRoute(type, out var info).Should().BeTrue();
-        info.HttpMethod.Should().Be(HttpMethod.GET);
+        info.HttpMethod.Should().Be(HttpMethods.Get);
         info.AcceptableMediaType.Should().BeNull();
         info.Name.Should().Contain(nameof(ExampleHto));
     }
@@ -58,26 +58,18 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
         var register = CreateRegister(apiExplorer);
         var type = GetType<ExampleHto>(assembly);
         register.TryGetRoute(type, out var info).Should().BeTrue();
-        info.HttpMethod.Should().Be(HttpMethod.GET);
+        info.HttpMethod.Should().Be(HttpMethods.Get);
         info.AcceptableMediaType.Should().BeNull();
         info.Name.Should().Contain(nameof(ExampleHto));
     }
 
     [TestMethod]
-    [DataRow(HttpMethod.POST)]
-    [DataRow(HttpMethod.PUT)]
-    [DataRow(HttpMethod.PATCH)]
-    [DataRow(HttpMethod.DELETE)]
-    public void TestLegacyHypermediaAction(HttpMethod method)
+    [DataRow("Post")]
+    [DataRow("Put")]
+    [DataRow("Patch")]
+    [DataRow("Delete")]
+    public void TestLegacyHypermediaAction(string method)
     {
-        var methodString = method switch
-        {
-            HttpMethod.POST => "Post",
-            HttpMethod.PUT => "Put",
-            HttpMethod.PATCH => "Patch",
-            HttpMethod.DELETE => "Delete",
-            _ => throw new ArgumentOutOfRangeException(nameof(method), method, method.ToString()),
-        };
         var assembly = CreateAssembly([
             CreateFile(
                 $$"""
@@ -85,8 +77,8 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
                   [ApiController]
                   public class Controller : ControllerBase
                   {
-                      [Http{{methodString}}HypermediaAction("{{methodString}}", typeof({{nameof(ExampleHto)}}.{{nameof(ExampleHto.BasicOp)}}))]
-                      public IActionResult {{methodString}}() => this.Ok();
+                      [Http{{method}}HypermediaAction("{{method}}", typeof({{nameof(ExampleHto)}}.{{nameof(ExampleHto.BasicOp)}}))]
+                      public IActionResult {{method}}() => this.Ok();
                   }
                   """),
             GetExampleHtoCode(),
@@ -95,26 +87,18 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
         var register = CreateRegister(apiExplorer);
         var type = GetType<ExampleHto.BasicOp>(assembly);
         register.TryGetRoute(type, out var info).Should().BeTrue();
-        info.HttpMethod.Should().Be(method);
+        info.HttpMethod.Should().Be(method.ToUpper());
         info.AcceptableMediaType.Should().BeNull();
         info.Name.Should().Contain(nameof(ExampleHto.BasicOp));
     }
 
     [TestMethod]
-    [DataRow(HttpMethod.POST)]
-    [DataRow(HttpMethod.PUT)]
-    [DataRow(HttpMethod.PATCH)]
-    [DataRow(HttpMethod.DELETE)]
-    public void TestHypermediaAction(HttpMethod method)
+    [DataRow("Post")]
+    [DataRow("Put")]
+    [DataRow("Patch")]
+    [DataRow("Delete")]
+    public void TestHypermediaAction(string method)
     {
-        var methodString = method switch
-        {
-            HttpMethod.POST => "Post",
-            HttpMethod.PUT => "Put",
-            HttpMethod.PATCH => "Patch",
-            HttpMethod.DELETE => "Delete",
-            _ => throw new ArgumentOutOfRangeException(nameof(method), method, method.ToString()),
-        };
         var assembly = CreateAssembly([
             CreateFile(
                 $$"""
@@ -122,9 +106,9 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
                   [ApiController]
                   public class Controller : ControllerBase
                   {
-                      [Http{{methodString}}("{{methodString}}")]
+                      [Http{{method}}("{{method}}")]
                       [HypermediaActionEndpoint<{{nameof(ExampleHto)}}>("{{nameof(ExampleHto.DoSomething)}}")]
-                      public IActionResult {{methodString}}() => this.Ok();
+                      public IActionResult {{method}}() => this.Ok();
                   }
                   """),
             GetExampleHtoCode(),
@@ -133,7 +117,7 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
         var register = CreateRegister(apiExplorer);
         var type = GetType<ExampleHto.BasicOp>(assembly);
         register.TryGetRoute(type, out var info).Should().BeTrue();
-        info.HttpMethod.Should().Be(method);
+        info.HttpMethod.Should().Be(method.ToUpper());
         info.AcceptableMediaType.Should().BeNull();
         info.Name.Should().Contain(nameof(ExampleHto.BasicOp));
     }
@@ -158,7 +142,7 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
         var register = CreateRegister(apiExplorer);
         var type = GetType<ExampleHto.BasicParameter>(assembly);
         register.TryGetRoute(type, out var info).Should().BeTrue();
-        info.HttpMethod.Should().Be(HttpMethod.GET);
+        info.HttpMethod.Should().Be(HttpMethods.Get);
         info.AcceptableMediaType.Should().BeNull();
         info.Name.Should().Contain(nameof(ExampleHto.BasicParameter));
     }
@@ -184,7 +168,7 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
         var register = CreateRegister(apiExplorer);
         var type = GetType<ExampleHto.BasicParameter>(assembly);
         register.TryGetRoute(type, out var info).Should().BeTrue();
-        info.HttpMethod.Should().Be(HttpMethod.GET);
+        info.HttpMethod.Should().Be(HttpMethods.Get);
         info.AcceptableMediaType.Should().BeNull();
         info.Name.Should().Contain(nameof(ExampleHto.BasicParameter));
     }

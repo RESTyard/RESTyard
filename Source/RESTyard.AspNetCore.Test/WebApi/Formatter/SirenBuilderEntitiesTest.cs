@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.Hypermedia;
@@ -32,10 +32,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         public void RepresentationEntitiesTest()
         {
             var routeName = nameof(EmptyHypermediaObject) + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(EmptyHypermediaObject), routeName, HttpMethod.GET);
+            RouteRegister.AddHypermediaObjectRoute(typeof(EmptyHypermediaObject), routeName, HttpMethods.Get);
 
             var routeNameEmbedded = nameof(EmbeddedSubEntity) + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(EmbeddedSubEntity), routeNameEmbedded, HttpMethod.GET);
+            RouteRegister.AddHypermediaObjectRoute(typeof(EmbeddedSubEntity), routeNameEmbedded, HttpMethods.Get);
 
             var ho = new EmptyHypermediaObject();
             var relation1 = "Embedded";
@@ -74,10 +74,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         public void LinkEntitiesTest()
         {
             var routeName = nameof(EmptyHypermediaObject) + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(EmptyHypermediaObject), routeName, HttpMethod.GET);
+            RouteRegister.AddHypermediaObjectRoute(typeof(EmptyHypermediaObject), routeName, HttpMethods.Get);
 
             var routeNameEmbedded = nameof(EmbeddedSubEntity) + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(EmbeddedSubEntity), routeNameEmbedded, HttpMethod.GET);
+            RouteRegister.AddHypermediaObjectRoute(typeof(EmbeddedSubEntity), routeNameEmbedded, HttpMethods.Get);
             RouteRegister.AddRouteKeyProducer(typeof(EmbeddedSubEntity), new EmbeddedEntityRouteKeyProducer());
 
             var ho = new EmptyHypermediaObject();
