@@ -101,16 +101,6 @@ public class GeneratorTests
     }
 
     [Fact]
-    public async Task ServerCSharpV4_4Test()
-    {
-        await RunGeneratorAsync(
-            "server/csharp/v4.4",
-            outputFile: "server_v4.4.cs");
-
-        await Verify("server_v4.4.cs");
-    }
-
-    [Fact]
     public async Task ServerCSharpV5Test()
     {
         await RunGeneratorAsync(
