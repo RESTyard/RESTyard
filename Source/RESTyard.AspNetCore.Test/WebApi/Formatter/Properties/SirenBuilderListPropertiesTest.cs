@@ -31,10 +31,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             var ho = new HypermediaObjectWithListProperties();
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(HypermediaObjectWithListProperties));
+            AssertClassName(siren, nameof(HypermediaObjectWithListProperties));
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
-            AssertHasOnlySelfLink(siren, routeName);
+            AssertHasNoLinks(siren);
 
             var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
@@ -50,10 +50,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             var ho = new HypermediaObjectWithListProperties();
             var siren = SirenConverterNoNullProperties.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(HypermediaObjectWithListProperties));
+            AssertClassName(siren, nameof(HypermediaObjectWithListProperties));
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
-            AssertHasOnlySelfLink(siren, routeName);
+            AssertHasNoLinks(siren);
 
             var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
@@ -74,10 +74,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(HypermediaObjectWithListProperties));
+            AssertClassName(siren, nameof(HypermediaObjectWithListProperties));
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
-            AssertHasOnlySelfLink(siren, routeName);
+            AssertHasNoLinks(siren);
 
             var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
@@ -110,10 +110,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(HypermediaObjectWithListProperties));
+            AssertClassName(siren, nameof(HypermediaObjectWithListProperties));
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
-            AssertHasOnlySelfLink(siren, routeName);
+            AssertHasNoLinks(siren);
 
             var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 

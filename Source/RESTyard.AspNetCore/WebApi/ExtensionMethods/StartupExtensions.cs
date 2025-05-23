@@ -34,6 +34,7 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
             serviceCollection.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             serviceCollection.AddSingleton(hypermediaOptions);
             serviceCollection.AddSingleton(CreateApplicationModel);
+            serviceCollection.AddTransient<IKeyFromUriService, KeyFromUriService>();
             serviceCollection.AddSingletonWithAlternative<IRouteRegister, AttributedRoutesRegister>(hypermediaOptions.AlternateRouteRegister);
             serviceCollection.AddSingletonWithAlternative<IQueryStringBuilder, QueryStringBuilder>(hypermediaOptions.AlternateQueryStringBuilder);
             serviceCollection.AddSingleton<IRouteResolverFactory, RegisterRouteResolverFactory>();
@@ -53,6 +54,7 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
             serviceCollection.AddSingleton<ISirenHypermediaConverterFactory, SirenHypermediaConverterFactory>();
             serviceCollection.AddSingleton<HypermediaQueryLocationFormatter>();
             serviceCollection.AddSingleton<HypermediaEntityLocationFormatter>();
+            serviceCollection.AddSingleton<HypermediaLinkLocationFormatter>();
             serviceCollection.AddSingleton<SirenHypermediaFormatter>();
             
             if (hypermediaOptions.AutoDeliverJsonSchemaForActionParameterTypes)
@@ -70,6 +72,7 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
             private readonly ApplicationModel applicationModel;
             private readonly HypermediaQueryLocationFormatter hypermediaQueryLocationFormatter;
             private readonly HypermediaEntityLocationFormatter hypermediaEntityLocationFormatter;
+            private readonly HypermediaLinkLocationFormatter hypermediaLinkLocationFormatter;
             private readonly SirenHypermediaFormatter sirenHypermediaFormatter;
 
             public ConfigureMvcOptionsForHypermediaExtensions(
@@ -77,18 +80,24 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
                 ApplicationModel applicationModel,
                 HypermediaQueryLocationFormatter hypermediaQueryLocationFormatter,
                 HypermediaEntityLocationFormatter hypermediaEntityLocationFormatter,
+                HypermediaLinkLocationFormatter hypermediaLinkLocationFormatter,
                 SirenHypermediaFormatter sirenHypermediaFormatter)
             {
                 this.hypermediaOptions = hypermediaOptions;
                 this.applicationModel = applicationModel;
                 this.hypermediaQueryLocationFormatter = hypermediaQueryLocationFormatter;
                 this.hypermediaEntityLocationFormatter = hypermediaEntityLocationFormatter;
+                this.hypermediaLinkLocationFormatter = hypermediaLinkLocationFormatter;
                 this.sirenHypermediaFormatter = sirenHypermediaFormatter;
             }
 
             public void Configure(MvcOptions options)
             {
-                options.AddHypermediaExtensionsOutputFormatters(hypermediaQueryLocationFormatter, hypermediaEntityLocationFormatter, sirenHypermediaFormatter);
+                options.AddHypermediaExtensionsOutputFormatters(
+                    hypermediaQueryLocationFormatter,
+                    hypermediaEntityLocationFormatter,
+                    hypermediaLinkLocationFormatter,
+                    sirenHypermediaFormatter);
                 options.AddHypermediaParameterBinders(hypermediaOptions, applicationModel);
             }
         }
@@ -108,11 +117,13 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
             this MvcOptions options,
             HypermediaQueryLocationFormatter hypermediaQueryLocationFormatter,
             HypermediaEntityLocationFormatter hypermediaEntityLocationFormatter,
+            HypermediaLinkLocationFormatter hypermediaLinkLocationFormatter,
             SirenHypermediaFormatter sirenHypermediaFormatter
             )
         {
             options.OutputFormatters.Insert(0, hypermediaQueryLocationFormatter);
             options.OutputFormatters.Insert(0, hypermediaEntityLocationFormatter);
+            options.OutputFormatters.Insert(0, hypermediaLinkLocationFormatter);
             options.OutputFormatters.Insert(0, sirenHypermediaFormatter);
 
             return options;

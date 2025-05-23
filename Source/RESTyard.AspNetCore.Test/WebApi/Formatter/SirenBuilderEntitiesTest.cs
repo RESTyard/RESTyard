@@ -4,11 +4,12 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.Hypermedia;
-using RESTyard.AspNetCore.Hypermedia.Extensions;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.Test.WebApi.Formatter.Properties;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
+using RESTyard.Relations;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 {
@@ -39,31 +40,31 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             var ho = new EmptyHypermediaObject();
             var relation1 = "Embedded";
             var embeddedHo1 = new EmbeddedSubEntity();
-            ho.Entities.Add(relation1, new HypermediaObjectReference(embeddedHo1));
+            ho.Embedded.Add(EmbeddedEntity.Embed(embeddedHo1));
 
             var relationsList2 = new List<string> { "RelationA", "RelationB" };
             var embeddedHo2 = new EmbeddedSubEntity {ABool = true, AInt = 3};
-            ho.Entities.Add(new RelatedEntity(relationsList2, new HypermediaObjectReference(embeddedHo2)));
+            ho.Multiple.Add(EmbeddedEntity.Embed(embeddedHo2));
 
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(EmptyHypermediaObject));
+            AssertClassName(siren, nameof(EmptyHypermediaObject));
             AssertEmptyProperties(siren);
             AssertEmptyActions(siren);
-            AssertHasOnlySelfLink(siren, routeName);
+            AssertHasNoLinks(siren);
 
             Assert.IsTrue(siren["entities"].Type == JTokenType.Array);
             var entitiesArray = (JArray)siren["entities"];
-            Assert.AreEqual(entitiesArray.Count, ho.Entities.Count);
+            Assert.AreEqual(entitiesArray.Count, 2);
 
             var embeddedEntityObject = (JObject)siren["entities"][0];
-            AssertDefaultClassName(embeddedEntityObject, typeof(EmbeddedSubEntity));
+            AssertClassName(embeddedEntityObject, nameof(EmbeddedSubEntity));
             AssertRelations(embeddedEntityObject, new List<string> { relation1 });
             AssertHasOnlySelfLink(embeddedEntityObject, routeNameEmbedded);
             AssertEmbeddedEntity(embeddedEntityObject, embeddedHo1);
 
             embeddedEntityObject = (JObject)siren["entities"][1];
-            AssertDefaultClassName(embeddedEntityObject, typeof(EmbeddedSubEntity));
+            AssertClassName(embeddedEntityObject, nameof(EmbeddedSubEntity));
             AssertRelations(embeddedEntityObject, relationsList2);
             AssertHasOnlySelfLink(embeddedEntityObject, routeNameEmbedded);
             AssertEmbeddedEntity(embeddedEntityObject, embeddedHo2);
@@ -82,22 +83,22 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             var ho = new EmptyHypermediaObject();
 
             var relation1 = "Embedded";
-            ho.Entities.Add(relation1, new HypermediaObjectKeyReference(typeof(EmbeddedSubEntity), 6));
+            ho.Embedded.Add(new EmbeddedEntity<EmbeddedSubEntity>(new HypermediaObjectKeyReference(typeof(EmbeddedSubEntity), 6)));
 
             var relationsList2 = new List<string> { "RelationA", "RelationB" };
             var query = new EmbeddedQueryObject {AInt = 2};
-            ho.Entities.Add(new RelatedEntity(relationsList2, new HypermediaObjectQueryReference(typeof(EmbeddedSubEntity), query, 3)));
+            ho.Multiple.Add(new EmbeddedEntity<EmbeddedSubEntity>(new HypermediaObjectQueryReference(typeof(EmbeddedSubEntity), query, 3)));
 
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(EmptyHypermediaObject));
+            AssertClassName(siren, nameof(EmptyHypermediaObject));
             AssertEmptyProperties(siren);
             AssertEmptyActions(siren);
-            AssertHasOnlySelfLink(siren, routeName);
+            AssertHasNoLinks(siren);
 
             Assert.IsTrue(siren["entities"].Type == JTokenType.Array);
             var entitiesArray = (JArray)siren["entities"];
-            Assert.AreEqual(entitiesArray.Count, ho.Entities.Count);
+            Assert.AreEqual(entitiesArray.Count, 2);
 
             var embeddedEntityObject = (JObject)siren["entities"][0];
             AssertRelations(embeddedEntityObject, new List<string> { relation1 });
@@ -129,10 +130,14 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             }
         }
 
-        public class EmbeddedSubEntity : HypermediaObject
+        [HypermediaObject(Classes = [nameof(EmbeddedSubEntity)])]
+        public class EmbeddedSubEntity : IHypermediaObject
         {
             public bool ABool { get; set; }
             public int AInt { get; set; }
+
+            [Relations([DefaultHypermediaRelations.Self])]
+            public ILink<EmbeddedSubEntity> Self => Link.To(this);
         }
 
         public class EmbeddedQueryObject : IHypermediaQuery
@@ -142,7 +147,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
         public class EmbeddedEntityRouteKeyProducer : IKeyProducer
         {
-            public object CreateFromHypermediaObject(HypermediaObject hypermediaObject)
+            public object CreateFromHypermediaObject(IHypermediaObject hypermediaObject)
             {
                 throw new System.NotImplementedException();
             }

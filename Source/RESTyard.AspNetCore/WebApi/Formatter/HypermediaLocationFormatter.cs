@@ -26,7 +26,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             return false;
         }
 
-        public override async Task WriteAsync(OutputFormatterWriteContext context)
+        public override Task WriteAsync(OutputFormatterWriteContext context)
         {
             var item = GetObject(context.Object);
             if (item == null)
@@ -43,7 +43,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 
             SetResponseValues(response, item);
 
-            await Task.CompletedTask;
+            return Task.CompletedTask;
         }
 
         protected abstract void SetResponseValues(HttpResponse response, T item);

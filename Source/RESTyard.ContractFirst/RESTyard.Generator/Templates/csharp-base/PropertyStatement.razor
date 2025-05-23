@@ -1,0 +1,10 @@
+﻿@{
+    var newText = HasNewKeyword ? "new " : "";
+}
+
+public @newText@TypeName @PropertyName { get; set; }
+@code {
+    [Parameter] public string TypeName { get; set; } = "";
+    [Parameter] public string PropertyName { get; set; } = "";
+    [Parameter] public bool HasNewKeyword { get; set; } = false;
+}

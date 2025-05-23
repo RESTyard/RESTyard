@@ -4,7 +4,8 @@ using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
-using RESTyard.AspNetCore.Hypermedia.Links;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.Util.Repository;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
@@ -52,17 +53,11 @@ namespace CarShack.Controllers.Customers
                 queryResult.TotalCountOfEnties,
                 resultReferences.Count,
                 resultReferences,
-                queries.next.IsSome(),
-                queries.next.GetValueOrDefault(),
-                queries.previous.IsSome(),
-                queries.previous.GetValueOrDefault(),
-                queries.last.IsSome(),
-                queries.last.GetValueOrDefault(),
-                queries.all.IsSome(),
-                queries.all.GetValueOrDefault(),
+                queries.next.Map(IHypermediaQuery (some) => some),
+                queries.previous.Map(IHypermediaQuery (some) => some),
+                queries.last.Map(IHypermediaQuery (some) => some),
+                queries.all.Map(IHypermediaQuery (some) => some),
                 query);
-            var navigationQuerys = NavigationQuerysBuilder.Build(query, queryResult);
-            result.AddNavigationQueries(navigationQuerys);
            
             return Ok(result);
         }
@@ -84,7 +79,7 @@ namespace CarShack.Controllers.Customers
             }
 
             // Will create a Location header with a URI to the result.
-            return this.CreatedQuery(typeof(HypermediaCustomerQueryResultHto), query);
+            return this.Created(Link.ByQuery<HypermediaCustomerQueryResultHto>(query));
         }
 
         [HttpPostHypermediaAction("CreateCustomer", typeof(HypermediaCustomersRootHto.CreateCustomerOp))]
@@ -98,16 +93,15 @@ namespace CarShack.Controllers.Customers
             var createdCustomer = await CreateCustomer(createCustomerParameters);
 
             // Will create a Location header with a URI to the result.
-            return this.Created(createdCustomer);
+            return this.Created(Link.To(createdCustomer));
         }
         
         private async Task<HypermediaCustomerHto> CreateCustomer(CreateCustomerParameters createCustomerParameters)
         {
-          
-                var customer = CustomerService.CreateRandomCustomer();
-                customer.Name = createCustomerParameters.Name;
-                await customerRepository.AddEntityAsync(customer).ConfigureAwait(false);
-                return customer.ToHto();
+            var customer = CustomerService.CreateRandomCustomer(isFavorite: false);
+            customer.Name = createCustomerParameters.Name;
+            await customerRepository.AddEntityAsync(customer).ConfigureAwait(false);
+            return customer.ToHto();
         }
 #endregion
     }

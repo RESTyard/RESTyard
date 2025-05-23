@@ -1,0 +1,147 @@
+﻿@inherits RazorTemplateBase
+
+@{
+    var typeName = $"{Document.name}Hto";
+    var arguments = GatherArguments(Document);
+    var parentArguments = GatherParentArguments(Document);
+    var allArgumentsString = string.Join(", ", parentArguments.Concat(arguments));
+    var parentArgumentsString = string.Join(", ", parentArguments.Select(pa => pa.Split(' ').Last()));
+    if (parentArguments.Count == 0)
+    {
+        if (Document.isQueryResult)
+        {
+            parentArgumentsString = "query";
+        }
+        else if (string.IsNullOrEmpty(Document.parentDocument))
+        {
+            parentArgumentsString = "";
+        }
+    }
+
+    if (!string.IsNullOrEmpty(parentArgumentsString))
+    {
+        parentArgumentsString = $" : base({parentArgumentsString})";
+    }
+
+    var links = Document.Links.Select(link =>
+    {
+        string linkOptionMatch = "";
+        string linkValue = "";
+        if (string.IsNullOrEmpty(link.document))
+        {
+            linkOptionMatch = Uncapitalize(link.rel);
+            var parameter = link.mandatory ? Uncapitalize(link.rel) : "some";
+            linkValue = $"Link.External({parameter})";
+        }
+        else
+        {
+            var hasQuery = !string.IsNullOrEmpty(link.query);
+            var linkDocument = Schema.Documents.First(d => d.name == link.document);
+            var hasKey = HasKeyProperties(linkDocument);
+            var type = $"{link.document}Hto";
+            var tupleParameter = $"{Uncapitalize(link.rel)}Reference";
+            var queryParameter = $"{Uncapitalize(link.rel)}Query";
+            var keyParameter = $"{Uncapitalize(link.rel)}Key";
+            if (!link.mandatory)
+            {
+                if (hasQuery && hasKey)
+                {
+                    linkOptionMatch = tupleParameter;
+                    queryParameter = "some.Query";
+                    keyParameter = "some.Key";
+                }
+                else if (hasQuery)
+                {
+                    linkOptionMatch = queryParameter;
+                    queryParameter = "some";
+                }
+                else if (hasKey)
+                {
+                    linkOptionMatch = keyParameter;
+                    keyParameter = "some";
+                }
+                else
+                {
+                    linkOptionMatch = keyParameter;
+                }
+            }
+            else
+            {
+                if (hasQuery && hasKey)
+                {
+                    queryParameter = $"{tupleParameter}.Query";
+                    keyParameter = $"{tupleParameter}.Key";
+                }
+            }
+
+            var parameters = "";
+            if (hasQuery && hasKey)
+            {
+                parameters = $"{queryParameter}, {keyParameter}";
+            }
+            else if (hasQuery)
+            {
+                parameters = queryParameter;
+            }
+            else if (hasKey)
+            {
+                parameters = keyParameter;
+            }
+            else
+            {
+                parameters = "null";
+            }
+
+            var staticMethod = "";
+            if (hasQuery)
+            {
+                staticMethod = "ByQuery";
+            }
+            else
+            {
+                staticMethod = "ByKey";
+            }
+
+            linkValue = $"Link.{staticMethod}<{type}>({parameters})";
+        }
+
+        return (link.mandatory, linkOptionMatch, link.rel, string.IsNullOrEmpty(link.document) ? "" : $"{link.document}Hto", linkValue);
+    });
+}
+
+public @typeName (@allArgumentsString)@parentArgumentsString
+{
+    @foreach (var property in Document.Properties)
+    {
+        @:this.@property.name = @Uncapitalize(@property.name);
+    }
+    @foreach (var operation in Document.Operations)
+    {
+        @:this.@operation.name = @Uncapitalize(@operation.name);
+    }
+    @foreach (var entity in Document.Entities)
+    {
+        var hto = $"<{entity.document}Hto>";
+        @:this.@Capitalize(entity.collectionName) = @Uncapitalize(@entity.collectionName)@(".")Select(x => EmbeddedEntity.Embed@(hto)(x)).ToList();
+    }
+    @foreach (var (isMandatory, match, rel, hto, value) in links)
+    {
+        if (isMandatory)
+        {
+            @:this.@(Capitalize(rel)) = @value;
+        }
+        else
+        {
+            @:this.@(Capitalize(rel)) = @match@(".")Map(some => @value).GetValueOrDefault();
+        }
+    }
+    @if (Document.hasSelfLink)
+    {
+        @:this.Self = Link.To(this);
+    }
+}
+
+@code {
+    [Parameter] public DocumentType Document { get; set; } = null!;
+    [Parameter] public Version Version { get; set; } = null!;
+}

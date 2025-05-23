@@ -2,16 +2,15 @@
 using System.Threading.Tasks;
 using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
-using CarShack.Hypermedia.Cars;
 using CarShack.Util;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using RESTyard.AspNetCore.ErrorHandling;
 using RESTyard.AspNetCore.Exceptions;
+using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.JsonSchema;
 using RESTyard.AspNetCore.WebApi;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace CarShack.Controllers.Customers
 {
@@ -19,22 +18,26 @@ namespace CarShack.Controllers.Customers
     public class CustomerController : Controller
     {
         private readonly ICustomerRepository customerRepository;
+        private readonly IKeyFromUriService keyFromUriService;
 
-        public CustomerController(ICustomerRepository customerRepository)
+        public CustomerController(
+            ICustomerRepository customerRepository,
+            IKeyFromUriService keyFromUriService)
         {
             this.customerRepository = customerRepository;
+            this.keyFromUriService = keyFromUriService;
         }
 
         #region HypermediaObjects
         // Route to the HypermediaCustomer. References to HypermediaCustomer type will be resolved to this route.
         // This RouteTemplate also contains a key, so a RouteKeyProducer can be provided. In this case the RouteKeyProducer
         // could be ommited and KeyAttribute could be used on HypermediaCustomer instead.
-        [HttpGetHypermediaObject("{key:int}", typeof(HypermediaCustomerHto), typeof(CustomerRouteKeyProducer))]
+        [HttpGet("{key:int}"), HypermediaObjectEndpoint<HypermediaCustomerHto>(typeof(CustomerRouteKeyProducer))]
         public async Task<ActionResult> GetEntity(int key)
         {
             try
             {
-                var customer = await customerRepository.GetEnitityByKeyAsync(key).ConfigureAwait(false);
+                var customer = await customerRepository.GetEntityByKeyAsync(key).ConfigureAwait(false);
                 var result = HypermediaCustomerHto.FromDomain(customer);
                 return Ok(result);
             }
@@ -47,7 +50,7 @@ namespace CarShack.Controllers.Customers
 
         #region Actions
         [HttpPostHypermediaAction("MyFavoriteCustomers", typeof(HypermediaCustomerHto.MarkAsFavoriteOp))]
-        public async Task<ActionResult> MarkAsFavoriteAction([HypermediaActionParameterFromBody]MarkAsFavoriteParameters favoriteCustomer)
+        public async Task<ActionResult> MarkAsFavoriteAction([HypermediaActionParameterFromBody] MarkAsFavoriteParameters favoriteCustomer)
         {
             if (favoriteCustomer == null)
             {
@@ -63,16 +66,21 @@ namespace CarShack.Controllers.Customers
 
             try
             {
-                var customer = await customerRepository.GetEnitityByKeyAsync(favoriteCustomer.CustomerId).ConfigureAwait(false);
+                var keyFromUri = this.keyFromUriService.GetKeyFromUri<HypermediaCustomerHto, HypermediaCustomerHto.CustomKey>(favoriteCustomer.Customer);
+                if (keyFromUri.IsError)
+                {
+                    return this.BadRequest();
+                }
+                var customer = await customerRepository.GetEntityByKeyAsync(keyFromUri.GetValueOrThrow().Key).ConfigureAwait(false);
                 var hypermediaCustomer = customer.ToHto();
-                
+
                 // Check can execute here since we need to call business logic and not rely on previously checked value from HTO passed to caller
                 if (customer.IsFavorite)
                 {
                     return this.CanNotExecute();
                 }
-                
-                DoMarkAsFavorite(hypermediaCustomer, customer); 
+
+                DoMarkAsFavorite(hypermediaCustomer, customer);
                 return Ok();
             }
             catch (EntityNotFoundException)
@@ -96,7 +104,7 @@ namespace CarShack.Controllers.Customers
             }
         }
 
-        [HttpPostHypermediaAction("{key:int}/BuysCar", typeof(HypermediaCustomerHto.BuyCarOp))]
+        [HttpPost("{key:int}/BuysCar"), HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.BuyCar))]
         public async Task<ActionResult> BuyCar(int key, BuyCarParameters parameter)
         {
             if (parameter == null)
@@ -115,9 +123,9 @@ namespace CarShack.Controllers.Customers
             {
                 //shortcut for get car from repository
                 var car = new HypermediaCarHto(parameter.Brand, parameter.CarId);
-                var customer = await customerRepository.GetEnitityByKeyAsync(key).ConfigureAwait(false);
+                var customer = await customerRepository.GetEntityByKeyAsync(key).ConfigureAwait(false);
                 //do what has to be done
-                return Ok();
+                return this.Created(Link.ByKey(new HypermediaCarHto.Key(parameter.CarId, parameter.Brand)));
             }
             catch (EntityNotFoundException)
             {
@@ -139,7 +147,7 @@ namespace CarShack.Controllers.Customers
 
             try
             {
-                var customer = await customerRepository.GetEnitityByKeyAsync(key).ConfigureAwait(false);
+                var customer = await customerRepository.GetEntityByKeyAsync(key).ConfigureAwait(false);
                 var hypermediaCustomer = customer.ToHto();
                 // Can execute logic is NOT checked, but is always true
                 DoMove(hypermediaCustomer, customer, newAddress);
@@ -204,13 +212,17 @@ namespace CarShack.Controllers.Customers
         
         private static void DoMove(HypermediaCustomerHto hto, Customer customer, NewAddress newAddress)
         {
-            // semantic validation is busyness logic
-            if (string.IsNullOrEmpty(newAddress.Address))
+            // semantic validation is business logic
+            if (string.IsNullOrEmpty(newAddress.Address.Street))
                 throw new ActionParameterValidationException("New customer address may not be null or empty.");
 
-            // call busyness logic here
-            customer.Address = newAddress.Address;
-            hto.Address = customer.Address;
+            // call business logic here
+            hto.Address = newAddress.Address;
+            customer.Address = new Address(
+                Street: newAddress.Address.Street,
+                Number: newAddress.Address.Number,
+                City: newAddress.Address.City,
+                ZipCode: newAddress.Address.ZipCode);
         }
 
         #endregion
@@ -218,7 +230,7 @@ namespace CarShack.Controllers.Customers
         #region TypeRoutes
         // Provide type information for Action parameters. Does not depend on a specific customer. Optional when using
         // MvcOptionsExtension.AutoDeliverActionParameterSchemas
-        [HttpGetHypermediaActionParameterInfo("NewAddressType", typeof(NewAddress))]
+        [HttpGet("NewAddressType"), HypermediaActionParameterInfoEndpoint<NewAddress>]
         public ActionResult NewAddressType()
         {
             var schema = JsonSchemaFactory.Generate(typeof(NewAddress));

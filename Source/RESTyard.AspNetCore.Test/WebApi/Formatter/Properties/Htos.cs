@@ -6,16 +6,23 @@ using RESTyard.AspNetCore.Test.Helpers;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 {
-    public class EmptyHypermediaObject : HypermediaObject
+    [HypermediaObject(Classes = [nameof(EmptyHypermediaObject)])]
+    public class EmptyHypermediaObject : IHypermediaObject
+    {
+        [Relations(["Embedded"])]
+        public List<IEmbeddedEntity<SirenBuilderEntitiesTest.EmbeddedSubEntity>> Embedded { get; } = [];
+        
+        [Relations(["RelationA", "RelationB"])]
+        public List<IEmbeddedEntity<SirenBuilderEntitiesTest.EmbeddedSubEntity>> Multiple { get; } = [];
+    }
+
+    [HypermediaObject(Title = "A Title", Classes = ["CustomClass1", "CustomClass2"])]
+    public class AttributedEmptyHypermediaObject : IHypermediaObject
     {
     }
 
-    [HypermediaObject(Title = "A Title", Classes = new[] { "CustomClass1", "CustomClass2" })]
-    public class AttributedEmptyHypermediaObject : HypermediaObject
-    {
-    }
-
-    public class PropertyDuplicateHypermediaObject : HypermediaObject
+    [HypermediaObject(Classes = [nameof(PropertyDuplicateHypermediaObject)])]
+    public class PropertyDuplicateHypermediaObject : IHypermediaObject
     {
         [HypermediaProperty(Name = "DuplicateRename")]
         public bool Property1 { get; set; }
@@ -24,12 +31,14 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         public bool Property2 { get; set; }
     }
 
-    public class PropertyNestedClassHypermediaObject : HypermediaObject
+    [HypermediaObject(Classes = [nameof(PropertyNestedClassHypermediaObject)])]
+    public class PropertyNestedClassHypermediaObject : IHypermediaObject
     {
         public AttributedPropertyHypermediaObject AChild { get; set; }
     }
 
-    public class AttributedPropertyHypermediaObject : HypermediaObject
+    [HypermediaObject(Classes = [nameof(AttributedPropertyHypermediaObject)])]
+    public class AttributedPropertyHypermediaObject : IHypermediaObject
     {
         [HypermediaProperty(Name = "Property1Renamed")]
         public bool Property1 { get; set; }
@@ -43,7 +52,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         public bool NotRenamed { get; set; }
     }
 
-    public class PropertyHypermediaObject : HypermediaObject
+    [HypermediaObject(Classes = [nameof(PropertyHypermediaObject)])]
+    public class PropertyHypermediaObject : IHypermediaObject
     {
         public bool ABool { get; set; }
         public string AString { get; set; }
@@ -66,7 +76,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         public Type AType { get; set; }
     }
 
-    public class HypermediaObjectWithListProperties : HypermediaObject
+    [HypermediaObject(Classes = [nameof(HypermediaObjectWithListProperties)])]
+    public class HypermediaObjectWithListProperties : IHypermediaObject
     {
         public IEnumerable<int> AValueList { get; set; }
 
