@@ -27,14 +27,14 @@ namespace CarShack.Controllers.Customers
 
 #region HypermediaObjects
         // Route to the HypermediaCustomersRoot. References to HypermediaCustomersRoot type will be resolved to this route.
-        [HttpGetHypermediaObject("", typeof(HypermediaCustomersRootHto))]
+        [HttpGet(""), HypermediaObjectEndpoint<HypermediaCustomersRootHto>]
         public ActionResult GetRootDocument()
         {
             return Ok(customersRoot);
         }
 
         // Building Queries using the CreateQuery will link to this route.
-        [HttpGetHypermediaObject("Query", typeof(HypermediaCustomerQueryResultHto))]
+        [HttpGet("Query"), HypermediaObjectEndpoint<HypermediaCustomerQueryResultHto>]
         public async Task<ActionResult> Query([FromQuery] CustomerQuery query)
         {
             if (query == null)
@@ -66,7 +66,7 @@ namespace CarShack.Controllers.Customers
 
 #region Actions
         // Provides a link to the result Query.
-        [HttpPostHypermediaAction("Queries", typeof(HypermediaCustomersRootHto.CreateQueryOp))]
+        [HttpPost("Queries"), HypermediaActionEndpoint<HypermediaCustomersRootHto>(nameof(HypermediaCustomersRootHto.CreateQuery))]
         public ActionResult NewQueryAction(CustomerQuery query)
         {
             if (query == null)
@@ -83,7 +83,7 @@ namespace CarShack.Controllers.Customers
             return this.Created(Link.ByQuery<HypermediaCustomerQueryResultHto>(query));
         }
 
-        [HttpPostHypermediaAction("CreateCustomer", typeof(HypermediaCustomersRootHto.CreateCustomerOp))]
+        [HttpPost("CreateCustomer"), HypermediaActionEndpoint<HypermediaCustomersRootHto>(nameof(HypermediaCustomersRootHto.CreateCustomer))]
         public async Task<ActionResult> NewCustomerAction(CreateCustomerParameters createCustomerParameters)
         {
             if (createCustomerParameters == null)

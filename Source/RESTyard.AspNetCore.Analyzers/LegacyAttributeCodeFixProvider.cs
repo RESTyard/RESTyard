@@ -77,6 +77,10 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
         TypedConstant? template;
         TypedConstant routeType;
         TypedConstant? routeKeyProducer;
+        ExpressionSyntax? acceptedMediaType2 = attribute.ArgumentList?.Arguments
+            .Where(a => a.NameEquals?.Name.Identifier.ValueText == "AcceptedMediaType")
+            .Select(a => a.Expression)
+            .FirstOrDefault();
         var ctor = attributeData.ConstructorArguments;
         if (diagnosticId == LegacyAttributeAnalyzer.HttpGetHypermediaActionParameterInfoDiagnosticId)
         {
@@ -118,7 +122,7 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
         }
 
         AttributeSyntax? hoeAttribute =
-            GetHypermediaEndpointAttribute(diagnosticId, semanticModel, attribute.SpanStart, routeType, routeKeyProducer);
+            GetHypermediaEndpointAttribute(diagnosticId, semanticModel, attribute.SpanStart, routeType, routeKeyProducer, acceptedMediaType2);
 
         if (hoeAttribute is null)
         {
@@ -143,10 +147,12 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
         SemanticModel semanticModel,
         int position,
         TypedConstant routeType,
-        TypedConstant? routeKeyProducer)
+        TypedConstant? routeKeyProducer,
+        ExpressionSyntax? acceptedMediaType)
     {
         var routeTypeValue = (routeType.Value as INamedTypeSymbol)!.ToMinimalDisplayString(semanticModel, position);
         var routeKeyProducerValue = (routeKeyProducer?.Value as INamedTypeSymbol)?.ToMinimalDisplayString(semanticModel, position);
+        var acceptedMediaTypeValue = acceptedMediaType?.ToFullString();
         
         switch (diagnosticId)
         {
@@ -191,7 +197,31 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
                 {
                     return null;
                 }
-            
+
+                var attributeArguments = SingletonSeparatedList<AttributeArgumentSyntax>(
+                    AttributeArgument(
+                        InvocationExpression(
+                                IdentifierName(
+                                    Identifier(
+                                        TriviaList(),
+                                        SyntaxKind.NameOfKeyword,
+                                        "nameof",
+                                        "nameof",
+                                        TriviaList())))
+                            .WithArgumentList(
+                                ArgumentList(
+                                    SingletonSeparatedList<ArgumentSyntax>(
+                                        Argument(
+                                            MemberAccessExpression(
+                                                SyntaxKind.SimpleMemberAccessExpression,
+                                                IdentifierName(routeTypeInfo.ContainingType.Name),
+                                                IdentifierName(property.Name))))))));
+                if (acceptedMediaTypeValue is not null)
+                {
+                    attributeArguments = attributeArguments.Add(
+                        AttributeArgument(
+                            IdentifierName(acceptedMediaTypeValue)));
+                }
                 return Attribute(
                         GenericName(
                                 Identifier("HypermediaActionEndpoint"))
@@ -201,24 +231,7 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
                                         IdentifierName(routeTypeInfo.ContainingType.Name)))))
                     .WithArgumentList(
                         AttributeArgumentList(
-                            SingletonSeparatedList<AttributeArgumentSyntax>(
-                                AttributeArgument(
-                                    InvocationExpression(
-                                            IdentifierName(
-                                                Identifier(
-                                                    TriviaList(),
-                                                    SyntaxKind.NameOfKeyword,
-                                                    "nameof",
-                                                    "nameof",
-                                                    TriviaList())))
-                                        .WithArgumentList(
-                                            ArgumentList(
-                                                SingletonSeparatedList<ArgumentSyntax>(
-                                                    Argument(
-                                                        MemberAccessExpression(
-                                                            SyntaxKind.SimpleMemberAccessExpression,
-                                                            IdentifierName(routeTypeInfo.ContainingType.Name),
-                                                            IdentifierName(property.Name))))))))));
+                            attributeArguments));
         }
     }
 

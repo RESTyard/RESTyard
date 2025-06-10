@@ -4,13 +4,14 @@ using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
+using RESTyard.MediaTypes;
 
 public class SomeController : Controller
 {
     [HttpPostHypermediaAction("Hi", typeof(SomeHto.SomeOp))]
     public IActionResult Get() => this.Ok();
     
-    [HttpPut, HypermediaActionEndpoint<SomeHto>(nameof(SomeHto.Operation))]
+    [HttpPut, HypermediaActionEndpoint<SomeHto>(nameof(SomeHto.Operation), DefaultMediaTypes.MultipartFormData)]
     public IActionResult Get2() => this.Ok();
     
     [HttpPatchHypermediaAction("Hi3", typeof(SomeHto.SomeOp), typeof(SomeHtoRouteKeyProducer))]

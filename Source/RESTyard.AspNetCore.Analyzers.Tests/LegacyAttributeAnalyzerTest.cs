@@ -76,13 +76,14 @@ public class LegacyAttributeAnalyzerTest : VerifyAnalyzer
             using RESTyard.AspNetCore.Hypermedia.Attributes;
             using RESTyard.AspNetCore.WebApi.AttributedRoutes;
             using RESTyard.AspNetCore.WebApi.RouteResolver;
+            using RESTyard.MediaTypes;
 
             public class SomeController : Controller
             {
                 [HttpPostHypermediaAction("Hi", typeof(SomeHto.SomeOp))]
                 public IActionResult Get() => this.Ok();
                 
-                [HttpPutHypermediaAction(typeof(SomeHto.SomeOp))]
+                [HttpPutHypermediaAction(typeof(SomeHto.SomeOp), AcceptedMediaType = DefaultMediaTypes.MultipartFormData)]
                 public IActionResult Get2() => this.Ok();
                 
                 [HttpPatchHypermediaAction("Hi3", typeof(SomeHto.SomeOp), typeof(SomeHtoRouteKeyProducer))]

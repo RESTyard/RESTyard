@@ -17,7 +17,7 @@ namespace CarShack.Controllers.EntryPoint
 
         // Initial route to the API. References to HypermediaEntryPoint type will be resolved to this route.
         // Also an optional name is given to the route for debugging.
-        [HttpGetHypermediaObject("", typeof(HypermediaEntrypointHto), Name = RouteNames.EntryPoint.Root)]
+        [HttpGet(""), HypermediaObjectEndpoint<HypermediaEntrypointHto>]
         public ActionResult GetRootDocument()
         {
             return Ok(hypermediaEntryPoint);
