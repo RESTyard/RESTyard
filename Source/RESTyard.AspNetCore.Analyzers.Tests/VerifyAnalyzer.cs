@@ -75,6 +75,7 @@ public class VerifyAnalyzer : VerifyBase
         DiagnosticAnalyzer analyzer,
         CodeFixProvider codeFixProvider,
         Action<ImmutableArray<Diagnostic>> verifyDiagnostics,
+        Action<Diagnostic, CodeAction>? verifyCodeAction = null,
         [CallerMemberName] string callingMethod = "")
     {
         const string TestProjectName = "Test";
@@ -118,6 +119,7 @@ public class VerifyAnalyzer : VerifyBase
             var codeFixContext = new CodeFixContext(document, d, (a, _) => actions.Add(a), CancellationToken.None);
             await codeFixProvider.RegisterCodeFixesAsync(codeFixContext);
             actions.Should().NotBeEmpty();
+            verifyCodeAction?.Invoke(d, actions[0]);
             var updatedDocument = await ApplyFix(document, actions[0]);
             var syntaxTree = await updatedDocument.GetSyntaxRootAsync();
             var updatedCode = syntaxTree.ToFullString();

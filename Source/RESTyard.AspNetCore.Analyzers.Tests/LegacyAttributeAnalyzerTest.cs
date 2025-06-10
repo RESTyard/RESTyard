@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
 
@@ -62,7 +63,8 @@ public class LegacyAttributeAnalyzerTest : VerifyAnalyzer
             new LegacyAttributeAnalyzer(),
             new LegacyAttributeCodeFixProvider(),
             diagnostics => diagnostics.Should().HaveCount(4)
-                .And.AllSatisfy(d => d.Id.Should().Be("RY0010")));
+                .And.AllSatisfy(d => d.Id.Should().Be("RY0010")),
+            verifyCodeAction: (d, c) => c.Title.Should().ContainAll("HttpGetHypermediaObject", "HttpGet,", "HypermediaObjectEndpoint"));
     }
     
     [Fact]
@@ -125,7 +127,19 @@ public class LegacyAttributeAnalyzerTest : VerifyAnalyzer
             new LegacyAttributeAnalyzer(),
             new LegacyAttributeCodeFixProvider(),
             diagnostics => diagnostics.Should().HaveCount(4)
-                .And.AllSatisfy(d => d.Id.Should().BeOneOf("RY0011", "RY0012", "RY0013", "RY0014")));
+                .And.AllSatisfy(d => d.Id.Should().BeOneOf("RY0011", "RY0012", "RY0013", "RY0014")),
+            verifyCodeAction: (d, c) =>
+            {
+                c.Title.Should().Contain("HypermediaActionEndpoint");
+                c.Title.Should().ContainAll(d.Id switch
+                {
+                    "RY0011" => ["HttpPostHypermediaAction", "HttpPost,"],
+                    "RY0012" => ["HttpPutHypermediaAction", "HttpPut,"],
+                    "RY0013" => ["HttpPatchHypermediaAction", "HttpPatch,"],
+                    "RY0014" => ["HttpDeleteHypermediaAction", "HttpDelete,"],
+                    _ => throw new ArgumentOutOfRangeException(),
+                });
+            });
     }
     
     [Fact]
@@ -163,6 +177,7 @@ public class LegacyAttributeAnalyzerTest : VerifyAnalyzer
             new LegacyAttributeAnalyzer(),
             new LegacyAttributeCodeFixProvider(),
             diagnostics => diagnostics.Should().HaveCount(2)
-                .And.AllSatisfy(d => d.Id.Should().Be("RY0015")));
+                .And.AllSatisfy(d => d.Id.Should().Be("RY0015")),
+            verifyCodeAction: (d, c) => c.Title.Should().ContainAll("HttpGetHypermediaActionParameterInfo", "HttpGet,", "HypermediaActionParameterInfoEndpoint"));
     }
 }

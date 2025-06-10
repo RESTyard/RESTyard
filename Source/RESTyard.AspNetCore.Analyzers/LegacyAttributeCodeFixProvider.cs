@@ -23,7 +23,8 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
             LegacyAttributeAnalyzer.HttpPostDiagnosticId,
             LegacyAttributeAnalyzer.HttpPutDiagnosticId,
             LegacyAttributeAnalyzer.HttpPatchDiagnosticId,
-            LegacyAttributeAnalyzer.HttpDeleteDiagnosticId);
+            LegacyAttributeAnalyzer.HttpDeleteDiagnosticId,
+            LegacyAttributeAnalyzer.HttpGetHypermediaActionParameterInfoDiagnosticId);
     
     public override FixAllProvider? GetFixAllProvider()
     {
@@ -44,10 +45,26 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
         {
             return;
         }
-        
+
+        var (attributeName, httpName, newAttributeName) = diagnostic.Id switch
+        {
+            LegacyAttributeAnalyzer.HttpGetDiagnosticId => ("HttpGetHypermediaObject", "HttpGet",
+                "HypermediaObjectEndpoint"),
+            LegacyAttributeAnalyzer.HttpPostDiagnosticId => ("HttpPostHypermediaAction", "HttpPost",
+                "HypermediaActionEndpoint"),
+            LegacyAttributeAnalyzer.HttpPutDiagnosticId => ("HttpPutHypermediaAction", "HttpPut",
+                "HypermediaActionEndpoint"),
+            LegacyAttributeAnalyzer.HttpPatchDiagnosticId => ("HttpPatchHypermediaAction", "HttpPatch",
+                "HypermediaActionEndpoint"),
+            LegacyAttributeAnalyzer.HttpDeleteDiagnosticId => ("HttpDeleteHypermediaAction", "HttpDelete",
+                "HypermediaActionEndpoint"),
+            LegacyAttributeAnalyzer.HttpGetHypermediaActionParameterInfoDiagnosticId => (
+                "HttpGetHypermediaActionParameterInfo", "HttpGet", "HypermediaActionParameterInfoEndpoint"),
+            _ => throw new ArgumentOutOfRangeException(nameof(diagnostic.Id), diagnostic.Id, diagnostic.Id),
+        };
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Migrate [HttpGetHypermediaObject] to [HttpGet, HypermediaObjectEndpoint] attributes",
+                title: $"Migrate [{attributeName}] to [{httpName}, {newAttributeName}] attributes",
                 createChangedDocument: c => MigrateAttribute(context.Document, diagnostic.Id, attribute, c)),
             diagnostic);
     }
@@ -77,7 +94,7 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
         TypedConstant? template;
         TypedConstant routeType;
         TypedConstant? routeKeyProducer;
-        ExpressionSyntax? acceptedMediaType2 = attribute.ArgumentList?.Arguments
+        ExpressionSyntax? acceptedMediaTypeExpression = attribute.ArgumentList?.Arguments
             .Where(a => a.NameEquals?.Name.Identifier.ValueText == "AcceptedMediaType")
             .Select(a => a.Expression)
             .FirstOrDefault();
@@ -122,7 +139,7 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
         }
 
         AttributeSyntax? hoeAttribute =
-            GetHypermediaEndpointAttribute(diagnosticId, semanticModel, attribute.SpanStart, routeType, routeKeyProducer, acceptedMediaType2);
+            GetHypermediaEndpointAttribute(diagnosticId, semanticModel, attribute.SpanStart, routeType, routeKeyProducer, acceptedMediaTypeExpression);
 
         if (hoeAttribute is null)
         {
@@ -148,11 +165,10 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
         int position,
         TypedConstant routeType,
         TypedConstant? routeKeyProducer,
-        ExpressionSyntax? acceptedMediaType)
+        ExpressionSyntax? acceptedMediaTypeExpression)
     {
         var routeTypeValue = (routeType.Value as INamedTypeSymbol)!.ToMinimalDisplayString(semanticModel, position);
         var routeKeyProducerValue = (routeKeyProducer?.Value as INamedTypeSymbol)?.ToMinimalDisplayString(semanticModel, position);
-        var acceptedMediaTypeValue = acceptedMediaType?.ToFullString();
         
         switch (diagnosticId)
         {
@@ -216,11 +232,11 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
                                                 SyntaxKind.SimpleMemberAccessExpression,
                                                 IdentifierName(routeTypeInfo.ContainingType.Name),
                                                 IdentifierName(property.Name))))))));
-                if (acceptedMediaTypeValue is not null)
+                if (acceptedMediaTypeExpression is not null)
                 {
                     attributeArguments = attributeArguments.Add(
                         AttributeArgument(
-                            IdentifierName(acceptedMediaTypeValue)));
+                            acceptedMediaTypeExpression));
                 }
                 return Attribute(
                         GenericName(
