@@ -14,6 +14,7 @@ public class LegacyAttributeAnalyzer : DiagnosticAnalyzer
     public const string HttpPutDiagnosticId = "RY0012";
     public const string HttpPatchDiagnosticId = "RY0013";
     public const string HttpDeleteDiagnosticId = "RY0014";
+    public const string HttpGetHypermediaActionParameterInfoDiagnosticId = "RY0015";
 
     private static readonly DiagnosticDescriptor HttpGetRule = CreateDescriptor(
         id: HttpGetDiagnosticId,
@@ -34,6 +35,10 @@ public class LegacyAttributeAnalyzer : DiagnosticAnalyzer
     private static readonly DiagnosticDescriptor HttpDeleteRule = CreateDescriptor(
         id: HttpDeleteDiagnosticId,
         attributeName: "HttpDeleteHypermediaAction");
+
+    private static readonly DiagnosticDescriptor HttpGetHypermediaActionParameterInfoRule = CreateDescriptor(
+        id: HttpGetHypermediaActionParameterInfoDiagnosticId,
+        attributeName: "HttpGetHypermediaActionParameterInfo");
     
     private static DiagnosticDescriptor CreateDescriptor(string id, string attributeName) => new(
         id: id,
@@ -48,7 +53,8 @@ public class LegacyAttributeAnalyzer : DiagnosticAnalyzer
         HttpPostRule,
         HttpPutRule,
         HttpPatchRule,
-        HttpDeleteRule);
+        HttpDeleteRule,
+        HttpGetHypermediaActionParameterInfoRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -79,6 +85,7 @@ public class LegacyAttributeAnalyzer : DiagnosticAnalyzer
             "HttpPutHypermediaAction" => HttpPutRule,
             "HttpPatchHypermediaAction" => HttpPatchRule,
             "HttpDeleteHypermediaAction" => HttpDeleteRule,
+            "HttpGetHypermediaActionParameterInfo" => HttpGetHypermediaActionParameterInfoRule,
             _ => null,
         };
         if (rule is null)

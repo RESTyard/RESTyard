@@ -76,27 +76,49 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
         }
         TypedConstant? template;
         TypedConstant routeType;
-        TypedConstant routeKeyProducer;
+        TypedConstant? routeKeyProducer;
         var ctor = attributeData.ConstructorArguments;
-        if (ctor.Length == 2)
+        if (diagnosticId == LegacyAttributeAnalyzer.HttpGetHypermediaActionParameterInfoDiagnosticId)
         {
-            template = null;
-            routeType = ctor[0];
-            routeKeyProducer = ctor[1];
-        }
-        else if (ctor.Length == 3)
-        {
-            template = ctor[0];
-            routeType = ctor[1];
-            routeKeyProducer = ctor[2];
+            if (ctor.Length == 1)
+            {
+                template = null;
+                routeType = ctor[0];
+                routeKeyProducer = null;
+            }
+            else if (ctor.Length == 2)
+            {
+                template = ctor[0];
+                routeType = ctor[1];
+                routeKeyProducer = null;
+            }
+            else
+            {
+                return document;
+            }
         }
         else
         {
-            return document;
+            if (ctor.Length == 2)
+            {
+                template = null;
+                routeType = ctor[0];
+                routeKeyProducer = ctor[1];
+            }
+            else if (ctor.Length == 3)
+            {
+                template = ctor[0];
+                routeType = ctor[1];
+                routeKeyProducer = ctor[2];
+            }
+            else
+            {
+                return document;
+            }
         }
 
         AttributeSyntax? hoeAttribute =
-            GetHypermediaEndpointAttribute(diagnosticId, routeType, routeKeyProducer);
+            GetHypermediaEndpointAttribute(diagnosticId, semanticModel, attribute.SpanStart, routeType, routeKeyProducer);
 
         if (hoeAttribute is null)
         {
@@ -118,78 +140,86 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
 
     private static AttributeSyntax? GetHypermediaEndpointAttribute(
         string diagnosticId,
+        SemanticModel semanticModel,
+        int position,
         TypedConstant routeType,
-        TypedConstant routeKeyProducer)
+        TypedConstant? routeKeyProducer)
     {
-        var routeTypeValue = (routeType.Value as INamedTypeSymbol)!.Name;
-        var routeKeyProducerValue = (routeKeyProducer.Value as INamedTypeSymbol)?.Name;
+        var routeTypeValue = (routeType.Value as INamedTypeSymbol)!.ToMinimalDisplayString(semanticModel, position);
+        var routeKeyProducerValue = (routeKeyProducer?.Value as INamedTypeSymbol)?.ToMinimalDisplayString(semanticModel, position);
         
-        AttributeSyntax hoeAttribute;
-        if (diagnosticId == LegacyAttributeAnalyzer.HttpGetDiagnosticId)
+        switch (diagnosticId)
         {
-            hoeAttribute = Attribute(
-                GenericName(
-                        Identifier("HypermediaObjectEndpoint"))
-                    .WithTypeArgumentList(
-                        TypeArgumentList(
-                            SingletonSeparatedList<TypeSyntax>(
-                                IdentifierName(routeTypeValue)))));
-            if (routeKeyProducerValue is not null)
-            {
-                hoeAttribute = hoeAttribute.WithArgumentList(
-                    AttributeArgumentList(
-                        SingletonSeparatedList<AttributeArgumentSyntax>(
-                            AttributeArgument(
-                                TypeOfExpression(
-                                    IdentifierName(routeKeyProducerValue))))));
-            }
-        }
-        else
-        {
-            var routeTypeInfo = (routeType.Value as INamedTypeSymbol)!;
-            if (routeTypeInfo.ContainingType is null)
-            {
-                return null;
-            }
-
-            var property = routeTypeInfo.ContainingType.GetMembers()
-                .OfType<IPropertySymbol>()
-                .FirstOrDefault(p => p.Type.Equals(routeTypeInfo, SymbolEqualityComparer.Default));
-            if (property is null)
-            {
-                return null;
-            }
-            
-            hoeAttribute = Attribute(
+            case LegacyAttributeAnalyzer.HttpGetDiagnosticId:
+                var hoeAttribute = Attribute(
                     GenericName(
-                            Identifier("HypermediaActionEndpoint"))
+                            Identifier("HypermediaObjectEndpoint"))
                         .WithTypeArgumentList(
                             TypeArgumentList(
                                 SingletonSeparatedList<TypeSyntax>(
-                                    IdentifierName(routeTypeInfo.ContainingType.Name)))))
-                .WithArgumentList(
-                    AttributeArgumentList(
-                        SingletonSeparatedList<AttributeArgumentSyntax>(
-                            AttributeArgument(
-                                InvocationExpression(
-                                        IdentifierName(
-                                            Identifier(
-                                                TriviaList(),
-                                                SyntaxKind.NameOfKeyword,
-                                                "nameof",
-                                                "nameof",
-                                                TriviaList())))
-                                    .WithArgumentList(
-                                        ArgumentList(
-                                            SingletonSeparatedList<ArgumentSyntax>(
-                                                Argument(
-                                                    MemberAccessExpression(
-                                                        SyntaxKind.SimpleMemberAccessExpression,
-                                                        IdentifierName(routeTypeInfo.ContainingType.Name),
-                                                        IdentifierName(property.Name))))))))));
-        }
+                                    IdentifierName(routeTypeValue)))));
+                if (routeKeyProducerValue is not null)
+                {
+                    hoeAttribute = hoeAttribute.WithArgumentList(
+                        AttributeArgumentList(
+                            SingletonSeparatedList<AttributeArgumentSyntax>(
+                                AttributeArgument(
+                                    TypeOfExpression(
+                                        IdentifierName(routeKeyProducerValue))))));
+                }
 
-        return hoeAttribute;
+                return hoeAttribute;
+            case LegacyAttributeAnalyzer.HttpGetHypermediaActionParameterInfoDiagnosticId:
+                return Attribute(
+                    GenericName(
+                            Identifier("HypermediaActionParameterInfoEndpoint"))
+                        .WithTypeArgumentList(
+                            TypeArgumentList(
+                                SingletonSeparatedList<TypeSyntax>(
+                                    IdentifierName(routeTypeValue)))));
+            default:
+                var routeTypeInfo = (routeType.Value as INamedTypeSymbol)!;
+                if (routeTypeInfo.ContainingType is null)
+                {
+                    return null;
+                }
+
+                var property = routeTypeInfo.ContainingType.GetMembers()
+                    .OfType<IPropertySymbol>()
+                    .FirstOrDefault(p => p.Type.Equals(routeTypeInfo, SymbolEqualityComparer.Default));
+                if (property is null)
+                {
+                    return null;
+                }
+            
+                return Attribute(
+                        GenericName(
+                                Identifier("HypermediaActionEndpoint"))
+                            .WithTypeArgumentList(
+                                TypeArgumentList(
+                                    SingletonSeparatedList<TypeSyntax>(
+                                        IdentifierName(routeTypeInfo.ContainingType.Name)))))
+                    .WithArgumentList(
+                        AttributeArgumentList(
+                            SingletonSeparatedList<AttributeArgumentSyntax>(
+                                AttributeArgument(
+                                    InvocationExpression(
+                                            IdentifierName(
+                                                Identifier(
+                                                    TriviaList(),
+                                                    SyntaxKind.NameOfKeyword,
+                                                    "nameof",
+                                                    "nameof",
+                                                    TriviaList())))
+                                        .WithArgumentList(
+                                            ArgumentList(
+                                                SingletonSeparatedList<ArgumentSyntax>(
+                                                    Argument(
+                                                        MemberAccessExpression(
+                                                            SyntaxKind.SimpleMemberAccessExpression,
+                                                            IdentifierName(routeTypeInfo.ContainingType.Name),
+                                                            IdentifierName(property.Name))))))))));
+        }
     }
 
     private static AttributeSyntax GetHttpAttribute(string diagnosticId, TypedConstant? template)
@@ -203,6 +233,7 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
                 LegacyAttributeAnalyzer.HttpPutDiagnosticId => "HttpPut",
                 LegacyAttributeAnalyzer.HttpPatchDiagnosticId => "HttpPatch",
                 LegacyAttributeAnalyzer.HttpDeleteDiagnosticId => "HttpDelete",
+                LegacyAttributeAnalyzer.HttpGetHypermediaActionParameterInfoDiagnosticId => "HttpGet",
                 _ => throw new ArgumentOutOfRangeException(nameof(diagnosticId), diagnosticId, diagnosticId),
             }));
         if (templateValue is not null)

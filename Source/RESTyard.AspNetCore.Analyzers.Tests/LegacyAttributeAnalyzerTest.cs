@@ -126,4 +126,42 @@ public class LegacyAttributeAnalyzerTest : VerifyAnalyzer
             diagnostics => diagnostics.Should().HaveCount(4)
                 .And.AllSatisfy(d => d.Id.Should().BeOneOf("RY0011", "RY0012", "RY0013", "RY0014")));
     }
+    
+    [Fact]
+    public async Task LegacyGetParameterInfoAttributesTest()
+    {
+        var code =
+            """
+            using Microsoft.AspNetCore.Mvc;
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Actions;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+            using RESTyard.AspNetCore.WebApi.RouteResolver;
+
+            public class SomeController : Controller
+            {
+                [HttpGetHypermediaActionParameterInfo("WithRoute", typeof(SomeParameter))]
+                public IActionResult Get() => this.Ok();
+                
+                [HttpGetHypermediaActionParameterInfo(typeof(SomeHto.NestedParameter))]
+                public IActionResult Get2() => this.Ok();
+            }
+
+            public record SomeParameter : IHypermediaActionParameter;
+            public class SomeHto
+            {
+                public class NestedParameter : IHypermediaActionParameter
+                {
+                }
+            }
+            """;
+
+        await Verify(
+            code,
+            new LegacyAttributeAnalyzer(),
+            new LegacyAttributeCodeFixProvider(),
+            diagnostics => diagnostics.Should().HaveCount(2)
+                .And.AllSatisfy(d => d.Id.Should().Be("RY0015")));
+    }
 }
