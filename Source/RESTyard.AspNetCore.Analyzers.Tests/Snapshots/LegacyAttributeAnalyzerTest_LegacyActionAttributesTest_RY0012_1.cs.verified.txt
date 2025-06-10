@@ -1,0 +1,47 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
+
+public class SomeController : Controller
+{
+    [HttpPostHypermediaAction("Hi", typeof(SomeHto.SomeOp))]
+    public IActionResult Get() => this.Ok();
+    
+    [HttpPut, HypermediaActionEndpoint<SomeHto>(nameof(SomeHto.Operation))]
+    public IActionResult Get2() => this.Ok();
+    
+    [HttpPatchHypermediaAction("Hi3", typeof(SomeHto.SomeOp), typeof(SomeHtoRouteKeyProducer))]
+    public IActionResult Get3() => this.Ok();
+    
+    [HttpDeleteHypermediaAction(typeof(SomeHto.SomeOp), typeof(SomeHtoRouteKeyProducer))]
+    public IActionResult Get4() => this.Ok();
+    
+}
+
+[HypermediaObject(Classes = new[] {"SomeHto"})]
+public class SomeHto : IHypermediaObject
+{
+    [HypermediaAction(Name = "SomeOp", Title = "Some Title.")]
+    public SomeOp Operation { get; set; }
+
+    public class SomeOp : HypermediaAction
+    {
+        public SomeOp() : base(() => true) {}
+    }
+}
+
+public class SomeHtoRouteKeyProducer : IKeyProducer
+{
+    public object CreateFromHypermediaObject(IHypermediaObject hypermediaObject)
+    {
+        return null!;
+    }
+    
+    public object CreateFromKeyObject(object? keyObject)
+    {
+        return null!;
+    }
+}

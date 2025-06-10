@@ -52,6 +52,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.Generator.Test.Out
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.Generator.Test.OutputV5", "RESTyard.ContractFirst\RESTyard.Generator.Test.OutputV5\RESTyard.Generator.Test.OutputV5.csproj", "{BDBCD45B-05DA-4D5D-9637-D0585F61642E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.AspNetCore.Analyzers", "RESTyard.AspNetCore.Analyzers\RESTyard.AspNetCore.Analyzers.csproj", "{F768B8EB-C808-483F-96DF-10A76F10DDFD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.AspNetCore.Analyzers.Tests", "RESTyard.AspNetCore.Analyzers.Tests\RESTyard.AspNetCore.Analyzers.Tests.csproj", "{17A49645-391D-4992-AD59-EC59A1BB249B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -126,6 +130,14 @@ Global
 		{BDBCD45B-05DA-4D5D-9637-D0585F61642E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BDBCD45B-05DA-4D5D-9637-D0585F61642E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BDBCD45B-05DA-4D5D-9637-D0585F61642E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F768B8EB-C808-483F-96DF-10A76F10DDFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F768B8EB-C808-483F-96DF-10A76F10DDFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F768B8EB-C808-483F-96DF-10A76F10DDFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F768B8EB-C808-483F-96DF-10A76F10DDFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17A49645-391D-4992-AD59-EC59A1BB249B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17A49645-391D-4992-AD59-EC59A1BB249B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17A49645-391D-4992-AD59-EC59A1BB249B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17A49645-391D-4992-AD59-EC59A1BB249B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
