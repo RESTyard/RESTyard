@@ -40,35 +40,6 @@ public class VerifyAnalyzer : VerifyBase
     {
         this.sourceFile = sourceFile;
     }
-    
-    protected async Task Verify(string source, Func<CompilationWithAnalyzers, Task>? verifyCompilation)
-    {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
-        
-        var references = new[]
-            {
-                typeof(object),
-                typeof(Enumerable),
-            }.Select(t => MetadataReference.CreateFromFile(t.Assembly.Location))
-            .Concat([
-                RuntimeReference, CollectionsReference
-            ]);
-        
-        var compilation = CSharpCompilation.Create(
-            assemblyName: "Tests",
-            syntaxTrees: [syntaxTree],
-            references: references,
-            options: new(
-                outputKind: OutputKind.DynamicallyLinkedLibrary,
-                nullableContextOptions: NullableContextOptions.Enable));
-        
-        var updatedCompilation = compilation.WithAnalyzers([new ApiControllerAnalyzer()]);
-        
-        if (verifyCompilation is not null)
-        {
-            await verifyCompilation(updatedCompilation);
-        }
-    }
 
     protected async Task Verify(
         string source,
@@ -137,11 +108,4 @@ public class VerifyAnalyzer : VerifyBase
         var solution = operations.OfType<ApplyChangesOperation>().Single().ChangedSolution;
         return solution.GetDocument(document.Id)!;
     }
-
-    protected Task Verify(string source, Action<ImmutableArray<Diagnostic>> verifyDiagnostics) =>
-        Verify(source, async (compilation) =>
-        {
-            var diagnostics = await compilation.GetAnalyzerDiagnosticsAsync();
-            verifyDiagnostics(diagnostics);
-        });
 }

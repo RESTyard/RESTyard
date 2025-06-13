@@ -46,6 +46,7 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
             return;
         }
 
+        var document = context.Document;
         var (attributeName, httpName, newAttributeName) = diagnostic.Id switch
         {
             LegacyAttributeAnalyzer.HttpGetDiagnosticId => ("HttpGetHypermediaObject", "HttpGet",
@@ -62,23 +63,10 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
                 "HttpGetHypermediaActionParameterInfo", "HttpGet", "HypermediaActionParameterInfoEndpoint"),
             _ => throw new ArgumentOutOfRangeException(nameof(diagnostic.Id), diagnostic.Id, diagnostic.Id),
         };
-        context.RegisterCodeFix(
-            CodeAction.Create(
-                title: $"Migrate [{attributeName}] to [{httpName}, {newAttributeName}] attributes",
-                createChangedDocument: c => MigrateAttribute(context.Document, diagnostic.Id, attribute, c)),
-            diagnostic);
-    }
-
-    private async Task<Document> MigrateAttribute(
-        Document document,
-        string diagnosticId,
-        AttributeSyntax attribute,
-        CancellationToken cancellationToken)
-    {
-        var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
+        var semanticModel = await document.GetSemanticModelAsync(context.CancellationToken);
         if (semanticModel is null)
         {
-            return document;
+            return;
         }
 
         var oldAttributeList = (attribute.Parent as AttributeListSyntax)!;
@@ -86,10 +74,10 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
         var methodSymbol = semanticModel.GetDeclaredSymbol(method);
         var attributeData = methodSymbol?
             .GetAttributes()
-            .FirstOrDefault(a => a.ApplicationSyntaxReference!.SyntaxTree == attribute.SyntaxTree);
+            .FirstOrDefault(a => a.ApplicationSyntaxReference!.Span == attribute.Span);
         if (attributeData is null)
         {
-            return document;
+            return;
         }
         TypedConstant? template;
         TypedConstant routeType;
@@ -99,7 +87,7 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
             .Select(a => a.Expression)
             .FirstOrDefault();
         var ctor = attributeData.ConstructorArguments;
-        if (diagnosticId == LegacyAttributeAnalyzer.HttpGetHypermediaActionParameterInfoDiagnosticId)
+        if (diagnostic.Id == LegacyAttributeAnalyzer.HttpGetHypermediaActionParameterInfoDiagnosticId)
         {
             if (ctor.Length == 1)
             {
@@ -115,7 +103,7 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
             }
             else
             {
-                return document;
+                return;
             }
         }
         else
@@ -134,18 +122,43 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
             }
             else
             {
-                return document;
+                return;
             }
         }
 
         AttributeSyntax? hoeAttribute =
-            GetHypermediaEndpointAttribute(diagnosticId, semanticModel, attribute.SpanStart, routeType, routeKeyProducer, acceptedMediaTypeExpression);
+            GetHypermediaEndpointAttribute(diagnostic.Id, semanticModel, attribute.SpanStart, routeType, routeKeyProducer, acceptedMediaTypeExpression);
 
         if (hoeAttribute is null)
         {
-            return document;
+            return;
         }
+        
+        context.RegisterCodeFix(
+            CodeAction.Create(
+                title: $"Migrate [{attributeName}] to [{httpName}, {newAttributeName}] attributes",
+                createChangedDocument: c => MigrateAttribute(
+                    context.Document,
+                    diagnostic.Id,
+                    attribute,
+                    oldAttributeList,
+                    template,
+                    hoeAttribute,
+                    method,
+                    c)),
+            diagnostic);
+    }
 
+    private async Task<Document> MigrateAttribute(
+        Document document,
+        string diagnosticId,
+        AttributeSyntax attribute,
+        AttributeListSyntax oldAttributeList,
+        TypedConstant? template,
+        AttributeSyntax hoeAttribute,
+        MethodDeclarationSyntax method,
+        CancellationToken cancellationToken)
+    {
         var newAttributes = oldAttributeList.Attributes
             .Remove(attribute)
             .Add(GetHttpAttribute(diagnosticId, template))

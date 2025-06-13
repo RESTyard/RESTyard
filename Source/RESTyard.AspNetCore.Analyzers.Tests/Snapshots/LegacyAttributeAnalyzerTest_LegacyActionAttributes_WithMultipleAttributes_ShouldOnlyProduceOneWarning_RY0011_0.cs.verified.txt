@@ -1,0 +1,27 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
+using RESTyard.MediaTypes;
+
+public class SomeController : Controller
+{
+    [RequestSizeLimit(15)]
+    [HttpPost("Hi"), HypermediaActionEndpoint<SomeHto>(nameof(SomeHto.Operation))]
+    public IActionResult Get() => this.Ok();
+    
+}
+
+[HypermediaObject(Classes = new[] {"SomeHto"})]
+public class SomeHto : IHypermediaObject
+{
+    [HypermediaAction(Name = "SomeOp", Title = "Some Title.")]
+    public SomeOp Operation { get; set; }
+
+    public class SomeOp : HypermediaAction
+    {
+        public SomeOp() : base(() => true) {}
+    }
+}

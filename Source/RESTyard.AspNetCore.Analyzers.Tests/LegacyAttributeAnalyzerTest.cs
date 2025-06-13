@@ -143,6 +143,52 @@ public class LegacyAttributeAnalyzerTest : VerifyAnalyzer
     }
     
     [Fact]
+    public async Task LegacyActionAttributes_WithMultipleAttributes_ShouldOnlyProduceOneWarning()
+    {
+        var code =
+            """
+            using Microsoft.AspNetCore.Mvc;
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Actions;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+            using RESTyard.AspNetCore.WebApi.RouteResolver;
+            using RESTyard.MediaTypes;
+
+            public class SomeController : Controller
+            {
+                [RequestSizeLimit(15)]
+                [HttpPostHypermediaAction("Hi", typeof(SomeHto.SomeOp))]
+                public IActionResult Get() => this.Ok();
+                
+            }
+
+            [HypermediaObject(Classes = new[] {"SomeHto"})]
+            public class SomeHto : IHypermediaObject
+            {
+                [HypermediaAction(Name = "SomeOp", Title = "Some Title.")]
+                public SomeOp Operation { get; set; }
+            
+                public class SomeOp : HypermediaAction
+                {
+                    public SomeOp() : base(() => true) {}
+                }
+            }
+            """;
+
+        await Verify(
+            code,
+            new LegacyAttributeAnalyzer(),
+            new LegacyAttributeCodeFixProvider(),
+            diagnostics => diagnostics.Should().ContainSingle().Which.Id.Should().Be("RY0011"),
+            verifyCodeAction: (d, c) =>
+            {
+                c.Title.Should().Contain("HypermediaActionEndpoint");
+                c.Title.Should().ContainAll(["HttpPostHypermediaAction", "HttpPost,"]);
+            });
+    }
+    
+    [Fact]
     public async Task LegacyGetParameterInfoAttributesTest()
     {
         var code =
