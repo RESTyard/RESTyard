@@ -17,12 +17,10 @@ namespace RESTyard.AspNetCore.JsonSchema
 {
     class HypermediaParameterFromBodyBinderProvider : IModelBinderProvider
     {
-        readonly Func<Type, ImmutableArray<string>> getRouteTemplateForType;
         readonly bool explicitUsage;
 
-        public HypermediaParameterFromBodyBinderProvider(Func<Type, ImmutableArray<string>> getRouteTemplateForType, bool explicitUsage = false)
+        public HypermediaParameterFromBodyBinderProvider(bool explicitUsage = false)
         {
-            this.getRouteTemplateForType = getRouteTemplateForType;
             this.explicitUsage = explicitUsage;
         }
 
@@ -32,7 +30,7 @@ namespace RESTyard.AspNetCore.JsonSchema
             if (ParameterIsHypermediaActionType(modelType) 
                 && (ThisBinderIsSelectedOnMethod(context) || this.UseThisBinderImplicit(context)))
             {
-                return new HypermediaParameterFromBodyBinder(modelType, getRouteTemplateForType);
+                return new HypermediaParameterFromBodyBinder(modelType);
             }
 
             return null;
@@ -66,10 +64,10 @@ namespace RESTyard.AspNetCore.JsonSchema
         readonly Type modelType;
         readonly JsonDeserializer serializer;
 
-        public HypermediaParameterFromBodyBinder(Type modelType, Func<Type, ImmutableArray<string>> getRouteTemplatesForType)
+        public HypermediaParameterFromBodyBinder(Type modelType)
         {
             this.modelType = modelType;
-            serializer = new JsonDeserializer(modelType, getRouteTemplatesForType);
+            serializer = new JsonDeserializer(modelType);
         }
 
         public async Task BindModelAsync(ModelBindingContext bindingContext)

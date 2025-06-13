@@ -4,16 +4,20 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using FluentAssertions;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 
 namespace RESTyard.AspNetCore.Test;
 
 public class AssemblyBasedTestBase
 {
-    private const string TestAssemblyNamespace = "AttributedRoutesRegisterTest";
+    protected const string TestAssemblyNamespace = "AttributedRoutesRegisterTest";
 
     protected static Assembly CreateAssembly(IReadOnlyCollection<string> files)
     {
@@ -52,23 +56,43 @@ public class AssemblyBasedTestBase
         return assembly;
     }
 
-    protected static string CreateFile(string content) =>
-        $"""
-         using Microsoft.AspNetCore.Mvc;
-         using RESTyard.AspNetCore.Hypermedia;
-         using RESTyard.AspNetCore.Hypermedia.Attributes;
-         using RESTyard.AspNetCore.WebApi.AttributedRoutes;
-         using {typeof(ExampleHto).Namespace};
-         namespace {TestAssemblyNamespace};
-         {content}
-         """;
+    protected static string CreateFile(string content, bool includeExampleHtoNamespace = true)
+    {
+        var exampleHtoUsing = includeExampleHtoNamespace ? $"using {typeof(ExampleHto).Namespace};" : "";
+        return $"""
+                using Microsoft.AspNetCore.Mvc;
+                using RESTyard.AspNetCore.Hypermedia;
+                using RESTyard.AspNetCore.Hypermedia.Actions;
+                using RESTyard.AspNetCore.Hypermedia.Attributes;
+                using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+                {exampleHtoUsing}
+                namespace {TestAssemblyNamespace};
+                {content}
+                """;
+    }
 
     protected static string GetExampleHtoCode() => File.ReadAllText("ExampleHto.cs");
 
     protected static Type GetType<T>(Assembly assembly)
     {
         var result = assembly.GetType(typeof(T).FullName!);
-        result.Should().NotBeNull();
+        result.Should().NotBeNull(because: typeof(T).FullName);
         return result!;
+    }
+    
+    
+    protected static IHypermediaApiExplorer CreateApiExplorer(Assembly assembly)
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.Host.UseDefaultServiceProvider(o =>
+        {
+            o.ValidateOnBuild = true;
+            o.ValidateScopes = true;
+        });
+        builder.Services.AddHypermediaExtensions();
+        builder.Services.AddControllers().AddApplicationPart(assembly);
+        var app = builder.Build();
+        var apiExplorer = app.Services.GetRequiredService<IHypermediaApiExplorer>();
+        return apiExplorer;
     }
 }

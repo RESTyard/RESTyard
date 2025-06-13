@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 {
@@ -25,8 +24,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         [TestMethod]
         public void SerializeNullListProperty()
         {
-            var routeName = typeof(HypermediaObjectWithListProperties).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(HypermediaObjectWithListProperties), routeName, HttpMethod.GET);
+            var routeName = nameof(HypermediaObjectWithListProperties) + "_Route";
+            RouteRegister.AddHypermediaObjectRoute(typeof(HypermediaObjectWithListProperties), routeName, HttpMethods.Get);
 
             var ho = new HypermediaObjectWithListProperties();
             var siren = SirenConverter.ConvertToJson(ho);
@@ -44,8 +43,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         [TestMethod]
         public void SerializeNullListPropertyNoNullPropertiesTest()
         {
-            var routeName = typeof(HypermediaObjectWithListProperties).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(HypermediaObjectWithListProperties), routeName, HttpMethod.GET);
+            var routeName = nameof(HypermediaObjectWithListProperties) + "_Route";
+            RouteRegister.AddHypermediaObjectRoute(typeof(HypermediaObjectWithListProperties), routeName, HttpMethods.Get);
 
             var ho = new HypermediaObjectWithListProperties();
             var siren = SirenConverterNoNullProperties.ConvertToJson(ho);
@@ -63,8 +62,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         [TestMethod]
         public void SerializeEmptyListProperties()
         {
-            var routeName = typeof(HypermediaObjectWithListProperties).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(HypermediaObjectWithListProperties), routeName, HttpMethod.GET);
+            var routeName = nameof(HypermediaObjectWithListProperties) + "_Route";
+            RouteRegister.AddHypermediaObjectRoute(typeof(HypermediaObjectWithListProperties), routeName, HttpMethods.Get);
 
             var ho = new HypermediaObjectWithListProperties();
             ho.AValueList = new List<int>();
@@ -87,8 +86,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         [TestMethod]
         public void SerializeListProperties()
         {
-            var routeName = typeof(HypermediaObjectWithListProperties).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(HypermediaObjectWithListProperties), routeName, HttpMethod.GET);
+            var routeName = nameof(HypermediaObjectWithListProperties) + "_Route";
+            RouteRegister.AddHypermediaObjectRoute(typeof(HypermediaObjectWithListProperties), routeName, HttpMethods.Get);
 
             var ho = new HypermediaObjectWithListProperties();
             ho.AValueList = new List<int> { 3, 5, 7 };

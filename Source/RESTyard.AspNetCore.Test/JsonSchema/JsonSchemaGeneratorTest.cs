@@ -15,7 +15,6 @@ using RESTyard.AspNetCore.JsonSchema;
 using RESTyard.AspNetCore.Test.Helpers;
 using RESTyard.AspNetCore.Test.Hypermedia;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
-using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace RESTyard.AspNetCore.Test.JsonSchema
 {
@@ -40,8 +39,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
         {
             // ReSharper disable UnusedMember.Local
             [Required]
-            [KeyFromUri(typeof(MyHypermediaObject))]
-            public Guid Id { get; set; }
+            public Uri Id { get; set; }
 
             public int SomeValue { get; set; }
 
@@ -71,28 +69,16 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
         {
             schema.RequiredUriPropertyShouldExist("UriToHmo");
             schema.RequiredUriPropertyShouldExist("UriToAnotherHmo");
-            schema.Properties.Should()
-                .NotContainKeys("Id", "ParentId", "AnotherReferencedId", "AnotherReferencedIdParentId");
         }
 
         class MyParameter : IHypermediaActionParameter
         {
             // ReSharper disable UnusedMember.Local
             [Required]
-            [KeyFromUri(typeof(MyHypermediaObject), "UriToHmo", "id")]
-            public Guid Id { get; set; }
+            public Uri UriToHmo { get; set; }
 
             [Required]
-            [KeyFromUri(typeof(MyHypermediaObject), "UriToHmo", "parentId")]
-            public Guid ParentId { get; set; }
-
-            [Required]
-            [KeyFromUri(typeof(MyHypermediaObject), "UriToAnotherHmo", "id")]
-            public Guid AnotherReferencedId { get; set; }
-
-            [Required]
-            [KeyFromUri(typeof(MyHypermediaObject), "UriToAnotherHmo", "parentId")]
-            public Guid AnotherReferencedIdParentId { get; set; }
+            public Uri UriToAnotherHmo { get; set; }
 
             public int SomeValue { get; set; }
 
@@ -118,69 +104,6 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
     }
 
     [TestClass]
-    public class When_deserializing_a_parameter_with_keyfromrui_attribute : TestSpecification
-    {
-        MyParameter deserialized;
-        MyClientParameter clientParameter;
-        const string ObjectId = "becfbe6d-c453-4c3b-a396-554c30d5191d";
-
-        public override void When()
-        {
-            clientParameter = new MyClientParameter($"http://mydomain.com/customers/{ObjectId}", 3, "http://www.anothersite.com");
-            var json = JsonConvert.SerializeObject(clientParameter);
-            deserialized = (MyParameter)new JsonDeserializer(typeof(MyParameter), t => "customers/{Id}").Deserialize(json.ToStream());
-        }
-
-        [TestMethod]
-        public void Then_the_objects_key_is_extracted_from_the_uri()
-        {
-            deserialized.Id.Should().Be(ObjectId);
-        }
-
-        [TestMethod]
-        public void Then_all_other_properties_are_deserialized_correctly()
-        {
-            deserialized.SomeValue.Should().Be(clientParameter.SomeValue);
-            deserialized.Uri.Should().Be(clientParameter.Uri);
-        }
-
-        class MyClientParameter
-        {
-            // ReSharper disable UnusedAutoPropertyAccessor.Local
-            public string Id { get; }
-            public int SomeValue { get; }
-            public string Uri { get; }
-            // ReSharper restore UnusedAutoPropertyAccessor.Local
-
-            public MyClientParameter(string id, int someValue, string uri)
-            {
-                Id = id;
-                SomeValue = someValue;
-                Uri = uri;
-            }
-        }
-
-        class MyParameter : IHypermediaActionParameter
-        {
-            // ReSharper disable UnusedMember.Local
-            // ReSharper disable UnusedAutoPropertyAccessor.Local
-            [Required]
-            [KeyFromUri(typeof(MyHypermediaObject))]
-            public Guid Id { get; set; }
-            
-            public int SomeValue { get; set; }
-            [Required]
-            public Uri Uri { get; set; }
-            // ReSharper restore UnusedMember.Local
-            // ReSharper restore UnusedAutoPropertyAccessor.Local
-        }
-
-        class MyHypermediaObject : IHypermediaObject
-        {
-        }
-    }
-
-    [TestClass]
     public class When_deserializing_a_parameter_composite_keys_of_different_types : TestSpecification
     {
         MyParameter deserialized;
@@ -194,16 +117,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
         {
             clientParameter = new MyClientParameter(FormattableString.Invariant($"http://mydomain.com/customers/{GrandParentId}/{WeirdUncleId}/{ParentId}/{Id}"), 3, "http://www.anothersite.com");
             var json = JsonConvert.SerializeObject(clientParameter);
-            deserialized = (MyParameter)new JsonDeserializer(typeof(MyParameter), t => "customers/{grandParentId}/{weirdUncleId}/{parentId}/{id}").Deserialize(json.ToStream());
-        }
-
-        [TestMethod]
-        public void Then_the_objects_key_is_extracted_from_the_uri()
-        {
-            deserialized.MyId.Should().Be(Id);
-            deserialized.MyParentId.Should().Be(ParentId);
-            deserialized.MyGrandParentId.Should().Be(GrandParentId);
-            deserialized.MyWeirdUncleId.Should().Be(WeirdUncleId);
+            deserialized = (MyParameter)new JsonDeserializer(typeof(MyParameter)).Deserialize(json.ToStream());
         }
 
         [TestMethod]
@@ -234,16 +148,12 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
             // ReSharper disable UnusedMember.Local
             // ReSharper disable UnusedAutoPropertyAccessor.Local
             [Required]
-            [KeyFromUri(typeof(MyHypermediaObject), "UriToHmo", "id")]
             public int MyId { get; set; }
             [Required]
-            [KeyFromUri(typeof(MyHypermediaObject), "UriToHmo", "parentId")]
             public string MyParentId { get; set; }
             [Required]
-            [KeyFromUri(typeof(MyHypermediaObject), "UriToHmo", "grandParentId")]
             public long MyGrandParentId { get; set; }
             [Required]
-            [KeyFromUri(typeof(MyHypermediaObject), "UriToHmo", "weirdUncleId")]
             public double MyWeirdUncleId { get; set; }
 
             public int SomeValue { get; set; }
@@ -255,68 +165,6 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
 
         class MyHypermediaObject : IHypermediaObject
         {
-        }
-    }
-
-    [TestClass]
-    public class When_creating_application_model_from_an_application_using_hmos_deriving_from_each_other : TestSpecification
-    {
-        ApplicationModel applicationModel;
-
-        public override void When()
-        {
-            applicationModel = ApplicationModel.Create(new [] {typeof(BaseHmo).GetTypeInfo().Assembly});
-        }
-
-        [TestMethod]
-        public void Then_all_routes_to_derived_types_should_be_found_for_base_type()
-        {
-            var getHmoMethods = applicationModel.HmoTypes[typeof(BaseHmo)].GetHmoMethods;
-            getHmoMethods.Should().HaveCount(2);
-            getHmoMethods.Select(s => s.RouteTemplate).Should().BeEquivalentTo("Route/To/Hmo1/{key}", "Route/To/Hmo2/{key}");
-        }
-
-        [HypermediaObject(Classes = ["BaseHmo"])]
-        public abstract class BaseHmo : IHypermediaObject
-        {
-            [AspNetCore.WebApi.RouteResolver.Key]
-            public string Key { get; }
-
-            protected BaseHmo(string key)
-            {
-                Key = key;
-            }
-        }
-
-        [HypermediaObject(Classes = ["DerivedHmo1"])]
-        public class DerivedHmo1 : BaseHmo
-        {
-            public DerivedHmo1(string key) : base(key)
-            {
-            }
-        }
-
-        [HypermediaObject(Classes = ["DerivedHmo2"])]
-        public class DerivedHmo2 : BaseHmo
-        {
-            public DerivedHmo2(string key) : base(key)
-            {
-            }
-        }
-
-        public class MyController : ControllerBase
-        {
-            [HttpGetHypermediaObject("Route/To/Hmo1/{key}", typeof(DerivedHmo1))]
-            public DerivedHmo1 GetDerivedHmo1(string key)
-            {
-                return new DerivedHmo1(key);
-            }
-
-            [HttpGetHypermediaObject("Route/To/Hmo2/{key}", typeof(DerivedHmo2))]
-            public DerivedHmo2 GetDerivedHmo2(string key)
-            {
-                return new DerivedHmo2(key);
-            }
         }
     }
 }
