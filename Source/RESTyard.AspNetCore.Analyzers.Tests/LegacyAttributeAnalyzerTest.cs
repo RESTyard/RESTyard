@@ -38,8 +38,8 @@ public class LegacyAttributeAnalyzerTest : VerifyAnalyzer
                 public IActionResult Get4() => this.Ok();
                 
             }
-
-            [HypermediaObject(Classes = new[] {"SomeHto"})]
+            
+            [HypermediaObject(Classes = ["SomeHto"])]
             public class SomeHto : IHypermediaObject
             {
             }
@@ -95,8 +95,8 @@ public class LegacyAttributeAnalyzerTest : VerifyAnalyzer
                 public IActionResult Get4() => this.Ok();
                 
             }
-
-            [HypermediaObject(Classes = new[] {"SomeHto"})]
+            
+            [HypermediaObject(Classes = ["SomeHto"])]
             public class SomeHto : IHypermediaObject
             {
                 [HypermediaAction(Name = "SomeOp", Title = "Some Title.")]
@@ -162,8 +162,8 @@ public class LegacyAttributeAnalyzerTest : VerifyAnalyzer
                 public IActionResult Get() => this.Ok();
                 
             }
-
-            [HypermediaObject(Classes = new[] {"SomeHto"})]
+            
+            [HypermediaObject(Classes = ["SomeHto"])]
             public class SomeHto : IHypermediaObject
             {
                 [HypermediaAction(Name = "SomeOp", Title = "Some Title.")]

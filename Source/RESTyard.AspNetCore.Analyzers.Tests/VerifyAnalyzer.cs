@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -68,7 +69,6 @@ public class VerifyAnalyzer : VerifyBase
             .AddMetadataReference(projectId, AspNetCoreMvcCoreReference)
             .AddMetadataReference(projectId, AspNetCoreMvcAbstractionsReference)
             .AddMetadataReference(projectId, RestyardReference)
-            .WithProjectParseOptions(projectId, new CSharpParseOptions(LanguageVersion.Preview))
             .WithProjectCompilationOptions(projectId, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
             .AddDocument(documentId, fileName, SourceText.From(source));
 
@@ -82,6 +82,7 @@ public class VerifyAnalyzer : VerifyBase
         var document = project.Documents.First();
 
         var index = 0;
+        using var scope = new AssertionScope();
         foreach (var d in diagnostics
                      .OrderBy(d => d.Location.GetLineSpan().StartLinePosition.Line)
                      .ThenBy(d => d.Location.GetLineSpan().StartLinePosition.Character))

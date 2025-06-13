@@ -11,7 +11,7 @@ public class SomeController : Controller
     public IActionResult Get() => this.Ok();
 }
 
-[HypermediaObject(Classes = new[] {"SomeHto"})]
+[HypermediaObject(Classes = ["SomeHto"])]
 public class SomeHto : IHypermediaObject
 {
 }

@@ -27,8 +27,8 @@ public class ApiControllerAnalyzerTests : VerifyAnalyzer
                 [HypermediaObjectEndpoint<SomeHto>]
                 public IActionResult Get() => this.Ok();
             }
-
-            [HypermediaObject(Classes = new[] {"SomeHto"})]
+            
+            [HypermediaObject(Classes = ["SomeHto"])]
             public class SomeHto : IHypermediaObject
             {
             }
@@ -62,7 +62,7 @@ public class ApiControllerAnalyzerTests : VerifyAnalyzer
             {
             }
 
-            [HypermediaObject(Classes = new[] {"SomeHto"})]
+            [HypermediaObject(Classes = ["SomeHto"])]
             public class SomeHto : IHypermediaObject
             {
             }

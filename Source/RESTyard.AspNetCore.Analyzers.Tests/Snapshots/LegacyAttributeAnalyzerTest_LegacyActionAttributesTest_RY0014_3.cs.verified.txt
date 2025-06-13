@@ -22,7 +22,7 @@ public class SomeController : Controller
     
 }
 
-[HypermediaObject(Classes = new[] {"SomeHto"})]
+[HypermediaObject(Classes = ["SomeHto"])]
 public class SomeHto : IHypermediaObject
 {
     [HypermediaAction(Name = "SomeOp", Title = "Some Title.")]
