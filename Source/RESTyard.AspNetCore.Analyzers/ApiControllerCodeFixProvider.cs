@@ -38,6 +38,7 @@ public class ApiControllerCodeFixProvider : CodeFixProvider
         context.RegisterCodeFix(
             CodeAction.Create(
                 title: "Add [ApiController] attribute to Controller class",
+                equivalenceKey: ApiControllerAnalyzer.DiagnosticId,
                 createChangedDocument: c => AddApiControllerAttribute(context.Document, cds, c)),
             diagnostic);
     }

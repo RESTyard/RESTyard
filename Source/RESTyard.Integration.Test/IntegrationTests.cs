@@ -245,4 +245,29 @@ public class IntegrationTests : IAsyncLifetime
         var boughtCar = buyResult.Should().BeOk().Which;
         boughtCar.Id.Should().Be(niceCar.Id);
     }
+
+    [Fact]
+    public async Task ActionParameterEndpoint_ExplicitAndImplicit()
+    {
+        // Given
+        var apiRoot = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint);
+        var customersRootResult = await apiRoot.NavigateAsync(e => e.CustomersRoot);
+        var customersRoot = customersRootResult.Should().BeOk().Which;
+        var createCustomerResult = await customersRoot.CreateCustomer!
+            .ExecuteAsync(new CreateCustomerParameters("Test"), this.Resolver)
+            .Bind(l => l.ResolveAsync());
+        var customer = createCustomerResult.Should().BeOk().Which;
+
+        // Then
+        var newAddressDescription = customer.CustomerMove!.ParameterDescriptions.Should().ContainSingle().Which;
+        var newAddressParameterClass = newAddressDescription.Classes.Should().ContainSingle().Which;
+        newAddressParameterClass.Should().Be($"{CarShackWaf.BaseUrl}/Customers/NewAddressType");
+        
+        // Then
+        var createCustomerDescription =
+            customersRoot.CreateCustomer!.ParameterDescriptions.Should().ContainSingle().Which;
+        var createCustomerParameterClass = createCustomerDescription.Classes.Should().ContainSingle().Which;
+        createCustomerParameterClass.Should()
+            .Be($"{CarShackWaf.BaseUrl}/ActionParameterTypes/CreateCustomerParameters");
+    }
 }

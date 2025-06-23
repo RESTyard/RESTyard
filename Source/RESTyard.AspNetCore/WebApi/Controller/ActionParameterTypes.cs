@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
-using RESTyard.AspNetCore.ErrorHandling;
 using RESTyard.AspNetCore.JsonSchema;
 using RESTyard.AspNetCore.Util;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;

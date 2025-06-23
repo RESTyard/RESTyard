@@ -26,10 +26,7 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
             LegacyAttributeAnalyzer.HttpDeleteDiagnosticId,
             LegacyAttributeAnalyzer.HttpGetHypermediaActionParameterInfoDiagnosticId);
     
-    public override FixAllProvider? GetFixAllProvider()
-    {
-        return WellKnownFixAllProviders.BatchFixer;
-    }
+    public override FixAllProvider? GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
@@ -137,6 +134,7 @@ public class LegacyAttributeCodeFixProvider : CodeFixProvider
         context.RegisterCodeFix(
             CodeAction.Create(
                 title: $"Migrate [{attributeName}] to [{httpName}, {newAttributeName}] attributes",
+                equivalenceKey: diagnostic.Id,
                 createChangedDocument: c => MigrateAttribute(
                     context.Document,
                     diagnostic.Id,

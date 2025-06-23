@@ -1,5 +1,7 @@
-﻿using FluentAssertions;
+﻿using System.Linq;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 
 namespace RESTyard.AspNetCore.Test;
 
@@ -26,7 +28,6 @@ public class ApplicationModelTests : AssemblyBasedTestBase
 
         var actionParameter = applicationModel.ActionParameterTypes.Should().ContainSingle().Which;
         actionParameter.Key.Name.Should().Be(nameof(ExampleHto.BasicParameter));
-        actionParameter.Value.GetActionParameterInfoMethod.RouteTemplateFull.Should().Be("Test/Info");
     }
     
     [TestMethod]
@@ -49,6 +50,5 @@ public class ApplicationModelTests : AssemblyBasedTestBase
 
         var actionParameter = applicationModel.ActionParameterTypes.Should().ContainSingle().Which;
         actionParameter.Key.Name.Should().Be(nameof(ExampleHto.BasicParameter));
-        actionParameter.Value.GetActionParameterInfoMethod.RouteTemplateFull.Should().Be("Test/Info");
     }
 }
