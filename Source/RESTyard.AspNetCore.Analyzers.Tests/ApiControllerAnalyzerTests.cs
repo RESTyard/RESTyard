@@ -73,4 +73,37 @@ public class ApiControllerAnalyzerTests : VerifyAnalyzer
             new ApiControllerCodeFixProvider(),
             diagnostics => diagnostics.Should().BeEmpty());
     }
+    
+    [Fact]
+    public async Task NoWarningForHypermediaEndpointWithAssemblyApiController()
+    {
+        var code =
+            """
+            using Microsoft.AspNetCore.Mvc;
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+            
+            [assembly:ApiController]
+            
+            namespace Test;
+
+            public class SomeController : Controller
+            {
+                [HttpGet]
+                [HypermediaObjectEndpoint<SomeHto>]
+                public IActionResult Get() => this.Ok();
+            }
+
+            [HypermediaObject(Classes = ["SomeHto"])]
+            public class SomeHto : IHypermediaObject
+            {
+            }
+            """;
+        await Verify(
+            code,
+            new ApiControllerAnalyzer(),
+            new ApiControllerCodeFixProvider(),
+            diagnostics => diagnostics.Should().BeEmpty());
+    }
 }
