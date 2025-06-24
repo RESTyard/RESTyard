@@ -103,7 +103,7 @@ public partial class HypermediaCustomerHto
 
 public class ExternalActionNoParametersTestOp : HypermediaExternalAction
 {
-    public ExternalActionNoParametersTestOp(Uri externalUri, HttpMethod httpMethod) 
+    public ExternalActionNoParametersTestOp(Uri externalUri, string httpMethod) 
         : base(() => true, externalUri, httpMethod)
     {
     }
@@ -111,8 +111,7 @@ public class ExternalActionNoParametersTestOp : HypermediaExternalAction
 
 public class ExternalActionWitParameterTestOp : HypermediaExternalAction<ExternalActionParameters>
 {
-    public ExternalActionWitParameterTestOp(Uri externalUri,
-        HttpMethod httpMethod) 
+    public ExternalActionWitParameterTestOp(Uri externalUri, string httpMethod) 
         : base(() => true,
         externalUri,
         httpMethod,
