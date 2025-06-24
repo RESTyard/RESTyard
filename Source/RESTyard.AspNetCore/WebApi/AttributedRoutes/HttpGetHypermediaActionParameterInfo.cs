@@ -1,15 +1,19 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 
 namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
 {
+    [Obsolete($"Use {nameof(HttpGetAttribute)} in combination with {nameof(HypermediaActionParameterInfoEndpointAttribute<IHypermediaActionParameter>)}")]
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-    public class HttpGetHypermediaActionParameterInfo : HttpGetAttribute, IHaveRouteInfo
+    public class HttpGetHypermediaActionParameterInfo : HttpGetAttribute, IHaveRouteInfo, IHypermediaActionParameterInfoEndpointMetadata
     {
         public Type RouteType { get; private set; }
         public Type? RouteKeyProducerType { get; } = null;
         public string? AcceptedMediaType => null;
+
+        string IEndpointNameMetadata.EndpointName => this.Name!;
 
         /// <summary>
         /// Indicates a route to a Type which is aused in an action. The route should provide type information.

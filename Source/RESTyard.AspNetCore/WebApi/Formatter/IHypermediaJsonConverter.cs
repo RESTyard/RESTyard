@@ -6,6 +6,6 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 {
     public interface IHypermediaJsonConverter
     {
-        JObject ConvertToJson(HypermediaObject hypermediaObject);
+        JObject ConvertToJson(IHypermediaObject hypermediaObject);
     }
 }

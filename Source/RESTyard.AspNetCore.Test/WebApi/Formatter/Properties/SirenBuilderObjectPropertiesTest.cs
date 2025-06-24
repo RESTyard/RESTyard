@@ -1,8 +1,7 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 {
@@ -24,8 +23,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         [TestMethod]
         public void PropertyNestedClass()
         {
-            var routeName = typeof(PropertyNestedClassHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyNestedClassHypermediaObject), routeName, HttpMethod.GET);
+            var routeName = nameof(PropertyNestedClassHypermediaObject) + "_Route";
+            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyNestedClassHypermediaObject), routeName, HttpMethods.Get);
 
             var ho = new PropertyNestedClassHypermediaObject
             {
@@ -40,10 +39,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 
             var siren = SirenConverter.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(PropertyNestedClassHypermediaObject));
+            AssertClassName(siren, nameof(PropertyNestedClassHypermediaObject));
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
-            AssertHasOnlySelfLink(siren, routeName);
+            AssertHasNoLinks(siren);
 
             var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
@@ -60,8 +59,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         [TestMethod]
         public void PropertyNestedClassNull()
         {
-            var routeName = typeof(PropertyNestedClassHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyNestedClassHypermediaObject), routeName, HttpMethod.GET);
+            var routeName = nameof(PropertyNestedClassHypermediaObject) + "_Route";
+            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyNestedClassHypermediaObject), routeName, HttpMethods.Get);
 
             var ho = new PropertyNestedClassHypermediaObject
             {
@@ -70,10 +69,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 
             var siren = SirenConverter.ConvertToJson(ho);
             
-            AssertDefaultClassName(siren, typeof(PropertyNestedClassHypermediaObject));
+            AssertClassName(siren, nameof(PropertyNestedClassHypermediaObject));
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
-            AssertHasOnlySelfLink(siren, routeName);
+            AssertHasNoLinks(siren);
 
             var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
@@ -84,8 +83,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         [TestMethod]
         public void PropertyNestedClassNullNoNullProperties()
         {
-            var routeName = typeof(PropertyNestedClassHypermediaObject).Name + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyNestedClassHypermediaObject), routeName, HttpMethod.GET);
+            var routeName = nameof(PropertyNestedClassHypermediaObject) + "_Route";
+            RouteRegister.AddHypermediaObjectRoute(typeof(PropertyNestedClassHypermediaObject), routeName, HttpMethods.Get);
 
             var ho = new PropertyNestedClassHypermediaObject
             {
@@ -94,10 +93,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 
             var siren = SirenConverterNoNullProperties.ConvertToJson(ho);
 
-            AssertDefaultClassName(siren, typeof(PropertyNestedClassHypermediaObject));
+            AssertClassName(siren, nameof(PropertyNestedClassHypermediaObject));
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
-            AssertHasOnlySelfLink(siren, routeName);
+            AssertHasNoLinks(siren);
 
             var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 

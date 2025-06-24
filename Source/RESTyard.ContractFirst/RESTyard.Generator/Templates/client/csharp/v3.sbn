@@ -77,7 +77,7 @@ public partial class {{ typeName }} : {{ if isNotEmpty document.parentDocument }
 {{- if document.hasSelfLink }}
     [Mandatory]
     [HypermediaRelations(new[]{ "self" })]
-    public MandatoryHypermediaLink<{{ typeName }}> Self { get; set; } = default!;
+    public {{ if isNotEmpty document.parentDocument }} new {{ end }} MandatoryHypermediaLink<{{ typeName }}> Self { get; set; } = default!;
 {{- end }}
 {{ for link in document.Links }}
 {{- if link.mandatory }}

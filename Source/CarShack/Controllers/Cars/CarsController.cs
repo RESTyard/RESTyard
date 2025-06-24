@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Net.Mime;
 using System.Reflection;
 using System.Threading.Tasks;
 using CarShack.Hypermedia;
 using CarShack.Util;
+using FunicularSwitch;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RESTyard.AspNetCore.Exceptions;
-using RESTyard.AspNetCore.Hypermedia.Links;
+using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.JsonSchema;
 using RESTyard.AspNetCore.WebApi;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
@@ -19,6 +18,7 @@ using RESTyard.MediaTypes;
 namespace CarShack.Controllers.Cars
 {
     [Route("Cars/")]
+    [ApiController]
     public class CarsController : Controller
     {
         private readonly HypermediaCarsRootHto carsRoot;
@@ -28,7 +28,7 @@ namespace CarShack.Controllers.Cars
             this.carsRoot = carsRoot;
         }
 
-        [HttpGetHypermediaObject("", typeof(HypermediaCarsRootHto))]
+        [HttpGet(""), HypermediaObjectEndpoint<HypermediaCarsRootHto>]
         public ActionResult GetRootDocument()
         {
             return Ok(carsRoot);
@@ -36,7 +36,7 @@ namespace CarShack.Controllers.Cars
 
         // example route with more than one placeholder variable. Mapping of object keys to those parameters when creating links
         // is handled by using KeyAttribute on HypermediaCar instead of passing RouteKeyProducer type in HttpGetHypermediaObject attribute.
-        [HttpGetHypermediaObject("{brand}/{id:int}", typeof(HypermediaCarHto))]
+        [HttpGet("{brand}/{id:int}"), HypermediaObjectEndpoint<HypermediaCarHto>]
         public ActionResult GetEntity(string brand, int id)
         {
             try
@@ -51,7 +51,7 @@ namespace CarShack.Controllers.Cars
             }
         }
 
-        [HttpGetHypermediaObject("special/{brand}/{id:int}", typeof(DerivedCarHto))]
+        [HttpGet("special/{brand}/{id:int}"), HypermediaObjectEndpoint<DerivedCarHto>]
         public ActionResult GetDerivedEntity(string brand, int id)
         {
             try
@@ -66,7 +66,7 @@ namespace CarShack.Controllers.Cars
                     derivedProperty: "some text",
                     derivedOperation: new(() => false),
                     item: [],
-                    hasDerivedLink: false, derivedLinkKey: null);
+                    derivedLinkKey: Option<HypermediaCustomerHto.Key>.None);
                 return Ok(result);
             }
             catch (EntityNotFoundException)
@@ -75,7 +75,7 @@ namespace CarShack.Controllers.Cars
             }
         }
 
-        [HttpGetHypermediaObject("CarImage/{filename}", typeof(CarImageHto))]
+        [HttpGet("CarImage/{filename}"), HypermediaObjectEndpoint<CarImageHto>]
         public async Task<IActionResult> GetCarImage(string filename)
         {
             var fullPath = GetFilePath(filename);
@@ -85,7 +85,7 @@ namespace CarShack.Controllers.Cars
             return new FileContentResult(content, MediaTypeNames.Image.Jpeg);
         }
 
-        [HttpGetHypermediaObject("CarInsurance/{filename}", typeof(CarInsuranceHto))]
+        [HttpGet("CarInsurance/{filename}"), HypermediaObjectEndpoint<CarInsuranceHto>]
         public async Task<IActionResult> GetCarInsurance(string filename)
         {
             var fullPath = GetFilePath(filename);
@@ -95,10 +95,7 @@ namespace CarShack.Controllers.Cars
             return new FileContentResult(content, MediaTypeNames.Application.Pdf);
         }
 
-        [HttpPostHypermediaAction(
-            "UploadImage",
-            typeof(HypermediaCarsRootHto.UploadCarImageOp),
-            AcceptedMediaType = DefaultMediaTypes.MultipartFormData)]
+        [HttpPost("UploadImage"), HypermediaActionEndpoint<HypermediaCarsRootHto>(nameof(HypermediaCarsRootHto.UploadCarImage), DefaultMediaTypes.MultipartFormData)]
         public async Task<IActionResult> UploadCarImage(
             [HypermediaUploadParameterFromForm]
             HypermediaFileUploadActionParameter<UploadCarImageParameters> parameters)
@@ -127,13 +124,10 @@ namespace CarShack.Controllers.Cars
             // In short, it is necessary to restrict and verify the upload
             var path = await SaveToBinDir(originalFilename, payloadFile);
 
-            return this.Created(new HypermediaObjectReference(new CarImageHto(Path.GetFileName(path))));
+            return this.Created(Link.To(new CarImageHto(Path.GetFileName(path))));
         }
 
-        [HttpPostHypermediaAction(
-            "UploadInsurance",
-            typeof(HypermediaCarsRootHto.UploadInsuranceScanOp),
-            AcceptedMediaType = DefaultMediaTypes.MultipartFormData)]
+        [HttpPost("UploadInsurance"), HypermediaActionEndpoint<HypermediaCarsRootHto>(nameof(HypermediaCarsRootHto.UploadInsuranceScan), DefaultMediaTypes.MultipartFormData)]
         public async Task<IActionResult> UploadInsurance(
             [HypermediaUploadParameterFromForm] HypermediaFileUploadActionParameter parameters)
         {
@@ -147,7 +141,7 @@ namespace CarShack.Controllers.Cars
             var payloadFile = files[0];
             var path = await SaveToBinDir(payloadFile.FileName, payloadFile);
 
-            return this.Created(new HypermediaObjectReference(new CarInsuranceHto(Path.GetFileName(path))));
+            return this.Created(Link.To(new CarInsuranceHto(Path.GetFileName(path))));
         }
 
         private static async Task<string> SaveToBinDir(string originalFilename, IFormFile payloadFile)

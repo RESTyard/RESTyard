@@ -2,14 +2,13 @@
 using System.CommandLine.Builder;
 using System.CommandLine.NamingConventionBinder;
 using System.CommandLine.Parsing;
-using System.Reflection;
 using System.Xml.Serialization;
-using Scriban;
-using Scriban.Runtime;
+using FunicularSwitch.Generators;
+using Microsoft.CodeAnalysis;
 
 namespace RESTyard.Generator;
 
-internal static class Program
+public static class Program
 {
     public static Task<int> Main(string[] args) =>
         CreateCommandLine()
@@ -26,6 +25,24 @@ internal static class Program
         var templateOption = new Option<string>("--template")
         {
             IsRequired = true,
+            Description = """
+                          select the template to render the schema with. Available options:
+                          server
+                            /csharp
+                              /v4
+                              /v5
+                            /csharp-controller
+                              /v4
+                            /csharp-policies
+                              /v4
+                          client
+                            /csharp
+                              /v3
+                            /typescript
+                              /v0
+                              
+                          Example: --template server/csharp/v4
+                          """
         };
         var outputFileOption = new Option<string>("--output-file")
         {
@@ -61,6 +78,7 @@ internal static class Program
 
         schema.TransferParameters.Parameters = Filter(schema.TransferParameters.Parameters, x => x.typeName);
         schema.Documents = Filter(schema.Documents, x => x.name);
+        return;
 
         Func<T, bool> Condition<T>(Func<T, string> nameSelector) => includedTypeNames.Any()
             ? IsIncluded(nameSelector)
@@ -77,35 +95,29 @@ internal static class Program
 
     private static async Task RenderTemplate(
         HypermediaType schema,
-        FileInfo templateFile,
+        string templatePath,
+        TemplateInfo template,
         string outputPath,
         string? @namespace,
         string? includeFile)
     {
-        var templateContent = await File.ReadAllTextAsync(templateFile.FullName);
-        var template = Template.Parse(templateContent, templateFile.FullName);
         var includeContent = string.IsNullOrEmpty(includeFile) ? string.Empty : await File.ReadAllTextAsync(includeFile);
 
-        var scriptObject = new ScriptObject();
-        scriptObject.Import(schema, renamer: GetMemberName);
-        scriptObject.Import(new
+        var code = await template.Match(
+            scribanTemplate: sbn => ScribanTemplate.Render(schema, sbn.FileInfo, @namespace, includeContent),
+            razorTemplate: razor =>
+                RazorTemplate.Render(schema, razor.RazorType, @namespace, includeContent));
+        string formattedCode;
+        if (templatePath.Contains("csharp"))
         {
-            Namespace = @namespace,
-            IncludeContent = includeContent,
-        }, renamer: GetMemberName);
-        scriptObject.Import(new CustomFunctions());
-
-        var templateContext = new TemplateContext
+            formattedCode = await CodeFormatter.Format(code, outputPath);
+        }
+        else
         {
-            MemberRenamer = GetMemberName,
-            TemplateLoader = new DiskLoader(),
-        };
-        templateContext.PushGlobal(scriptObject);
+            formattedCode = code;
+        }
 
-        var code = await template.RenderAsync(templateContext);
-        await File.WriteAllTextAsync(outputPath, code);
-
-        string GetMemberName(MemberInfo member) => member.Name;
+        await File.WriteAllTextAsync(outputPath, formattedCode);
     }
 
     private static async Task Run(
@@ -121,26 +133,71 @@ internal static class Program
         var schemaSerializer = new XmlSerializer(typeof(HypermediaType));
         if (schemaSerializer.Deserialize(schemaFileStream) is not HypermediaType schema)
             throw new InvalidOperationException("Failed to read schema.");
+        NormalizeSchema(schema);
 
-        var templateFile = TryGetTemplateFile(template);
+        var templateFile = TryGetTemplateInfo(template);
         if (templateFile is null)
+        {
             throw new FileNotFoundException($"Template \"{template}\" could not be found.");
+        }
 
         FilterTypes(schema, includeType.ToList(), excludeType.ToList());
-        await RenderTemplate(schema, templateFile, outputFile, @namespace, includeFile);
+        await RenderTemplate(schema, template, templateFile, outputFile, @namespace, includeFile);
         
         Console.WriteLine("Done.");
     }
 
-    private static FileInfo? TryGetTemplateFile(string template)
+    private static TemplateInfo? TryGetTemplateInfo(string template)
     {
-        var installedTemplatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", $"{template}.sbn");
-        if (File.Exists(installedTemplatePath))
-            return new FileInfo(installedTemplatePath);
+        var installedScribanTemplatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", $"{template}.sbn");
+        if (File.Exists(installedScribanTemplatePath))
+        {
+            return TemplateInfo.ScribanTemplate(new FileInfo(installedScribanTemplatePath));
+        }
 
         if (File.Exists(template))
-            return new FileInfo(template);
+        {
+            return TemplateInfo.ScribanTemplate(new FileInfo(template));
+        }
 
-        return default;
+        return template.Split('/', '\\') switch
+        {
+            ["server", "csharp", "v5"] => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp.V5)),
+            _ => null,
+        };
     }
+
+    private static void NormalizeSchema(HypermediaType schema)
+    {
+        schema.Documents ??= [];
+        foreach (var schemaDocument in schema.Documents)
+        {
+            schemaDocument.Classifications ??= [];
+            schemaDocument.Entities ??= [];
+            schemaDocument.Links ??= [];
+            foreach (var link in schemaDocument.Links)
+            {
+                link.QueryParameters ??= [];
+                link.ResultDocuments ??= [];
+            }
+            schemaDocument.Operations ??= [];
+            schemaDocument.Properties ??= [];
+        }
+
+        schema.TransferParameters.Parameters ??= [];
+        foreach (var parameter in schema.TransferParameters.Parameters)
+        {
+            parameter.Property ??= [];
+        }
+
+        schema.TransferParameters.ExternalParameters ??= [];
+    }
+}
+
+[UnionType(CaseOrder = CaseOrder.AsDeclared)]
+internal abstract partial record TemplateInfo
+{
+    public sealed record ScribanTemplate_(FileInfo FileInfo) : TemplateInfo;
+
+    public sealed record RazorTemplate_(Type RazorType) : TemplateInfo;
 }

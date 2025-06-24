@@ -23,13 +23,21 @@
       <Property name="HorsePower" type="int" mandatory="true" />
     </Parameters>
     <Parameters typeName="NewAddress" usedForQueries="false" usedForActions="true">
-      <Property name="Address" type="string" mandatory="true" />
+      <Property name="Address" type="AddressTo" mandatory="true" />
+    </Parameters>
+    <Parameters typeName="AddressTo" usedForActions="false" usedForQueries="false">
+      <Property name="Street" type="string" mandatory="true" />
+      <Property name="Number" type="string" mandatory="true" />
+      <Property name="City" type="string" mandatory="true" />
+      <Property name="ZipCode" type="string" mandatory="true" />
     </Parameters>
     <Parameters typeName="UploadCarImageParameters" usedForActions="true" usedForQueries="false">
-        <Property name="Text" type="string" mandatory="true" />
-        <Property name="Flag" type="bool" mandatory="true" />
+      <Property name="Text" type="string" mandatory="true" />
+      <Property name="Flag" type="bool" mandatory="true" />
     </Parameters>
-    <ExternalParameters typeName="MarkAsFavoriteParameters"/>
+    <Parameters typeName="MarkAsFavoriteParameters" usedForActions="true" usedForQueries="false">
+      <Property name="Customer" type="Uri" mandatory="true" />
+    </Parameters>
     <ExternalParameters typeName="CustomerQuery" />
   </TransferParameters>
   <Documents>
@@ -116,12 +124,13 @@
         <Operation name="CreateCustomer" method="Post" title="Request creation of a new Customer."
                    parameterTypeName="CreateCustomerParameters" resultDocument="HypermediaCustomer" />
         <Operation name="CreateQuery" method="Post" title="Query the Customers collection."
-                   parameterTypeName="CustomerQuery" />
+                   parameterTypeName="CustomerQuery" resultDocument="HypermediaCustomerQueryResult" />
       </Operations>
       <Links>
         <Link rel="all" document="HypermediaCustomerQueryResult" query="CustomerQuery" mandatory="true" />
         <Link rel="BestCustomer" document="HypermediaCustomer" mandatory="true" />
         <Link rel="GreatSite" mandatory="true" />
+        <Link rel="OkaySite" mandatory="false" />
       </Links>
     </Document>
     <Document name="HypermediaCustomer">
@@ -132,7 +141,7 @@
         <Property name="Id" type="int" hidden="true" mandatory="true" isKey="true" />
         <Property name="Age" type="int" />
         <Property name="FullName" type="string" />
-        <Property name="Address" type="string" />
+        <Property name="Address" type="AddressTo" />
         <Property name="IsFavorite" type="bool" mandatory="true" />
       </Properties>
       <Operations>
@@ -141,26 +150,26 @@
         <Operation name="CustomerRemove" method="Delete" title="Remove a Customer." />
         <Operation name="MarkAsFavorite" method="Post" title="Marks a Customer as a favorite buyer."
                    parameterTypeName="MarkAsFavoriteParameters" />
-        <Operation name="BuyCar" method="Post" title="Buy a car." parameterTypeName="BuyCarParameters" />
+        <Operation name="BuyCar" method="Post" title="Buy a car." parameterTypeName="BuyCarParameters" resultDocument="HypermediaCar" />
       </Operations>
     </Document>
     <Document name="HypermediaCustomerQueryResult" title="Query result on Customer" isQueryResult="true">
       <Classifications>
         <Classification class="CustomersQueryResult" />
       </Classifications>
-	    <Entities>
-		    <Entity collectionName="Customers" document="HypermediaCustomer" />
-	    </Entities>
       <Properties>
         <Property name="TotalEntities" type="int" />
         <Property name="CurrentEntitiesCount" type="int" />
       </Properties>
-			<Links>
-				<Link rel="Next" document="HypermediaCustomerQueryResult" mandatory="false" />
-				<Link rel="Previous" document="HypermediaCustomerQueryResult" mandatory="false" />
-				<Link rel="Last" document="HypermediaCustomerQueryResult" mandatory="false" />
-				<Link rel="All" document="HypermediaCustomerQueryResult" mandatory="false" />
-			</Links>
+      <Entities>
+        <Entity collectionName="Customers" document="HypermediaCustomer" />
+      </Entities>
+      <Links>
+        <Link rel="Next" document="HypermediaCustomerQueryResult" query="IHypermediaQuery" mandatory="false" />
+        <Link rel="Previous" document="HypermediaCustomerQueryResult" query="IHypermediaQuery" mandatory="false" />
+        <Link rel="Last" document="HypermediaCustomerQueryResult" query="IHypermediaQuery" mandatory="false" />
+        <Link rel="All" document="HypermediaCustomerQueryResult" query="IHypermediaQuery" mandatory="false" />
+      </Links>
     </Document>
   </Documents>
 </Hypermedia>

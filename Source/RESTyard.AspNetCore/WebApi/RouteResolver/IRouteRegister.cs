@@ -7,11 +7,11 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
     {
         bool TryGetRoute(Type lookupType, out RouteInfo routeInfo);
 
-        void AddActionRoute(Type hypermediaActionType, string routeName, HttpMethod httpMethod, string acceptableMediaType);
+        void AddActionRoute(Type hypermediaActionType, string routeName, string httpMethod, string acceptableMediaType);
 
-        void AddHypermediaObjectRoute(Type hypermediaObjectType, string routeName, HttpMethod httpMethod);
+        void AddHypermediaObjectRoute(Type hypermediaObjectType, string routeName, string httpMethod);
 
-        void AddParameterTypeRoute(Type iHypermediaActionParameter, string routeName, HttpMethod httpMethod);
+        void AddParameterTypeRoute(Type iHypermediaActionParameter, string routeName, string httpMethod);
 
         void AddRouteKeyProducer(Type attributeRouteType, IKeyProducer keyProducer);
 

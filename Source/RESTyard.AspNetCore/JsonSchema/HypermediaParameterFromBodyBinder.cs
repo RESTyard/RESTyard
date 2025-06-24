@@ -6,6 +6,8 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.Hypermedia.Actions;
@@ -15,12 +17,10 @@ namespace RESTyard.AspNetCore.JsonSchema
 {
     class HypermediaParameterFromBodyBinderProvider : IModelBinderProvider
     {
-        readonly Func<Type, ImmutableArray<string>> getRouteTemplateForType;
         readonly bool explicitUsage;
 
-        public HypermediaParameterFromBodyBinderProvider(Func<Type, ImmutableArray<string>> getRouteTemplateForType, bool explicitUsage = false)
+        public HypermediaParameterFromBodyBinderProvider(bool explicitUsage = false)
         {
-            this.getRouteTemplateForType = getRouteTemplateForType;
             this.explicitUsage = explicitUsage;
         }
 
@@ -30,7 +30,7 @@ namespace RESTyard.AspNetCore.JsonSchema
             if (ParameterIsHypermediaActionType(modelType) 
                 && (ThisBinderIsSelectedOnMethod(context) || this.UseThisBinderImplicit(context)))
             {
-                return new HypermediaParameterFromBodyBinder(modelType, getRouteTemplateForType);
+                return new HypermediaParameterFromBodyBinder(modelType);
             }
 
             return null;
@@ -64,14 +64,16 @@ namespace RESTyard.AspNetCore.JsonSchema
         readonly Type modelType;
         readonly JsonDeserializer serializer;
 
-        public HypermediaParameterFromBodyBinder(Type modelType, Func<Type, ImmutableArray<string>> getRouteTemplatesForType)
+        public HypermediaParameterFromBodyBinder(Type modelType)
         {
             this.modelType = modelType;
-            serializer = new JsonDeserializer(modelType, getRouteTemplatesForType);
+            serializer = new JsonDeserializer(modelType);
         }
 
         public async Task BindModelAsync(ModelBindingContext bindingContext)
         {
+            var isDevelopmentEnvironment = IsDevelopmentEnvironment(bindingContext);
+
             var modelTypeName = modelType.BeautifulName();
             if (bindingContext.ModelType != modelType)
             {
@@ -99,7 +101,7 @@ namespace RESTyard.AspNetCore.JsonSchema
                 }
                 catch (Exception e)
                 {
-                    bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Invalid Json: {e}.");
+                    bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Invalid Json: {(isDevelopmentEnvironment ? e : e.Message)}.");
                     return;
                 }
             }
@@ -120,14 +122,27 @@ namespace RESTyard.AspNetCore.JsonSchema
 
             try
             {
+                
                 bindingContext.Result = ModelBindingResult.Success(serializer.Deserialize(jObject));
                 return;
             }
             catch (Exception e)
             {
-                bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Deserialization failed: {e}");
+                bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"Deserialization failed: {(isDevelopmentEnvironment ? e : e.Message)}");
                 return;
             }
+        }
+
+        private static bool IsDevelopmentEnvironment(ModelBindingContext bindingContext)
+        {
+            var isDevelopmentEnvironment = false;
+            var hostEnvironment = bindingContext.HttpContext.RequestServices.GetService<IHostEnvironment>();
+            if (hostEnvironment != null)
+            {
+                isDevelopmentEnvironment = hostEnvironment.IsDevelopment();
+            }
+
+            return isDevelopmentEnvironment;
         }
 
         static bool TryUnwrapArray(JArray wrapperArray, string modelTypeName, [NotNullWhen(true)] out JObject? jObject)

@@ -1,0 +1,60 @@
+﻿@using Scriban.Functions
+@using RESTyard.Generator.Templates.csharp_base
+@inherits RazorTemplateBase
+@implements ITemplateBase
+
+@{
+    ContentTypes.AddRange(
+        from document in Schema.Documents
+        from link in document.Links
+        where !string.IsNullOrEmpty(link.contentType)
+        select link.contentType);
+}
+
+#nullable enable
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using FunicularSwitch;
+using Microsoft.AspNetCore.Routing;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
+using RESTyard.AspNetCore.Hypermedia.Links;
+using RESTyard.AspNetCore.Query;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
+using RESTyard.Relations;
+@Includes
+
+@if (!string.IsNullOrEmpty(Namespace))
+{
+    @:namespace @Namespace;
+}
+
+public static class MimeTypes
+{
+@foreach (var contentType in ContentTypes.Distinct().OrderBy(c => c))
+{
+    @:public const string @StringFunctions.Handleize(@contentType).Replace("-", "_").ToUpper() = "@contentType";
+}
+}
+
+@foreach (var parametersType in Schema.TransferParameters.Parameters)
+{
+    <TransferParameter Schema="@Schema" ParametersType="@parametersType" />
+}
+
+@foreach (var document in Schema.Documents)
+{
+    <Document Schema="@Schema" DocumentType="@document" Version="new Version(5, 0)" />
+}
+
+<KeyFromUriServiceExtensions Schema="@Schema" />
+
+@code {
+    [Parameter] public string? Namespace { get; set; }
+    [Parameter] public string Includes { get; set; } = null!;
+
+    public List<string> ContentTypes { get; set; } = ["application/vnd.siren+json"];
+}

@@ -5,8 +5,8 @@ using RESTyard.AspNetCore.WebApi.RouteResolver;
 namespace RESTyard.AspNetCore.Hypermedia.Links
 {
     /// <summary>
-    /// A reference to an <see cref="HypermediaObject"/> where the Type and (if required for the <see cref="HypermediaObject"/>) key are known.
-    /// Allows to referenc an <see cref="HypermediaObject"/> without creating it for reference purpose only.
+    /// A reference to an <see cref="IHypermediaObject"/> where the Type and (if required for the <see cref="IHypermediaObject"/>) key are known.
+    /// Allows to referenc an <see cref="IHypermediaObject"/> without creating it for reference purpose only.
     /// </summary>
     public class HypermediaObjectKeyReference : HypermediaObjectReferenceBase
     {
@@ -32,7 +32,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
             return false;
         }
 
-        public override HypermediaObject? GetInstance()
+        public override IHypermediaObject? GetInstance()
         {
             return null;
         }

@@ -2,7 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.Query;
@@ -21,7 +24,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     {
         protected static QueryStringBuilder QueryStringBuilder;
         protected static HypermediaUrlConfig TestUrlConfig;
-        protected static MockUrlHelper UrlHelper;
+        protected HttpContext FakeHttpContext;
         protected RouteRegister RouteRegister;
         protected RegisterRouteResolverFactory RouteResolverFactory;
         protected RouteKeyFactory RouteKeyFactory;
@@ -39,17 +42,24 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
                 Host = new HostString("myhost", 1234),
                 Scheme = "scheme"
             };
-
-            UrlHelper = new MockUrlHelper();
         }
 
         protected void TestInitBase()
         {
             RouteRegister = new RouteRegister();
             RouteKeyFactory = new RouteKeyFactory(RouteRegister);
-            RouteResolverFactory = new RegisterRouteResolverFactory(RouteRegister, new HypermediaExtensionsOptions(), RouteKeyFactory);
+            RouteResolverFactory = new RegisterRouteResolverFactory(new HypermediaExtensionsOptions());
+            
+            var services = new ServiceCollection();
+            services.AddSingleton<LinkGenerator, FakeLinkGenerator>();
+            services.AddSingleton<IRouteRegister>(RouteRegister);
+            services.AddSingleton<IRouteKeyFactory>(RouteKeyFactory);
+            FakeHttpContext = new DefaultHttpContext()
+            {
+                RequestServices = services.BuildServiceProvider(),
+            };
 
-            RouteResolver = RouteResolverFactory.CreateRouteResolver(UrlHelper, TestUrlConfig);
+            RouteResolver = RouteResolverFactory.CreateRouteResolver(FakeHttpContext, TestUrlConfig);
             SirenConverter = CreateSirenConverter();
             SirenConverterNoNullProperties = CreateSirenConverter(new HypermediaConverterConfiguration{ WriteNullProperties = false });
         }
@@ -59,12 +69,12 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             return new SirenConverter(RouteResolver, QueryStringBuilder, configuration);
         }
 
-        public static void AssertDefaultClassName(JObject obj, Type type)
+        public static void AssertClassName(JObject obj, string name)
         {
             Assert.IsTrue(obj["class"].Type == JTokenType.Array);
             var classArray = (JArray)obj["class"];
             Assert.AreEqual(1, classArray.Count);
-            Assert.IsTrue(obj["class"].First.ToString() == type.BeautifulName());
+            Assert.IsTrue(obj["class"].First.ToString() == name);
         }
 
         public static void AssertHasOnlySelfLink(JObject obj, string routeName)
@@ -75,6 +85,13 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
             Assert.AreEqual(DefaultHypermediaRelations.Self, obj["links"].First["rel"].First.ToString());
             AssertRoute(obj["links"].First["href"].ToString(), routeName);
+        }
+
+        public static void AssertHasNoLinks(JObject obj)
+        {
+            Assert.IsTrue(obj["links"].Type == JTokenType.Array);
+            var linksArray = (JArray)obj["links"];
+            Assert.AreEqual(0, linksArray.Count);
         }
 
         public static void AssertEmptyActions(JObject obj)

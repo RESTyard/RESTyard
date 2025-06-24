@@ -1,10 +1,9 @@
-using System;
 using RESTyard.AspNetCore.Hypermedia;
 
 namespace RESTyard.AspNetCore.WebApi.Formatter
 {
     public interface IHypermediaConverter
     {
-        string ConvertToString(HypermediaObject hypermediaObject);
+        string ConvertToString(IHypermediaObject hypermediaObject);
     }
 }
