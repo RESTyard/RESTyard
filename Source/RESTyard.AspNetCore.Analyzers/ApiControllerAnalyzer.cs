@@ -39,6 +39,13 @@ public class ApiControllerAnalyzer : DiagnosticAnalyzer
             return;
         }
 
+        var assemblyAttributes = context.SemanticModel.Compilation.Assembly.GetAttributes();
+        var hasAssemblyApiControllerAttribute = assemblyAttributes.Any(a => a.AttributeClass!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::Microsoft.AspNetCore.Mvc.ApiControllerAttribute");
+        if (hasAssemblyApiControllerAttribute)
+        {
+            return;
+        }
+
         var type = context.SemanticModel.GetDeclaredSymbol(classDeclarationSyntax);
         if (type is null)
         {
