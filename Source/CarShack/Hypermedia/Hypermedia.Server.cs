@@ -7,13 +7,14 @@ using System.Runtime.Serialization;
 using CarShack.Domain.Customer;
 using FunicularSwitch;
 using Microsoft.Extensions.DependencyInjection;
+using RESTyard.AspNetCore.Extensions.Pagination;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Util.Enum;
-using RESTyard.AspNetCore.Util.Repository;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
+using RESTyard.Extensions.Pagination;
 
 namespace CarShack.Hypermedia;
 
@@ -27,7 +28,7 @@ public partial record AddressTo
             ZipCode: domainAddress.ZipCode);
 }
 
-public class CustomerQuery : QueryBase<CustomerSortProperties, CustomerFilter>
+public record CustomerQuery : QueryBase<CustomerSortProperties, CustomerFilter, Pagination>
 {
     // required by Web Api to instanciate when a route is called
     public CustomerQuery()
@@ -39,7 +40,7 @@ public class CustomerQuery : QueryBase<CustomerSortProperties, CustomerFilter>
     {
     }
 
-    public override QueryBase<CustomerSortProperties, CustomerFilter> Clone()
+    public override QueryBase<CustomerSortProperties, CustomerFilter, Pagination> DeepCopy()
     {
         return new CustomerQuery(this);
     }
@@ -55,7 +56,7 @@ public enum CustomerSortProperties
 }
 
 // Options for filtering
-public class CustomerFilter : IQueryFilter
+public class CustomerFilter : IQueryFilter<CustomerFilter>
 {
     public CustomerFilter()
     {
@@ -69,10 +70,9 @@ public class CustomerFilter : IQueryFilter
 
     [Range(1, 150)] public int? MinAge { get; set; }
 
-    public IQueryFilter Clone()
-    {
-        return new CustomerFilter(this);
-    }
+    public static CustomerFilter CreateDefault() => new();
+
+    CustomerFilter IQueryFilter<CustomerFilter>.DeepCopy() => new(this);
 }
 
 public class Country
@@ -143,16 +143,8 @@ public partial class HypermediaCustomersRootHto
                 {
                     MinAge = 12
                 },
-                Pagination = new Pagination
-                {
-                    PageOffset = 0,
-                    PageSize = 10
-                },
-                SortBy = new SortParameter<CustomerSortProperties>
-                {
-                    PropertyName = CustomerSortProperties.Age,
-                    SortType = SortTypes.Ascending
-                }
+                Pagination = new Pagination(10, 0),
+                SortBy = new SortParameter<CustomerSortProperties>(CustomerSortProperties.Age, SortTypes.Ascending)
             }),
             allQuery: new CustomerQuery(),
             bestCustomerKey: new(1),

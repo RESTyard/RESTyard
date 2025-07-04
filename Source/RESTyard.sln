@@ -56,6 +56,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.AspNetCore.Analyze
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.AspNetCore.Analyzers.Tests", "RESTyard.AspNetCore.Analyzers.Tests\RESTyard.AspNetCore.Analyzers.Tests.csproj", "{17A49645-391D-4992-AD59-EC59A1BB249B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.AspNetCore.Extensions.Pagination", "RESTyard.AspNetCore.Extensions.Pagination\RESTyard.AspNetCore.Extensions.Pagination.csproj", "{1362B034-493D-45C9-8F4E-5FAEBEE62592}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.AspNetCore.Extensions.Pagination.Test", "RESTyard.AspNetCore.Extensions.Pagination.Test\RESTyard.AspNetCore.Extensions.Pagination.Test.csproj", "{7B5AEB8A-ADBA-418A-9E28-B947E37D771A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.Extensions.Pagination", "RESTyard.Extensions.Pagination\RESTyard.Extensions.Pagination.csproj", "{AF921C05-EB28-4EAC-A88D-0FE10266860A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -138,6 +144,18 @@ Global
 		{17A49645-391D-4992-AD59-EC59A1BB249B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17A49645-391D-4992-AD59-EC59A1BB249B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17A49645-391D-4992-AD59-EC59A1BB249B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1362B034-493D-45C9-8F4E-5FAEBEE62592}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1362B034-493D-45C9-8F4E-5FAEBEE62592}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1362B034-493D-45C9-8F4E-5FAEBEE62592}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1362B034-493D-45C9-8F4E-5FAEBEE62592}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B5AEB8A-ADBA-418A-9E28-B947E37D771A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B5AEB8A-ADBA-418A-9E28-B947E37D771A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B5AEB8A-ADBA-418A-9E28-B947E37D771A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B5AEB8A-ADBA-418A-9E28-B947E37D771A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF921C05-EB28-4EAC-A88D-0FE10266860A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF921C05-EB28-4EAC-A88D-0FE10266860A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF921C05-EB28-4EAC-A88D-0FE10266860A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF921C05-EB28-4EAC-A88D-0FE10266860A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

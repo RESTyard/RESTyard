@@ -4,9 +4,9 @@ using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
+using RESTyard.AspNetCore.Extensions.Pagination;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Query;
-using RESTyard.AspNetCore.Util.Repository;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 
@@ -35,23 +35,23 @@ namespace CarShack.Controllers.Customers
 
         // Building Queries using the CreateQuery will link to this route.
         [HttpGet("Query"), HypermediaObjectEndpoint<HypermediaCustomerQueryResultHto>]
-        public async Task<ActionResult> Query([FromQuery] CustomerQuery query)
+        public async Task<ActionResult> Query([FromQuery] CustomerQuery? query)
         {
             if (query == null)
             {
                 return this.Problem(ProblemJsonBuilder.CreateBadParameters());
             }
 
-            var queryResult = await customerRepository.QueryAsync(query).ConfigureAwait(false);
+            var queryResult = (await customerRepository.QueryAsync(query).ConfigureAwait(false)).GetValueOrThrow();
             var resultReferences = new List<HypermediaCustomerHto>();
             foreach (var customer in queryResult.Entities)
             {
                 resultReferences.Add(customer.ToHto());
             }
 
-            var queries = NavigationQuerysBuilder.Create(query, queryResult);
+            var queries = NavigationQueryBuilder.Create(query, queryResult);
             var result = new HypermediaCustomerQueryResultHto(
-                queryResult.TotalCountOfEnties,
+                queryResult.TotalCountOfEntities,
                 resultReferences.Count,
                 resultReferences,
                 queries.next.Map(IHypermediaQuery (some) => some),

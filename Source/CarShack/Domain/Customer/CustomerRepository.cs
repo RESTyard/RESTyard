@@ -4,12 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using CarShack.Hypermedia;
 using CarShack.Util.Repository;
+using FunicularSwitch;
 using RESTyard.AspNetCore.Exceptions;
-using RESTyard.AspNetCore.Util.Repository;
+using RESTyard.AspNetCore.Extensions.Pagination;
+using RESTyard.Extensions.Pagination;
 
 namespace CarShack.Domain.Customer
 {
-    public interface ICustomerRepository : IRepository<Customer, int, CustomerQuery> {
+    public interface ICustomerRepository : IRepository<Customer, int, CustomerQuery>
+    {
     }
 
     public class CustomerRepository : RepositoryBase<Customer>, ICustomerRepository
@@ -21,18 +24,12 @@ namespace CarShack.Domain.Customer
             CustomerList = CustomerService.GenerateRandomCustomersList(22);
         }
 
-        public Task<Customer> GetEntityByKeyAsync(int key)
+        public Task<Result<Option<Customer>>> GetEntityByKeyAsync(int key)
         {
-            var result = CustomerList.FirstOrDefault(c => c.Id == key);
-            if (result == null)
-            {
-                throw new EntityNotFoundException($"EntityType: '{typeof(Customer)}', key: '{key}'");
-            }
-
-            return Task.FromResult(result);
+            return Task.FromResult(Result.Ok(CustomerList.FirstOrDefault(c => c.Id == key).ToOption()));
         }
 
-        public Task<QueryResult<Customer>> QueryAsync(CustomerQuery query)
+        public Task<Result<IQueryResult<Customer>>> QueryAsync(CustomerQuery query)
         {
             // filter
             var filteredResults = CustomerList.Where(c => query.Filter.MinAge == null || c.Age >= query.Filter.MinAge).ToList();
@@ -58,6 +55,7 @@ namespace CarShack.Domain.Customer
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
+
                     break;
                 case SortTypes.Descending:
                     switch (query.SortBy.PropertyName)
@@ -74,6 +72,7 @@ namespace CarShack.Domain.Customer
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
+
                     break;
                 case SortTypes.None:
                     orderedResult = filteredResults;
@@ -89,17 +88,16 @@ namespace CarShack.Domain.Customer
             var result = new QueryResult<Customer>
             {
                 Entities = resultEntities,
-                TotalCountOfEnties = totalEntities
-
+                TotalCountOfEntities = totalEntities
             };
 
-            return Task.FromResult(result);
+            return Task.FromResult<Result<IQueryResult<Customer>>>(result);
         }
 
-        public Task AddEntityAsync(Customer customer)
+        public Task<Result<Customer>> AddEntityAsync(Customer customer)
         {
             CustomerList.Add(customer);
-            return Task.FromResult(0);
+            return Task.FromResult<Result<Customer>>(customer);
         }
     }
 }

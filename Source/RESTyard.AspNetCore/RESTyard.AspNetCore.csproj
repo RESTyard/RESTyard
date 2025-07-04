@@ -62,4 +62,8 @@
   <ItemGroup>
     <None Include="..\RESTyard.AspNetCore.Analyzers\bin\$(Configuration)\netstandard2.0\RESTyard.AspNetCore.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Util\Repository\" />
+  </ItemGroup>
 </Project>
