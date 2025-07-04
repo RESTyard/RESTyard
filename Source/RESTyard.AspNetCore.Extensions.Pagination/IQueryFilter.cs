@@ -1,4 +1,6 @@
-﻿namespace RESTyard.AspNetCore.Extensions.Pagination;
+﻿using RESTyard.Extensions.Pagination;
+
+namespace RESTyard.AspNetCore.Extensions.Pagination;
 
 /// <summary>
 /// Defines a contract for filtering query results in paginated collections.
@@ -6,13 +8,8 @@
 /// before pagination is applied. The interface ensures that filters can be
 /// safely copied when needed for stateful operations.
 /// </summary>
-public interface IQueryFilter<out TInstance>
+public interface IQueryFilter<out TInstance> : IDeepCopyable<TInstance>
 {
-    /// <summary>
-    /// Has clone semantics, but clone is a reserved method for C# records.
-    /// </summary>
-    TInstance DeepCopy();
-    
     /// <summary>
     /// Creates a new instance of the default pagination implementation.
     /// </summary>

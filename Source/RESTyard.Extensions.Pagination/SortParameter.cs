@@ -1,12 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace RESTyard.Extensions.Pagination
+﻿namespace RESTyard.Extensions.Pagination
 {
     /// <summary>
     /// Represents a sort parameter for sorting entities in a query.
     /// </summary>
     /// <typeparam name="TSortIdentifier">The type that identifies sortable properties, typically an enum defining available sort fields</typeparam>
-    public record SortParameter<TSortIdentifier>(TSortIdentifier? PropertyName, [EnumDataType(typeof(SortTypes))] SortTypes SortType)
+    public record SortParameter<TSortIdentifier>(TSortIdentifier? PropertyName, SortTypes SortType)
         where TSortIdentifier : struct
     {
         /// <summary>

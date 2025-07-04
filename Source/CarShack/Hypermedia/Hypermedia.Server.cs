@@ -13,7 +13,6 @@ using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Util.Enum;
-using RESTyard.AspNetCore.WebApi.RouteResolver;
 using RESTyard.Extensions.Pagination;
 
 namespace CarShack.Hypermedia;
@@ -28,7 +27,7 @@ public partial record AddressTo
             ZipCode: domainAddress.ZipCode);
 }
 
-public record CustomerQuery : QueryBase<CustomerSortProperties, CustomerFilter, Pagination>
+public record CustomerQuery : HypermediaQueryBase<CustomerSortProperties, CustomerFilter>
 {
     // required by Web Api to instanciate when a route is called
     public CustomerQuery()
@@ -40,7 +39,7 @@ public record CustomerQuery : QueryBase<CustomerSortProperties, CustomerFilter, 
     {
     }
 
-    public override QueryBase<CustomerSortProperties, CustomerFilter, Pagination> DeepCopy()
+    public override HypermediaQueryBase<CustomerSortProperties, CustomerFilter> DeepCopy()
     {
         return new CustomerQuery(this);
     }
@@ -72,7 +71,7 @@ public class CustomerFilter : IQueryFilter<CustomerFilter>
 
     public static CustomerFilter CreateDefault() => new();
 
-    CustomerFilter IQueryFilter<CustomerFilter>.DeepCopy() => new(this);
+    CustomerFilter IDeepCopyable<CustomerFilter>.DeepCopy() => new(this);
 }
 
 public class Country
