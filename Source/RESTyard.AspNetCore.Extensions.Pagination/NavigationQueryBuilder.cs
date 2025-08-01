@@ -28,7 +28,7 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
 
         {
             var result = new NavigationQueries();
-            if (!query.Pagination.HasPagination() || queryResult.TotalCountOfEntities <= 0)
+            if (query.Pagination.IsDisabled || queryResult.TotalCountOfEntities <= 0)
             {
                 return result;
             }
@@ -74,7 +74,7 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
 
         {
             var none = Option.None<IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter>>();
-            if (!query.Pagination.HasPagination() || queryResult.TotalCountOfEntities <= 0)
+            if (query.Pagination.IsDisabled || queryResult.TotalCountOfEntities <= 0)
             {
                 return (none, none, none, none, none);
             }
@@ -182,7 +182,7 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
 
         {
             var result = queryParameters.DeepCopy();
-            result.Pagination = RESTyard.Extensions.Pagination.Pagination.DisablePagination();
+            result.Pagination = RESTyard.Extensions.Pagination.Pagination.DisabledPagination;
             return result;
         }
 
