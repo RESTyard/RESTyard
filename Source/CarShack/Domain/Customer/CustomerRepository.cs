@@ -90,13 +90,13 @@ namespace CarShack.Domain.Customer
                 TotalCountOfEntities = totalEntities
             };
 
-            return Task.FromResult<Result<IQueryResult<Customer>>>(result);
+            return Task.FromResult(Result.Ok<IQueryResult<Customer>>(result));
         }
 
         public Task<Result<Customer>> AddEntityAsync(Customer customer)
         {
             CustomerList.Add(customer);
-            return Task.FromResult<Result<Customer>>(customer);
+            return Task.FromResult(Result.Ok(customer));
         }
     }
 }
