@@ -3,7 +3,7 @@
 /// <summary>
 /// Defines a contract for pagination functionality in queries.
 /// </summary>
-public record Pagination(int PageSize, int PageOffset)
+public readonly record struct Pagination(int PageSize, int PageOffset)
 {
     
     /// <summary>
