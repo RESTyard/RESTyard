@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
 using CarShack.Util;
+using FunicularSwitch;
 using Microsoft.AspNetCore.Mvc;
 using RESTyard.AspNetCore.Exceptions;
 using RESTyard.AspNetCore.Hypermedia;
@@ -78,6 +79,7 @@ namespace CarShack.Controllers.Customers
                     {
                         return this.CanNotExecute();
                     }
+
                     DoMarkAsFavorite(customer.ToHto(), customer);
                     return Ok();
                 }, () => this.Problem(ProblemJsonBuilder.CreateEntityNotFound()));
@@ -142,13 +144,13 @@ namespace CarShack.Controllers.Customers
 
             try
             {
-                var maybeCustomer = (await customerRepository.GetEntityByKeyAsync(key).ConfigureAwait(false)).GetValueOrThrow();
-                return maybeCustomer.Match(customer =>
-                {
-                    DoMove(customer.ToHto(), customer, newAddress);
-                    return Ok();
-                }, () => this.Problem(ProblemJsonBuilder.CreateEntityNotFound()));
-                
+                return await customerRepository.GetEntityByKeyAsync(key).Match(
+                    maybeCustomer => maybeCustomer.Match(customer =>
+                    {
+                        DoMove(customer.ToHto(), customer, newAddress);
+                        return Ok();
+                    }, () => this.Problem(ProblemJsonBuilder.CreateEntityNotFound())),
+                    error => this.Problem(ProblemJsonBuilder.UnexpectedError(error)));
             }
             catch (CanNotExecuteActionException)
             {

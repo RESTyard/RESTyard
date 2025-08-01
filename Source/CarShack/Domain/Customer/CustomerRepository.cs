@@ -43,7 +43,6 @@ namespace CarShack.Domain.Customer
                     switch (query.SortBy.PropertyName)
                     {
                         case CustomerSortProperties.Age:
-
                             orderedResult = filteredResults.OrderBy(c => c.Age);
                             break;
                         case CustomerSortProperties.Name:
@@ -53,7 +52,7 @@ namespace CarShack.Domain.Customer
                             orderedResult = filteredResults;
                             break;
                         default:
-                            throw new ArgumentOutOfRangeException();
+                            return Task.FromResult(Result.Error<IQueryResult<Customer>>("Invalid sort property specified."));
                     }
 
                     break;
