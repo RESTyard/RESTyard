@@ -35,6 +35,10 @@ namespace RESTyard.AspNetCore.Query
             var result = string.Empty;
             foreach (var propertyInfo in properties)
             {
+                if (propertyInfo.GetMethod?.IsStatic ?? false)
+                {
+                    continue;
+                }
                 var propertyValue = propertyInfo.GetValue(sourceObject);
                 var propertyType = propertyInfo.PropertyType;
                 var propertyTypeTypeInfo = propertyType.GetTypeInfo();
