@@ -36,21 +36,25 @@ namespace CarShack.Controllers.Customers
         // This RouteTemplate also contains a key, so a RouteKeyProducer can be provided. In this case the RouteKeyProducer
         // could be ommited and KeyAttribute could be used on HypermediaCustomer instead.
         [HttpGet("{key:int}"), HypermediaObjectEndpoint<HypermediaCustomerHto>(typeof(CustomerRouteKeyProducer))]
-        public async Task<ActionResult> GetEntity(int key)
+        public Task<ActionResult> GetEntity(int key)
         {
-            var maybeCustomer = (await customerRepository.GetEntityByKeyAsync(key).ConfigureAwait(false)).GetValueOrThrow();
-            var result = maybeCustomer.Map(HypermediaCustomerHto.FromDomain).Match(
-                Ok,
-                () => this.Problem(ProblemJsonBuilder.CreateEntityNotFound()));
-            return result;
+            return customerRepository.GetEntityByKeyAsync(key).Match(maybeCustomer =>
+            {
+                var result = maybeCustomer.Map(HypermediaCustomerHto.FromDomain).Match(
+                    Ok,
+                    () => this.Problem(ProblemJsonBuilder.CreateEntityNotFound()));
+                return result;
+            }, error => this.Problem(ProblemJsonBuilder.UnexpectedError(error)));
         }
 
         #endregion
 
         #region Actions
 
-        [HttpPost("MyFavoriteCustomers"), HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.MarkAsFavorite))]
-        public async Task<ActionResult> MarkAsFavoriteAction([HypermediaActionParameterFromBody] MarkAsFavoriteParameters? favoriteCustomer)
+        [HttpPost("MyFavoriteCustomers"),
+         HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.MarkAsFavorite))]
+        public async Task<ActionResult> MarkAsFavoriteAction(
+            [HypermediaActionParameterFromBody] MarkAsFavoriteParameters? favoriteCustomer)
         {
             if (favoriteCustomer == null)
             {
@@ -66,27 +70,26 @@ namespace CarShack.Controllers.Customers
 
             try
             {
-                var keyFromUri = this.keyFromUriService.GetKeyFromUri<HypermediaCustomerHto, HypermediaCustomerHto.CustomKey>(favoriteCustomer.Customer);
-                if (keyFromUri.IsError)
-                {
-                    return this.BadRequest();
-                }
-
-                var maybeCustomer = (await customerRepository.GetEntityByKeyAsync(keyFromUri.GetValueOrThrow().Key).ConfigureAwait(false)).GetValueOrThrow();
-                return maybeCustomer.Match<ActionResult>(customer =>
-                {
-                    if (customer.IsFavorite)
+                return await keyFromUriService.GetKeyFromUri<HypermediaCustomerHto, HypermediaCustomerHto.CustomKey>(
+                        favoriteCustomer.Customer)
+                    .Bind(keyFromUri => customerRepository.GetEntityByKeyAsync(keyFromUri.Key))
+                    .Map(maybeCustomer =>
                     {
-                        return this.CanNotExecute();
-                    }
+                        return maybeCustomer.Match<ActionResult>(customer =>
+                        {
+                            if (customer.IsFavorite)
+                            {
+                                return this.CanNotExecute();
+                            }
 
-                    DoMarkAsFavorite(customer.ToHto(), customer);
-                    return Ok();
-                }, () => this.Problem(ProblemJsonBuilder.CreateEntityNotFound()));
+                            DoMarkAsFavorite(customer.ToHto(), customer);
+                            return Ok();
+                        }, () => this.Problem(ProblemJsonBuilder.CreateEntityNotFound()));
+                    }).Match(static ok => ok, error => this.Problem(ProblemJsonBuilder.UnexpectedError(error)));
             }
             catch (InvalidLinkException e)
             {
-                var problem = new ProblemDetails()
+                var problem = new ProblemDetails
                 {
                     Title = $"Can not use provided object of type '{typeof(MarkAsFavoriteParameters)}'",
                     Detail = e.Message,
@@ -101,7 +104,8 @@ namespace CarShack.Controllers.Customers
             }
         }
 
-        [HttpPost("{key:int}/BuysCar"), HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.BuyCar))]
+        [HttpPost("{key:int}/BuysCar"),
+         HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.BuyCar))]
         public async Task<ActionResult> BuyCar(int key, BuyCarParameters? parameter)
         {
             if (parameter == null)
@@ -134,7 +138,8 @@ namespace CarShack.Controllers.Customers
             }
         }
 
-        [HttpPost("{key:int}/Moves"), HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.CustomerMove))]
+        [HttpPost("{key:int}/Moves"),
+         HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.CustomerMove))]
         public async Task<ActionResult> CustomerMove(int key, NewAddress? newAddress)
         {
             if (newAddress == null)
@@ -169,7 +174,8 @@ namespace CarShack.Controllers.Customers
             }
         }
 
-        [HttpDelete("{key:int}"), HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.CustomerRemove))]
+        [HttpDelete("{key:int}"),
+         HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.CustomerRemove))]
         public ActionResult RemoveCustomer(int key)
         {
             try
