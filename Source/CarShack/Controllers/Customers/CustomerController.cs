@@ -106,20 +106,8 @@ namespace CarShack.Controllers.Customers
 
         [HttpPost("{key:int}/BuysCar"),
          HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.BuyCar))]
-        public async Task<ActionResult> BuyCar(int key, BuyCarParameters? parameter)
+        public async Task<ActionResult> BuyCar(int key, BuyCarParameters parameter)
         {
-            if (parameter == null)
-            {
-                var problem = new ProblemDetails
-                {
-                    Title = $"Can not use provided object of type '{typeof(BuyCarParameters)}'",
-                    Detail = "Json or contained links might be invalid",
-                    Type = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
-                    Status = (int)HttpStatusCode.UnprocessableEntity,
-                };
-                return this.UnprocessableEntity(problem);
-            }
-
             try
             {
                 //shortcut for get car from repository
