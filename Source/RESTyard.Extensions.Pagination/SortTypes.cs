@@ -1,10 +1,12 @@
 ﻿using System.Runtime.Serialization;
+using FunicularSwitch.Generators;
 
 namespace RESTyard.Extensions.Pagination
 {
     /// <summary>
     /// Represents the types of sorting that can be applied to a query result.
     /// </summary>
+    [ExtendedEnum]
     public enum SortTypes
     {
         

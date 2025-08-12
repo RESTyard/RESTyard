@@ -3,7 +3,9 @@
     /// <summary>
     /// Represents a sort parameter for sorting entities in a query.
     /// </summary>
-    /// <typeparam name="TSortIdentifier">The type that identifies sortable properties, typically an enum defining available sort fields</typeparam>
+    /// <typeparam name="TSortIdentifier">The type that identifies sortable properties,
+    /// typically an enum defining available sort fields.
+    /// The type must have a valid default.</typeparam>
     public record SortParameter<TSortIdentifier>(TSortIdentifier? PropertyName, SortTypes SortType)
         where TSortIdentifier : struct
     {
