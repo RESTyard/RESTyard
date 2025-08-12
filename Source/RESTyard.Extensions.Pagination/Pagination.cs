@@ -9,7 +9,7 @@ public readonly record struct Pagination(int PageSize, int PageOffset)
     /// <summary>
     /// Indicates whether pagination is disabled for the current query.
     /// </summary>
-    public bool IsDisabled => PageSize == 0 && PageOffset == 0;
+    public bool IsDisabled => this == DisabledPagination;
 
     /// <summary>
     /// Disables pagination for the current query,
