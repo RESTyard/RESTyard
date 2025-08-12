@@ -1,6 +1,8 @@
-﻿using FunicularSwitch;
+﻿using System.Threading.Tasks;
+using FunicularSwitch;
+using RESTyard.AspNetCore.Extensions.Pagination;
 
-namespace RESTyard.AspNetCore.Extensions.Pagination
+namespace CarShack
 {
     /// <summary>
     /// Represents a repository interface for managing entities with pagination and query capabilities.
