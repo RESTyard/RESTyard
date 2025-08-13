@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
 using CarShack.Util;
+using FunicularSwitch;
 using Microsoft.AspNetCore.Mvc;
 using RESTyard.AspNetCore.Exceptions;
 using RESTyard.AspNetCore.Hypermedia;
@@ -30,28 +31,30 @@ namespace CarShack.Controllers.Customers
         }
 
         #region HypermediaObjects
+
         // Route to the HypermediaCustomer. References to HypermediaCustomer type will be resolved to this route.
         // This RouteTemplate also contains a key, so a RouteKeyProducer can be provided. In this case the RouteKeyProducer
         // could be ommited and KeyAttribute could be used on HypermediaCustomer instead.
         [HttpGet("{key:int}"), HypermediaObjectEndpoint<HypermediaCustomerHto>(typeof(CustomerRouteKeyProducer))]
-        public async Task<ActionResult> GetEntity(int key)
+        public Task<ActionResult> GetEntity(int key)
         {
-            try
+            return customerRepository.GetEntityByKeyAsync(key).Match(maybeCustomer =>
             {
-                var customer = await customerRepository.GetEntityByKeyAsync(key).ConfigureAwait(false);
-                var result = HypermediaCustomerHto.FromDomain(customer);
-                return Ok(result);
-            }
-            catch (EntityNotFoundException)
-            {
-                return this.Problem(ProblemJsonBuilder.CreateEntityNotFound());
-            }
+                var result = maybeCustomer.Map(HypermediaCustomerHto.FromDomain).Match(
+                    Ok,
+                    () => this.Problem(ProblemJsonBuilder.CreateEntityNotFound()));
+                return result;
+            }, error => this.Problem(ProblemJsonBuilder.UnexpectedError(error)));
         }
+
         #endregion
 
         #region Actions
-        [HttpPost("MyFavoriteCustomers"), HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.MarkAsFavorite))]
-        public async Task<ActionResult> MarkAsFavoriteAction([HypermediaActionParameterFromBody] MarkAsFavoriteParameters favoriteCustomer)
+
+        [HttpPost("MyFavoriteCustomers"),
+         HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.MarkAsFavorite))]
+        public async Task<ActionResult> MarkAsFavoriteAction(
+            [HypermediaActionParameterFromBody] MarkAsFavoriteParameters? favoriteCustomer)
         {
             if (favoriteCustomer == null)
             {
@@ -67,30 +70,26 @@ namespace CarShack.Controllers.Customers
 
             try
             {
-                var keyFromUri = this.keyFromUriService.GetKeyFromUri<HypermediaCustomerHto, HypermediaCustomerHto.CustomKey>(favoriteCustomer.Customer);
-                if (keyFromUri.IsError)
-                {
-                    return this.BadRequest();
-                }
-                var customer = await customerRepository.GetEntityByKeyAsync(keyFromUri.GetValueOrThrow().Key).ConfigureAwait(false);
-                var hypermediaCustomer = customer.ToHto();
+                return await keyFromUriService.GetKeyFromUri<HypermediaCustomerHto, HypermediaCustomerHto.CustomKey>(
+                        favoriteCustomer.Customer)
+                    .Bind(keyFromUri => customerRepository.GetEntityByKeyAsync(keyFromUri.Key))
+                    .Map(maybeCustomer =>
+                    {
+                        return maybeCustomer.Match<ActionResult>(customer =>
+                        {
+                            if (customer.IsFavorite)
+                            {
+                                return this.CanNotExecute();
+                            }
 
-                // Check can execute here since we need to call business logic and not rely on previously checked value from HTO passed to caller
-                if (customer.IsFavorite)
-                {
-                    return this.CanNotExecute();
-                }
-
-                DoMarkAsFavorite(hypermediaCustomer, customer);
-                return Ok();
-            }
-            catch (EntityNotFoundException)
-            {
-                return this.Problem(ProblemJsonBuilder.CreateEntityNotFound());
+                            DoMarkAsFavorite(customer.ToHto(), customer);
+                            return Ok();
+                        }, () => this.Problem(ProblemJsonBuilder.CreateEntityNotFound()));
+                    }).Match(static ok => ok, error => this.Problem(ProblemJsonBuilder.UnexpectedError(error)));
             }
             catch (InvalidLinkException e)
             {
-                var problem = new ProblemDetails()
+                var problem = new ProblemDetails
                 {
                     Title = $"Can not use provided object of type '{typeof(MarkAsFavoriteParameters)}'",
                     Detail = e.Message,
@@ -105,21 +104,10 @@ namespace CarShack.Controllers.Customers
             }
         }
 
-        [HttpPost("{key:int}/BuysCar"), HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.BuyCar))]
+        [HttpPost("{key:int}/BuysCar"),
+         HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.BuyCar))]
         public async Task<ActionResult> BuyCar(int key, BuyCarParameters parameter)
         {
-            if (parameter == null)
-            {
-                var problem = new ProblemDetails
-                {
-                    Title = $"Can not use provided object of type '{typeof(BuyCarParameters)}'",
-                    Detail = "Json or contained links might be invalid",
-                    Type = "WebApi.HypermediaExtensions.Hypermedia.BadActionParameter",
-                    Status = (int)HttpStatusCode.UnprocessableEntity,
-                };
-                return this.UnprocessableEntity(problem);
-            }
-
             try
             {
                 //shortcut for get car from repository
@@ -138,8 +126,9 @@ namespace CarShack.Controllers.Customers
             }
         }
 
-        [HttpPost("{key:int}/Moves"), HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.CustomerMove))]
-        public async Task<ActionResult> CustomerMove(int key, NewAddress newAddress)
+        [HttpPost("{key:int}/Moves"),
+         HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.CustomerMove))]
+        public async Task<ActionResult> CustomerMove(int key, NewAddress? newAddress)
         {
             if (newAddress == null)
             {
@@ -148,15 +137,13 @@ namespace CarShack.Controllers.Customers
 
             try
             {
-                var customer = await customerRepository.GetEntityByKeyAsync(key).ConfigureAwait(false);
-                var hypermediaCustomer = customer.ToHto();
-                // Can execute logic is NOT checked, but is always true
-                DoMove(hypermediaCustomer, customer, newAddress);
-                return Ok();
-            }
-            catch (EntityNotFoundException)
-            {
-                return this.Problem(ProblemJsonBuilder.CreateEntityNotFound());
+                return await customerRepository.GetEntityByKeyAsync(key).Match(
+                    maybeCustomer => maybeCustomer.Match(customer =>
+                    {
+                        DoMove(customer.ToHto(), customer, newAddress);
+                        return Ok();
+                    }, () => this.Problem(ProblemJsonBuilder.CreateEntityNotFound())),
+                    error => this.Problem(ProblemJsonBuilder.UnexpectedError(error)));
             }
             catch (CanNotExecuteActionException)
             {
@@ -174,8 +161,9 @@ namespace CarShack.Controllers.Customers
                 return this.UnprocessableEntity(problem);
             }
         }
-        
-        [HttpDelete("{key:int}"), HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.CustomerRemove))]
+
+        [HttpDelete("{key:int}"),
+         HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.CustomerRemove))]
         public ActionResult RemoveCustomer(int key)
         {
             try
@@ -202,13 +190,13 @@ namespace CarShack.Controllers.Customers
                 return this.UnprocessableEntity(problem);
             }
         }
-        
+
         private static void DoMarkAsFavorite(HypermediaCustomerHto hto, Customer customer)
         {
             customer.IsFavorite = true;
             hto.IsFavorite = true;
         }
-        
+
         private static void DoMove(HypermediaCustomerHto hto, Customer customer, NewAddress newAddress)
         {
             // semantic validation is business logic
@@ -227,6 +215,7 @@ namespace CarShack.Controllers.Customers
         #endregion
 
         #region TypeRoutes
+
         // Provide type information for Action parameters. Does not depend on a specific customer. Optional when using
         // MvcOptionsExtension.AutoDeliverActionParameterSchemas
         [HttpGet("NewAddressType"), HypermediaActionParameterInfoEndpoint<NewAddress>]
@@ -235,6 +224,7 @@ namespace CarShack.Controllers.Customers
             var schema = JsonSchemaFactory.Generate(typeof(NewAddress));
             return Ok(schema);
         }
+
         #endregion
     }
 }

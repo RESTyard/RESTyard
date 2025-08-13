@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using RESTyard.AspNetCore.Util.Repository;
+using RESTyard.AspNetCore.Extensions.Pagination;
+using RESTyard.Extensions.Pagination;
 
 namespace CarShack.Util.Repository
 {

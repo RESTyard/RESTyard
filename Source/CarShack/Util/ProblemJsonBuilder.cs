@@ -6,6 +6,19 @@ namespace CarShack.Util
 {
     public static class ProblemJsonBuilder
     {
+        
+        public static ProblemDetails UnexpectedError(string message)
+        {
+            var problem = new ProblemDetails()
+            {
+                Title = "Unexpected error",
+                Detail = message,
+                Status = (int)HttpStatusCode.InternalServerError,
+            };
+
+            return problem;
+        }
+        
         public static ProblemDetails CreateEntityNotFound()
         {
             var problem = new ProblemDetails()

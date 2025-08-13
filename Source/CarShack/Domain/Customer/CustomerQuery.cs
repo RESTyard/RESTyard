@@ -1,13 +1,11 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Runtime.Serialization;
-using RESTyard.AspNetCore.Util.Repository;
+﻿using System.ComponentModel.DataAnnotations;
+using RESTyard.AspNetCore.Extensions.Pagination;
 
 namespace CarShack.Domain.Customer
 {
 
     // Options for filtering
-    public class CustomerFilter : IQueryFilter
+    public class CustomerFilter : IQueryFilter<CustomerFilter>
     {
         [Range(1, 150)]
         public int? MinAge { get; set; }
@@ -22,9 +20,11 @@ namespace CarShack.Domain.Customer
             MinAge = other.MinAge;
         }
 
-        public IQueryFilter Clone()
+        public CustomerFilter DeepCopy()
         {
             return new CustomerFilter(this);
         }
+
+        public static CustomerFilter CreateDefault() => new CustomerFilter();
     }
 }

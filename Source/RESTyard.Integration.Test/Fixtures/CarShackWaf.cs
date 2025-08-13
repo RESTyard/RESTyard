@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Xunit.Abstractions;
@@ -26,6 +27,9 @@ public class CarShackWaf : WebApplicationFactory<CarShack.Program>, IAsyncLifeti
                 services
                     .RemoveAll<ILoggerFactory>()
                     .AddSingleton<ILoggerFactory>(sp => new LoggerFactoryMock(this.testOutputHelper));
+
+                services.Configure<ApiBehaviorOptions>(options =>
+                    options.InvalidModelStateResponseFactory = ctx => new BadRequestObjectResult("A model binding error happened. Set a breakpoint where this message is created to debug."));
             });
     }
 

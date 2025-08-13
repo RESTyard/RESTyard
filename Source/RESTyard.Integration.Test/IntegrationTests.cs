@@ -8,6 +8,7 @@ using RESTyard.Client.Extensions.SystemTextJson;
 using RESTyard.Client.Hypermedia.Commands;
 using RESTyard.Client.Reader;
 using RESTyard.Client.Resolver;
+using RESTyard.Extensions.Pagination;
 using RESTyard.Integration.Test.Fixtures;
 using RESTyard.Integration.Test.Hco;
 using Xunit.Abstractions;
@@ -17,7 +18,7 @@ namespace RESTyard.Integration.Test;
 public class IntegrationTests : IAsyncLifetime
 {
     private static readonly Uri ApiEntryPoint = new Uri($"{CarShackWaf.BaseUrl}/EntryPoint");
-    
+
     private readonly CarShackWaf carShackFactory;
     private readonly IHttpHypermediaResolverFactory apiResolverFactory;
 
@@ -60,7 +61,7 @@ public class IntegrationTests : IAsyncLifetime
     {
         // ACT
         var healthResponse = await this.Client.GetAsync(ApiEntryPoint);
-        
+
         // ASSERT
         healthResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -86,7 +87,8 @@ public class IntegrationTests : IAsyncLifetime
             Number: "5",
             City: "New City",
             ZipCode: "54321");
-        var actionResult = await customer.CustomerMove!.ExecuteAsync(new NewAddress(Address: newAddress), this.Resolver);
+        var actionResult =
+            await customer.CustomerMove!.ExecuteAsync(new NewAddress(Address: newAddress), this.Resolver);
 
         var refreshResult = await customer.Self.ResolveAsync();
         actionResult.Should().BeOk();
@@ -101,7 +103,8 @@ public class IntegrationTests : IAsyncLifetime
         var customersRootResult = await apiRoot
             .NavigateAsync(l => l.CustomersRoot);
         var customersRoot = customersRootResult.Should().BeOk().Which;
-        (await customersRoot.CreateCustomer!.ExecuteAsync(new CreateCustomerParameters("Name"), this.Resolver)).Should().BeOk();
+        (await customersRoot.CreateCustomer!.ExecuteAsync(new CreateCustomerParameters("Name"), this.Resolver)).Should()
+            .BeOk();
         var customersAll = await customersRoot.All.ResolveAsync();
 
         var customer = customersAll.Should().BeOk().Which.Customers.First(c => !c.IsFavorite);
@@ -124,13 +127,12 @@ public class IntegrationTests : IAsyncLifetime
         var apiRoot = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint);
         var customersRootResult = await apiRoot.NavigateAsync(l => l.CustomersRoot);
         var customersRoot = customersRootResult.Should().BeOk().Which;
-        
-        var query = new CustomerQuery
-        {
-            Filter = new CustomerFilter { MinAge = 22 },
-            SortBy = new SortOptions { PropertyName = "Age", SortType = "Ascending" },
-            Pagination = new Pagination { PageOffset = 2, PageSize = 3 }
-        };
+
+        var query = new CustomerPaginationQuery(
+            new Pagination(3, 2),
+            [new Sorting<CustomerSortId>(CustomerSortId.Age, SortOrder.Descending)],
+            new CustomerFilter { MinAge = 22 }
+        );
 
         var resultResource = await customersRoot.CreateQuery!.ExecuteAsync(query, this.Resolver);
         var link = resultResource
@@ -144,6 +146,7 @@ public class IntegrationTests : IAsyncLifetime
         queryResult.Next?.Uri.Should().NotBeNull();
         queryResult.Previous?.Uri.Should().NotBeNull();
         queryResult.TotalEntities.Should().Be(20);
+        queryResult.Customers.Should().BeInDescendingOrder(e => e.Age);
     }
 
     [Fact]
@@ -235,12 +238,12 @@ public class IntegrationTests : IAsyncLifetime
             .ExecuteAsync(new CreateCustomerParameters("Jasper"), this.Resolver)
             .Bind(l => l.ResolveAsync());
         var customer = createCustomerResult.Should().BeOk().Which;
-        
+
         // When
         var buyResult = await customer.BuyCar!
             .ExecuteAsync(new BuyCarParameters(niceCar.Brand!, niceCar.Id!.Value, Price: 100), this.Resolver)
             .Bind(l => l.ResolveAsync());
-        
+
         // Then
         var boughtCar = buyResult.Should().BeOk().Which;
         boughtCar.Id.Should().Be(niceCar.Id);
@@ -262,7 +265,7 @@ public class IntegrationTests : IAsyncLifetime
         var newAddressDescription = customer.CustomerMove!.ParameterDescriptions.Should().ContainSingle().Which;
         var newAddressParameterClass = newAddressDescription.Classes.Should().ContainSingle().Which;
         newAddressParameterClass.Should().Be($"{CarShackWaf.BaseUrl}/Customers/NewAddressType");
-        
+
         // Then
         var createCustomerDescription =
             customersRoot.CreateCustomer!.ParameterDescriptions.Should().ContainSingle().Which;

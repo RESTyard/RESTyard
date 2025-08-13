@@ -157,7 +157,7 @@ public partial class HypermediaCustomersRootHco : HypermediaClientObject
     public IHypermediaClientFunction<HypermediaCustomerHco, CreateCustomerParameters>? CreateCustomer { get; set; }
 
     [HypermediaCommand("CreateQuery")]
-    public IHypermediaClientFunction<HypermediaCustomerQueryResultHco, CustomerQuery>? CreateQuery { get; set; }
+    public IHypermediaClientFunction<HypermediaCustomerQueryResultHco, CustomerPaginationQuery>? CreateQuery { get; set; }
 }
 
 [HypermediaClientObject("Customer")]
