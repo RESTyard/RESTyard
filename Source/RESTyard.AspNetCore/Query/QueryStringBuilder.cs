@@ -6,6 +6,7 @@ using System.Reflection;
 
 namespace RESTyard.AspNetCore.Query
 {
+    // TODO use type shape instead of reflection
     public class QueryStringBuilder : IQueryStringBuilder
     {
         public string CreateQueryString(object? sourceObject, string objectPrefix = "")

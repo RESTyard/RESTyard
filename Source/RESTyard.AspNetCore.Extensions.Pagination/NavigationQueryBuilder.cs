@@ -20,7 +20,7 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
         /// <typeparam name="TEntity">The type of entity being queried</typeparam>
         /// <returns>A NavigationQueries object containing the generated navigation queries</returns>
         public static NavigationQueries Build<TSortPropertyEnum, TQueryFilter, TEntity>(
-            IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter> query,
+            IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter> query,
             IQueryResult<TEntity> queryResult
         )
             where TSortPropertyEnum : struct
@@ -28,7 +28,7 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
 
         {
             var result = new NavigationQueries();
-            if (query.Pagination.IsDisabled || queryResult.TotalCountOfEntities <= 0)
+            if (query.Pagination.IsDisabled() || queryResult.TotalCountOfEntities <= 0)
             {
                 return result;
             }
@@ -61,20 +61,20 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
         /// <typeparam name="TEntity">The type of entity being queried</typeparam>
         /// <returns>A tuple containing Options of navigation queries for all, first, next, previous, and last pages</returns>
         public static (
-            Option<IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter>> all,
-            Option<IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter>> first,
-            Option<IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter>> next,
-            Option<IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter>> previous,
-            Option<IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter>> last)
+            Option<IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter>> all,
+            Option<IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter>> first,
+            Option<IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter>> next,
+            Option<IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter>> previous,
+            Option<IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter>> last)
             Create<TSortPropertyEnum, TQueryFilter, TEntity>(
-                IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter> query,
+                IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter> query,
                 IQueryResult<TEntity> queryResult)
             where TSortPropertyEnum : struct
             where TQueryFilter : IQueryFilter<TQueryFilter>
 
         {
-            var none = Option.None<IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter>>();
-            if (query.Pagination.IsDisabled || queryResult.TotalCountOfEntities <= 0)
+            var none = Option.None<IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter>>();
+            if (query.Pagination.IsDisabled() || queryResult.TotalCountOfEntities <= 0)
             {
                 return (none, none, none, none, none);
             }
@@ -88,8 +88,8 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
             );
         }
 
-        private static Option<IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter>> TryCreateQueryLast<TSortPropertyEnum, TQueryFilter>(
-            IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter> queryParameters,
+        private static Option<IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter>> TryCreateQueryLast<TSortPropertyEnum, TQueryFilter>(
+            IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter> queryParameters,
             int queryResultCount)
             where TSortPropertyEnum : struct
             where TQueryFilter : IQueryFilter<TQueryFilter>
@@ -97,7 +97,7 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
         {
             if (!HasLastPage(queryParameters, queryResultCount))
             {
-                return Option.None<IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter>>();
+                return Option.None<IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter>>();
             }
 
             var queryLast = queryParameters.DeepCopy();
@@ -109,8 +109,8 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
             return Option.Some(queryLast);
         }
 
-        private static Option<IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter>> TryCreateQueryPrevious<TSortPropertyEnum, TQueryFilter>(
-            IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter> queryParameters,
+        private static Option<IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter>> TryCreateQueryPrevious<TSortPropertyEnum, TQueryFilter>(
+            IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter> queryParameters,
             int queryResultCount)
             where TSortPropertyEnum : struct
             where TQueryFilter : IQueryFilter<TQueryFilter>
@@ -118,7 +118,7 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
         {
             if (!HasPreviousPage(queryParameters, queryResultCount))
             {
-                return Option.None<IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter>>();
+                return Option.None<IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter>>();
             }
 
             var queryPrevious = queryParameters.DeepCopy();
@@ -131,8 +131,8 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
         }
 
 
-        private static Option<IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter>> TryCreateQueryNext<TSortPropertyEnum, TQueryFilter>(
-            IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter> queryParameters,
+        private static Option<IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter>> TryCreateQueryNext<TSortPropertyEnum, TQueryFilter>(
+            IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter> queryParameters,
             int queryResultCount)
             where TSortPropertyEnum : struct
             where TQueryFilter : IQueryFilter<TQueryFilter>
@@ -140,7 +140,7 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
         {
             if (!HasNextPage(queryParameters, queryResultCount))
             {
-                return Option.None<IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter>>();
+                return Option.None<IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter>>();
             }
 
             var queryNext = queryParameters.DeepCopy();
@@ -151,8 +151,8 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
             return Option.Some(queryNext);
         }
 
-        private static Option<IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter>> TryCreateQueryFirst<TSortPropertyEnum, TQueryFilter>(
-            IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter> queryParameters,
+        private static Option<IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter>> TryCreateQueryFirst<TSortPropertyEnum, TQueryFilter>(
+            IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter> queryParameters,
             int queryResultCount)
             where TSortPropertyEnum : struct
             where TQueryFilter : IQueryFilter<TQueryFilter>
@@ -160,7 +160,7 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
         {
             if (!HasFirstPage(queryParameters, queryResultCount))
             {
-                return Option.None<IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter>>();
+                return Option.None<IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter>>();
             }
 
             var queryFirst = queryParameters.DeepCopy();
@@ -175,8 +175,8 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
         /// Creates a query that retrieves all entities without pagination by disabling the pagination settings of the provided query.
         /// </summary>
         /// <returns>A copy with pagination disabled.</returns>
-        public static IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter> CreateQueryAll<TSortPropertyEnum, TQueryFilter>(
-            IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter> queryParameters)
+        public static IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter> CreateQueryAll<TSortPropertyEnum, TQueryFilter>(
+            IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter> queryParameters)
             where TSortPropertyEnum : struct
             where TQueryFilter : IQueryFilter<TQueryFilter>
 
@@ -190,7 +190,7 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
         /// Checks if the query has a first page based on the query result count.
         /// </summary>
         public static bool HasFirstPage<TSortPropertyEnum, TQueryFilter>(
-            IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter> query,
+            IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter> query,
             int queryResultCount)
             where TSortPropertyEnum : struct
             where TQueryFilter : IQueryFilter<TQueryFilter>
@@ -203,7 +203,7 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
         /// Checks if the query has a next page based on the query result count.
         /// </summary>
         public static bool HasNextPage<TSortPropertyEnum, TQueryFilter>(
-            IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter> query,
+            IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter> query,
             int queryResultCount)
             where TSortPropertyEnum : struct
             where TQueryFilter : IQueryFilter<TQueryFilter>
@@ -216,7 +216,7 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
         /// Checks if the query has a previous page based on the current page offset.
         /// </summary>
         public static bool HasPreviousPage<TSortPropertyEnum, TQueryFilter>(
-            IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter> query,
+            IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter> query,
             int queryResultCount)
             where TSortPropertyEnum : struct
             where TQueryFilter : IQueryFilter<TQueryFilter>
@@ -229,7 +229,7 @@ namespace RESTyard.AspNetCore.Extensions.Pagination
         /// Checks if the query has a last page based on the query result count.
         /// </summary>
         public static bool HasLastPage<TSortPropertyEnum, TQueryFilter>(
-            IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter> query,
+            IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter> query,
             int queryResultCount)
             where TSortPropertyEnum : struct
             where TQueryFilter : IQueryFilter<TQueryFilter>

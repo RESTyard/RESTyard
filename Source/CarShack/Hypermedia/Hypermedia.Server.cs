@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using CarShack.Domain.Customer;
 using FunicularSwitch;
+using FunicularSwitch.Generators;
 using Microsoft.Extensions.DependencyInjection;
 using RESTyard.AspNetCore.Extensions.Pagination;
 using RESTyard.AspNetCore.Hypermedia;
@@ -27,9 +28,9 @@ public partial record AddressTo
             ZipCode: domainAddress.ZipCode);
 }
 
-public record CustomerQuery : HypermediaQueryBase<CustomerSortProperties, CustomerFilter>
+public record CustomerQuery : HypermediaPaginationQuery<CustomerSortProperties, CustomerFilter>
 {
-    // required by Web Api to instanciate when a route is called
+    // required by Web Api to instantiate when a route is called
     public CustomerQuery()
     {
     }
@@ -39,13 +40,14 @@ public record CustomerQuery : HypermediaQueryBase<CustomerSortProperties, Custom
     {
     }
 
-    public override HypermediaQueryBase<CustomerSortProperties, CustomerFilter> DeepCopy()
+    public override HypermediaPaginationQuery<CustomerSortProperties, CustomerFilter> DeepCopy()
     {
         return new CustomerQuery(this);
     }
 }
 
 // Options for sorting
+[ExtendedEnum]
 [TypeConverter(typeof(AttributedEnumTypeConverter<CustomerSortProperties>))]
 public enum CustomerSortProperties
 {
@@ -143,7 +145,7 @@ public partial class HypermediaCustomersRootHto
                     MinAge = 12
                 },
                 Pagination = new Pagination(10, 0),
-                SortBy = new SortParameter<CustomerSortProperties>(CustomerSortProperties.Age, SortTypes.Ascending)
+                SortBy = [new Sorting<CustomerSortProperties>(CustomerSortProperties.Age, SortOrder.Ascending)]
             }),
             allQuery: new CustomerQuery(),
             bestCustomerKey: new(1),

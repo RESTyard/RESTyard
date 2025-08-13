@@ -5,7 +5,7 @@ namespace RESTyard.Extensions.Pagination;
 /// </summary>
 /// <typeparam name="TSortPropertyEnum"></typeparam>
 /// <typeparam name="TQueryFilter"></typeparam>
-public interface IReadOnlyQueryBase<TSortPropertyEnum, out TQueryFilter> where TSortPropertyEnum : struct
+public interface IPaginationQuery<TSortPropertyEnum, out TQueryFilter> where TSortPropertyEnum : struct
 {
     /// <summary>
     /// Pagination parameters
@@ -15,7 +15,7 @@ public interface IReadOnlyQueryBase<TSortPropertyEnum, out TQueryFilter> where T
     /// <summary>
     /// The property to sort by and sort order
     /// </summary>
-    SortParameter<TSortPropertyEnum> SortBy { get; }
+    IReadOnlyCollection<Sorting<TSortPropertyEnum>> SortBy { get; }
 
     /// <summary>
     /// Filter object for this query.

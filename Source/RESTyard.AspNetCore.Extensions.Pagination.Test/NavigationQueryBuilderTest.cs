@@ -196,7 +196,7 @@ namespace RESTyard.AspNetCore.Extensions.Pagination.Test
     }
 
 #region MyRegion
-    public record EntityQuery :HypermediaQueryBase<EntitySortProperties, EntityFilter>
+    public record EntityQuery :HypermediaPaginationQuery<EntitySortProperties, EntityFilter>
     {
         public EntityQuery()
         {
@@ -206,7 +206,7 @@ namespace RESTyard.AspNetCore.Extensions.Pagination.Test
         {
         }
 
-        public override HypermediaQueryBase<EntitySortProperties, EntityFilter> DeepCopy()
+        public override HypermediaPaginationQuery<EntitySortProperties, EntityFilter> DeepCopy()
         {
             return new EntityQuery(this);
         }

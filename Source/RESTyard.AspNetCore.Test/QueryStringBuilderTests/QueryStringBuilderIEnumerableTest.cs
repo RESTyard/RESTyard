@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.Test.Helpers;
@@ -44,7 +45,6 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
 
             Assert.IsTrue(string.IsNullOrEmpty(result));
             Assert.IsTrue(valueList.Count == 0);
-
         }
 
         [TestMethod]
@@ -54,7 +54,7 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             {
                 List = new List<int>()
                 {
-                    1,2,-3
+                    1, 2, -3
                 }
             };
 
@@ -68,7 +68,8 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             foreach (var item in valueList)
             {
                 Assert.IsTrue(string.Equals(item[0], "List"));
-                Assert.IsTrue(string.Equals(item[1], Uri.EscapeDataString(listHolder.List[sourceIndex].ToString(CultureInfo.InvariantCulture))));
+                Assert.IsTrue(string.Equals(item[1],
+                    Uri.EscapeDataString(listHolder.List[sourceIndex].ToString(CultureInfo.InvariantCulture))));
                 sourceIndex++;
             }
         }
@@ -120,9 +121,26 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             foreach (var item in valueList)
             {
                 Assert.IsTrue(string.Equals(item[0], "Nested.List"));
-                Assert.IsTrue(string.Equals(item[1], Uri.EscapeDataString(nester.Nested.List[sourceIndex].ToInvariantString())));
+                Assert.IsTrue(string.Equals(item[1],
+                    Uri.EscapeDataString(nester.Nested.List[sourceIndex].ToInvariantString())));
                 sourceIndex++;
             }
+        }
+
+        private static IEnumerable<T> MergeAlternating<T>(IEnumerable<T> first, IEnumerable<T> second)
+        {
+            using var a = first.GetEnumerator();
+            using var b = second.GetEnumerator();
+
+            while (a.MoveNext())
+            {
+                yield return a.Current;
+                if (b.MoveNext())
+                    yield return b.Current;
+            }
+
+            while (b.MoveNext())
+                yield return b.Current;
         }
 
         [TestMethod]
@@ -132,25 +150,30 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             {
                 List = new List<Child>
                 {
-                    new Child{ Value = 1},
-                    new Child{ Value = 2},
-                    new Child{ Value = 3},
+                    new Child { Value = 1, Value1 = 10 },
+                    new Child { Value = 2, Value1 = 10 },
+                    new Child { Value = 3 },
                 }
             };
 
             var result = queryStringBuilder.CreateQueryString(listHolder);
             var valueList = QueryStringBuilderTestHelper.CreateValueListFromQueryString(result);
 
-            Assert.IsTrue(result[0] == '?');
-            Assert.IsTrue(valueList.Count == 3);
+            result[0].Should().Be('?');
+            valueList.Should().HaveCount(5);
 
-            var sourceIndex = 0;
-            foreach (var item in valueList)
-            {
-                Assert.IsTrue(string.Equals(item[0], $"List[{sourceIndex}].Value"));
-                Assert.IsTrue(string.Equals(item[1], Uri.EscapeDataString(listHolder.List[sourceIndex].Value.ToInvariantString())));
-                sourceIndex++;
-            }
+            var range = Enumerable.Range(0, 2).ToArray();
+            valueList.Select(v => v[0]).Should().ContainInOrder(
+            [..MergeAlternating(
+                range.Select(i => $"List[{i}].Value"),
+                range.Select(i => $"List[{i}].Value1")),  "List[2].Value"]);
+
+            valueList.Select(v => v[1]).Should().ContainInOrder([
+                ..MergeAlternating(
+                    range.Select(i => Uri.EscapeDataString(listHolder.List[i].Value.ToInvariantString())),
+                    range.Select(i => Uri.EscapeDataString(listHolder.List[i].Value1!.ToInvariantString()))),
+                Uri.EscapeDataString(listHolder.List[2].Value.ToInvariantString())
+            ]);
         }
 
         [TestMethod]
@@ -160,9 +183,9 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             {
                 Dictionary = new Dictionary<string, int>
                 {
-                    { "First", 1},
-                    { "Second", 2},
-                    { "Third", 3}
+                    { "First", 1 },
+                    { "Second", 2 },
+                    { "Third", 3 }
                 }
             };
 
@@ -178,10 +201,12 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             foreach (var item in dictionaryList)
             {
                 // check key
-                Assert.IsTrue(string.Equals(valueList[dictionaryListIndex * 2][0], $"Dictionary[{dictionaryListIndex}].Key"));
+                Assert.IsTrue(string.Equals(valueList[dictionaryListIndex * 2][0],
+                    $"Dictionary[{dictionaryListIndex}].Key"));
 
                 // check value
-                Assert.IsTrue(string.Equals(valueList[dictionaryListIndex * 2 + 1][1], Uri.EscapeDataString(item.Value.ToInvariantString())));
+                Assert.IsTrue(string.Equals(valueList[dictionaryListIndex * 2 + 1][1],
+                    Uri.EscapeDataString(item.Value.ToInvariantString())));
 
                 dictionaryListIndex++;
             }
@@ -217,5 +242,6 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
     public class Child
     {
         public int Value { get; set; }
+        public int? Value1 { get; set; }
     }
 }

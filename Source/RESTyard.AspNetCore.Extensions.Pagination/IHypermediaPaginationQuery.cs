@@ -9,11 +9,8 @@ namespace RESTyard.AspNetCore.Extensions.Pagination;
 /// </summary>
 /// <typeparam name="TSortPropertyEnum">An enum listing all properties that can be sorted, no multiple sort supported</typeparam>
 /// <typeparam name="TQueryFilter">A class holding properties and the corresponding filter value.</typeparam>
-public interface IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter> : IHypermediaActionParameter, IHypermediaQuery,
-    IReadOnlyQueryBase<TSortPropertyEnum, TQueryFilter> where TSortPropertyEnum : struct
-    where TQueryFilter : IQueryFilter<TQueryFilter>
+public interface IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter> : IHypermediaActionParameter, IHypermediaQuery where TSortPropertyEnum : struct
 {
-    
     /// <summary>
     /// Pagination parameters
     /// </summary>
@@ -22,7 +19,7 @@ public interface IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter> : IHyperm
     /// <summary>
     /// The property to sort by and sort order
     /// </summary>
-    new SortParameter<TSortPropertyEnum> SortBy { get; set; }
+    new List<Sorting<TSortPropertyEnum>> SortBy { get; set; }
 
     /// <summary>
     /// Filter object for this query.
@@ -33,5 +30,5 @@ public interface IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter> : IHyperm
     /// Has clone semantics, but clone is a reserved method for C# records.
     /// </summary>
     /// <returns></returns>
-    IHypermediaQueryBase<TSortPropertyEnum, TQueryFilter> DeepCopy();
+    IHypermediaPaginationQuery<TSortPropertyEnum, TQueryFilter> DeepCopy();
 }

@@ -37,12 +37,8 @@ namespace CarShack.Controllers.Customers
 
         // Building Queries using the CreateQuery will link to this route.
         [HttpGet("Query"), HypermediaObjectEndpoint<HypermediaCustomerQueryResultHto>]
-        public Task<ActionResult> Query([FromQuery] CustomerQuery? query)
+        public Task<ActionResult> Query([FromQuery] CustomerQuery query)
         {
-            if (query == null)
-            {
-                return Task.FromResult(this.Problem(ProblemJsonBuilder.CreateBadParameters()));
-            }
 
             return customerRepository.QueryAsync(query).Match(queryResult =>
             {
