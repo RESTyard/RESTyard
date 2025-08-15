@@ -2,16 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
-using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.WebApi.Formatter;
-using RESTyard.AspNetCore.WebApi.RouteResolver;
 using RESTyard.MediaTypes;
-using RESTyard.Relations;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 {
@@ -36,35 +34,35 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         public void ActionsTest()
         {
             var routeName = nameof(ActionsHypermediaObject) + "_Route";
-            RouteRegister.AddHypermediaObjectRoute(typeof(ActionsHypermediaObject), routeName, HttpMethod.GET);
+            RouteRegister.AddHypermediaObjectRoute(typeof(ActionsHypermediaObject), routeName, HttpMethods.Get);
 
             var routeNameHypermediaActionNotExecutable = nameof(HypermediaActionNotExecutable) + "_Route";
-            RouteRegister.AddActionRoute(typeof(HypermediaActionNotExecutable), routeNameHypermediaActionNotExecutable, HttpMethod.POST);
+            RouteRegister.AddActionRoute(typeof(HypermediaActionNotExecutable), routeNameHypermediaActionNotExecutable, HttpMethods.Post);
 
             var routeNameHypermediaActionNoArgument = nameof(HypermediaActionNoArgument) + "_Route";
-            RouteRegister.AddActionRoute(typeof(HypermediaActionNoArgument), routeNameHypermediaActionNoArgument, HttpMethod.POST);
+            RouteRegister.AddActionRoute(typeof(HypermediaActionNoArgument), routeNameHypermediaActionNoArgument, HttpMethods.Post);
 
             var routeNameHypermediaActionWithArgument = nameof(HypermediaActionWithArgument) + "_Route";
             
-            RouteRegister.AddActionRoute(typeof(HypermediaActionWithArgument), routeNameHypermediaActionWithArgument, HttpMethod.POST, CustomMediaType);
+            RouteRegister.AddActionRoute(typeof(HypermediaActionWithArgument), routeNameHypermediaActionWithArgument, HttpMethods.Post, CustomMediaType);
 
             var routeNameRegisteredActionParameter = nameof(RegisteredActionParameter) + "_Route";
-            RouteRegister.AddParameterTypeRoute(typeof(RegisteredActionParameter), routeNameRegisteredActionParameter, HttpMethod.GET);
+            RouteRegister.AddParameterTypeRoute(typeof(RegisteredActionParameter), routeNameRegisteredActionParameter, HttpMethods.Get);
             
             var routeNameFileUpload = nameof(FileUploadAction) + "_Route";
-            RouteRegister.AddActionRoute(typeof(FileUploadAction), routeNameFileUpload, HttpMethod.POST, DefaultMediaTypes.MultipartFormData);
+            RouteRegister.AddActionRoute(typeof(FileUploadAction), routeNameFileUpload, HttpMethods.Post, DefaultMediaTypes.MultipartFormData);
 
             var routeNameFileUploadWithParameter = nameof(FileUploadWithParameterAction) + "_Route";
-            RouteRegister.AddActionRoute(typeof(FileUploadWithParameterAction), routeNameFileUploadWithParameter, HttpMethod.POST, DefaultMediaTypes.MultipartFormData);
+            RouteRegister.AddActionRoute(typeof(FileUploadWithParameterAction), routeNameFileUploadWithParameter, HttpMethods.Post, DefaultMediaTypes.MultipartFormData);
             
             // for dynamic actions
             // parameter type route
             var routeNameDynamicParameter = nameof(DynamicParameter) + "_Route";
-            RouteRegister.AddParameterTypeRoute(typeof(DynamicParameter), routeNameDynamicParameter, HttpMethod.GET);
+            RouteRegister.AddParameterTypeRoute(typeof(DynamicParameter), routeNameDynamicParameter, HttpMethods.Get);
             
             // ReSharper disable InconsistentNaming
             var routeNameDynamicAction = nameof(DynamicAction) + "_Route";
-            RouteRegister.AddActionRoute(typeof(DynamicAction), routeNameDynamicAction, HttpMethod.POST);
+            RouteRegister.AddActionRoute(typeof(DynamicAction), routeNameDynamicAction, HttpMethods.Post);
             
             var ho = new ActionsHypermediaObject();
 
@@ -273,8 +271,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
                 ActionNotExecutable = new HypermediaActionNotExecutable(() => false);
                 ActionNoArgument = new HypermediaActionNoArgument(() => true);
                 ActionWithArgument = new HypermediaActionWithArgument(() => true, ActionWithArgumentDefaultValues);
-                ExternalActionNoArgument = new ExternalActionNoArgument(ExternalUri, HttpMethod.POST);
-                ExternalActionWithArgument = new ExternalActionWithArgument(ExternalUri, HttpMethod.DELETE, CustomMediaType, ExternalActionWithArgumentDefaultValues);
+                ExternalActionNoArgument = new ExternalActionNoArgument(ExternalUri, HttpMethods.Post);
+                ExternalActionWithArgument = new ExternalActionWithArgument(ExternalUri, HttpMethods.Delete, CustomMediaType, ExternalActionWithArgumentDefaultValues);
                 FileUploadAction = new FileUploadAction(() => true, 
                     new FileUploadConfiguration
                     {
@@ -293,7 +291,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
                 ExternalFileUploadAction = new ExternalFileUploadAction(
                     () => true,
                     ExternalUri,
-                    HttpMethod.POST,
+                    HttpMethods.Post,
                     CustomMediaType,
                     new FileUploadConfiguration
                     {
@@ -361,7 +359,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         public ExternalFileUploadAction(
             Func<bool> canExecute,
             Uri externalUri,
-            HttpMethod httpMethod,
+            string httpMethod,
             string acceptedMediaType,
             FileUploadConfiguration fileUploadConfiguration = null) : base(canExecute, externalUri, httpMethod, acceptedMediaType, fileUploadConfiguration)
         {
@@ -371,7 +369,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     public class ExternalActionNoArgument : HypermediaExternalAction
     {
         public ExternalActionNoArgument(Uri externalUri,
-            HttpMethod httpMethod) : base(() => true,
+            string httpMethod) : base(() => true,
             externalUri,
             httpMethod)
         {
@@ -381,7 +379,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     public class ExternalActionWithArgument : HypermediaExternalAction<ActionParameter>
     {
         public ExternalActionWithArgument(Uri externalUri,
-            HttpMethod httpMethod,
+            string httpMethod,
             string acceptedMediaType,
             ActionParameter defaultValues = null) : base(() => true,
             externalUri,

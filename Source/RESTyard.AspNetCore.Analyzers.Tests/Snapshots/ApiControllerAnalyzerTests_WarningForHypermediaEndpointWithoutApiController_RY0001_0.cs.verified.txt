@@ -1,0 +1,17 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+
+[ApiController]
+public class SomeController : Controller
+{
+    [HttpGet]
+    [HypermediaObjectEndpoint<SomeHto>]
+    public IActionResult Get() => this.Ok();
+}
+
+[HypermediaObject(Classes = ["SomeHto"])]
+public class SomeHto : IHypermediaObject
+{
+}

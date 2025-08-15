@@ -7,7 +7,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
     {
         public string Url { get; }
 
-        public HttpMethod HttpMethod { get; }
+        public string? HttpMethod { get; }
 
         // for accessing resources (links) it indicates what media types are available
         public IReadOnlyCollection<string> AvailableMediaTypes { get; set; }
@@ -15,11 +15,11 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
         //  for actions it defines what media type is acceptable 
         public string? AcceptableMediaType { get; set; }
 
-        public ResolvedRoute(string url, HttpMethod httpMethod, IReadOnlyCollection<string>? availableMediaTypes = null, string? acceptableMediaType = null)
+        public ResolvedRoute(string url, string? httpMethod, IReadOnlyCollection<string>? availableMediaTypes = null, string? acceptableMediaType = null)
         {
             Url = url;
             HttpMethod = httpMethod;
-            AvailableMediaTypes = availableMediaTypes ?? Array.Empty<string>();
+            AvailableMediaTypes = availableMediaTypes ?? [];
             AcceptableMediaType = acceptableMediaType;
         }
     }

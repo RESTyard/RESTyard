@@ -7,6 +7,7 @@ using FunicularSwitch;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.WebUtilities;
+using RESTyard.AspNetCore.Extensions;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Util;
 
@@ -14,11 +15,11 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver;
 
 public class KeyFromUriService : IKeyFromUriService
 {
-    private readonly ApplicationModel applicationModel;
+    private readonly IHypermediaApiExplorer apiExplorer;
 
-    public KeyFromUriService(ApplicationModel applicationModel)
+    public KeyFromUriService(IHypermediaApiExplorer apiExplorer)
     {
-        this.applicationModel = applicationModel;
+        this.apiExplorer = apiExplorer;
     }
 
     public Result<TKey> GetKeyFromUri<THto, TKey>(Uri uri)
@@ -36,20 +37,17 @@ public class KeyFromUriService : IKeyFromUriService
     }
 
     private Result<IImmutableList<TemplateMatcher>> GetTemplateMatchers<THto>()
+        where THto : IHypermediaObject
     {
-        if (!this.applicationModel.HmoTypes.TryGetValue(typeof(THto), out var hmoType))
-        {
-            return Result.Error<IImmutableList<TemplateMatcher>>($"HTO {typeof(THto).BeautifulName()} not registered in application model");
-        }
-
-        if (!hmoType.GetHmoMethods.Any())
-        {
-            return Result.Error<IImmutableList<TemplateMatcher>>($"No route found for type {typeof(THto).BeautifulName()}");
-        }
-
-        var templates = hmoType.GetHmoMethods
-            .Select(m => m.RouteTemplateFull)
+        var templates = this.apiExplorer
+            .GetFullRouteTemplateFor<THto>()
             .ToList();
+
+        if (!templates.Any())
+        {
+            return Result.Error<IImmutableList<TemplateMatcher>>(
+                $"No route found for type {typeof(THto).BeautifulName()}");
+        }
 
         var matchers = templates.Select(RouteMatcher.GetTemplateMatcher).ToImmutableList();
 
