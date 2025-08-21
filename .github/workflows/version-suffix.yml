@@ -14,18 +14,18 @@ jobs:
       suffix: ${{ steps.set_suffix.outputs.suffix }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
+#      - name: Checkout code
+#        uses: actions/checkout@v5
 
       - name: Determine Version Suffix
         id: set_suffix
         run: |
           BRANCH="${{ inputs.branch || github.ref_name }}"
           SUFFIX=""
-
-          if [[ "$BRANCH" == "develop" ]]; then
-            SHORT_SHA=$(git rev-parse --short HEAD)
-            SUFFIX="-dev.${SHORT_SHA}"
+               
+          if [[ "$BRANCH" != "main" && "$BRANCH" != "master" ]]; then
+#            SHORT_SHA=$(git rev-parse --short HEAD)
+            SUFFIX="-$BRANCH.${{ github.run_number }}"
           fi
 
           echo "suffix=$SUFFIX" >> $GITHUB_OUTPUT
