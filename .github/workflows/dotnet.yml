@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         dotnet-version: ['6.x.x', '8.x.x', '9.x.x']
-      fail-fast: true
+      fail-fast: false
       
     steps:
       - uses: actions/checkout@v5
