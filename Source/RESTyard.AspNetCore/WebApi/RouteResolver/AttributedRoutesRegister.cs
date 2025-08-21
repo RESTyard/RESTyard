@@ -105,7 +105,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
 
         private void TryAddDefaultRouteKeyProducer(ApiDescription apiDescription, Type routeType)
         {
-            if (this.TryGetKeyProducer(routeType, out _) || typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(routeType))
+            if (this.TryGetKeyProducer(routeType, out _))
             {
                 return;
             }

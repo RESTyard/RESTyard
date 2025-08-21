@@ -61,10 +61,12 @@ public class AssemblyBasedTestBase
         var exampleHtoUsing = includeExampleHtoNamespace ? $"using {typeof(ExampleHto).Namespace};" : "";
         return $"""
                 using System;
+                using System.Collections.Generic;
                 using Microsoft.AspNetCore.Mvc;
                 using RESTyard.AspNetCore.Hypermedia;
                 using RESTyard.AspNetCore.Hypermedia.Actions;
                 using RESTyard.AspNetCore.Hypermedia.Attributes;
+                using RESTyard.AspNetCore.Query;
                 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
                 using RESTyard.AspNetCore.WebApi.RouteResolver;
                 {exampleHtoUsing}
@@ -76,11 +78,12 @@ public class AssemblyBasedTestBase
     protected static string GetExampleHtoCode() => File.ReadAllText("ExampleHto.cs");
 
     protected static Type GetType<T>(Assembly assembly)
-    {
-        return GetType(assembly, typeof(T).FullName!);
-    }
+        => GetTypeByFullName(assembly, typeof(T).FullName!);
 
-    protected static Type GetType(Assembly assembly, string fullName)
+    protected static Type GetTypeByName(Assembly assembly, string name)
+        => GetTypeByFullName(assembly, $"{TestAssemblyNamespace}.{name}");
+    
+    private static Type GetTypeByFullName(Assembly assembly, string fullName)
     {
         var result = assembly.GetType(fullName);
         result.Should().NotBeNull(because: fullName);

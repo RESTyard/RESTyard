@@ -172,4 +172,51 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
         info.AcceptableMediaType.Should().BeNull();
         info.Name.Should().Contain(nameof(ExampleHto.BasicParameter));
     }
+
+    [TestMethod]
+    public void QueryResultWithKey_Get()
+    {
+        var assembly = CreateAssembly([
+            CreateFile(
+                /* lang=c# */
+                $$"""
+                  [Route("Test")]
+                  [ApiController]
+                  public class Controller : ControllerBase
+                  {
+                      [HttpGet("Query/{id}")]
+                      [HypermediaObjectEndpoint<QueryHto>]
+                      public IActionResult Query(int id, [FromQuery] Query query)
+                      {
+                          return this.Ok(id);
+                      }
+                  }
+                  """,
+                includeExampleHtoNamespace: false),
+            CreateFile(
+                /* lang=c# */
+                """
+                [HypermediaObject(Classes = ["Query"])]
+                public class QueryHto : HypermediaQueryResult
+                {
+                    [Key("id")]
+                    public int Id { get; set; }
+                    
+                    public QueryHto(IHypermediaQuery query) : base(query)
+                    {
+                    }
+                }
+                
+                public record Query(string Filter) : IHypermediaQuery;
+                """,
+                includeExampleHtoNamespace: false),
+        ]);
+        var apiExplorer = CreateApiExplorer(assembly);
+        var register = CreateRegister(apiExplorer);
+        var type = GetTypeByName(assembly, "QueryHto");
+        register.TryGetRoute(type, out var info).Should().BeTrue();
+        info.HttpMethod.Should().Be(HttpMethods.Get);
+        info.AcceptableMediaType.Should().BeNull();
+        register.TryGetKeyProducer(type, out var producer).Should().BeTrue();
+    }
 }

@@ -249,8 +249,8 @@ public class HypermediaApiExplorerTests : AssemblyBasedTestBase
         postEndpoint.RelativePath.Should().Be("Test/{key}/Post");
         var actionMetadata = postEndpoint.ActionDescriptor.EndpointMetadata.OfType<IHypermediaActionEndpointMetadata>()
             .Should().ContainSingle().Which;
-        var htoType = GetType(assembly, $"{TestAssemblyNamespace}.SomeHto");
-        var actionType = GetType(assembly, $"{TestAssemblyNamespace}.SomeHto+SomeOp");
+        var htoType = GetTypeByName(assembly, "SomeHto");
+        var actionType = GetTypeByName(assembly, "SomeHto+SomeOp");
         actionMetadata.RouteType.Should().Be(htoType);
         actionMetadata.ActionType.Should().Be(actionType);
         
