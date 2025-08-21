@@ -61,7 +61,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                 if (!HttpMethods.IsGet(apiDescription.HttpMethod ?? ""))
                 {
                     throw new HypermediaException(
-                        $"Unsupported HTTP verb {apiDescription.HttpMethod} on parameter info endpoint for type {actionParameterInfoEndpoint.RouteType}");
+                        $"Unsupported HTTP verb {apiDescription.HttpMethod} on parameter info endpoint for type {actionParameterInfoEndpoint.RouteType}. The expected HTTP verb is GET.");
                 }
 
                 this.AddParameterTypeRoute(actionParameterInfoEndpoint.RouteType,
