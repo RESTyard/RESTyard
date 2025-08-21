@@ -1,0 +1,50 @@
+name: .NET
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+  pull_request:
+    branches: 
+      - main
+      - master
+      - develop
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      wd: ./Source
+#    strategy:
+#      matrix:
+#        dotnet-version: ['8.x.x' '9.x.x']
+#      fail-fast: false
+      
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup .NET 6.0
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Setup .NET 8.0
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup .NET 9.0
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: ${{ env.wd }}
+      - name: Build
+        run: dotnet build --no-restore
+        working-directory: ${{ env.wd }}
+      - name: Test
+        run: dotnet test --no-build --verbosity normal --logger:trx --filter "TestCategory!=SkipInCI"
+        working-directory: ${{ env.wd }}
