@@ -18,17 +18,27 @@ jobs:
     runs-on: ubuntu-latest
     env:
       wd: ./Source
-    strategy:
-      matrix:
-        dotnet-version: ['9.x.x']
-      fail-fast: false
+#    strategy:
+#      matrix:
+#        dotnet-version: ['8.x.x' '9.x.x']
+#      fail-fast: false
       
     steps:
       - uses: actions/checkout@v5
-      - name: Setup .NET ${{ matrix.dotnet-version }}
+      - name: Setup .NET 6.0
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ matrix.dotnet-version }}
+          dotnet-version: '6.0.x'
+
+      - name: Setup .NET 8.0
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup .NET 9.0
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
       - name: Restore dependencies
         run: dotnet restore
         working-directory: ${{ env.wd }}
