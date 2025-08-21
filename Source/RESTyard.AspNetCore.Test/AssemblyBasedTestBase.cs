@@ -60,11 +60,15 @@ public class AssemblyBasedTestBase
     {
         var exampleHtoUsing = includeExampleHtoNamespace ? $"using {typeof(ExampleHto).Namespace};" : "";
         return $"""
+                using System;
+                using System.Collections.Generic;
                 using Microsoft.AspNetCore.Mvc;
                 using RESTyard.AspNetCore.Hypermedia;
                 using RESTyard.AspNetCore.Hypermedia.Actions;
                 using RESTyard.AspNetCore.Hypermedia.Attributes;
+                using RESTyard.AspNetCore.Query;
                 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+                using RESTyard.AspNetCore.WebApi.RouteResolver;
                 {exampleHtoUsing}
                 namespace {TestAssemblyNamespace};
                 {content}
@@ -74,14 +78,26 @@ public class AssemblyBasedTestBase
     protected static string GetExampleHtoCode() => File.ReadAllText("ExampleHto.cs");
 
     protected static Type GetType<T>(Assembly assembly)
+        => GetTypeByFullName(assembly, typeof(T).FullName!);
+
+    protected static Type GetTypeByName(Assembly assembly, string name)
+        => GetTypeByFullName(assembly, $"{TestAssemblyNamespace}.{name}");
+    
+    private static Type GetTypeByFullName(Assembly assembly, string fullName)
     {
-        var result = assembly.GetType(typeof(T).FullName!);
-        result.Should().NotBeNull(because: typeof(T).FullName);
+        var result = assembly.GetType(fullName);
+        result.Should().NotBeNull(because: fullName);
         return result!;
     }
     
-    
     protected static IHypermediaApiExplorer CreateApiExplorer(Assembly assembly)
+    {
+        var app = CreateWebApplication(assembly);
+        var apiExplorer = app.Services.GetRequiredService<IHypermediaApiExplorer>();
+        return apiExplorer;
+    }
+
+    protected static WebApplication CreateWebApplication(Assembly assembly)
     {
         var builder = WebApplication.CreateBuilder();
         builder.Host.UseDefaultServiceProvider(o =>
@@ -92,7 +108,6 @@ public class AssemblyBasedTestBase
         builder.Services.AddHypermediaExtensions();
         builder.Services.AddControllers().AddApplicationPart(assembly);
         var app = builder.Build();
-        var apiExplorer = app.Services.GetRequiredService<IHypermediaApiExplorer>();
-        return apiExplorer;
+        return app;
     }
 }

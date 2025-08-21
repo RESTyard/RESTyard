@@ -202,7 +202,8 @@ public partial class HypermediaCustomerHto
             new CustomerMoveOp(() => true),
             new CustomerRemoveOp(() => true),
             new MarkAsFavoriteOp(() => !customer.IsFavorite),
-            new BuyCarOp(() => true, default));
+            new BuyCarOp(() => true, default),
+            (new CustomerPurchaseHistoryQuery(), new CustomerPurchaseHistoryHto.Key(customer.Id)));
         return hto;
     }
 }

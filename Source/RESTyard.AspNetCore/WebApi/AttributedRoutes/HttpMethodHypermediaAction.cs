@@ -66,7 +66,7 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
 
         string IEndpointNameMetadata.EndpointName => this.Name!;
 
-        Type IHypermediaEndpointMetadata.RouteType => throw new NotSupportedException();
+        Type IHypermediaEndpointMetadata.RouteType => this.RouteType.DeclaringType ?? throw new NotSupportedException();
         Type IHypermediaActionEndpointMetadata.ActionType => this.RouteType;
 
         private static (string Name, Type RouteType, Type? RouteKeyProducerType) Init(Type routeType, Type? routeKeyProducerType)
