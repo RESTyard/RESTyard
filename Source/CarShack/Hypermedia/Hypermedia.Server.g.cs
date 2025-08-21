@@ -27,6 +27,7 @@ public partial record NewAddress(AddressTo Address) : IHypermediaActionParameter
 public partial record AddressTo(string Street, string Number, string City, string ZipCode);
 public partial record UploadCarImageParameters(string Text, bool Flag) : IHypermediaActionParameter;
 public partial record MarkAsFavoriteParameters(Uri Customer) : IHypermediaActionParameter;
+public partial record CustomerPurchaseHistoryQuery(string? CardType = default) : IHypermediaQuery;
 [HypermediaObject(Title = "Entry to the Rest API", Classes = new string[] { "Entrypoint" })]
 public partial class HypermediaEntrypointHto : IHypermediaObject
 {
@@ -291,6 +292,50 @@ public partial class HypermediaCustomersRootHto : IHypermediaObject
     }
 }
 
+[HypermediaObject(Title = "", Classes = new string[] { "CustomerPurchase" })]
+public partial class CustomerPurchaseHto : IHypermediaObject
+{
+    public int? Amount { get; set; }
+    public string CardNumber { get; set; }
+    public string CardType { get; set; }
+
+    public CustomerPurchaseHto(int? amount, string cardNumber, string cardType)
+    {
+        this.Amount = amount;
+        this.CardNumber = cardNumber;
+        this.CardType = cardType;
+    }
+}
+
+[HypermediaObject(Title = "", Classes = new string[] { "CustomerPurchaseHistory" })]
+public partial class CustomerPurchaseHistoryHto : HypermediaQueryResult
+{
+    [Key("customerId")]
+    [FormatterIgnoreHypermediaProperty]
+    public int? CustomerId { get; set; }
+
+    [Relations(["Purchases"])]
+    public List<IEmbeddedEntity<CustomerPurchaseHto>> Purchases { get; set; }
+
+    [Relations([DefaultHypermediaRelations.Self])]
+    public new ILink<CustomerPurchaseHistoryHto> Self { get; set; }
+
+    public CustomerPurchaseHistoryHto(int? customerId, IEnumerable<CustomerPurchaseHto> purchases, IHypermediaQuery query) : base(query)
+    {
+        this.CustomerId = customerId;
+        this.Purchases = purchases.Select(x => EmbeddedEntity.Embed<CustomerPurchaseHto>(x)).ToList();
+        this.Self = Link.To(this);
+    }
+
+    public partial record Key(int? CustomerId) : HypermediaObjectKeyBase<CustomerPurchaseHistoryHto>
+    {
+        protected override IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration()
+        {
+            yield return new KeyValuePair<string, object?>("customerId", this.CustomerId);
+        }
+    }
+}
+
 [HypermediaObject(Title = "", Classes = new string[] { "Customer" })]
 public partial class HypermediaCustomerHto : IHypermediaObject
 {
@@ -301,6 +346,9 @@ public partial class HypermediaCustomerHto : IHypermediaObject
     public string? FullName { get; set; }
     public AddressTo? Address { get; set; }
     public bool IsFavorite { get; set; }
+
+    [Relations(["PurchaseHistory"])]
+    public ILink<CustomerPurchaseHistoryHto> PurchaseHistory { get; set; }
 
     [Relations([DefaultHypermediaRelations.Self])]
     public ILink<HypermediaCustomerHto> Self { get; set; }
@@ -317,7 +365,7 @@ public partial class HypermediaCustomerHto : IHypermediaObject
     [HypermediaAction(Name = "BuyCar", Title = "Buy a car.")]
     public BuyCarOp BuyCar { get; set; }
 
-    public HypermediaCustomerHto(int id, int? age, string? fullName, AddressTo? address, bool isFavorite, CustomerMoveOp customerMove, CustomerRemoveOp customerRemove, MarkAsFavoriteOp markAsFavorite, BuyCarOp buyCar)
+    public HypermediaCustomerHto(int id, int? age, string? fullName, AddressTo? address, bool isFavorite, CustomerMoveOp customerMove, CustomerRemoveOp customerRemove, MarkAsFavoriteOp markAsFavorite, BuyCarOp buyCar, (CustomerPurchaseHistoryQuery Query, CustomerPurchaseHistoryHto.Key Key) purchaseHistoryReference)
     {
         this.Id = id;
         this.Age = age;
@@ -328,6 +376,7 @@ public partial class HypermediaCustomerHto : IHypermediaObject
         this.CustomerRemove = customerRemove;
         this.MarkAsFavorite = markAsFavorite;
         this.BuyCar = buyCar;
+        this.PurchaseHistory = Link.ByQuery<CustomerPurchaseHistoryHto>(purchaseHistoryReference.Query, purchaseHistoryReference.Key);
         this.Self = Link.To(this);
     }
 
@@ -410,5 +459,6 @@ public static partial class KeyFromUriServiceExtensions
     public static Result<HypermediaCarHto.Key> GetHypermediaCarKeyFromUri(this IKeyFromUriService keyFromUriService, Uri uri) => keyFromUriService.GetKeyFromUri<HypermediaCarHto, HypermediaCarHto.Key>(uri);
     public static Result<CarImageHto.Key> GetCarImageKeyFromUri(this IKeyFromUriService keyFromUriService, Uri uri) => keyFromUriService.GetKeyFromUri<CarImageHto, CarImageHto.Key>(uri);
     public static Result<CarInsuranceHto.Key> GetCarInsuranceKeyFromUri(this IKeyFromUriService keyFromUriService, Uri uri) => keyFromUriService.GetKeyFromUri<CarInsuranceHto, CarInsuranceHto.Key>(uri);
+    public static Result<CustomerPurchaseHistoryHto.Key> GetCustomerPurchaseHistoryKeyFromUri(this IKeyFromUriService keyFromUriService, Uri uri) => keyFromUriService.GetKeyFromUri<CustomerPurchaseHistoryHto, CustomerPurchaseHistoryHto.Key>(uri);
     public static Result<HypermediaCustomerHto.Key> GetHypermediaCustomerKeyFromUri(this IKeyFromUriService keyFromUriService, Uri uri) => keyFromUriService.GetKeyFromUri<HypermediaCustomerHto, HypermediaCustomerHto.Key>(uri);
 }
