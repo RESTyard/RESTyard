@@ -29,7 +29,7 @@ jobs:
       - name: Determine Version Suffix
         id: version_suffix
         run: |
-          BRANCH="${{ github.ref_name }}"
+          BRANCH="${{ github.event.pull_request.base.ref || github.ref_name }}"
           NUMBER_SUFFIX="${{ github.run_number }}"
           SAFE_BRANCH=$(echo "$BRANCH" | tr / -)
           SUFFIX=""
