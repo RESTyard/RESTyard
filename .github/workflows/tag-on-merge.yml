@@ -26,11 +26,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get Version Suffix
+      - name: Determine Version Suffix
         id: version_suffix
-        uses: ./.github/workflows/version-suffix.yml
-        with:
-          branch: ${{ github.ref_name }}
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          NUMBER_SUFFIX="${{ github.run_number }}"
+          SAFE_BRANCH=$(echo "$BRANCH" | tr / -)
+          SUFFIX=""
+          if [[ "BRANCH" != "main" && "BRANCH" != "master" ]]; then
+            SUFFIX="-$SAFE_BRANCH.$NUMBER_SUFFIX"
+          fi
+          echo "suffix=$SUFFIX" >> $GITHUB_OUTPUT
 
       - name: Extract PackageId and Version
         id: get_meta
@@ -39,7 +45,6 @@ jobs:
           PACKAGE_ID=$(dotnet msbuild "${{ matrix.project }}" -nologo -property:TargetFramework=net8.0 -property:VersionSuffix=$SUFFIX -getproperty:PackageId)
           VERSION=$(dotnet msbuild "${{ matrix.project }}" -nologo -property:TargetFramework=net8.0 -property:VersionSuffix=$SUFFIX -getproperty:Version)
           TAG="${PACKAGE_ID}-v${VERSION}"
-
           echo "package_id=$PACKAGE_ID" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag=$TAG" >> $GITHUB_OUTPUT
