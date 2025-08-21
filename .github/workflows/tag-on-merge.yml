@@ -31,10 +31,9 @@ jobs:
         run: |
           BRANCH="${{ github.event.pull_request.base.ref || github.ref_name }}"
           NUMBER_SUFFIX="${{ github.run_number }}"
-          SAFE_BRANCH=$(echo "$BRANCH" | tr / -)
           SUFFIX=""
           if [[ "BRANCH" != "main" && "BRANCH" != "master" ]]; then
-            SUFFIX="-$SAFE_BRANCH.$NUMBER_SUFFIX"
+            SUFFIX="-$BRANCH.$NUMBER_SUFFIX"
           fi
           echo "suffix=$SUFFIX" >> $GITHUB_OUTPUT
 
