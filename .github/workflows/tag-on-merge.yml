@@ -1,0 +1,70 @@
+name: Tag on Merge
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  tag-version:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        project:
+          - Source/RESTyard.AspNetCore/RESTyard.AspNetCore.csproj
+          - Source/RESTyard.AspNetCore.Analyzers/RESTyard.AspNetCore.Analyzers.csproj
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Get Version Suffix
+        id: version_suffix
+        uses: ./.github/workflows/version-suffix.yml
+        with:
+          branch: ${{ github.ref_name }}
+
+      - name: Extract PackageId and Version
+        id: get_meta
+        run: |
+          SUFFIX="${{ steps.version_suffix.outputs.suffix }}"
+          PACKAGE_ID=$(dotnet msbuild "${{ matrix.project }}" -nologo -property:TargetFramework=net8.0 -property:VersionSuffix=$SUFFIX -getproperty:PackageId)
+          VERSION=$(dotnet msbuild "${{ matrix.project }}" -nologo -property:TargetFramework=net8.0 -property:VersionSuffix=$SUFFIX -getproperty:Version)
+          TAG="${PACKAGE_ID}-v${VERSION}"
+
+          echo "package_id=$PACKAGE_ID" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          TAG="${{ steps.get_meta.outputs.tag }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Fail if tag exists (for PRs)
+        if: github.event_name == 'pull_request' && steps.check_tag.outputs.exists == 'true'
+        run: |
+          echo "❌ Tag ${{ steps.get_meta.outputs.tag }} already exists. Bump version in ${{ matrix.project }} before merging."
+          exit 1
+
+      - name: Create and push tag (main or develop)
+        if: github.event_name == 'push' && steps.check_tag.outputs.exists == 'false'
+        run: |
+          TAG="${{ steps.get_meta.outputs.tag }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG"
+          git push origin "$TAG"
