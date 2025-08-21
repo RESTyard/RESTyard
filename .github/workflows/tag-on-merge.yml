@@ -33,7 +33,7 @@ jobs:
           NUMBER_SUFFIX="${{ github.run_number }}"
           SUFFIX=""
           if [[ "BRANCH" != "main" && "BRANCH" != "master" ]]; then
-            SUFFIX="-$BRANCH.$NUMBER_SUFFIX"
+            SUFFIX="$BRANCH.$NUMBER_SUFFIX"
           fi
           echo "suffix=$SUFFIX" >> $GITHUB_OUTPUT
 
