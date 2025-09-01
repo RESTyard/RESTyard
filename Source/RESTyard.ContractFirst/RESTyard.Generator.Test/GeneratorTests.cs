@@ -15,6 +15,7 @@ public class GeneratorTests
     [Fact]
     public Task RunChecks() => VerifyChecks.Run();
 
+    // TODO: verify output syntax for C#
     private async Task RunGeneratorAsync(
         string template,
         string outputFile,
@@ -109,9 +110,13 @@ public class GeneratorTests
     /// Generate into different project such that if the output does not compile, the test can still be executed.
     /// </summary>
     /// <param name="file"></param>
-    private async Task Verify(string file, string outputSuffix = "")
+    private async Task VerifyExtern(string file, string outputSuffix = "")
         => await VerifyFile(file)
             .UseDirectory($"../RESTyard.Generator.Test.Output{outputSuffix}");
+    
+    private async Task Verify(string file)
+        => await VerifyFile(file)
+            .UseDirectory("Snapshots");
 
     [Fact]
     public async Task ServerCSharpV4Test()
@@ -120,7 +125,7 @@ public class GeneratorTests
             "server/csharp/v4",
             outputFile: "server_v4.cs");
 
-        await Verify("server_v4.cs");
+        await VerifyExtern("server_v4.cs");
     }
 
     [Fact]
@@ -130,7 +135,7 @@ public class GeneratorTests
             "server/csharp/v5",
             outputFile: "server_v5.cs");
 
-        await Verify("server_v5.cs", outputSuffix: "V5");
+        await VerifyExtern("server_v5.cs", outputSuffix: "V5");
     }
 
     [Fact]
@@ -141,7 +146,7 @@ public class GeneratorTests
             outputFile: "server_controller_v4.cs",
             includeNamespaces: [TemplateToNamespace("server/csharp/v4")]);
 
-        await Verify("server_controller_v4.cs");
+        await VerifyExtern("server_controller_v4.cs");
     }
 
     [Fact]
@@ -152,7 +157,7 @@ public class GeneratorTests
             outputFile: "server_policies_v4.cs",
             @namespace: TemplateToNamespace("server/csharp/v4"));
 
-        await Verify("server_policies_v4.cs");
+        await VerifyExtern("server_policies_v4.cs");
     }
 
     [Fact]
@@ -162,7 +167,7 @@ public class GeneratorTests
             "client/csharp/v3",
             outputFile: "client_v3.cs");
 
-        await Verify("client_v3.cs");
+        await VerifyExtern("client_v3.cs");
     }
 
     [Fact]
@@ -172,7 +177,7 @@ public class GeneratorTests
             "client/typescript/v0",
             outputFile: "client_v0.ts");
 
-        await Verify("client_v0.ts");
+        await VerifyExtern("client_v0.ts");
     }
 
     [Fact]
