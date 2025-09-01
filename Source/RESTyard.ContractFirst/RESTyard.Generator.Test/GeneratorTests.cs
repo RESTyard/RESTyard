@@ -183,12 +183,20 @@ public class GeneratorTests
     [Fact]
     public async Task TurkishLocale()
     {
+        /*
+         * When running under the turkish locale tr-TR certain characters are
+         * not converted to their ASCII counterpart when lowering or upping characters.
+         * (e.g. i -> İ)
+         */
+        
         const string outputFile = "turkish_locale.cs";
         
         using (UseCulture("tr-TR"))
+        {
             await RunGeneratorAsync(
                 "client/csharp/v3",
                 outputFile: outputFile);
+        }
 
         await Verify(outputFile);
     }
