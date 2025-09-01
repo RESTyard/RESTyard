@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Globalization;
+using FluentAssertions;
 
 namespace RESTyard.Generator.Test;
 
@@ -77,6 +78,28 @@ public class GeneratorTests
         string? FormatList(IEnumerable<string>? list) => list is null ? null : string.Join(",", list);
     }
 
+    private static IDisposable UseCulture(string name) => UseCulture(new CultureInfo(name));
+    
+    private static IDisposable UseCulture(CultureInfo cultureInfo)
+    {
+        var oldCulture = CultureInfo.CurrentCulture;
+        var oldUiCulture = CultureInfo.CurrentUICulture;
+        var oldDefaultCulture = CultureInfo.DefaultThreadCurrentCulture;
+        var oldDefaultUiCulture = CultureInfo.DefaultThreadCurrentUICulture;
+        var resetCulture = new ActionDisposable(() =>
+        {
+            CultureInfo.CurrentCulture = oldCulture;
+            CultureInfo.CurrentUICulture = oldUiCulture;
+            CultureInfo.DefaultThreadCurrentCulture = oldDefaultCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = oldDefaultUiCulture;
+        });
+        CultureInfo.CurrentCulture = cultureInfo;
+        CultureInfo.CurrentUICulture = cultureInfo;
+        CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+        CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+        return resetCulture;
+    }
+
     private static string TemplateToNamespace(string template)
     {
         return template.Replace(".", "._").Replace("/", "._").Replace("-", "_");
@@ -150,5 +173,18 @@ public class GeneratorTests
             outputFile: "client_v0.ts");
 
         await Verify("client_v0.ts");
+    }
+
+    [Fact]
+    public async Task TurkishLocale()
+    {
+        const string outputFile = "turkish_locale.cs";
+        
+        using (UseCulture("tr-TR"))
+            await RunGeneratorAsync(
+                "client/csharp/v3",
+                outputFile: outputFile);
+
+        await Verify(outputFile);
     }
 }
