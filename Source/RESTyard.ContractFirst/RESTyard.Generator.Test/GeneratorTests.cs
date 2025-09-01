@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Globalization;
+using FluentAssertions;
 
 namespace RESTyard.Generator.Test;
 
@@ -14,6 +15,7 @@ public class GeneratorTests
     [Fact]
     public Task RunChecks() => VerifyChecks.Run();
 
+    // TODO: verify output syntax for C#
     private async Task RunGeneratorAsync(
         string template,
         string outputFile,
@@ -77,6 +79,28 @@ public class GeneratorTests
         string? FormatList(IEnumerable<string>? list) => list is null ? null : string.Join(",", list);
     }
 
+    private static IDisposable UseCulture(string name) => UseCulture(new CultureInfo(name));
+    
+    private static IDisposable UseCulture(CultureInfo cultureInfo)
+    {
+        var oldCulture = CultureInfo.CurrentCulture;
+        var oldUiCulture = CultureInfo.CurrentUICulture;
+        var oldDefaultCulture = CultureInfo.DefaultThreadCurrentCulture;
+        var oldDefaultUiCulture = CultureInfo.DefaultThreadCurrentUICulture;
+        var resetCulture = new ActionDisposable(() =>
+        {
+            CultureInfo.CurrentCulture = oldCulture;
+            CultureInfo.CurrentUICulture = oldUiCulture;
+            CultureInfo.DefaultThreadCurrentCulture = oldDefaultCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = oldDefaultUiCulture;
+        });
+        CultureInfo.CurrentCulture = cultureInfo;
+        CultureInfo.CurrentUICulture = cultureInfo;
+        CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+        CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+        return resetCulture;
+    }
+
     private static string TemplateToNamespace(string template)
     {
         return template.Replace(".", "._").Replace("/", "._").Replace("-", "_");
@@ -86,9 +110,13 @@ public class GeneratorTests
     /// Generate into different project such that if the output does not compile, the test can still be executed.
     /// </summary>
     /// <param name="file"></param>
-    private async Task Verify(string file, string outputSuffix = "")
+    private async Task VerifyExtern(string file, string outputSuffix = "")
         => await VerifyFile(file)
             .UseDirectory($"../RESTyard.Generator.Test.Output{outputSuffix}");
+    
+    private async Task Verify(string file)
+        => await VerifyFile(file)
+            .UseDirectory("Snapshots");
 
     [Fact]
     public async Task ServerCSharpV4Test()
@@ -97,7 +125,7 @@ public class GeneratorTests
             "server/csharp/v4",
             outputFile: "server_v4.cs");
 
-        await Verify("server_v4.cs");
+        await VerifyExtern("server_v4.cs");
     }
 
     [Fact]
@@ -107,7 +135,7 @@ public class GeneratorTests
             "server/csharp/v5",
             outputFile: "server_v5.cs");
 
-        await Verify("server_v5.cs", outputSuffix: "V5");
+        await VerifyExtern("server_v5.cs", outputSuffix: "V5");
     }
 
     [Fact]
@@ -118,7 +146,7 @@ public class GeneratorTests
             outputFile: "server_controller_v4.cs",
             includeNamespaces: [TemplateToNamespace("server/csharp/v4")]);
 
-        await Verify("server_controller_v4.cs");
+        await VerifyExtern("server_controller_v4.cs");
     }
 
     [Fact]
@@ -129,7 +157,7 @@ public class GeneratorTests
             outputFile: "server_policies_v4.cs",
             @namespace: TemplateToNamespace("server/csharp/v4"));
 
-        await Verify("server_policies_v4.cs");
+        await VerifyExtern("server_policies_v4.cs");
     }
 
     [Fact]
@@ -139,7 +167,7 @@ public class GeneratorTests
             "client/csharp/v3",
             outputFile: "client_v3.cs");
 
-        await Verify("client_v3.cs");
+        await VerifyExtern("client_v3.cs");
     }
 
     [Fact]
@@ -149,6 +177,27 @@ public class GeneratorTests
             "client/typescript/v0",
             outputFile: "client_v0.ts");
 
-        await Verify("client_v0.ts");
+        await VerifyExtern("client_v0.ts");
+    }
+
+    [Fact]
+    public async Task TurkishLocale()
+    {
+        /*
+         * When running under the turkish locale tr-TR certain characters are
+         * not converted to their ASCII counterpart when lowering or upping characters.
+         * (e.g. i -> İ)
+         */
+        
+        const string outputFile = "turkish_locale.cs";
+        
+        using (UseCulture("tr-TR"))
+        {
+            await RunGeneratorAsync(
+                "client/csharp/v3",
+                outputFile: outputFile);
+        }
+
+        await Verify(outputFile);
     }
 }

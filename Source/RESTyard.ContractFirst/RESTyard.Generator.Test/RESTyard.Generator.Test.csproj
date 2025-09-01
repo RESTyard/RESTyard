@@ -32,6 +32,8 @@
       <None Update="TestSchema.xml">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <Compile Remove="Snapshots/**" />
+      <None Include="Snapshots/**" />
     </ItemGroup>
 
 </Project>
