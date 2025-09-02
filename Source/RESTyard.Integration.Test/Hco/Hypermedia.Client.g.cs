@@ -37,6 +37,7 @@ public partial record AddressTo(string Street, string Number, string City, strin
 public partial record UploadCarImageParameters(string Text, bool Flag);
 public partial record MarkAsFavoriteParameters(Uri Customer);
 public partial record CustomerPurchaseHistoryQuery(string? CardType = default);
+public partial record UpdateCarInspection(DateOnly NewInspection);
 [HypermediaClientObject("Entrypoint")]
 public partial class HypermediaEntrypointHco : HypermediaClientObject
 {
@@ -83,10 +84,14 @@ public partial class HypermediaCarHco : HypermediaClientObject
     public IEnumerable<float>? PriceDevelopment { get; set; } = default!;
     public List<Country>? PopularCountries { get; set; } = default!;
     public Country? MostPopularIn { get; set; } = default!;
+    public DateOnly? LastInspection { get; set; } = default!;
 
     [Mandatory]
     [HypermediaRelations(new[] { "self" })]
     public MandatoryHypermediaLink<HypermediaCarHco> Self { get; set; } = default!;
+
+    [HypermediaCommand("UpdateInspection")]
+    public IHypermediaClientFunction<HypermediaCarHco, UpdateCarInspection>? UpdateInspection { get; set; }
 }
 
 [HypermediaClientObject("CarImage")]
