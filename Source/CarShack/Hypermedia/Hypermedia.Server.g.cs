@@ -28,6 +28,7 @@ public partial record AddressTo(string Street, string Number, string City, strin
 public partial record UploadCarImageParameters(string Text, bool Flag) : IHypermediaActionParameter;
 public partial record MarkAsFavoriteParameters(Uri Customer) : IHypermediaActionParameter;
 public partial record CustomerPurchaseHistoryQuery(string? CardType = default) : IHypermediaQuery;
+public partial record UpdateCarInspection(DateOnly NewInspection) : IHypermediaActionParameter;
 [HypermediaObject(Title = "Entry to the Rest API", Classes = new string[] { "Entrypoint" })]
 public partial class HypermediaEntrypointHto : IHypermediaObject
 {
@@ -101,17 +102,23 @@ public partial class HypermediaCarHto : IHypermediaObject
     public IEnumerable<float>? PriceDevelopment { get; set; }
     public List<Country>? PopularCountries { get; set; }
     public Country? MostPopularIn { get; set; }
+    public DateOnly? LastInspection { get; set; }
 
     [Relations([DefaultHypermediaRelations.Self])]
     public ILink<HypermediaCarHto> Self { get; set; }
 
-    public HypermediaCarHto(int? id, string? brand, IEnumerable<float>? priceDevelopment, List<Country>? popularCountries, Country? mostPopularIn)
+    [HypermediaAction(Name = "UpdateInspection", Title = "")]
+    public UpdateInspectionOp UpdateInspection { get; set; }
+
+    public HypermediaCarHto(int? id, string? brand, IEnumerable<float>? priceDevelopment, List<Country>? popularCountries, Country? mostPopularIn, DateOnly? lastInspection, UpdateInspectionOp updateInspection)
     {
         this.Id = id;
         this.Brand = brand;
         this.PriceDevelopment = priceDevelopment;
         this.PopularCountries = popularCountries;
         this.MostPopularIn = mostPopularIn;
+        this.LastInspection = lastInspection;
+        this.UpdateInspection = updateInspection;
         this.Self = Link.To(this);
     }
 
@@ -121,6 +128,13 @@ public partial class HypermediaCarHto : IHypermediaObject
         {
             yield return new KeyValuePair<string, object?>("id", this.Id);
             yield return new KeyValuePair<string, object?>("brand", this.Brand);
+        }
+    }
+
+    public partial class UpdateInspectionOp : HypermediaAction<UpdateCarInspection>
+    {
+        public UpdateInspectionOp(Func<bool> canExecuteUpdateInspection, UpdateCarInspection? prefilledValues = default) : base(canExecuteUpdateInspection, prefilledValues)
+        {
         }
     }
 }
@@ -192,7 +206,7 @@ public partial class DerivedCarHto : HypermediaCarHto
     [HypermediaAction(Name = "DerivedOperation", Title = "Derived Operation")]
     public DerivedOperationOp DerivedOperation { get; set; }
 
-    public DerivedCarHto(int? id, string? brand, IEnumerable<float>? priceDevelopment, List<Country>? popularCountries, Country? mostPopularIn, string? derivedProperty, DerivedOperationOp derivedOperation, IEnumerable<HypermediaCustomerHto> item, Option<HypermediaCustomerHto.Key> derivedLinkKey) : base(id, brand, priceDevelopment, popularCountries, mostPopularIn)
+    public DerivedCarHto(int? id, string? brand, IEnumerable<float>? priceDevelopment, List<Country>? popularCountries, Country? mostPopularIn, DateOnly? lastInspection, UpdateInspectionOp updateInspection, string? derivedProperty, DerivedOperationOp derivedOperation, IEnumerable<HypermediaCustomerHto> item, Option<HypermediaCustomerHto.Key> derivedLinkKey) : base(id, brand, priceDevelopment, popularCountries, mostPopularIn, lastInspection, updateInspection)
     {
         this.DerivedProperty = derivedProperty;
         this.DerivedOperation = derivedOperation;
@@ -226,7 +240,7 @@ public partial class NextLevelDerivedCarHto : DerivedCarHto
     [Relations([DefaultHypermediaRelations.Self])]
     public new ILink<NextLevelDerivedCarHto> Self { get; set; }
 
-    public NextLevelDerivedCarHto(int? id, string? brand, IEnumerable<float>? priceDevelopment, List<Country>? popularCountries, Country? mostPopularIn, string? derivedProperty, DerivedOperationOp derivedOperation, IEnumerable<HypermediaCustomerHto> item, Option<HypermediaCustomerHto.Key> derivedLinkKey, string? nextLevelDerivedProperty) : base(id, brand, priceDevelopment, popularCountries, mostPopularIn, derivedProperty, derivedOperation, item, derivedLinkKey)
+    public NextLevelDerivedCarHto(int? id, string? brand, IEnumerable<float>? priceDevelopment, List<Country>? popularCountries, Country? mostPopularIn, DateOnly? lastInspection, UpdateInspectionOp updateInspection, string? derivedProperty, DerivedOperationOp derivedOperation, IEnumerable<HypermediaCustomerHto> item, Option<HypermediaCustomerHto.Key> derivedLinkKey, string? nextLevelDerivedProperty) : base(id, brand, priceDevelopment, popularCountries, mostPopularIn, lastInspection, updateInspection, derivedProperty, derivedOperation, item, derivedLinkKey)
     {
         this.NextLevelDerivedProperty = nextLevelDerivedProperty;
         this.Self = Link.To(this);

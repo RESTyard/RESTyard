@@ -520,12 +520,12 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 return new JValue(enumAsString);
             }
 
-            if (propertyType == typeof(DateOnly))
+            if (propertyType == typeof(DateOnly) || propertyType == typeof(DateOnly?))
             {
                 return new JValue(((DateOnly)value).ToString("yyyy-MM-dd"));
             }
 
-            if (propertyType == typeof(TimeOnly))
+            if (propertyType == typeof(TimeOnly) || propertyType == typeof(TimeOnly?))
             {
                 return new JValue(((TimeOnly)value).ToString("HH:mm:ss"));
             }

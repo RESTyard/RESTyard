@@ -270,4 +270,24 @@ public class IntegrationTests : IAsyncLifetime
         createCustomerParameterClass.Should()
             .Be($"{CarShackWaf.BaseUrl}/ActionParameterTypes/CreateCustomerParameters");
     }
+
+    [Fact]
+    public async Task DateOnly_InParameter_Works()
+    {
+        // Given
+        var apiRoot = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint);
+        var carsRootResult = await apiRoot.NavigateAsync(e => e.CarsRoot);
+        var carsRoot = carsRootResult.Should().BeOk().Which;
+        var anyCarResult = await carsRoot.NiceCar.ResolveAsync();
+        var anyCar = anyCarResult.Should().BeOk().Which;
+
+        // Then
+        anyCar.LastInspection.Should().HaveDay(2);
+        var result = await anyCar.UpdateInspection!
+            .ExecuteAsync(new UpdateCarInspection(new DateOnly(2026, 08, 31)), this.Resolver)
+            .Bind(l => l.ResolveAsync());
+        
+        // Then
+        result.Should().BeOk();
+    }
 }

@@ -210,8 +210,15 @@ public partial class HypermediaCustomerHto
 
 public partial class HypermediaCarHto
 {
-    public HypermediaCarHto(string brand, int carId) : this(carId, brand, Enumerable.Empty<float>(),
-        new List<Country>(), default)
+    public HypermediaCarHto(string brand, int carId)
+        : this(
+            id: carId,
+            brand: brand,
+            priceDevelopment: [],
+            popularCountries: [],
+            mostPopularIn: null,
+            lastInspection: null,
+            updateInspection: new(() => true))
     {
     }
 }

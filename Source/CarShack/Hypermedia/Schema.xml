@@ -41,6 +41,9 @@
     <Parameters typeName="CustomerPurchaseHistoryQuery" usedForQueries="true" usedForActions="false">
       <Property name="CardType" type="string" mandatory="false"/>
     </Parameters>
+    <Parameters typeName="UpdateCarInspection" usedForActions="true" usedForQueries="false">
+      <Property name="NewInspection" type="DateOnly" mandatory="true"/>
+    </Parameters>
     <ExternalParameters typeName="CustomerQuery" />
   </TransferParameters>
   <Documents>
@@ -76,7 +79,11 @@
         <Property name="PriceDevelopment" type="IEnumerable&lt;float&gt;" />
         <Property name="PopularCountries" type="List&lt;Country&gt;" />
         <Property name="MostPopularIn" type="Country" />
+        <Property name="LastInspection" type="DateOnly" mandatory="false" />
       </Properties>
+      <Operations>
+        <Operation name="UpdateInspection" method="Patch" parameterTypeName="UpdateCarInspection" resultDocument="HypermediaCar" />
+      </Operations>
     </Document>
     <Document name="CarImage" title="Image for a car">
       <Classifications>

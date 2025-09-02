@@ -95,9 +95,8 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
     {
         public static void RequiredUriPropertyShouldExist(this NJsonSchema.JsonSchema schema, string propertyName)
         {
-            schema.Properties.Should().ContainKey(propertyName);
+            var idProperty = schema.Properties.Should().ContainKey(propertyName).WhoseValue;
             schema.RequiredProperties.Should().Contain(propertyName);
-            var idProperty = schema.Properties[propertyName];
             idProperty.Type.Should().Be(JsonObjectType.String);
             idProperty.Format.Should().Be(JsonFormatStrings.Uri);
         }
@@ -166,5 +165,29 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
         class MyHypermediaObject : IHypermediaObject
         {
         }
+    }
+
+    [TestClass]
+    public class When_generating_action_schema_with_date_only_and_time_only : TestSpecification
+    {
+        private NJsonSchema.JsonSchema schema;
+        
+        public override void When()
+        {
+            schema = JsonSchemaFactory.GenerateSchemaAsync(typeof(MyParameter));
+        }
+
+        [TestMethod]
+        public void Then_TheTypesAreMappedProperly()
+        {
+            var dateOnlyProperty = schema.Properties.Should().ContainKey(nameof(MyParameter.DateOnly)).WhoseValue;
+            dateOnlyProperty.Type.Should().Be(JsonObjectType.String);
+            dateOnlyProperty.Format.Should().Be(JsonFormatStrings.Date);
+            var timeOnlyProperty = schema.Properties.Should().ContainKey(nameof(MyParameter.TimeOnly)).WhoseValue;
+            timeOnlyProperty.Type.Should().Be(JsonObjectType.String);
+            timeOnlyProperty.Format.Should().Be(JsonFormatStrings.Time);
+        }
+
+        public record MyParameter(DateOnly DateOnly, TimeOnly TimeOnly);
     }
 }
