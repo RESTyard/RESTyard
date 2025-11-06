@@ -6,6 +6,7 @@ using CarShack.Hypermedia;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using RESTyard.AspNetCore.HypermediaUI;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 
@@ -16,9 +17,9 @@ namespace CarShack
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            
             builder.Services.AddControllers();
-
+            builder.Services.Configure<HypermediaConfig>(builder.Configuration.GetSection(nameof(HypermediaConfig)));
             builder.Services.AddHypermediaExtensions(o =>
             {
                 o.ReturnDefaultRouteForUnknownHto = true;
@@ -56,17 +57,8 @@ namespace CarShack
                     .WithExposedHeaders("Location");
             });
             app.MapControllers();
-            app.UseHypermediaUI(
-                new HypermediaConfig(
-                    DisableDeveloperControls: false,
-                    OnlyAllowConfiguredEntryPoints: false,
-                    ConfiguredEntryPoints:
-                    [
-                        new ConfiguredEntryPoint(
-                            Alias: "CarShack",
-                            Title: "CarShack",
-                            EntryPointUri: new Uri("http://localhost:5000/EntryPoint"))
-                    ]));
+            app.UseHypermediaUI(sp =>
+                sp.GetService<IOptions<HypermediaConfig>>()?.Value);
 
             await app.RunAsync();
         }

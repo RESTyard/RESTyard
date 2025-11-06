@@ -34,4 +34,9 @@ public static class HypermediaUiExtensions
         });
         return builder;
     }
+
+    public static TAppBuilder UseHypermediaUI<TAppBuilder>(
+        this TAppBuilder builder, Func<IServiceProvider, HypermediaConfig?> getConfig)
+        where TAppBuilder : IApplicationBuilder =>
+        builder.UseHypermediaUI(getConfig(builder.ApplicationServices));
 }
