@@ -39,12 +39,13 @@ public class HypermediaFileProvider : IFileProvider, IContentTypeProvider
     {
         private readonly byte[] content;
 
-        public HypermediaFileInfo(string filename, string fullPath, byte[] content)
+        public HypermediaFileInfo(string filename, string fullPath, byte[] content, DateTimeOffset lastModified)
         {
             this.Name = filename;
             this.RequestPath = $"/{fullPath}";
             this.content = content;
             this.Length = this.content.Length;
+            this.LastModified = lastModified;
         }
         
         public Stream CreateReadStream()
@@ -55,7 +56,7 @@ public class HypermediaFileProvider : IFileProvider, IContentTypeProvider
 
         public bool Exists => true;
         public bool IsDirectory => false;
-        public DateTimeOffset LastModified { get; init; }
+        public DateTimeOffset LastModified { get; }
         public long Length { get; }
         public string Name { get; }
         public string? PhysicalPath { get; } = null;
@@ -68,50 +69,55 @@ public class HypermediaFileProvider : IFileProvider, IContentTypeProvider
     public HypermediaFileProvider(
         DateTimeOffset created,
         IEnumerable<(string Name, string FullName, byte[] Content)> files,
-        HypermediaConfig config)
+        HypermediaConfig? config)
     {
         this.files = new HypermediaDirectoryContents(created);
+        (string Name, string FullName, byte[] Content) index = ("", "", []);
         foreach (var tuple in files)
         {
-            if (tuple.Name == "app.config.json")
+            if (tuple.Name == "index.html")
             {
-                this.files.Add(new HypermediaFileInfo(tuple.Name, tuple.FullName, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(config)))
-                {
-                    LastModified = created,
-                });
+                index = tuple;
+            }
+            
+            if (tuple.Name == "app.config.json" && config is not null)
+            {
+                var appConfigSerialized = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(config, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
+                this.files.Add(new HypermediaFileInfo(tuple.Name, tuple.FullName, appConfigSerialized, created));
             }
             else
             {
-                this.files.Add(new HypermediaFileInfo(tuple.Name, tuple.FullName, tuple.Content)
-                {
-                    LastModified = created,
-                });
+                this.files.Add(new HypermediaFileInfo(tuple.Name, tuple.FullName, tuple.Content, created));
+            }
+        }
+
+        if (index.Name != "")
+        {
+            List<string> builtinRedirects = ["", "hui", "auth-redirect"];
+            foreach (var redirect in builtinRedirects.Concat(config?.ConfiguredEntryPoints.Select(e => e.Alias) ?? []))
+            {
+                this.files.Add(new HypermediaFileInfo(index.Name, redirect, index.Content, created));
             }
         }
     }
+
+    private IEnumerable<HypermediaFileInfo> Files => this.files;
     
     public IDirectoryContents GetDirectoryContents(string subpath)
     {
-        if (subpath == "")
-        {
-            return this.files;
-        }
-        else
-        {
-            return NotFoundDirectoryContents.Singleton;
-        }
+        return NotFoundDirectoryContents.Singleton;
     }
 
     public IFileInfo GetFileInfo(string subpath)
     {
-        var match = ((IEnumerable<HypermediaFileInfo>)this.files).FirstOrDefault(f => f.RequestPath == subpath);
+        var match = this.Files.FirstOrDefault(f => f.RequestPath == subpath);
         if (match is not null)
         {
             return match;
         }
         else
         {
-            return ((IEnumerable<HypermediaFileInfo>)this.files).First(f => f.Name == "index.html");
+            return new NotFoundFileInfo(subpath);
         }
     }
 
@@ -122,10 +128,13 @@ public class HypermediaFileProvider : IFileProvider, IContentTypeProvider
 
     public bool TryGetContentType(string subpath, [MaybeNullWhen(false)] out string contentType)
     {
-        if (!this.contentTypeProvider.TryGetContentType(subpath, out contentType))
+        var fileInfo = this.GetFileInfo(subpath);
+        if (fileInfo is HypermediaFileInfo hfi)
         {
-            contentType = "text/html";
+            return this.contentTypeProvider.TryGetContentType(fileInfo.Name, out contentType);
         }
-        return true;
+
+        contentType = null;
+        return false;
     }
 }

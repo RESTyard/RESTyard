@@ -26,7 +26,7 @@ public static class HypermediaUiExtensions
         var hypermediaFileProvider = new HypermediaFileProvider(
             DateTimeOffset.Now,
             files,
-            config ?? new HypermediaConfig(disableDeveloperControls: false, configuredEntryPoints: [], onlyAllowConfiguredEntryPoints: false));
+            config);
         builder.UseStaticFiles(new StaticFileOptions()
         {
             FileProvider = hypermediaFileProvider,

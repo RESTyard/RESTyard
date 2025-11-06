@@ -2,4 +2,7 @@ using System;
 
 namespace RESTyard.AspNetCore.HypermediaUI;
 
-public record ConfiguredEntryPoint(string alias, string title, Uri entryPointUri);
+public record ConfiguredEntryPoint(
+    string Alias,
+    string Title,
+    Uri EntryPointUri);

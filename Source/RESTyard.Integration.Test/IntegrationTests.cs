@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 using FluentAssertions;
 using RESTyard.Client.Authentication;
 using RESTyard.Client.Extensions;
@@ -289,5 +290,49 @@ public class IntegrationTests : IAsyncLifetime
         
         // Then
         result.Should().BeOk();
+    }
+
+    [Fact]
+    public async Task HypermediaUI_AngularServeTests()
+    {
+        // Given
+        
+        // When
+        var root = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/index.html");
+        
+        // Then
+        root.Should().BeSuccessful();
+        var index = await root.Content.ReadAsStringAsync();
+        var regex = new Regex("(?:href|src)=\"(?<uri>.*?)\"");
+        var matches = regex.Matches(index);
+        var uris = matches.SelectMany(m => m.Groups["uri"].Captures);
+        foreach (var uri in uris.AsEnumerable())
+        {
+            if (uri.Value == "/")
+            {
+                continue;
+            }
+            var subContent = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/{uri.Value}");
+            subContent.Should().BeSuccessful();
+        }
+    }
+
+    [Fact]
+    public async Task HypermediaUI_RewriteTests()
+    {
+        // Given
+        var indexByName = await this.Client.GetStringAsync($"{CarShackWaf.BaseUrl}/index.html");
+        List<string> builtinRedirects = ["", "hui", "auth-redirect"];
+        List<string> aliasRedirects = ["CarShack"];
+
+        foreach (var redirect in builtinRedirects.Concat(aliasRedirects))
+        {
+            // When
+            var result = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/{redirect}");
+            
+            // Then
+            result.Should().BeSuccessful(because: redirect);
+            (await result.Content.ReadAsStringAsync()).Should().Be(indexByName);
+        }
     }
 }

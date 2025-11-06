@@ -5,6 +5,7 @@ using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using RESTyard.AspNetCore.HypermediaUI;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 
@@ -34,6 +35,18 @@ namespace CarShack
 
             var app = builder.Build();
 
+            app.Use(async (context, next) =>
+            {
+                try
+                {
+                    await next();
+                }
+                catch (Exception e)
+                {
+                    app.Services.GetRequiredService<ILogger>().LogError(e, context.Request.Path);
+                    throw;
+                }
+            });
             app.UseCors(b =>
             {
                 b
@@ -45,14 +58,14 @@ namespace CarShack
             app.MapControllers();
             app.UseHypermediaUI(
                 new HypermediaConfig(
-                    disableDeveloperControls: false,
-                    onlyAllowConfiguredEntryPoints: false,
-                    configuredEntryPoints:
+                    DisableDeveloperControls: false,
+                    OnlyAllowConfiguredEntryPoints: false,
+                    ConfiguredEntryPoints:
                     [
                         new ConfiguredEntryPoint(
-                            alias: "CarShack",
-                            title: "CarShack",
-                            entryPointUri: new Uri("http://localhost:5000/EntryPoint"))
+                            Alias: "CarShack",
+                            Title: "CarShack",
+                            EntryPointUri: new Uri("http://localhost:5000/EntryPoint"))
                     ]));
 
             await app.RunAsync();
