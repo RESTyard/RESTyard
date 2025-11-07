@@ -25,6 +25,7 @@ namespace CarShack
                 o.ReturnDefaultRouteForUnknownHto = true;
                 o.ControllerAndHypermediaAssemblies = [typeof(EntryPointController).Assembly];
             });
+            builder.Services.AddLogging();
 
             builder.Services.AddCors();
 
@@ -44,7 +45,7 @@ namespace CarShack
                 }
                 catch (Exception e)
                 {
-                    app.Services.GetRequiredService<ILogger>().LogError(e, context.Request.Path);
+                    app.Services.GetRequiredService<ILogger<Program>>().LogError(e, context.Request.Path);
                     throw;
                 }
             });
@@ -74,6 +75,11 @@ namespace CarShack
                         },
                     ],
                 });
+            app.MapGet("crash", () =>
+            {
+                throw new Exception("BOOM");
+                return "Hi";
+            });
 
             await app.RunAsync();
         }
