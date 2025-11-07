@@ -17,6 +17,28 @@ public static class HypermediaUiExtensions
         HypermediaUiConfig? config = null)
         where TAppBuilder : IApplicationBuilder
     {
+        var files = ExtractAngularFilesFromArchive();
+
+        config ??= builder.ApplicationServices.GetService<IOptions<HypermediaUiConfig>>()?.Value;
+        var timeProvider = builder.ApplicationServices.GetService<TimeProvider>() ?? TimeProvider.System;
+        
+        var hypermediaFileProvider = new HypermediaFileProvider(
+            timeProvider.GetLocalNow(),
+            subpath.Trim('/'),
+            files,
+            config);
+        
+        builder.UseStaticFiles(new StaticFileOptions()
+        {
+            FileProvider = hypermediaFileProvider,
+            ContentTypeProvider = hypermediaFileProvider,
+        });
+        
+        return builder;
+    }
+
+    private static IReadOnlyList<(string Name, string FullName, byte[] Content)> ExtractAngularFilesFromArchive()
+    {
         var resourceStream = typeof(HypermediaUiExtensions).Assembly.GetManifestResourceStream("RESTyard.AspNetCore.HypermediaUI.Content.release.zip");
         var zipArchive = new ZipArchive(resourceStream!);
         List<(string Name, string FullName, byte[] Content)> files = [];
@@ -26,24 +48,14 @@ public static class HypermediaUiExtensions
             using var ms = new MemoryStream();
             using var stream = entry.Open();
             stream.CopyTo(ms);
-            files.Add((entry.Name, entry.FullName.Substring(prefix.Length), ms.ToArray()));
+            files.Add(
+                (
+                    Name: entry.Name,
+                    FullName: entry.FullName.Substring(prefix.Length),
+                    Content: ms.ToArray()
+                ));
         }
 
-        if (config is null)
-        {
-            var fromOption = builder.ApplicationServices.GetService<IOptions<HypermediaUiConfig>>();
-            config = fromOption?.Value;
-        }
-        var hypermediaFileProvider = new HypermediaFileProvider(
-            DateTimeOffset.Now,
-            subpath.Trim('/'),
-            files,
-            config);
-        builder.UseStaticFiles(new StaticFileOptions()
-        {
-            FileProvider = hypermediaFileProvider,
-            ContentTypeProvider = hypermediaFileProvider,
-        });
-        return builder;
+        return files;
     }
 }
