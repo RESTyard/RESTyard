@@ -4,12 +4,17 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace RESTyard.AspNetCore.HypermediaUI;
 
 public static class HypermediaUiExtensions
 {
-    public static TAppBuilder UseHypermediaUI<TAppBuilder>(this TAppBuilder builder, HypermediaConfig? config = null)
+    public static TAppBuilder UseHypermediaUI<TAppBuilder>(
+        this TAppBuilder builder,
+        string subpath,
+        HypermediaConfig? config = null)
         where TAppBuilder : IApplicationBuilder
     {
         var resourceStream = typeof(HypermediaUiExtensions).Assembly.GetManifestResourceStream("RESTyard.AspNetCore.HypermediaUI.Content.release.zip");
@@ -23,8 +28,15 @@ public static class HypermediaUiExtensions
             stream.CopyTo(ms);
             files.Add((entry.Name, entry.FullName.Substring(prefix.Length), ms.ToArray()));
         }
+
+        if (config is null)
+        {
+            var fromOption = builder.ApplicationServices.GetService<IOptions<HypermediaConfig>>();
+            config = fromOption?.Value;
+        }
         var hypermediaFileProvider = new HypermediaFileProvider(
             DateTimeOffset.Now,
+            subpath.Trim('/'),
             files,
             config);
         builder.UseStaticFiles(new StaticFileOptions()
@@ -34,9 +46,4 @@ public static class HypermediaUiExtensions
         });
         return builder;
     }
-
-    public static TAppBuilder UseHypermediaUI<TAppBuilder>(
-        this TAppBuilder builder, Func<IServiceProvider, HypermediaConfig?> getConfig)
-        where TAppBuilder : IApplicationBuilder =>
-        builder.UseHypermediaUI(getConfig(builder.ApplicationServices));
 }

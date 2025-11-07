@@ -62,32 +62,42 @@ public class HypermediaFileProvider : IFileProvider, IContentTypeProvider
         public string? PhysicalPath { get; } = null;
         public string RequestPath { get; }
     }
-    
+
+    private readonly string subpath;
     private readonly HypermediaDirectoryContents files;
     private readonly FileExtensionContentTypeProvider contentTypeProvider = new FileExtensionContentTypeProvider();
 
     public HypermediaFileProvider(
         DateTimeOffset created,
+        string subpath,
         IEnumerable<(string Name, string FullName, byte[] Content)> files,
         HypermediaConfig? config)
     {
+        this.subpath = subpath;
         this.files = new HypermediaDirectoryContents(created);
         (string Name, string FullName, byte[] Content) index = ("", "", []);
         foreach (var tuple in files)
         {
+            var content = tuple.Content;
             if (tuple.Name == "index.html")
             {
-                index = tuple;
+                if (this.subpath != "")
+                {
+                    var indexHtml = Encoding.UTF8.GetString(content);
+                    indexHtml = ChangeBasePath(indexHtml, this.subpath);
+                    content = Encoding.UTF8.GetBytes(indexHtml);
+                }
+                index = (tuple.Name, tuple.FullName, content);
             }
             
             if (tuple.Name == "app.config.json" && config is not null)
             {
                 var appConfigSerialized = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(config, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
-                this.files.Add(new HypermediaFileInfo(tuple.Name, tuple.FullName, appConfigSerialized, created));
+                this.files.Add(new HypermediaFileInfo(tuple.Name, $"{this.subpath}/{tuple.FullName}", appConfigSerialized, created));
             }
             else
             {
-                this.files.Add(new HypermediaFileInfo(tuple.Name, tuple.FullName, tuple.Content, created));
+                this.files.Add(new HypermediaFileInfo(tuple.Name, $"{this.subpath}/{tuple.FullName}", content, created));
             }
         }
 
@@ -96,9 +106,22 @@ public class HypermediaFileProvider : IFileProvider, IContentTypeProvider
             List<string> builtinRedirects = ["", "hui", "auth-redirect"];
             foreach (var redirect in builtinRedirects.Concat(config?.ConfiguredEntryPoints.Select(e => e.Alias) ?? []))
             {
-                this.files.Add(new HypermediaFileInfo(index.Name, redirect, index.Content, created));
+                if (redirect == "")
+                {
+                    this.files.Add(new HypermediaFileInfo(index.Name, $"{this.subpath}", index.Content, created));
+                }
+
+                this.files.Add(new HypermediaFileInfo(index.Name, $"{this.subpath}/{redirect}", index.Content, created));
             }
         }
+    }
+
+    private string ChangeBasePath(string indexHtml, string basePath)
+    {
+        return indexHtml
+            .Replace("base href=\"/\"", "base href=\"\"")
+            .Replace("href=\"", $"href=\"/{basePath}/")
+            .Replace("src=\"", $"src=\"/{basePath}/");
     }
 
     private IEnumerable<HypermediaFileInfo> Files => this.files;
@@ -110,7 +133,8 @@ public class HypermediaFileProvider : IFileProvider, IContentTypeProvider
 
     public IFileInfo GetFileInfo(string subpath)
     {
-        var match = this.Files.FirstOrDefault(f => f.RequestPath == subpath);
+        var comparePath = subpath.TrimEnd('/');
+        var match = this.Files.FirstOrDefault(f => f.RequestPath == comparePath);
         if (match is not null)
         {
             return match;

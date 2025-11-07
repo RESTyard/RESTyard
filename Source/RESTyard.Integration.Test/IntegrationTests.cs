@@ -298,7 +298,7 @@ public class IntegrationTests : IAsyncLifetime
         // Given
         
         // When
-        var root = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/index.html");
+        var root = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/swagger/hui/index.html");
         
         // Then
         root.Should().BeSuccessful();
@@ -308,12 +308,12 @@ public class IntegrationTests : IAsyncLifetime
         var uris = matches.SelectMany(m => m.Groups["uri"].Captures);
         foreach (var uri in uris.AsEnumerable())
         {
-            if (uri.Value == "/")
+            if (uri.Value == "/swagger/hui/")
             {
                 continue;
             }
-            var subContent = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/{uri.Value}");
-            subContent.Should().BeSuccessful();
+            var subContent = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/{uri.Value.TrimStart('/')}");
+            subContent.Should().BeSuccessful(because: uri.Value);
         }
     }
 
@@ -321,18 +321,25 @@ public class IntegrationTests : IAsyncLifetime
     public async Task HypermediaUI_RewriteTests()
     {
         // Given
-        var indexByName = await this.Client.GetStringAsync($"{CarShackWaf.BaseUrl}/index.html");
+        var indexByName = await this.Client.GetStringAsync($"{CarShackWaf.BaseUrl}/swagger/hui/index.html");
         List<string> builtinRedirects = ["", "hui", "auth-redirect"];
         List<string> aliasRedirects = ["CarShack"];
 
         foreach (var redirect in builtinRedirects.Concat(aliasRedirects))
         {
             // When
-            var result = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/{redirect}");
+            var result = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/swagger/hui/{redirect}");
             
             // Then
             result.Should().BeSuccessful(because: redirect);
             (await result.Content.ReadAsStringAsync()).Should().Be(indexByName);
         }
+        
+        // When
+        var specialCaseIndexNoTrailingSlash = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/swagger/hui");
+        
+        // Then
+        specialCaseIndexNoTrailingSlash.Should().BeSuccessful();
+        (await specialCaseIndexNoTrailingSlash.Content.ReadAsStringAsync()).Should().Be(indexByName);
     }
 }

@@ -57,8 +57,7 @@ namespace CarShack
                     .WithExposedHeaders("Location");
             });
             app.MapControllers();
-            app.UseHypermediaUI(sp =>
-                sp.GetService<IOptions<HypermediaConfig>>()?.Value);
+            app.UseHypermediaUI("swagger/hui");
 
             await app.RunAsync();
         }
