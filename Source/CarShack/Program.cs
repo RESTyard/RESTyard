@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 using RESTyard.AspNetCore.HypermediaUI;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 
@@ -55,7 +56,7 @@ namespace CarShack
                     .AllowAnyOrigin()
                     .AllowAnyMethod()
                     .AllowAnyHeader()
-                    .WithExposedHeaders("Location");
+                    .WithExposedHeaders(HeaderNames.Location);
             });
             app.MapControllers();
             app.UseHypermediaUI("swagger/hui");
