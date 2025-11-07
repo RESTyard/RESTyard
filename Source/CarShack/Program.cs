@@ -58,6 +58,22 @@ namespace CarShack
             });
             app.MapControllers();
             app.UseHypermediaUI("swagger/hui");
+            app.UseHypermediaUI(
+                "swagger2/hui",
+                new HypermediaConfig()
+                {
+                    DisableDeveloperControls = true,
+                    OnlyAllowConfiguredEntryPoints = true,
+                    ConfiguredEntryPoints =
+                    [
+                        new ConfiguredEntryPoint()
+                        {
+                            Alias = "CarShack2",
+                            Title = "You've had CarShack, yes, but what about second CarShack?",
+                            EntryPointUri = new Uri("http://localhost:5000/EntryPoint"),
+                        },
+                    ],
+                });
 
             await app.RunAsync();
         }

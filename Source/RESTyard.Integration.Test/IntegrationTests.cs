@@ -342,4 +342,15 @@ public class IntegrationTests : IAsyncLifetime
         specialCaseIndexNoTrailingSlash.Should().BeSuccessful();
         (await specialCaseIndexNoTrailingSlash.Content.ReadAsStringAsync()).Should().Be(indexByName);
     }
+
+    [Fact]
+    public async Task HypermediaUI_SecondInstanceTest()
+    {
+        // When
+        var index = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/swagger2/hui/index.html");
+        
+        // Then
+        index.Should().BeSuccessful();
+        (await index.Content.ReadAsStringAsync()).Should().NotBeNullOrEmpty();
+    }
 }
