@@ -14,7 +14,7 @@ public static class HypermediaUiExtensions
     public static TAppBuilder UseHypermediaUI<TAppBuilder>(
         this TAppBuilder builder,
         string subpath,
-        HypermediaConfig? config = null)
+        HypermediaUiConfig? config = null)
         where TAppBuilder : IApplicationBuilder
     {
         var resourceStream = typeof(HypermediaUiExtensions).Assembly.GetManifestResourceStream("RESTyard.AspNetCore.HypermediaUI.Content.release.zip");
@@ -31,7 +31,7 @@ public static class HypermediaUiExtensions
 
         if (config is null)
         {
-            var fromOption = builder.ApplicationServices.GetService<IOptions<HypermediaConfig>>();
+            var fromOption = builder.ApplicationServices.GetService<IOptions<HypermediaUiConfig>>();
             config = fromOption?.Value;
         }
         var hypermediaFileProvider = new HypermediaFileProvider(

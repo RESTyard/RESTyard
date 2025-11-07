@@ -19,7 +19,7 @@ namespace CarShack
             var builder = WebApplication.CreateBuilder(args);
             
             builder.Services.AddControllers();
-            builder.Services.Configure<HypermediaConfig>(builder.Configuration.GetSection(nameof(HypermediaConfig)));
+            builder.Services.Configure<HypermediaUiConfig>(builder.Configuration.GetSection(nameof(HypermediaUiConfig)));
             builder.Services.AddHypermediaExtensions(o =>
             {
                 o.ReturnDefaultRouteForUnknownHto = true;
@@ -60,7 +60,7 @@ namespace CarShack
             app.UseHypermediaUI("swagger/hui");
             app.UseHypermediaUI(
                 "swagger2/hui",
-                new HypermediaConfig()
+                new HypermediaUiConfig()
                 {
                     DisableDeveloperControls = true,
                     OnlyAllowConfiguredEntryPoints = true,

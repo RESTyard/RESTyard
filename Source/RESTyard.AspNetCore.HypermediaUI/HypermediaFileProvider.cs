@@ -71,7 +71,7 @@ public class HypermediaFileProvider : IFileProvider, IContentTypeProvider
         DateTimeOffset created,
         string subpath,
         IEnumerable<(string Name, string FullName, byte[] Content)> files,
-        HypermediaConfig? config)
+        HypermediaUiConfig? config)
     {
         this.subpath = subpath;
         this.files = new HypermediaDirectoryContents(created);
@@ -134,15 +134,8 @@ public class HypermediaFileProvider : IFileProvider, IContentTypeProvider
     public IFileInfo GetFileInfo(string subpath)
     {
         var comparePath = subpath.TrimEnd('/');
-        var match = this.Files.FirstOrDefault(f => f.RequestPath == comparePath);
-        if (match is not null)
-        {
-            return match;
-        }
-        else
-        {
-            return new NotFoundFileInfo(subpath);
-        }
+        IFileInfo? match = this.Files.FirstOrDefault(f => f.RequestPath == comparePath);
+        return match ?? new NotFoundFileInfo(subpath);
     }
 
     public IChangeToken Watch(string filter)
