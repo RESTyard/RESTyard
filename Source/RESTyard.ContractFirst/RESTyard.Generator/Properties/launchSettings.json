@@ -22,7 +22,7 @@
     "Generate Server Controllers": {
       "commandName": "Project",
       "workingDirectory": "$(SolutionDir)",
-      "commandLineArgs": "--schema-file CarShack/Hypermedia/Schema.xml --template server/csharp-controller/v4 --output-file CarShack/Hypermedia/Hypermedia.Server.Controllers.g.cs --namespace CarShack.Hypermedia"
+      "commandLineArgs": "--schema-file CarShack/Hypermedia/Schema.xml --template server/csharp-controller/v5 --output-file CarShack/Hypermedia/Hypermedia.Server.Controllers.g.cs --namespace CarShack.Hypermedia"
     }
   }
 }

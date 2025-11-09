@@ -217,4 +217,15 @@ public class RazorTemplateBase : ComponentBase
             yield return currentParameters;
         }
     }
+    
+    public string MethodToString(method method)
+    {
+        return method switch
+        {
+            method.Delete => "Delete",
+            method.Patch => "Patch",
+            method.Post => "Post",
+            _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
+        };
+    }
 }

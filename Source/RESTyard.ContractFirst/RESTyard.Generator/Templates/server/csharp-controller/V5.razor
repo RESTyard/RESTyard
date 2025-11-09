@@ -1,0 +1,113 @@
+@using RESTyard.Generator.Templates.csharp_base
+@inherits RazorTemplateBase
+@implements ITemplateBase
+
+@code {
+    [Parameter] public string? Namespace { get; set; }
+    [Parameter] public string Includes { get; set; } = null!;
+
+    private static string JoinIfSet(string separator, params string?[] parts) => string.Join(separator, parts.Where(p => !string.IsNullOrEmpty(p)));
+    private static string PrefixIfSet(string prefix, string? input) => string.IsNullOrEmpty(input) ? string.Empty : $"{prefix}{input}";
+    private static string SuffixIfSet(string? input, string suffix) => string.IsNullOrEmpty(input) ? string.Empty : $"{input}{suffix}";
+    private static string SurroundIfSet(string prefix, string? input, string suffix) => string.IsNullOrEmpty(input) ? string.Empty : $"{prefix}{input}{suffix}";
+    private static string OrElse(string? input, string elseValue) => string.IsNullOrEmpty(input) ? elseValue : input;
+
+    private static string InParenthesesIfSet(string? input) => SurroundIfSet("(", input, ")");
+    private static string InQuotesIfSet(string? input) => SurroundIfSet("\"", input, "\"");
+
+
+    private static IEnumerable<LinkType> GetAllLinksWithQuery(DocumentType[] documents) =>
+        documents
+            .SelectMany(d => d.Links)
+            .Where(l => !string.IsNullOrEmpty(l.query));
+
+    private static LinkType? FindLinkMatchingDocument(LinkType[] allLinksWithQuery, DocumentType document) =>
+        allLinksWithQuery.FirstOrDefault(l => l.document == document.name);
+
+    private static string FormatScopeName(string scope) =>
+        scope.Replace("-", "_").Replace(":", "_").ToUpperInvariant();
+
+}
+
+@{
+    var allLinksWithQuery = GetAllLinksWithQuery(Schema.Documents).ToArray();
+}
+
+@Includes
+
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using RESTyard.AspNetCore.JsonSchema;
+using RESTyard.AspNetCore.WebApi;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+using RESTyard.MediaTypes;
+
+@if (!string.IsNullOrEmpty(Namespace))
+{
+    @:namespace @Namespace;
+}
+
+@foreach (var document in Schema.Documents)
+{
+    var keys = document.Properties.Where(p => p.isKey).ToArray();
+    var keyParams = string.Join(", ", keys.Select(k => $"{k.type} @{Uncapitalize(k.name)}"));
+    var keyTemplateParts = keys.Select(k => $"{{{Uncapitalize(k.name)}}}");
+    var keyTemplate = string.Join("/", keyTemplateParts);
+
+    var queryLink = FindLinkMatchingDocument(allLinksWithQuery, document);
+    var linkQueryParam = queryLink != null ? $"[FromQuery] {queryLink.query} @{Uncapitalize(queryLink.query)}" : null;
+
+    if (queryLink != null && !document.isQueryResult)
+    {
+        throw new ArgumentException($"A link with a query parameter points to document '{document.name}', but the document is not marked as a query result.");
+    }
+
+    @:[Route("api/[controller]"),
+    @: ApiController]
+    @:public partial class @(document.name)Controller : ControllerBase
+    @:{
+
+
+    @:[HttpGet@(InParenthesesIfSet(InQuotesIfSet(keyTemplate))),
+    @: HypermediaObjectEndpoint@("<")@(document.name)Hto@(">")
+    if (document.Policies?.Permissions?.authorize ?? false)
+    {
+        foreach (var permission in document.Policies.Permissions.Permission)
+        {
+            @: Authorize(PermissionScopes.@(FormatScopeName(permission.scope)))
+        }
+    }
+
+    @:]
+    @:public partial Task@("<")IActionResult@(">") Get@(document.name)Async(@(JoinIfSet(", ", keyParams, linkQueryParam)));
+
+
+    foreach (var operation in document.Operations)
+    {
+        var parameterType = operation.parameterTypeName;
+        var parameterName = PrefixIfSet("@", Uncapitalize(parameterType));
+
+        @:[
+        @: Http@(MethodToString(operation.method))@InParenthesesIfSet(InQuotesIfSet(JoinIfSet("/", keyTemplate, Uncapitalize(operation.name)))),
+        @: HypermediaActionEndpoint@("<")@(document.name)Hto@(">")(nameof(@(document.name)Hto.@(operation.name)Op)@(operation.isUploadAction ? ", DefaultMediaTypes.MultipartFormData": string.Empty))
+        if (operation.Policies?.Permissions?.authorize ?? false)
+        {
+            foreach (var permission in operation.Policies.Permissions.Permission)
+            {
+                @: Authorize(PermissionScopes.@(FormatScopeName(permission.scope)))
+            }
+        }
+
+        @:]
+
+        var @params = !operation.isUploadAction
+            ? JoinIfSet(", ", keyParams, PrefixIfSet("[FromBody] ", SuffixIfSet(parameterType, parameterName)))
+            : JoinIfSet(", ", keyParams, PrefixIfSet("[HypermediaUploadParameterFromForm] ",
+                OrElse(SurroundIfSet("HypermediaFileUploadActionParameter<", parameterType, $"> {parameterName}"),
+                    "HypermediaFileUploadActionParameter parameters")
+            ));
+        @:public partial Task@("<")IActionResult@(">") @(operation.name)Async(@(@params));
+    }
+
+    @:}
+}

@@ -4,7 +4,7 @@
 	{
 		var typeName = $"{document.name}Hto";
 		var keyName = $"{typeName}.Key";
-		@:public static Result<@keyName> @($"Get{document.name}KeyFromUri(")this IKeyFromUriService keyFromUriService, Uri uri)
-		@:    => keyFromUriService.GetKeyFromUri<@typeName, @keyName>(uri);
+		@:public static Result@("<")@(keyName)@(">") @($"Get{document.name}KeyFromUri(")this IKeyFromUriService keyFromUriService, Uri uri)
+		@:    => keyFromUriService.GetKeyFromUri@("<")@typeName, @keyName@(">")(uri);
 	}
 </Class>
