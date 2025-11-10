@@ -298,7 +298,7 @@ public class IntegrationTests : IAsyncLifetime
         // Given
         
         // When
-        var root = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/swagger/hui/index.html");
+        var root = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/hui/from-appsettings/index.html");
         
         // Then
         root.Should().BeSuccessful();
@@ -321,14 +321,14 @@ public class IntegrationTests : IAsyncLifetime
     public async Task HypermediaUI_RewriteTests()
     {
         // Given
-        var indexByName = await this.Client.GetStringAsync($"{CarShackWaf.BaseUrl}/swagger/hui/index.html");
+        var indexByName = await this.Client.GetStringAsync($"{CarShackWaf.BaseUrl}/hui/from-appsettings/index.html");
         List<string> builtinRedirects = ["", "hui", "auth-redirect"];
         List<string> aliasRedirects = ["CarShack"];
 
         foreach (var redirect in builtinRedirects.Concat(aliasRedirects))
         {
             // When
-            var result = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/swagger/hui/{redirect}");
+            var result = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/hui/from-appsettings/{redirect}");
             
             // Then
             result.Should().BeSuccessful(because: redirect);
@@ -336,7 +336,7 @@ public class IntegrationTests : IAsyncLifetime
         }
         
         // When
-        var specialCaseIndexNoTrailingSlash = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/swagger/hui");
+        var specialCaseIndexNoTrailingSlash = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/hui/from-appsettings");
         
         // Then
         specialCaseIndexNoTrailingSlash.Should().BeSuccessful();
@@ -347,7 +347,7 @@ public class IntegrationTests : IAsyncLifetime
     public async Task HypermediaUI_SecondInstanceTest()
     {
         // When
-        var index = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/swagger2/hui/index.html");
+        var index = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/hui/explicit-config/index.html");
         
         // Then
         index.Should().BeSuccessful();

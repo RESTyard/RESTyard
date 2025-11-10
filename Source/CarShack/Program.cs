@@ -6,7 +6,6 @@ using CarShack.Hypermedia;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using RESTyard.AspNetCore.HypermediaUI;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
@@ -59,9 +58,9 @@ namespace CarShack
                     .WithExposedHeaders(HeaderNames.Location);
             });
             app.MapControllers();
-            app.UseHypermediaUI("swagger/hui");
+            app.UseHypermediaUI("hui/from-appsettings");
             app.UseHypermediaUI(
-                "swagger2/hui",
+                "hui/explicit-config",
                 new HypermediaUiConfig()
                 {
                     DisableDeveloperControls = true,
