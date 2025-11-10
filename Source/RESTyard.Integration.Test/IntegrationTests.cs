@@ -305,15 +305,12 @@ public class IntegrationTests : IAsyncLifetime
         var index = await root.Content.ReadAsStringAsync();
         var regex = new Regex("(?:href|src)=\"(?<uri>.*?)\"");
         var matches = regex.Matches(index);
-        var uris = matches.SelectMany(m => m.Groups["uri"].Captures);
-        foreach (var uri in uris.AsEnumerable())
+        matches.Should().AllSatisfy(m => m.Success.Should().BeTrue());
+        foreach (var capture in matches.SelectMany(m => m.Groups["uri"].Captures))
         {
-            if (uri.Value == "/swagger/hui/")
-            {
-                continue;
-            }
-            var subContent = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/{uri.Value.TrimStart('/')}");
-            subContent.Should().BeSuccessful(because: uri.Value);
+            var uri = capture.Value;
+            var subContent = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/{uri.TrimStart('/')}");
+            subContent.Should().BeSuccessful(because: uri);
         }
     }
 
