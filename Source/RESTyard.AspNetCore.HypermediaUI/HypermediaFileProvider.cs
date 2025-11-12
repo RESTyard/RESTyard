@@ -74,6 +74,7 @@ public class HypermediaFileProvider : IFileProvider, IContentTypeProvider
         HypermediaUiConfig? config)
     {
         this.subpath = subpath;
+        var prefix = this.subpath == "" ? "" : $"/{this.subpath}";
         this.files = new HypermediaDirectoryContents(created);
         (string Name, string FullName, byte[] Content) index = ("", "", []);
         foreach (var tuple in files)
@@ -93,11 +94,11 @@ public class HypermediaFileProvider : IFileProvider, IContentTypeProvider
             if (tuple.Name == "app.config.json" && config is not null)
             {
                 var appConfigSerialized = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(config, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
-                this.files.Add(new HypermediaFileInfo(tuple.Name, $"{this.subpath}/{tuple.FullName}", appConfigSerialized, created));
+                this.files.Add(new HypermediaFileInfo(tuple.Name, $"{prefix}{tuple.FullName}", appConfigSerialized, created));
             }
             else
             {
-                this.files.Add(new HypermediaFileInfo(tuple.Name, $"{this.subpath}/{tuple.FullName}", content, created));
+                this.files.Add(new HypermediaFileInfo(tuple.Name, $"{prefix}{tuple.FullName}", content, created));
             }
         }
 
@@ -133,7 +134,7 @@ public class HypermediaFileProvider : IFileProvider, IContentTypeProvider
 
     public IFileInfo GetFileInfo(string subpath)
     {
-        var comparePath = subpath.TrimEnd('/');
+        var comparePath = subpath == "/" ? subpath : subpath.TrimEnd('/');
         IFileInfo? match = this.Files.FirstOrDefault(f => f.RequestPath == comparePath);
         return match ?? new NotFoundFileInfo(subpath);
     }

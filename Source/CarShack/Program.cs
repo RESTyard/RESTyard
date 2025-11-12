@@ -58,7 +58,16 @@ namespace CarShack
                     .WithExposedHeaders(HeaderNames.Location);
             });
             app.MapControllers();
-            app.UseHypermediaUI("hui/from-appsettings");
+            app.UseHypermediaUI(
+                "",
+                new HypermediaUiConfig()
+                {
+                    DisableDeveloperControls = false,
+                    OnlyAllowConfiguredEntryPoints = false,
+                    ConfiguredEntryPoints = []
+                });
+            app.UseHypermediaUI(
+                "hui/from-appsettings");
             app.UseHypermediaUI(
                 "hui/explicit-config",
                 new HypermediaUiConfig()

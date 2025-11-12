@@ -350,4 +350,15 @@ public class IntegrationTests : IAsyncLifetime
         index.Should().BeSuccessful();
         (await index.Content.ReadAsStringAsync()).Should().NotBeNullOrEmpty();
     }
+
+    [Fact]
+    public async Task HypermediaUI_AtRootTest()
+    {
+        // When
+        var index = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}");
+        
+        // Then
+        index.Should().BeSuccessful();
+        (await index.Content.ReadAsStringAsync()).Should().NotBeNullOrEmpty();
+    }
 }
