@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -84,25 +85,28 @@ namespace RESTyard.Client.Resolver
             }
 
             return await networkResult
-                .Bind(async response =>
+                .Bind(response => HandleLinkResponseAndAddToCacheIfCacheable<T>(uriToResolve, response));
+        }
+
+        private async Task<HypermediaResult<T>> HandleLinkResponseAndAddToCacheIfCacheable<T>(Uri uriToResolve, TNetworkResponseMessage response)
+            where T : HypermediaClientObject
+        {
+            var cacheConfiguration = this.GetCacheConfigurationFromResponse(response, DateTimeOffset.Now);
+            bool serializeToString = cacheConfiguration.ShouldBeAddedToCache();
+            var linkResult = await this.HandleLinkResponseAsync<T>(response, serializeToString);
+
+            linkResult.Match(ok =>
+            {
+                var hcoAsString = ok.HcoAsString;
+                if (cacheConfiguration.ShouldBeAddedToCache()
+                    && !string.IsNullOrEmpty(hcoAsString))
                 {
-                    var cacheConfiguration = this.GetCacheConfigurationFromResponse(response, DateTimeOffset.Now);
-                    bool serializeToString = cacheConfiguration.ShouldBeAddedToCache();
-                    var linkResult = await this.HandleLinkResponseAsync<T>(response, serializeToString);
+                    var entry = GetCacheEntryFromConfiguration(hcoAsString, cacheConfiguration);
+                    this.LinkHcoCache.Set(uriToResolve, entry);
+                }
+            });
 
-                    linkResult.Match(ok =>
-                    {
-                        var hcoAsString = ok.HcoAsString;
-                        if (cacheConfiguration.ShouldBeAddedToCache()
-                            && !string.IsNullOrEmpty(hcoAsString))
-                        {
-                            var entry = GetCacheEntryFromConfiguration(hcoAsString, cacheConfiguration);
-                            this.LinkHcoCache.Set(uriToResolve, entry);
-                        }
-                    });
-
-                    return linkResult.Bind<T>(ok => ok.ResultHco);
-                });
+            return linkResult.Map(ok => ok.ResultHco);
         }
 
         protected abstract Task<CacheEntryVerificationResult<TNetworkResponseMessage>> VerifyIfCacheEntryCanBeUsedAsync(
@@ -123,7 +127,7 @@ namespace RESTyard.Client.Resolver
             Uri uri,
             string method)
         {
-            return await this.SendCommandAsync(uri, method)
+            return await this.SendCommandAsync(uri, method, supportInlineFunctionResult: false)
                 .Bind(this.HandleActionResponseAsync);
         }
 
@@ -136,36 +140,38 @@ namespace RESTyard.Client.Resolver
             if (parameterObject is IHypermediaFileUploadParameter fileUploadParameter)
             {
                 return await this.ProcessUploadParameters(parameterDescriptions, fileUploadParameter)
-                    .Bind(uploadPayload => this.SendUploadCommandAsync(uri, method, uploadPayload))
+                    .Bind(uploadPayload => this.SendUploadCommandAsync(uri, method, supportInlineFunctionResult: false, uploadPayload))
                     .Bind(this.HandleActionResponseAsync);
             }
             return await this.ProcessParameters(parameterDescriptions, parameterObject)
-                .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters))
+                .Bind(serializedParameters => this.SendCommandAsync(uri, method, supportInlineFunctionResult: false, serializedParameters))
                 .Bind(this.HandleActionResponseAsync);
         }
 
-        public async Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(
+        public async Task<HypermediaResult<LinkOrEntity<T>>> ResolveFunctionAsync<T>(
             Uri uri,
-            string method) where T : HypermediaClientObject
+            string method,
+            bool supportInlineFunctionResult) where T : HypermediaClientObject
         {
-            return await SendCommandAsync(uri, method)
+            return await SendCommandAsync(uri, method, supportInlineFunctionResult)
                 .Bind(this.HandleFunctionResponseAsync<T>);
         }
 
-        public async Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(
+        public async Task<HypermediaResult<LinkOrEntity<T>>> ResolveFunctionAsync<T>(
             Uri uri,
             string method,
+            bool supportInlineFunctionResult,
             IReadOnlyList<ParameterDescription> parameterDescriptions,
             object? parameterObject) where T : HypermediaClientObject
         {
             if (parameterObject is IHypermediaFileUploadParameter fileUploadParameter)
             {
                 return await this.ProcessUploadParameters(parameterDescriptions, fileUploadParameter)
-                    .Bind(uploadPayload => this.SendUploadCommandAsync(uri, method, uploadPayload))
+                    .Bind(uploadPayload => this.SendUploadCommandAsync(uri, method, supportInlineFunctionResult, uploadPayload))
                     .Bind(this.HandleFunctionResponseAsync<T>);
             }
             return await this.ProcessParameters(parameterDescriptions, parameterObject)
-                .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters))
+                .Bind(serializedParameters => this.SendCommandAsync(uri, method, supportInlineFunctionResult, serializedParameters))
                 .Bind(this.HandleFunctionResponseAsync<T>);
         }
 
@@ -208,22 +214,21 @@ namespace RESTyard.Client.Resolver
             return await this.EnsureRequestIsSuccessfulAsync(responseMessage);
         }
 
-        protected async Task<HypermediaResult<MandatoryHypermediaLink<T>>> HandleFunctionResponseAsync<T>(
+        protected async Task<HypermediaResult<LinkOrEntity<T>>> HandleFunctionResponseAsync<T>(
             TNetworkResponseMessage responseMessage)
             where T : HypermediaClientObject
         {
             return await this.EnsureRequestIsSuccessfulAsync(responseMessage)
-                .Bind(_ => this.GetLocation(responseMessage))
-                .Bind(location =>
-                {
-                    var actionResult = HypermediaResult.Ok(new MandatoryHypermediaLink<T>()
-                    {
-                        Uri = location,
-                        Resolver = this,
-                    });
-
-                    return actionResult;
-                });
+                .Bind(async _ => this.WasFunctionResultInlined(responseMessage, out var locationOfInlinedResult)
+                    ? await this.HandleLinkResponseAndAddToCacheIfCacheable<T>(locationOfInlinedResult, responseMessage)
+                        .Map(LinkOrEntity<T>.Entity)
+                    : this.GetLocation(responseMessage)
+                        .Map(location => new MandatoryHypermediaLink<T>()
+                        {
+                            Uri = location,
+                            Resolver = this,
+                        })
+                        .Map(LinkOrEntity<T>.Link));
         }
 
         protected HypermediaResult<string> ProcessParameters(IReadOnlyList<ParameterDescription> parameterDescriptions, object? parameterObject)
@@ -280,11 +285,13 @@ namespace RESTyard.Client.Resolver
         protected abstract Task<HypermediaResult<TNetworkResponseMessage>> SendCommandAsync(
             Uri uri,
             string method,
+            bool supportInlineFunctionResult,
             string? payload = null);
 
         protected abstract Task<HypermediaResult<TNetworkResponseMessage>> SendUploadCommandAsync(
             Uri uri,
             string method,
+            bool supportInlineFunctionResult,
             TUploadPayload payload);
 
         protected abstract Task<HypermediaResult<Unit>> EnsureRequestIsSuccessfulAsync(TNetworkResponseMessage responseMessage);
@@ -292,6 +299,8 @@ namespace RESTyard.Client.Resolver
         protected abstract Task<HypermediaResult<Stream>> ResponseAsStreamAsync(TNetworkResponseMessage responseMessage);
 
         protected abstract HypermediaResult<Uri> GetLocation(TNetworkResponseMessage responseMessage);
+        
+        protected abstract bool WasFunctionResultInlined(TNetworkResponseMessage responseMessage, [NotNullWhen(true)] out Uri? locationOfInlinedResult);
 
         ~HypermediaResolverBase()
         {

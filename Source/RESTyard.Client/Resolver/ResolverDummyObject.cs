@@ -36,16 +36,17 @@ public class ResolverDummyObject : IHypermediaResolver
                 new Exception($"Library failed to set {nameof(IHypermediaResolver)} on result object"))));
     }
 
-    public Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(Uri uri, string method) where T : HypermediaClientObject
+    public Task<HypermediaResult<LinkOrEntity<T>>> ResolveFunctionAsync<T>(Uri uri, string method,
+        bool supportInlineFunctionResult) where T : HypermediaClientObject
     {
-        return Task.FromResult(HypermediaResult.Error<MandatoryHypermediaLink<T>>(
+        return Task.FromResult(HypermediaResult.Error<LinkOrEntity<T>>(
             HypermediaProblem.Exception(
                 new Exception($"Library failed to set {nameof(IHypermediaResolver)} on result object"))));
     }
 
-    public Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(Uri uri, string method, IReadOnlyList<ParameterDescription> parameterDescriptions, object? parameterObject) where T : HypermediaClientObject
+    public Task<HypermediaResult<LinkOrEntity<T>>> ResolveFunctionAsync<T>(Uri uri, string method, bool supportInlineFileResult, IReadOnlyList<ParameterDescription> parameterDescriptions, object? parameterObject) where T : HypermediaClientObject
     {
-        return Task.FromResult(HypermediaResult.Error<MandatoryHypermediaLink<T>>(
+        return Task.FromResult(HypermediaResult.Error<LinkOrEntity<T>>(
             HypermediaProblem.Exception(
                 new Exception($"Library failed to set {nameof(IHypermediaResolver)} on result object"))));
     }

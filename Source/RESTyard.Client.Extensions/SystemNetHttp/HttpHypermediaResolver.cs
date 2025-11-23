@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -24,6 +26,10 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             HttpLinkHcoCacheEntry,
             HttpLinkHcoCacheEntryConfiguration>
     {
+        private const string InlineFunctionResultHeader = "X-RestyardInlineFunctionResult";
+        private const string InlinedFunctionResultHeader = "X-RestyardInlinedFunctionResult";
+        private const string InlineFunctionResultHeaderValue = "true";
+        
         private readonly HttpClient httpClient;
         private readonly bool disposeHttpClient;
 
@@ -179,6 +185,7 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
         protected override async Task<HypermediaResult<HttpResponseMessage>> SendCommandAsync(
             Uri uri,
             string method,
+            bool supportInlineFunctionResult,
             string? payload = null)
         {
             var httpMethod = GetHttpMethod(method);
@@ -187,6 +194,11 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             if (!string.IsNullOrEmpty(payload))
             {
                 request.Content = new StringContent(payload, Encoding.UTF8, DefaultMediaTypes.ApplicationJson);//CONTENT-TYPE header    
+            }
+
+            if (supportInlineFunctionResult)
+            {
+                request.Headers.Add(InlineFunctionResultHeader, InlineFunctionResultHeaderValue);
             }
 
             try
@@ -203,6 +215,7 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
         protected override async Task<HypermediaResult<HttpResponseMessage>> SendUploadCommandAsync(
             Uri uri,
             string method,
+            bool supportInlineFunctionResult,
             MultipartFormDataContent uploadPayload)
         {
             using var _ = uploadPayload;
@@ -210,6 +223,11 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             var httpMethod = GetHttpMethod(method);
             var request = new HttpRequestMessage(httpMethod, uri);
             request.Content = uploadPayload;
+
+            if (supportInlineFunctionResult)
+            {
+                request.Headers.Add(InlineFunctionResultHeader, InlineFunctionResultHeaderValue);
+            }
 
             try
             {
@@ -292,6 +310,22 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
                 return HypermediaResult.Error<Uri>(HypermediaProblem.InvalidResponse("hypermedia function did not return a result resource location."));
             }
             return HypermediaResult.Ok(location);
+        }
+
+        protected override bool WasFunctionResultInlined(HttpResponseMessage responseMessage, [NotNullWhen(true)] out Uri? locationOfInlinedResult)
+        {
+            if (responseMessage.Headers.TryGetValues(InlinedFunctionResultHeader, out var values))
+            {
+                var value = values.FirstOrDefault();
+                if (value is not null)
+                {
+                    locationOfInlinedResult = new Uri(value);
+                    return true;
+                }
+            }
+
+            locationOfInlinedResult = null;
+            return false;
         }
 
         private static HttpMethod GetHttpMethod(string method)

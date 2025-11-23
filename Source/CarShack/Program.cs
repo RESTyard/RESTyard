@@ -40,6 +40,7 @@ namespace CarShack
                     .AllowAnyHeader()
                     .WithExposedHeaders("Location");
             });
+            app.UseFunctionResultInlining();
             app.MapControllers();
 
             await app.RunAsync();

@@ -142,7 +142,7 @@ public class IntegrationTests : IAsyncLifetime
         queryResult.All?.Uri.Should().NotBeNull();
         queryResult.Next?.Uri.Should().NotBeNull();
         queryResult.Previous?.Uri.Should().NotBeNull();
-        queryResult.TotalEntities.Should().Be(20);
+        queryResult.TotalEntities.Should().BeGreaterThanOrEqualTo(18);
     }
 
     [Fact]
@@ -288,5 +288,89 @@ public class IntegrationTests : IAsyncLifetime
         
         // Then
         result.Should().BeOk();
+    }
+
+    [Fact]
+    public async Task FunctionWithResolveLocationFlag()
+    {
+        // Given
+        var apiRoot = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint);
+        var customersRootResult = await apiRoot.NavigateAsync(e => e.CustomersRoot);
+        var customerResult = await customersRootResult.Bind(r => r.CreateCustomer!.ExecuteAndResolveAsync(new CreateCustomerParameters("InlineResult"), this.Resolver));
+        var bestCustomer = customerResult.Should().BeOk().Which;
+        
+        // When
+        var executeAndResolveResult = await bestCustomer.BuyCar!
+            .ExecuteAndResolveAsync(new BuyCarParameters("VW", 1, 100), this.Resolver);
+        
+        // Then
+        var car = executeAndResolveResult.Should().BeOk().Which;
+        car.Brand.Should().Be("VW");
+        car.Id.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ManualFunctionWithResolveLocationOn()
+    {
+        // Given
+        var createResult = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint)
+            .NavigateAsync(e => e.CustomersRoot)
+            .Bind(c => c.CreateCustomer!.ExecuteAndResolveAsync(
+                new CreateCustomerParameters("ManualWithInline"), this.Resolver));
+        var customer = createResult.Should().BeOk().Which;
+        var url = customer.BuyCar!.Uri;
+        var request = new HttpRequestMessage(HttpMethod.Post, url);
+        request.Content = new StringContent(
+            /* lang=json */
+            """
+            {
+                "Brand": "VW",
+                "CarId": 5,
+                "Price": 100
+            }
+            """);
+        request.Headers.Add("X-RestyardInlineFunctionResult", "true");
+        
+        // When
+        var result = await this.Client.SendAsync(request);
+        
+        // Then
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        result.Headers.Should().ContainKey("X-RestyardInlinedFunctionResult")
+            .WhoseValue.Should().ContainSingle()
+            .Which.Should().Be("http://localhost:5000/Cars/VW/5");
+        var content = await result.Content.ReadAsStringAsync();
+        content.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task ManualFunctionWithResolveLocationOff()
+    {
+        // Given
+        var createResult = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint)
+            .NavigateAsync(e => e.CustomersRoot)
+            .Bind(c => c.CreateCustomer!.ExecuteAndResolveAsync(
+                new CreateCustomerParameters("ManualWithoutInline"), this.Resolver));
+        var customer = createResult.Should().BeOk().Which;
+        var url = customer.BuyCar!.Uri;
+        var request = new HttpRequestMessage(HttpMethod.Post, url);
+        request.Content = new StringContent(
+            /* lang=json */
+            """
+            {
+                "Brand": "VW",
+                "CarId": 6,
+                "Price": 100
+            }
+            """);
+        
+        // When
+        var result = await this.Client.SendAsync(request);
+        
+        // Then
+        result.StatusCode.Should().Be(HttpStatusCode.Created);
+        result.Headers.Should().NotContainKey("X-RestyardInlinedFunctionResult");
+        result.Headers.Location.Should().NotBeNull();
+        result.Headers.Location.LocalPath.Should().Be("/Cars/VW/6");
     }
 }

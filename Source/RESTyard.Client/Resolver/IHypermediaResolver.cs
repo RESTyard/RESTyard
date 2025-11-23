@@ -23,8 +23,8 @@ namespace RESTyard.Client.Resolver
 
         Task<HypermediaResult<Unit>> ResolveActionAsync(Uri uri, string method, IReadOnlyList<ParameterDescription> parameterDescriptions, object? parameterObject);
 
-        Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(Uri uri, string method) where T : HypermediaClientObject;
+        Task<HypermediaResult<LinkOrEntity<T>>> ResolveFunctionAsync<T>(Uri uri, string method, bool supportInlineFunctionResult) where T : HypermediaClientObject;
 
-        Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(Uri uri, string method, IReadOnlyList<ParameterDescription> parameterDescriptions, object? parameterObject) where T : HypermediaClientObject;
+        Task<HypermediaResult<LinkOrEntity<T>>> ResolveFunctionAsync<T>(Uri uri, string method, bool supportInlineFunctionResult, IReadOnlyList<ParameterDescription> parameterDescriptions, object? parameterObject) where T : HypermediaClientObject;
     }
 }
