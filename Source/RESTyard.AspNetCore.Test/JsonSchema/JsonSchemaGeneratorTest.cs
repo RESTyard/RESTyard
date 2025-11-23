@@ -1,20 +1,14 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using NJsonSchema;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
-using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.JsonSchema;
 using RESTyard.AspNetCore.Test.Helpers;
 using RESTyard.AspNetCore.Test.Hypermedia;
-using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 
 namespace RESTyard.AspNetCore.Test.JsonSchema
 {

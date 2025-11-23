@@ -1,6 +1,4 @@
-﻿using System;
-using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.Client.Hypermedia;
 using RESTyard.Client.Util;
 

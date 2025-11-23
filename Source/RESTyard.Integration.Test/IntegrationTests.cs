@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Headers;
-using FluentAssertions;
 using RESTyard.Client.Authentication;
 using RESTyard.Client.Extensions;
 using RESTyard.Client.Extensions.SystemNetHttp;
