@@ -74,7 +74,7 @@ public class HypermediaFileProvider : IFileProvider, IContentTypeProvider
         HypermediaUiConfig? config)
     {
         this.subpath = subpath;
-        var prefix = this.subpath == "" ? "" : $"/{this.subpath}";
+        var prefix = this.subpath == "" ? "" : $"{this.subpath}/";
         this.files = new HypermediaDirectoryContents(created);
         (string Name, string FullName, byte[] Content) index = ("", "", []);
         foreach (var tuple in files)

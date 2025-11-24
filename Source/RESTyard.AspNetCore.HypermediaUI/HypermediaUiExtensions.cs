@@ -21,7 +21,7 @@ public static class HypermediaUiExtensions
     /// <returns>The app builder</returns>
     public static IApplicationBuilder UseHypermediaUI(
         this IApplicationBuilder builder,
-        string subpath,
+        string subpath = "restyard",
         HypermediaUiConfig? config = null)
     {
         var files = ExtractAngularFilesFromArchive();

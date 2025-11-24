@@ -59,8 +59,7 @@ namespace CarShack
             });
             app.MapControllers();
             app.UseHypermediaUI(
-                "",
-                new HypermediaUiConfig()
+                config: new HypermediaUiConfig()
                 {
                     DisableDeveloperControls = false,
                     OnlyAllowConfiguredEntryPoints = false,

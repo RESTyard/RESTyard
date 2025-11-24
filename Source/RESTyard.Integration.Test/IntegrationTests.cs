@@ -352,10 +352,10 @@ public class IntegrationTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task HypermediaUI_AtRootTest()
+    public async Task HypermediaUI_DefaultSubpathTest()
     {
         // When
-        var index = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}");
+        var index = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/restyard");
         
         // Then
         index.Should().BeSuccessful();
