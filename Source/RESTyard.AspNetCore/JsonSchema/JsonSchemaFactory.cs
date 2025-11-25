@@ -1,38 +1,24 @@
 ﻿using System;
-using NJsonSchema.Generation;
 using System.Text.Json;
-using Newtonsoft.Json.Converters;
+using Json.Schema;
+using Json.Schema.Generation;
 
 namespace RESTyard.AspNetCore.JsonSchema
 {
     public static class JsonSchemaFactory
     {
-        static readonly JsonSchemaGeneratorSettings JsonSchemaGeneratorSettings = new JsonSchemaGeneratorSettings
-        {
-            FlattenInheritanceHierarchy = true,
-            SerializerSettings = new()
-            {
-                Converters =
-                {
-                    new StringEnumConverter(),
-                },
-            },
-        };
-
         public static object Generate(Type type)
-
         {
-            var schema = GenerateSchemaAsync(type);
-            var schemaData = schema.ToJson();
-
-            return JsonDocument.Parse(schemaData);
+            var schema = GenerateSchema(type);
+            return JsonSerializer.SerializeToDocument(schema);
         }
 
-        public static NJsonSchema.JsonSchema GenerateSchemaAsync(Type type)
+        public static Json.Schema.JsonSchema GenerateSchema(Type type)
         {
-            var schema = NJsonSchema.JsonSchema.FromType(type, JsonSchemaGeneratorSettings);
-
-            return schema;
+            return new JsonSchemaBuilder()
+                .Schema(MetaSchemas.Draft202012Id)
+                .FromType(type)
+                .Build();
         }
     }
 }

@@ -1,31 +1,26 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
+using Json.Schema;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using NJsonSchema;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
-using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.JsonSchema;
 using RESTyard.AspNetCore.Test.Helpers;
 using RESTyard.AspNetCore.Test.Hypermedia;
-using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 
 namespace RESTyard.AspNetCore.Test.JsonSchema
 {
     [TestClass]
     public class When_generating_json_schema_from_type_with_key_attribute : AsyncTestSpecification
     {
-        NJsonSchema.JsonSchema schema;
+        Json.Schema.JsonSchema schema;
 
         protected override Task When()
         {
-            schema = JsonSchemaFactory.GenerateSchemaAsync(typeof(MyParameter));
+            schema = JsonSchemaFactory.GenerateSchema(typeof(MyParameter));
             return Task.CompletedTask;
         }
 
@@ -56,11 +51,11 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
     [TestClass]
     public class When_generating_json_schema_from_type_with_multiple_key_attributes : AsyncTestSpecification
     {
-        NJsonSchema.JsonSchema schema;
+        Json.Schema.JsonSchema schema;
 
         protected override Task When()
         {
-            schema = JsonSchemaFactory.GenerateSchemaAsync(typeof(MyParameter));
+            schema = JsonSchemaFactory.GenerateSchema(typeof(MyParameter));
             return Task.CompletedTask;
         }
 
@@ -93,12 +88,12 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
 
     public static class SchemaAssertionExtension
     {
-        public static void RequiredUriPropertyShouldExist(this NJsonSchema.JsonSchema schema, string propertyName)
+        public static void RequiredUriPropertyShouldExist(this Json.Schema.JsonSchema schema, string propertyName)
         {
-            var idProperty = schema.Properties.Should().ContainKey(propertyName).WhoseValue;
-            schema.RequiredProperties.Should().Contain(propertyName);
-            idProperty.Type.Should().Be(JsonObjectType.String);
-            idProperty.Format.Should().Be(JsonFormatStrings.Uri);
+            var idProperty = schema.GetProperties().Should().ContainKey(propertyName).WhoseValue;
+            schema.GetRequired().Should().Contain(propertyName);
+            idProperty.GetJsonType().Should().Be(SchemaValueType.String);
+            idProperty.GetFormat().Should().Be(Formats.Uri);
         }
     }
 
@@ -170,22 +165,22 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
     [TestClass]
     public class When_generating_action_schema_with_date_only_and_time_only : TestSpecification
     {
-        private NJsonSchema.JsonSchema schema;
+        private Json.Schema.JsonSchema schema;
         
         public override void When()
         {
-            schema = JsonSchemaFactory.GenerateSchemaAsync(typeof(MyParameter));
+            schema = JsonSchemaFactory.GenerateSchema(typeof(MyParameter));
         }
 
         [TestMethod]
         public void Then_TheTypesAreMappedProperly()
         {
-            var dateOnlyProperty = schema.Properties.Should().ContainKey(nameof(MyParameter.DateOnly)).WhoseValue;
-            dateOnlyProperty.Type.Should().Be(JsonObjectType.String);
-            dateOnlyProperty.Format.Should().Be(JsonFormatStrings.Date);
-            var timeOnlyProperty = schema.Properties.Should().ContainKey(nameof(MyParameter.TimeOnly)).WhoseValue;
-            timeOnlyProperty.Type.Should().Be(JsonObjectType.String);
-            timeOnlyProperty.Format.Should().Be(JsonFormatStrings.Time);
+            var dateOnlyProperty = schema.GetProperties().Should().ContainKey(nameof(MyParameter.DateOnly)).WhoseValue;
+            dateOnlyProperty.GetJsonType().Should().Be(SchemaValueType.String);
+            dateOnlyProperty.GetFormat().Should().Be(Formats.Date);
+            var timeOnlyProperty = schema.GetProperties().Should().ContainKey(nameof(MyParameter.TimeOnly)).WhoseValue;
+            timeOnlyProperty.GetJsonType().Should().Be(SchemaValueType.String);
+            timeOnlyProperty.GetFormat().Should().Be(Formats.Time);
         }
 
         public record MyParameter(DateOnly DateOnly, TimeOnly TimeOnly);
