@@ -34,12 +34,12 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
         {
             // ReSharper disable UnusedMember.Local
             [Required]
-            public Uri Id { get; set; }
+            public required Uri Id { get; set; }
 
             public int SomeValue { get; set; }
 
-            //[Required]
-            public Uri Uri { get; set; }
+            [Required]
+            public required Uri Uri { get; set; }
             // ReSharper restore UnusedMember.Local
         }
 
@@ -69,21 +69,17 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
         class MyParameter : IHypermediaActionParameter
         {
             // ReSharper disable UnusedMember.Local
-            [Required]
-            public Uri UriToHmo { get; set; }
+            public required Uri UriToHmo { get; set; }
 
-            [Required]
-            public Uri UriToAnotherHmo { get; set; }
+            public  required Uri UriToAnotherHmo { get; set; }
 
             public int SomeValue { get; set; }
 
-            [Required] public Uri Uri { get; set; }
+            public  required Uri Uri { get; set; }
             // ReSharper restore UnusedMember.Local
         }
 
-        class MyHypermediaObject : IHypermediaObject
-        {
-        }
+        class MyHypermediaObject : IHypermediaObject;
     }
 
     public static class SchemaAssertionExtension
