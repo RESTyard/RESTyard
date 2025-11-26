@@ -7,5 +7,6 @@ namespace RESTyard.AspNetCore.Hypermedia.Attributes
     {
         public string? Name { get; set; }
         public string? Title { get; set; }
+        public string[]? Classes { get; set; }
     }
 }
