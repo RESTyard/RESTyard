@@ -89,11 +89,14 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
     public static class SchemaAssertionExtension
     {
         public static void RequiredUriPropertyShouldExist(this Json.Schema.JsonSchema schema, string propertyName)
-        {
-            var idProperty = schema.GetProperties().Should().ContainKey(propertyName).WhoseValue;
+        { 
             schema.GetRequired().Should().Contain(propertyName);
-            idProperty.GetJsonType().Should().Be(SchemaValueType.String);
-            idProperty.GetFormat().Should().Be(Formats.Uri);
+            
+            var property = schema.GetProperties().Should().ContainKey(propertyName).WhoseValue;
+            var resolvedSchema = property.ResolveSchema(schema);
+            resolvedSchema.Should().NotBeNull("Schema must be found either inline or as ref");
+            resolvedSchema!.GetJsonType().Should().Be(SchemaValueType.String);
+            resolvedSchema!.GetFormat().Should().Be(Formats.Uri);
         }
     }
 

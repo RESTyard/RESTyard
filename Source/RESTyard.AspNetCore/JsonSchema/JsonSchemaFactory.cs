@@ -21,16 +21,12 @@ namespace RESTyard.AspNetCore.JsonSchema
                 Generators = {
                     new DateOnlyGenerator(),
                     new TimeOnlyGenerator(),
-                    new UriSchemaGenerator()
                 },
                 
             };
             
-            // Config.Refiners.Add(new UriFormatRefiner());
             AttributeHandler.AddHandler(new DisplayNameAttributeHandler());
             AttributeHandler.AddHandler(new DescriptionAttributeHandler());
-            
-            
         }
 
         private static readonly SchemaGeneratorConfiguration Config;
@@ -93,24 +89,6 @@ namespace RESTyard.AspNetCore.JsonSchema
         {
             context.Intents.Add(new TypeIntent(SchemaValueType.String));
             context.Intents.Add(new FormatIntent(Formats.Time)); 
-        }
-    }
-    
-    public class UriSchemaGenerator : ISchemaGenerator
-    {
-        public bool Handles(Type type)
-        {
-            // This ensures it runs for Uri anywhere it appears
-            return type == typeof(Uri);
-        }
-    
-        public void AddConstraints(SchemaGenerationContextBase context)
-        {
-            // Force type: string
-            context.Intents.Add(new TypeIntent(SchemaValueType.String));
-        
-            // Force format: uri
-            context.Intents.Add(new FormatIntent(Formats.Uri));
         }
     }
 }
