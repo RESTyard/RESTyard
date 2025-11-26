@@ -27,8 +27,12 @@ public static class SchemaValidator
         foreach (var (propertyName, propertySchema) in expectedSchema.GetProperties())
         {
             schema.GetProperties().Should().ContainKey(propertyName, $"because property '{propertyName}' should exist");
-            schema.GetProperties()[propertyName].GetJsonType().Should().NotBe(null, $"because property '{propertyName}' has a type defined");
-            schema.GetProperties()[propertyName].GetJsonType().Should().Be(propertySchema.GetJsonType(), $"because property '{propertyName}' has the correct type");
+
+            var property = schema.GetProperties()[propertyName];
+            var localPropertySchema = property.ResolveSchema(schema);
+            
+            localPropertySchema.GetJsonType().Should().NotBe(null, $"because property '{propertyName}' has a type defined");
+            localPropertySchema.GetJsonType().Should().Be(propertySchema.GetJsonType(), $"because property '{propertyName}' has the correct type");
         }
     }
 }
