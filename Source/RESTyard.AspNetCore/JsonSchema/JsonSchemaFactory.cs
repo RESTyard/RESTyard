@@ -5,47 +5,46 @@ using Json.Schema.Generation;
 using Json.Schema.Generation.Generators;
 using Json.Schema.Generation.Intents;
 
-
 namespace RESTyard.AspNetCore.JsonSchema
 {
     // DataAnnotations like [Required] not handled. 'required' keyword works
     // required to support e.g. [Required] but this is an own class by the lib
     // using Json.Schema.Generation.DataAnnotations;
     // DataAnnotationsSupport.AddDataAnnotations();
-    public static class JsonSchemaFactory
+    public class JsonSchemaFactory : IJsonSchemaFactory
     {
-        static JsonSchemaFactory()
+        public JsonSchemaFactory()
         {
-            Config = new SchemaGeneratorConfiguration()
+            config = new SchemaGeneratorConfiguration()
             {
                 Generators = {
                     new DateOnlyGenerator(),
                     new TimeOnlyGenerator(),
                 },
-                
             };
             
             AttributeHandler.AddHandler(new DisplayNameAttributeHandler());
             AttributeHandler.AddHandler(new DescriptionAttributeHandler());
         }
 
-        private static readonly SchemaGeneratorConfiguration Config;
+        private readonly SchemaGeneratorConfiguration config;
         
-        public static object Generate(Type type)
+        public JsonDocument Generate(Type type)
         {
-            var schema = GenerateSchema(type);
+            var schema =new JsonSchemaBuilder()
+                .Schema(MetaSchemas.Draft202012Id)
+                .FromType(type, config)
+                .Build();
             return JsonSerializer.SerializeToDocument(schema);
         }
 
-        public static Json.Schema.JsonSchema GenerateSchema(Type type)
+        public Json.Schema.JsonSchema GenerateSchema(Type type)
         {
-            return new JsonSchemaBuilder()
-                .Schema(MetaSchemas.Draft202012Id)
-                .FromType(type, Config)
-                .Build();
+            return Generate(type).RootElement.Deserialize<Json.Schema.JsonSchema>()
+                   ?? throw new Exception($"Can not create schema from presented {nameof(JsonDocument)}");
         }
     }
-    
+
     // see https://github.com/json-everything/json-everything/issues/143
     // we need to use the generic interface so it will be called
     internal sealed class DisplayNameAttributeHandler : IAttributeHandler<System.ComponentModel.DisplayNameAttribute> {

@@ -23,13 +23,16 @@ public class CustomerController : Controller
 {
     private readonly ICustomerRepository customerRepository;
     private readonly IKeyFromUriService keyFromUriService;
+    private readonly IJsonSchemaFactory jsonSchemaFactory;
 
     public CustomerController(
         ICustomerRepository customerRepository,
-        IKeyFromUriService keyFromUriService)
+        IKeyFromUriService keyFromUriService,
+        IJsonSchemaFactory jsonSchemaFactory)
     {
         this.customerRepository = customerRepository;
         this.keyFromUriService = keyFromUriService;
+        this.jsonSchemaFactory = jsonSchemaFactory;
     }
 
     #region HypermediaObjects
@@ -249,7 +252,7 @@ public class CustomerController : Controller
     [HttpGet("NewAddressType"), HypermediaActionParameterInfoEndpoint<NewAddress>]
     public ActionResult NewAddressType()
     {
-        var schema = JsonSchemaFactory.Generate(typeof(NewAddress));
+        var schema = jsonSchemaFactory.Generate(typeof(NewAddress));
         return Ok(schema);
     }
 

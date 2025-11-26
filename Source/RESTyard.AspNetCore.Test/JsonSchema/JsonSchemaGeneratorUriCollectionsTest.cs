@@ -44,7 +44,7 @@ public class When_generating_json_schema_from_type_containing_a_list : AsyncTest
 
    protected override Task When()
    {
-       schema = JsonSchemaFactory.GenerateSchema(typeof(MyParameter));
+       schema = new JsonSchemaFactory().GenerateSchema(typeof(MyParameter));
        return Task.CompletedTask;
    }
 
@@ -83,7 +83,7 @@ public class When_generating_json_schema_from_type_containing_a_list_and_not_a_l
 
     protected override Task When()
     {
-        schema = JsonSchemaFactory.GenerateSchema(typeof(MyParameter));
+        schema = new JsonSchemaFactory().GenerateSchema(typeof(MyParameter));
         return Task.CompletedTask;
     }
 
@@ -128,7 +128,7 @@ public class When_generating_json_schema_from_type_containing_two_types_and_a_li
 
     protected override Task When()
     {
-        schema = JsonSchemaFactory.GenerateSchema(typeof(MyParameter));
+        schema = new JsonSchemaFactory().GenerateSchema(typeof(MyParameter));
         return Task.CompletedTask;
     }
 
@@ -192,7 +192,7 @@ public class When_generating_json_schema_with_same_name_for_both_a_collection_an
     {
         try
         {
-            schema = JsonSchemaFactory.GenerateSchema(typeof(MyParameter));
+            schema = new JsonSchemaFactory().GenerateSchema(typeof(MyParameter));
             Assert.Fail("Operation should fail since UriToHmo is used for both List and not a List.");
         }
         catch (Exception)
@@ -226,7 +226,7 @@ public class When_generating_json_schema_with_same_name_for_multiple_target_type
     {
         try
         {
-            schema = JsonSchemaFactory.GenerateSchema(typeof(MyParameter));
+            schema = new JsonSchemaFactory().GenerateSchema(typeof(MyParameter));
             Assert.Fail("Operation should fail since UriToHmo is used for both target types: MyHypermediaObject and MyHypermediaObject2.");
         }
         catch (Exception)

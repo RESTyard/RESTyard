@@ -20,7 +20,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
 
         protected override Task When()
         {
-            schema = JsonSchemaFactory.GenerateSchema(typeof(MyParameter));
+            schema = new JsonSchemaFactory().GenerateSchema(typeof(MyParameter));
             return Task.CompletedTask;
         }
 
@@ -55,7 +55,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
 
         protected override Task When()
         {
-            schema = JsonSchemaFactory.GenerateSchema(typeof(MyParameter));
+            schema = new JsonSchemaFactory().GenerateSchema(typeof(MyParameter));
             return Task.CompletedTask;
         }
 
@@ -168,7 +168,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
         
         public override void When()
         {
-            schema = JsonSchemaFactory.GenerateSchema(typeof(MyParameter));
+            schema = new JsonSchemaFactory().GenerateSchema(typeof(MyParameter));
         }
 
         [TestMethod]
