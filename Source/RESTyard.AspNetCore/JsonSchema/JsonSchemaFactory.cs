@@ -58,7 +58,7 @@ namespace RESTyard.AspNetCore.JsonSchema
         public void AddConstraints(SchemaGenerationContextBase context, Attribute attribute)
         {
             var att = (System.ComponentModel.DescriptionAttribute)attribute;
-            context.Intents.Insert(0, new TitleIntent(att.Description));
+            context.Intents.Insert(0, new DescriptionIntent(att.Description));
         }
     }
     
