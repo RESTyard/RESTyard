@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Rewrite;
-using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace RESTyard.AspNetCore.WebApi.ExtensionMethods;
 
@@ -23,11 +23,13 @@ public static class ApplicationBuilderExtensions
                 && context.Response is { HasStarted: false, Headers.Location.Count: 1 })
             {
                 var location = context.Response.Headers.Location[0]!;
-                context.Response.Headers.Remove(HeaderNames.Location);
-                context.Response.Headers["X-RestyardInlinedFunctionResult"] = location;
+                context.Response.Headers["X-RestyardInlinedFunctionResult"] = "true";
                 context.Features.Set(new RewriteRequestToFunctionResultLocationFeature(
                     Method: "GET",
                     Location: location));
+                // Ensure that the subsequent request has its own DI scope
+                await using var scope = app.ApplicationServices.CreateAsyncScope();
+                context.RequestServices = scope.ServiceProvider;
                 await next(context);
             }
         }

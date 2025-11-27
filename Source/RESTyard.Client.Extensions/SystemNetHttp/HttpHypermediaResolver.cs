@@ -312,20 +312,10 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             return HypermediaResult.Ok(location);
         }
 
-        protected override bool WasFunctionResultInlined(HttpResponseMessage responseMessage, [NotNullWhen(true)] out Uri? locationOfInlinedResult)
+        protected override bool WasFunctionResultInlined(HttpResponseMessage responseMessage)
         {
-            if (responseMessage.Headers.TryGetValues(InlinedFunctionResultHeader, out var values))
-            {
-                var value = values.FirstOrDefault();
-                if (value is not null)
-                {
-                    locationOfInlinedResult = new Uri(value);
-                    return true;
-                }
-            }
-
-            locationOfInlinedResult = null;
-            return false;
+            return responseMessage.Headers.TryGetValues(InlinedFunctionResultHeader, out var values)
+                   && values.FirstOrDefault() == "true";
         }
 
         private static HttpMethod GetHttpMethod(string method)

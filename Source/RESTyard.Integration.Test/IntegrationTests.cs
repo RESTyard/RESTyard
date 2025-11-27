@@ -338,7 +338,9 @@ public class IntegrationTests : IAsyncLifetime
         result.StatusCode.Should().Be(HttpStatusCode.OK);
         result.Headers.Should().ContainKey("X-RestyardInlinedFunctionResult")
             .WhoseValue.Should().ContainSingle()
-            .Which.Should().Be("http://localhost:5000/Cars/VW/5");
+            .Which.Should().Be("true");
+        result.Headers.Location.Should().NotBeNull();
+        result.Headers.Location.LocalPath.Should().Be("/Cars/VW/5");
         var content = await result.Content.ReadAsStringAsync();
         content.Should().NotBeNullOrEmpty();
     }

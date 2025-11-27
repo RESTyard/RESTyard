@@ -219,8 +219,9 @@ namespace RESTyard.Client.Resolver
             where T : HypermediaClientObject
         {
             return await this.EnsureRequestIsSuccessfulAsync(responseMessage)
-                .Bind(async _ => this.WasFunctionResultInlined(responseMessage, out var locationOfInlinedResult)
-                    ? await this.HandleLinkResponseAndAddToCacheIfCacheable<T>(locationOfInlinedResult, responseMessage)
+                .Bind(async _ => this.WasFunctionResultInlined(responseMessage)
+                    ? await this.GetLocation(responseMessage)
+                        .Bind(locationOfInlinedResult => this.HandleLinkResponseAndAddToCacheIfCacheable<T>(locationOfInlinedResult, responseMessage))
                         .Map(LinkOrEntity<T>.Entity)
                     : this.GetLocation(responseMessage)
                         .Map(location => new MandatoryHypermediaLink<T>()
@@ -300,7 +301,7 @@ namespace RESTyard.Client.Resolver
 
         protected abstract HypermediaResult<Uri> GetLocation(TNetworkResponseMessage responseMessage);
         
-        protected abstract bool WasFunctionResultInlined(TNetworkResponseMessage responseMessage, [NotNullWhen(true)] out Uri? locationOfInlinedResult);
+        protected abstract bool WasFunctionResultInlined(TNetworkResponseMessage responseMessage);
 
         ~HypermediaResolverBase()
         {
