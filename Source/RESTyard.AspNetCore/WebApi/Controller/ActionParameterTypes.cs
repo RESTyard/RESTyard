@@ -9,6 +9,7 @@ using RESTyard.AspNetCore.JsonSchema;
 using RESTyard.AspNetCore.Util;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 using RESTyard.AspNetCore.WebApi.Formatter;
+using RESTyard.MediaTypes;
 
 namespace RESTyard.AspNetCore.WebApi.Controller
 {
@@ -59,7 +60,8 @@ namespace RESTyard.AspNetCore.WebApi.Controller
                 });
             }
 
-            return Ok(schema);
+            var jsonString = JsonSerializer.Serialize(schema);
+            return Content(jsonString, DefaultMediaTypes.JsonSchema);
         }
     }
 }
