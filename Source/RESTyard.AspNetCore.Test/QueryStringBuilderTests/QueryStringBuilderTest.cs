@@ -1,4 +1,5 @@
 ﻿using System;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.Test.Helpers;
@@ -38,26 +39,32 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
                 ATimeSpan = new TimeSpan(5, 4, 3, 2, 1),
                 ADecimal = 9,
                 ANullableInt = 2,
-                ADateTimeOffset = new DateTimeOffset(2001,11,23, 18, 10, 5, new TimeSpan(0, 2, 0, 0))
+                ADateTimeOffset = new DateTimeOffset(2001,11,23, 18, 10, 5, new TimeSpan(0, 2, 0, 0)),
+                ADateOnly = DateOnly.FromDateTime(new DateTime(2025, 12, 31)),
+                ATimeOnly = TimeOnly.FromTimeSpan(new TimeSpan(0, 3, 1, 2)),
+                AUri = new Uri("http://www.example.com?a=1"),
             };
 
             var result = queryStringBuilder.CreateQueryString(queryObject);
             var valueDictionary = QueryStringBuilderTestHelper.CreateValueDictionaryFromQueryString(result);
 
-            Assert.IsTrue(result[0] == '?');
-            Assert.IsTrue(valueDictionary.Count == 12);
-            Assert.IsTrue(valueDictionary["ABool"] == queryObject.ABool.ToString());
-            Assert.IsTrue(valueDictionary["AString"] == queryObject.AString);
-            Assert.IsTrue(valueDictionary["AInt"] == queryObject.AInt.ToInvariantString());
-            Assert.IsTrue(valueDictionary["ALong"] == queryObject.ALong.ToInvariantString());
-            Assert.IsTrue(valueDictionary["AFloat"] == Uri.EscapeDataString(queryObject.AFloat.ToInvariantString()));
-            Assert.IsTrue(valueDictionary["ADouble"] == Uri.EscapeDataString(queryObject.ADouble.ToInvariantString()));
-            Assert.IsTrue(valueDictionary["AEnum"] == queryObject.AEnum.ToString());
-            Assert.IsTrue(valueDictionary["ADateTime"] == Uri.EscapeDataString(queryObject.ADateTime.ToInvariantString()));
-            Assert.IsTrue(valueDictionary["ATimeSpan"] == Uri.EscapeDataString(queryObject.ATimeSpan.ToString()));
-            Assert.IsTrue(valueDictionary["ADecimal"] == Uri.EscapeDataString(queryObject.ADecimal.ToInvariantString()));
-            Assert.IsTrue(valueDictionary["ANullableInt"] == queryObject.ANullableInt.ToString());
-            Assert.IsTrue(valueDictionary["ADateTimeOffset"] == Uri.EscapeDataString(queryObject.ADateTimeOffset.ToInvariantString()));
+            result[0].Should().Be('?');
+            valueDictionary.Count.Should().Be(15);
+            valueDictionary["ABool"].Should().Be(queryObject.ABool.ToString());
+            valueDictionary["AString"].Should().Be(queryObject.AString);
+            valueDictionary["AInt"].Should().Be(queryObject.AInt.ToInvariantString());
+            valueDictionary["ALong"].Should().Be(queryObject.ALong.ToInvariantString());
+            valueDictionary["AFloat"].Should().Be(Uri.EscapeDataString(queryObject.AFloat.ToInvariantString()));
+            valueDictionary["ADouble"].Should().Be(Uri.EscapeDataString(queryObject.ADouble.ToInvariantString()));
+            valueDictionary["AEnum"].Should().Be(queryObject.AEnum.ToString());
+            valueDictionary["ADateTime"].Should().Be(Uri.EscapeDataString(queryObject.ADateTime.ToInvariantString()));
+            valueDictionary["ATimeSpan"].Should().Be(Uri.EscapeDataString(queryObject.ATimeSpan.ToString()));
+            valueDictionary["ADecimal"].Should().Be(Uri.EscapeDataString(queryObject.ADecimal.ToInvariantString()));
+            valueDictionary["ANullableInt"].Should().Be(queryObject.ANullableInt.ToString());
+            valueDictionary["ADateTimeOffset"].Should().Be(Uri.EscapeDataString(queryObject.ADateTimeOffset.ToInvariantString()));
+            valueDictionary["ADateOnly"].Should().Be(Uri.EscapeDataString(queryObject.ADateOnly.ToInvariantString()));
+            valueDictionary["ATimeOnly"].Should().Be(Uri.EscapeDataString(queryObject.ATimeOnly.ToInvariantString()));
+            valueDictionary["AUri"].Should().Be(Uri.EscapeDataString(queryObject.AUri.ToInvariantString()));
         }
 
         [TestMethod]
@@ -122,6 +129,9 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             public decimal ADecimal { get; set; }
             public int? ANullableInt { get; set; }
             public DateTimeOffset ADateTimeOffset { get; set; }
+            public DateOnly ADateOnly { get; set; }
+            public TimeOnly ATimeOnly { get; set; }
+            public Uri AUri { get; set; }            
         }
 
         private class QueryWithNesting
