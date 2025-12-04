@@ -49,22 +49,22 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             var valueDictionary = QueryStringBuilderTestHelper.CreateValueDictionaryFromQueryString(result);
 
             result[0].Should().Be('?');
-            valueDictionary.Count.Should().Be(15);
-            valueDictionary["ABool"].Should().Be(queryObject.ABool.ToString());
-            valueDictionary["AString"].Should().Be(queryObject.AString);
-            valueDictionary["AInt"].Should().Be(queryObject.AInt.ToInvariantString());
-            valueDictionary["ALong"].Should().Be(queryObject.ALong.ToInvariantString());
-            valueDictionary["AFloat"].Should().Be(Uri.EscapeDataString(queryObject.AFloat.ToInvariantString()));
-            valueDictionary["ADouble"].Should().Be(Uri.EscapeDataString(queryObject.ADouble.ToInvariantString()));
-            valueDictionary["AEnum"].Should().Be(queryObject.AEnum.ToString());
-            valueDictionary["ADateTime"].Should().Be(Uri.EscapeDataString(queryObject.ADateTime.ToInvariantString()));
-            valueDictionary["ATimeSpan"].Should().Be(Uri.EscapeDataString(queryObject.ATimeSpan.ToString()));
-            valueDictionary["ADecimal"].Should().Be(Uri.EscapeDataString(queryObject.ADecimal.ToInvariantString()));
-            valueDictionary["ANullableInt"].Should().Be(queryObject.ANullableInt.ToString());
-            valueDictionary["ADateTimeOffset"].Should().Be(Uri.EscapeDataString(queryObject.ADateTimeOffset.ToInvariantString()));
-            valueDictionary["ADateOnly"].Should().Be(Uri.EscapeDataString(queryObject.ADateOnly.ToInvariantString()));
-            valueDictionary["ATimeOnly"].Should().Be(Uri.EscapeDataString(queryObject.ATimeOnly.ToInvariantString()));
-            valueDictionary["AUri"].Should().Be(Uri.EscapeDataString(queryObject.AUri.ToInvariantString()));
+            valueDictionary.Should().HaveCount(15);
+            valueDictionary.Should().ContainKey("ABool").WhoseValue.Should().Be(queryObject.ABool.ToString());
+            valueDictionary.Should().ContainKey("AString").WhoseValue.Should().Be(queryObject.AString);
+            valueDictionary.Should().ContainKey("AInt").WhoseValue.Should().Be(queryObject.AInt.ToInvariantString());
+            valueDictionary.Should().ContainKey("ALong").WhoseValue.Should().Be(queryObject.ALong.ToInvariantString());
+            valueDictionary.Should().ContainKey("AFloat").WhoseValue.Should().Be(Uri.EscapeDataString(queryObject.AFloat.ToInvariantString()));
+            valueDictionary.Should().ContainKey("ADouble").WhoseValue.Should().Be(Uri.EscapeDataString(queryObject.ADouble.ToInvariantString()));
+            valueDictionary.Should().ContainKey("AEnum").WhoseValue.Should().Be(queryObject.AEnum.ToString());
+            valueDictionary.Should().ContainKey("ADateTime").WhoseValue.Should().Be(Uri.EscapeDataString(queryObject.ADateTime.ToInvariantString()));
+            valueDictionary.Should().ContainKey("ATimeSpan").WhoseValue.Should().Be(Uri.EscapeDataString(queryObject.ATimeSpan.ToString()));
+            valueDictionary.Should().ContainKey("ADecimal").WhoseValue.Should().Be(Uri.EscapeDataString(queryObject.ADecimal.ToInvariantString()));
+            valueDictionary.Should().ContainKey("ANullableInt").WhoseValue.Should().Be(queryObject.ANullableInt.ToString());
+            valueDictionary.Should().ContainKey("ADateTimeOffset").WhoseValue.Should().Be(Uri.EscapeDataString(queryObject.ADateTimeOffset.ToInvariantString()));
+            valueDictionary.Should().ContainKey("ADateOnly").WhoseValue.Should().Be(Uri.EscapeDataString(queryObject.ADateOnly.ToInvariantString()));
+            valueDictionary.Should().ContainKey("ATimeOnly").WhoseValue.Should().Be(Uri.EscapeDataString(queryObject.ATimeOnly.ToInvariantString()));
+            valueDictionary.Should().ContainKey("AUri").WhoseValue.Should().Be(Uri.EscapeDataString(queryObject.AUri.ToInvariantString()));
         }
 
         [TestMethod]
