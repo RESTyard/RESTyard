@@ -184,4 +184,36 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
 
         public record MyParameter(DateOnly DateOnly, TimeOnly TimeOnly);
     }
+    
+    [TestClass]
+    public class When_generating_action_schema_with_date_time_offset_date_time_timespan : TestSpecification
+    {
+        private Json.Schema.JsonSchema schema;
+        public override void When()
+        {
+            schema = new JsonSchemaFactory().GenerateSchema(typeof(MyParameterTimes));
+        }
+
+        [TestMethod]
+        public void Then_TheTypesAreMappedProperly()
+        {
+            var dateTimeOffsetProperty = schema.GetProperties().Should().ContainKey(nameof(MyParameterTimes.DateTimeOffset)).WhoseValue;
+            dateTimeOffsetProperty.GetJsonType().Should().Be(SchemaValueType.String);
+            dateTimeOffsetProperty.GetFormat().Should().Be(Formats.DateTime);
+            
+            var dateTimeProperty = schema.GetProperties().Should().ContainKey(nameof(MyParameterTimes.DateTime)).WhoseValue;
+            dateTimeProperty.GetJsonType().Should().Be(SchemaValueType.String);
+            dateTimeProperty.GetFormat().Should().Be(Formats.DateTime);
+
+            var timeSpanProperty = schema.GetProperties().Should().ContainKey(nameof(MyParameterTimes.TimeSpan)).WhoseValue;
+            timeSpanProperty.GetJsonType().Should().Be(SchemaValueType.String);
+            // Formats.Duration would require the serialization to be ISO 8601 Duration, so no check for now
+            
+            var dateTimeOffsetNullableProperty = schema.GetProperties().Should().ContainKey(nameof(MyParameterTimes.DateTimeOffsetNullable)).WhoseValue;
+            dateTimeOffsetNullableProperty.GetJsonType().Should().Be(SchemaValueType.String | SchemaValueType.Null);
+            dateTimeOffsetNullableProperty.GetFormat().Should().Be(Formats.DateTime);
+        }
+
+        public record MyParameterTimes(DateTimeOffset DateTimeOffset, DateTime DateTime, TimeSpan TimeSpan, DateTimeOffset? DateTimeOffsetNullable);
+    }
 }

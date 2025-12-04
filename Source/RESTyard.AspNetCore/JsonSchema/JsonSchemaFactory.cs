@@ -13,6 +13,8 @@ namespace RESTyard.AspNetCore.JsonSchema
     // DataAnnotationsSupport.AddDataAnnotations();
     public class JsonSchemaFactory : IJsonSchemaFactory
     {
+        private readonly SchemaGeneratorConfiguration config;
+
         public JsonSchemaFactory()
         {
             config = new SchemaGeneratorConfiguration()
@@ -20,15 +22,17 @@ namespace RESTyard.AspNetCore.JsonSchema
                 Generators = {
                     new DateOnlyGenerator(),
                     new TimeOnlyGenerator(),
+                    new DateTimeOffsetGenerator(),
+                    new DateTimeGenerator(),
+                    new TimeSpanGenerator(),
                 },
             };
+            
             
             AttributeHandler.AddHandler(new DisplayNameAttributeHandler());
             AttributeHandler.AddHandler(new DescriptionAttributeHandler());
         }
 
-        private readonly SchemaGeneratorConfiguration config;
-        
         public JsonDocument Generate(Type type)
         {
             var schema =new JsonSchemaBuilder()
@@ -88,6 +92,48 @@ namespace RESTyard.AspNetCore.JsonSchema
         {
             context.Intents.Add(new TypeIntent(SchemaValueType.String));
             context.Intents.Add(new FormatIntent(Formats.Time)); 
+        }
+    }
+    
+    public class DateTimeOffsetGenerator : ISchemaGenerator
+    {
+        public bool Handles(Type type)
+        {
+            return type == typeof(DateTimeOffset) || type == typeof(DateTimeOffset?);
+        }
+
+        public void AddConstraints(SchemaGenerationContextBase context)
+        {
+            context.Intents.Add(new TypeIntent(SchemaValueType.String));
+            context.Intents.Add(new FormatIntent(Formats.DateTime)); 
+        }
+    }
+    
+    public class DateTimeGenerator : ISchemaGenerator
+    {
+        public bool Handles(Type type)
+        {
+            return type == typeof(DateTime) || type == typeof(DateTime?);
+        }
+
+        public void AddConstraints(SchemaGenerationContextBase context)
+        {
+            context.Intents.Add(new TypeIntent(SchemaValueType.String));
+            context.Intents.Add(new FormatIntent(Formats.DateTime)); 
+        }
+    }
+    
+    public class TimeSpanGenerator : ISchemaGenerator
+    {
+        public bool Handles(Type type)
+        {
+            return type == typeof(TimeSpan) || type == typeof(TimeSpan?);
+        }
+
+        public void AddConstraints(SchemaGenerationContextBase context)
+        {
+            context.Intents.Add(new TypeIntent(SchemaValueType.String));
+            context.Intents.Add(new PatternIntent(@"^-?(\d+\.)?\d{2}:\d{2}:\d{2}(\.\d{1,7})?$"));
         }
     }
 }
