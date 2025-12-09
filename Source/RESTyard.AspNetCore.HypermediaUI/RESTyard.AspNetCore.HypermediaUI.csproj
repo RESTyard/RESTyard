@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--General settings-->
+
+    <VersionSuffixLocal></VersionSuffixLocal>
+    <!--When variable is set we are building a prerelease package-->
+    <VersionSuffixLocal Condition="'$(IsPreRelease)'!='' AND  '$(IsPreRelease)'">
+      $(VersionSuffix)
+    </VersionSuffixLocal>
+
+    <Version>0.1.0$(VersionSuffixLocal)</Version>
+    <TargetFramework>net8.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+
+    <!-- Descriptions and information-->
+    <Titel>RESTyard.AspNetCore.HypermediaUI</Titel>
+    <PackageDescription>Generic HypermediaUI packaged to be hosted in your ASP.NET Core backend</PackageDescription>
+    <PackageTags>WebApi;REST;Siren;Hypermedia;ASP.NET Core;</PackageTags>
+    <Authors>Mathias Reichardt; Jasper Park</Authors>
+    <Copyright>Copyright 2001-2025 RESTyard Team</Copyright>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/RESTyard/RESTyard</PackageProjectUrl>
+    <RepositoryType>Git</RepositoryType>
+    <RepositoryUrl>https://github.com/RESTyard/RESTyard.git</RepositoryUrl>
+    <RepositoryBranch>$(BranchName)</RepositoryBranch>
+    <PackageIcon>Ry-Icon_128x128.png</PackageIcon>
+
+    <!-- Package specific settings -->
+    <PackageVersion>$(Version)</PackageVersion>
+    <PackageReleaseNotes>Version $(Version)</PackageReleaseNotes>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <!-- package image -->
+  <ItemGroup>
+    <None Include=".\Images\Ry-Icon_128x128.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Content\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Content\release.zip" />
+    <EmbeddedResource Include="Content\release.zip" />
+  </ItemGroup>
+
+</Project>

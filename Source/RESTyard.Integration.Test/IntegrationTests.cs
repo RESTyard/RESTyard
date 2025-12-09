@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 using FluentAssertions;
 using RESTyard.Client.Authentication;
 using RESTyard.Client.Extensions;
@@ -289,5 +290,75 @@ public class IntegrationTests : IAsyncLifetime
         
         // Then
         result.Should().BeOk();
+    }
+
+    [Fact]
+    public async Task HypermediaUI_AngularServeTests()
+    {
+        // Given
+        
+        // When
+        var root = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/hui/from-appsettings/index.html");
+        
+        // Then
+        root.Should().BeSuccessful();
+        var index = await root.Content.ReadAsStringAsync();
+        var regex = new Regex("(?:href|src)=\"(?<uri>.*?)\"");
+        var matches = regex.Matches(index);
+        matches.Should().AllSatisfy(m => m.Success.Should().BeTrue());
+        foreach (var capture in matches.SelectMany(m => m.Groups["uri"].Captures))
+        {
+            var uri = capture.Value;
+            var subContent = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/{uri.TrimStart('/')}");
+            subContent.Should().BeSuccessful(because: uri);
+        }
+    }
+
+    [Fact]
+    public async Task HypermediaUI_RewriteTests()
+    {
+        // Given
+        var indexByName = await this.Client.GetStringAsync($"{CarShackWaf.BaseUrl}/hui/from-appsettings/index.html");
+        List<string> builtinRedirects = ["", "hui", "auth-redirect"];
+        List<string> aliasRedirects = ["CarShack"];
+
+        foreach (var redirect in builtinRedirects.Concat(aliasRedirects))
+        {
+            // When
+            var result = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/hui/from-appsettings/{redirect}");
+            
+            // Then
+            result.Should().BeSuccessful(because: redirect);
+            (await result.Content.ReadAsStringAsync()).Should().Be(indexByName);
+        }
+        
+        // When
+        var specialCaseIndexNoTrailingSlash = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/hui/from-appsettings");
+        
+        // Then
+        specialCaseIndexNoTrailingSlash.Should().BeSuccessful();
+        (await specialCaseIndexNoTrailingSlash.Content.ReadAsStringAsync()).Should().Be(indexByName);
+    }
+
+    [Fact]
+    public async Task HypermediaUI_SecondInstanceTest()
+    {
+        // When
+        var index = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/hui/explicit-config/index.html");
+        
+        // Then
+        index.Should().BeSuccessful();
+        (await index.Content.ReadAsStringAsync()).Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task HypermediaUI_DefaultSubpathTest()
+    {
+        // When
+        var index = await this.Client.GetAsync($"{CarShackWaf.BaseUrl}/restyard");
+        
+        // Then
+        index.Should().BeSuccessful();
+        (await index.Content.ReadAsStringAsync()).Should().NotBeNullOrEmpty();
     }
 }

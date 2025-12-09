@@ -1,9 +1,13 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using CarShack.Controllers.EntryPoint;
 using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
+using RESTyard.AspNetCore.HypermediaUI;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 
 namespace CarShack
@@ -13,14 +17,15 @@ namespace CarShack
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            
             builder.Services.AddControllers();
-
+            builder.Services.Configure<HypermediaUiConfig>(builder.Configuration.GetSection(nameof(HypermediaUiConfig)));
             builder.Services.AddHypermediaExtensions(o =>
             {
                 o.ReturnDefaultRouteForUnknownHto = true;
                 o.ControllerAndHypermediaAssemblies = [typeof(EntryPointController).Assembly];
             });
+            builder.Services.AddLogging();
 
             builder.Services.AddCors();
 
@@ -32,15 +37,57 @@ namespace CarShack
 
             var app = builder.Build();
 
-            app.UseCors(builder =>
+            app.Use(async (context, next) =>
             {
-                builder
+                try
+                {
+                    await next();
+                }
+                catch (Exception e)
+                {
+                    app.Services.GetRequiredService<ILogger<Program>>().LogError(e, context.Request.Path);
+                    throw;
+                }
+            });
+            app.UseCors(b =>
+            {
+                b
                     .AllowAnyOrigin()
                     .AllowAnyMethod()
                     .AllowAnyHeader()
-                    .WithExposedHeaders("Location");
+                    .WithExposedHeaders(HeaderNames.Location);
             });
             app.MapControllers();
+            app.UseHypermediaUI(
+                config: new HypermediaUiConfig()
+                {
+                    DisableDeveloperControls = false,
+                    OnlyAllowConfiguredEntryPoints = false,
+                    ConfiguredEntryPoints = []
+                });
+            app.UseHypermediaUI(
+                "hui/from-appsettings");
+            app.UseHypermediaUI(
+                "hui/explicit-config",
+                new HypermediaUiConfig()
+                {
+                    DisableDeveloperControls = true,
+                    OnlyAllowConfiguredEntryPoints = true,
+                    ConfiguredEntryPoints =
+                    [
+                        new ConfiguredEntryPoint()
+                        {
+                            Alias = "CarShack2",
+                            Title = "You've had CarShack, yes, but what about second CarShack?",
+                            EntryPointUri = new Uri("http://localhost:5000/EntryPoint"),
+                        },
+                    ],
+                });
+            app.MapGet("crash", () =>
+            {
+                throw new Exception("BOOM");
+                return "Hi";
+            });
 
             await app.RunAsync();
         }
