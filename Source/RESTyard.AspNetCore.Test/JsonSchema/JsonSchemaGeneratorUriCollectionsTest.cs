@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Json.Schema;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,15 +20,19 @@ namespace RESTyard.AspNetCore.Test.JsonSchema;
 // Begin: Schema generation tests
 public static class SchemaValidator
 {
-    public static void Validate(string expectedSchemaJson, NJsonSchema.JsonSchema schema)
+    public static void Validate(string expectedSchemaJson, Json.Schema.JsonSchema schema)
     {
         var expectedSchemaJObject = JObject.Parse(expectedSchemaJson);
-        var expectedSchema = NJsonSchema.JsonSchema.FromJsonAsync(expectedSchemaJObject.ToString()).GetAwaiter().GetResult();
-        foreach (var (propertyName, propertySchema) in expectedSchema.Properties)
+        var expectedSchema = Json.Schema.JsonSchema.FromText(expectedSchemaJObject.ToString());
+        foreach (var (propertyName, propertySchema) in expectedSchema.GetProperties())
         {
-            schema.Properties.Should().ContainKey(propertyName, $"because property '{propertyName}' should exist");
-            schema.Properties[propertyName].Type.Should().NotBe(null, $"because property '{propertyName}' has a type defined");
-            schema.Properties[propertyName].Type.Should().Be(propertySchema.Type, $"because property '{propertyName}' has the correct type");
+            schema.GetProperties().Should().ContainKey(propertyName, $"because property '{propertyName}' should exist");
+
+            var property = schema.GetProperties()[propertyName];
+            var localPropertySchema = property.ResolveSchema(schema);
+            
+            localPropertySchema.GetJsonType().Should().NotBe(null, $"because property '{propertyName}' has a type defined");
+            localPropertySchema.GetJsonType().Should().Be(propertySchema.GetJsonType(), $"because property '{propertyName}' has the correct type");
         }
     }
 }
@@ -35,11 +40,11 @@ public static class SchemaValidator
 [TestClass]
 public class When_generating_json_schema_from_type_containing_a_list : AsyncTestSpecification
 {
-   NJsonSchema.JsonSchema schema;
+    Json.Schema.JsonSchema schema;
 
    protected override Task When()
    {
-       schema = JsonSchemaFactory.GenerateSchemaAsync(typeof(MyParameter));
+       schema = new JsonSchemaFactory().GenerateSchema(typeof(MyParameter));
        return Task.CompletedTask;
    }
 
@@ -74,11 +79,11 @@ public class When_generating_json_schema_from_type_containing_a_list : AsyncTest
 [TestClass]
 public class When_generating_json_schema_from_type_containing_a_list_and_not_a_list : AsyncTestSpecification
 {
-    NJsonSchema.JsonSchema schema;
+    Json.Schema.JsonSchema schema;
 
     protected override Task When()
     {
-        schema = JsonSchemaFactory.GenerateSchemaAsync(typeof(MyParameter));
+        schema = new JsonSchemaFactory().GenerateSchema(typeof(MyParameter));
         return Task.CompletedTask;
     }
 
@@ -119,11 +124,11 @@ public class When_generating_json_schema_from_type_containing_a_list_and_not_a_l
 [TestClass]
 public class When_generating_json_schema_from_type_containing_two_types_and_a_list_and_not_a_list : AsyncTestSpecification
 {
-    NJsonSchema.JsonSchema schema;
+    Json.Schema.JsonSchema schema;
 
     protected override Task When()
     {
-        schema = JsonSchemaFactory.GenerateSchemaAsync(typeof(MyParameter));
+        schema = new JsonSchemaFactory().GenerateSchema(typeof(MyParameter));
         return Task.CompletedTask;
     }
 
@@ -180,14 +185,14 @@ public class When_generating_json_schema_from_type_containing_two_types_and_a_li
 [TestClass]
 public class When_generating_json_schema_with_same_name_for_both_a_collection_and_a_non_collection : AsyncTestSpecification
 {
-    NJsonSchema.JsonSchema schema;
+    Json.Schema.JsonSchema schema;
 
     [TestMethod]
     public void GenerateSchemaAsync_Should_Fail()
     {
         try
         {
-            schema = JsonSchemaFactory.GenerateSchemaAsync(typeof(MyParameter));
+            schema = new JsonSchemaFactory().GenerateSchema(typeof(MyParameter));
             Assert.Fail("Operation should fail since UriToHmo is used for both List and not a List.");
         }
         catch (Exception)
@@ -214,14 +219,14 @@ public class When_generating_json_schema_with_same_name_for_both_a_collection_an
 [TestClass]
 public class When_generating_json_schema_with_same_name_for_multiple_target_types : AsyncTestSpecification
 {
-    NJsonSchema.JsonSchema schema;
+    Json.Schema.JsonSchema schema;
 
     [TestMethod]
     public void GenerateSchemaAsync_Should_Fail()
     {
         try
         {
-            schema = JsonSchemaFactory.GenerateSchemaAsync(typeof(MyParameter));
+            schema = new JsonSchemaFactory().GenerateSchema(typeof(MyParameter));
             Assert.Fail("Operation should fail since UriToHmo is used for both target types: MyHypermediaObject and MyHypermediaObject2.");
         }
         catch (Exception)
