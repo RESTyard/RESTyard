@@ -46,8 +46,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="FunicularSwitch" Version="6.1.1" />
-      <PackageReference Include="FunicularSwitch.Generators" Version="4.2.0">
+      <PackageReference Include="FunicularSwitch" Version="6.4.1" />
+      <PackageReference Include="FunicularSwitch.Generators" Version="4.6.0">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
