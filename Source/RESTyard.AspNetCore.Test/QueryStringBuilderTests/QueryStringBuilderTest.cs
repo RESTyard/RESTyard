@@ -1,5 +1,5 @@
 ﻿using System;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.Test.Helpers;

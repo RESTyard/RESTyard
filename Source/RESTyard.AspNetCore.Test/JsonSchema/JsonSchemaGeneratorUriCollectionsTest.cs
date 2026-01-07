@@ -1,19 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 using System.Threading.Tasks;
-using FluentAssertions;
+using AwesomeAssertions;
 using Json.Schema;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.JsonSchema;
-using RESTyard.AspNetCore.Test.Helpers;
 using RESTyard.AspNetCore.Test.Hypermedia;
-using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace RESTyard.AspNetCore.Test.JsonSchema;
 
