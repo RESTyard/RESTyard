@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using FluentAssertions;
-using RESTyard.Client.Resolver.Caching;
+﻿using AwesomeAssertions;
 using Xunit;
 
 namespace Extensions.Test.Caching.EmptyCache;

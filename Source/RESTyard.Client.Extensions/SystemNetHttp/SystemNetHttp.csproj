@@ -10,7 +10,7 @@
     </VersionSuffixLocal>
     
     <Version>3.0.2$(VersionSuffixLocal)</Version>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     
     <!-- Descriptions and information -->
