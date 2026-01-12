@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
@@ -75,7 +75,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
             var actions = siren["actions"]
                 .Should().NotBeNull()
-                    .And.HaveCount(11)
+                    .And.HaveCount(12)
                     .And.AllBeAssignableTo<JObject>()
                     .Which.ToList();
             
@@ -111,6 +111,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertActionBasic(actions[10], nameof(ActionsHypermediaObject.DynamicActionPrefilledParameter_Object), "POST", routeNameDynamicAction, 6,  ActionClasses.ParameterActionClass);
             AssertActionArgument(actions[10], DefaultMediaTypes.ApplicationJson,  nameof(DynamicParameter), nameof(DynamicParameter), hasDefaultValues:true, parameterTypeRouteName:routeNameDynamicParameter, objectKeyString:"{ SchemaRouteValue = SchemaKey_2 }");
             AssertDynamicDefaultValues(actions[10], "4");
+            
+            AssertActionBasic(actions[11], "RenamedActionWithClasses", "POST", routeNameHypermediaActionNoArgument, 5,  ActionClasses.ParameterLessActionClass, "A Title",  ["Destructive", "FeatureFlag1"]);
         }
 
         private void AssertFileUploadAction(JObject action, FileUploadConfiguration fileUploadConfiguration, string type, bool hasParameter = false)
@@ -214,13 +216,20 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             }
         }
 
-        private void AssertActionBasic(JObject action, string actionName, string method, string routeName, int propertyCount, string actionClass, string? actionTitle = null)
+        private void AssertActionBasic(JObject action, string actionName, string method, string routeName, int propertyCount, string actionClass, string? actionTitle = null, List<string>? expectedAdditionalClasses = null)
         {
             Assert.AreEqual(propertyCount, action.Properties().Count());
             Assert.AreEqual(actionName, action["name"]);
             Assert.AreEqual(method, action["method"]);
+
+            var actionClasses = action["class"] as  JArray;
+            actionClasses.Should().NotBeNull();
+            actionClasses!.Count.Should().Be(1 + (expectedAdditionalClasses?.Count ?? 0), "Classes are added by attribute");
+            var existingActionClasses = actionClasses.ToObject<List<string>>()!;
+            existingActionClasses.Contains(actionClass).Should().BeTrue();
+            expectedAdditionalClasses?.All(expectedClass => 
+                existingActionClasses.Contains(expectedClass)).Should().BeTrue("Classes from attribute must be in generated JSON");
             
-            Assert.AreEqual(actionClass, action["class"].Single());
             AssertRoute(((JValue)action["href"]).Value<string>(), routeName);
 
             if (!string.IsNullOrEmpty(actionTitle))
@@ -255,6 +264,9 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             public DynamicAction DynamicActionPrefilledParameter_None { get; private set; }
             public DynamicAction DynamicActionPrefilledParameter_String { get; private set; }
             public DynamicAction DynamicActionPrefilledParameter_Object { get; private set; }
+            
+            [HypermediaAction(Name = "RenamedActionWithClasses", Title = "A Title", Classes = ["Destructive", "FeatureFlag1"])]
+            public HypermediaActionNoArgument ActionWithClass { get; private set; }
 
 
             public static readonly Uri  ExternalUri = new Uri(TestUrlConfig.Scheme +"://" + TestUrlConfig.Host + "/ExternalActionRoute");
@@ -303,6 +315,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
                 DynamicActionPrefilledParameter_None = new DynamicAction("Should_not_be_used_no_schema_referenced", false);
                 DynamicActionPrefilledParameter_String = new DynamicAction("SchemaKey_1", true, DynamicActionPrefilledParameter_String_DefaultValues);
                 DynamicActionPrefilledParameter_Object = new DynamicAction("SchemaKey_2", true, DynamicActionPrefilledParameter_Object_DefaultValues);
+                
+                ActionWithClass = new HypermediaActionNoArgument(() => true);
             }
         }
     }

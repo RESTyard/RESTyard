@@ -9,7 +9,7 @@
       $(VersionSuffix)
     </VersionSuffixLocal>
 
-    <Version>5.2.2$(VersionSuffixLocal)</Version>
+    <Version>6.0.1$(VersionSuffixLocal)</Version>
     <TargetFramework>net8.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
@@ -43,8 +43,9 @@
   <!-- shared references, compilation flags and build options -->
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="FunicularSwitch" Version="6.1.0" />
-    <PackageReference Include="NJsonSchema" Version="10.8.0" />
+    <PackageReference Include="FunicularSwitch" Version="6.4.1" />
+    <PackageReference Include="JsonSchema.Net.Generation" Version="5.1.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <!--Allow access for the test assembly-->

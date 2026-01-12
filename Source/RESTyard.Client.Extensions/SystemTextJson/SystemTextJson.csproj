@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <!-- General settings -->
@@ -9,8 +9,8 @@
       $(VersionSuffix)
     </VersionSuffixLocal>
     
-    <Version>3.0.3$(VersionSuffixLocal)</Version>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>3.1.0$(VersionSuffixLocal)</Version>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     
     <!-- Descriptions and information -->
@@ -35,11 +35,11 @@
 
   <!-- package image -->
   <ItemGroup>
-    <None Include=".\Images\Ry-Icon_128x128.png" Pack="true" PackagePath="\"/>
+    <None Include=".\Images\Ry-Icon_128x128.png" Pack="true" PackagePath="\" />
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    <PackageReference Include="System.Text.Json" Version="8.0.6" />
   </ItemGroup>
 
   <ItemGroup>
