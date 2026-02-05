@@ -25,6 +25,11 @@ public class KeyFromUriService : IKeyFromUriService
     public Result<TKey> GetKeyFromUri<THto, TKey>(Uri uri)
         where THto : IHypermediaObject
     {
+        if (!uri.IsAbsoluteUri)
+        {
+            return Result.Error<TKey>($"URI '{uri}' is not absolute. Required for key deconstruction.");
+        }
+        
         var result =
             from matchers in GetTemplateMatchers<THto>()
             from values in GetValuesFromRequest(matchers, uri)

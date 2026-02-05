@@ -24,7 +24,7 @@ public class KeyFromUriServiceTests
     }
 
     [TestMethod]
-    public void Test()
+    public void TestKeyExtraction()
     {
         // Given
         var apiExplorer = CreateExplorer(["Test/{intKey:int}/{key}"]);
@@ -177,6 +177,41 @@ public class KeyFromUriServiceTests
         var result = values.Should().BeOk().Which;
         result.IntKey.Should().Be(15);
         result.GuidKey.Should().Be(new Guid(guid));
+    }
+    
+    [TestMethod]
+    public void IsErrorResult_RelativeUri()
+    {
+        // Given
+        var apiExplorer = CreateExplorer(["Test/AllTypes/{intKey}/{guidKey}"]);
+        var service = new KeyFromUriService(apiExplorer);
+        // relative uris are accepted by STJ, e.g. when parsing a body containing Uri
+        Uri.TryCreate("/abc/test",UriKind.RelativeOrAbsolute, out var uri);
+        
+        // When
+        var values = service.GetKeyFromUri<AllKeyTypesHto, AllKeyTypesHto.KeyRecord>(uri!);
+        
+        // Then
+        var result = values.Should().BeError("Uri must be absolute").Which;
+        result.Should().Contain("is not absolute");
+    }
+    
+    [TestMethod]
+    public void IsErrorResult_InvalidPathUri()
+    {
+        // Given
+        var apiExplorer = CreateExplorer(["Test/AllTypes/{intKey}/{guidKey}"]);
+        var service = new KeyFromUriService(apiExplorer);
+        
+        // relative uris are accepted by STJ, e.g. when parsing a body containing Uri
+        Uri.TryCreate("abc/test",UriKind.RelativeOrAbsolute, out Uri? uri);
+        
+        // When
+        var values = service.GetKeyFromUri<AllKeyTypesHto, AllKeyTypesHto.KeyRecord>(uri!);
+        
+        // Then
+        var result = values.Should().BeError("Uri must be absolute").Which;
+        result.Should().Contain("is not absolute");
     }
 
     [HypermediaObject(Classes = [nameof(TestHto)])]
