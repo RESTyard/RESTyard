@@ -172,6 +172,11 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 jAction.Add("title", hypermediaActionAttribute.Title);
             }
 
+            if (hypermediaActionAttribute?.Classes != null)
+            {
+                jAction.Add("class", new JArray { hypermediaActionAttribute.Classes });
+            }
+
             jAction.Add("method", resolvedRoute.HttpMethod ?? "Undefined"); //TODO get method from rout resolver
             jAction.Add("href", resolvedRoute.Url);
         }
@@ -221,8 +226,17 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                     classField = ActionClasses.ParameterLessActionClass;
                 }
             }
-
-            jAction.Add("class", new JArray { classField });
+            
+            // if the HypermediaActionAttribute has classes specified it has already created the array. 
+            var classProperty = jAction["class"];
+            if (classProperty is JArray classPropertyArray)
+            {
+                classPropertyArray.Add(classField);
+            }
+            else
+            {
+                jAction.Add("class", new JArray { classField });
+            }
         }
 
         private JObject GetFileUploadActionDescription(FileUploadConfiguration fileUploadConfiguration)
@@ -520,6 +534,15 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 return new JValue(enumAsString);
             }
 
+            if (propertyType == typeof(DateOnly) || propertyType == typeof(DateOnly?))
+            {
+                return new JValue(((DateOnly)value).ToString("yyyy-MM-dd"));
+            }
+
+            if (propertyType == typeof(TimeOnly) || propertyType == typeof(TimeOnly?))
+            {
+                return new JValue(((TimeOnly)value).ToString("HH:mm:ss"));
+            }
 
             if (propertyTypeInfo.IsValueType)
             {

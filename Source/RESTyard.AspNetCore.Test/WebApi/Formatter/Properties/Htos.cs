@@ -74,6 +74,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         public Uri AnUri { get; set; }
         
         public Type AType { get; set; }
+        public DateOnly DateOnly { get; set; }
+        public TimeOnly TimeOnly { get; set; }
     }
 
     [HypermediaObject(Classes = [nameof(HypermediaObjectWithListProperties)])]

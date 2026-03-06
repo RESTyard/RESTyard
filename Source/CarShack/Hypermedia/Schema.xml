@@ -38,6 +38,12 @@
     <Parameters typeName="MarkAsFavoriteParameters" usedForActions="true" usedForQueries="false">
       <Property name="Customer" type="Uri" mandatory="true" />
     </Parameters>
+    <Parameters typeName="CustomerPurchaseHistoryQuery" usedForQueries="true" usedForActions="false">
+      <Property name="CardType" type="string" mandatory="false"/>
+    </Parameters>
+    <Parameters typeName="UpdateCarInspection" usedForActions="true" usedForQueries="false">
+      <Property name="NewInspection" type="DateOnly" mandatory="true"/>
+    </Parameters>
     <ExternalParameters typeName="CustomerQuery" />
   </TransferParameters>
   <Documents>
@@ -73,7 +79,11 @@
         <Property name="PriceDevelopment" type="IEnumerable&lt;float&gt;" />
         <Property name="PopularCountries" type="List&lt;Country&gt;" />
         <Property name="MostPopularIn" type="Country" />
+        <Property name="LastInspection" type="DateOnly" mandatory="false" />
       </Properties>
+      <Operations>
+        <Operation name="UpdateInspection" method="Patch" parameterTypeName="UpdateCarInspection" resultDocument="HypermediaCar" />
+      </Operations>
     </Document>
     <Document name="CarImage" title="Image for a car">
       <Classifications>
@@ -133,6 +143,27 @@
         <Link rel="OkaySite" mandatory="false" />
       </Links>
     </Document>
+    <Document name="CustomerPurchase" hasSelfLink="false">
+      <Classifications>
+        <Classification class="CustomerPurchase"/>
+      </Classifications>
+      <Properties>
+        <Property name="Amount" type="int"/>
+        <Property name="CardNumber" type="string" mandatory="true"/>
+        <Property name="CardType" type="string" mandatory="true"/>
+      </Properties>
+    </Document>
+    <Document name="CustomerPurchaseHistory" isQueryResult="true">
+      <Classifications>
+        <Classification class="CustomerPurchaseHistory"/>
+      </Classifications>
+      <Properties>
+        <Property name="CustomerId" type="int" hidden="true" isKey="true"/>
+      </Properties>
+      <Entities>
+        <Entity collectionName="Purchases" document="CustomerPurchase"/>
+      </Entities>
+    </Document>
     <Document name="HypermediaCustomer">
       <Classifications>
         <Classification class="Customer" />
@@ -152,6 +183,9 @@
                    parameterTypeName="MarkAsFavoriteParameters" />
         <Operation name="BuyCar" method="Post" title="Buy a car." parameterTypeName="BuyCarParameters" resultDocument="HypermediaCar" />
       </Operations>
+      <Links>
+        <Link rel="PurchaseHistory" mandatory="true" query="CustomerPurchaseHistoryQuery" document="CustomerPurchaseHistory"/>
+      </Links>
     </Document>
     <Document name="HypermediaCustomerQueryResult" title="Query result on Customer" isQueryResult="true">
       <Classifications>

@@ -202,15 +202,23 @@ public partial class HypermediaCustomerHto
             new CustomerMoveOp(() => true),
             new CustomerRemoveOp(() => true),
             new MarkAsFavoriteOp(() => !customer.IsFavorite),
-            new BuyCarOp(() => true, default));
+            new BuyCarOp(() => true, default),
+            (new CustomerPurchaseHistoryQuery(), new CustomerPurchaseHistoryHto.Key(customer.Id)));
         return hto;
     }
 }
 
 public partial class HypermediaCarHto
 {
-    public HypermediaCarHto(string brand, int carId) : this(carId, brand, Enumerable.Empty<float>(),
-        new List<Country>(), default)
+    public HypermediaCarHto(string brand, int carId)
+        : this(
+            id: carId,
+            brand: brand,
+            priceDevelopment: [],
+            popularCountries: [],
+            mostPopularIn: null,
+            lastInspection: null,
+            updateInspection: new(() => true))
     {
     }
 }

@@ -84,14 +84,14 @@ public partial class {{ typeName }} : {{ if isNotEmpty document.parentDocument }
     [Mandatory]
 {{- end }}
     [HypermediaRelations(new[]{ "{{ link.rel }}" })]
-    public {{ mapNullableType (!link.mandatory) ((iff link.mandatory "Mandatory" "") + "HypermediaLink" + "<" + (iff (isNotEmpty link.document) (link.document + "Hco") ("HypermediaClientObject")) + ">") }} {{ link.rel | string.capitalize }} { get; set; } = default!;
+    public {{ mapNullableType (!link.mandatory) ((iff link.mandatory "Mandatory" "") + "HypermediaLink" + "<" + (iff (isNotEmpty link.document) (link.document + "Hco") ("HypermediaClientObject")) + ">") }} {{ link.rel | capitalize }} { get; set; } = default!;
 {{ end }}
 {{-
     for entity in document.Entities
         entityType = iff (isNotEmpty entity.document) (entity.document + "Hco") "TODO"
 }}
     [HypermediaRelations(new[]{ "{{ entity.collectionName }}" })]
-    public List<{{ entityType }}> {{ entity.collectionName | string.capitalize }} { get; set; } = default!;
+    public List<{{ entityType }}> {{ entity.collectionName | capitalize }} { get; set; } = default!;
 {{ end }}
 {{- for operation in document.Operations }}
     [HypermediaCommand("{{ operation.name }}")]

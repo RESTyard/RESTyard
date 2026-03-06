@@ -8,6 +8,8 @@ namespace RESTyard.AspNetCore.Query
     {
         public bool IsClass { get; }
         public bool IsString { get; }
+        
+        public bool IsUri { get; }
         public bool IsIEnumerable { get; }
         public bool IsStructWithNesting { get; }
 
@@ -18,6 +20,7 @@ namespace RESTyard.AspNetCore.Query
 
             IsClass = itemTypeInfo.IsClass;
             IsString = itemType == typeof(string);
+            IsUri = itemType == typeof(Uri);
             IsIEnumerable = typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(itemType);
             IsStructWithNesting = CheckStructWithNesting(itemType, itemTypeInfo);
         }
@@ -26,6 +29,7 @@ namespace RESTyard.AspNetCore.Query
         {
             IsClass = propertyInfo.IsClass;
             IsString = type == typeof(string);
+            IsUri = type == typeof(Uri);
             IsIEnumerable = typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type);
             IsStructWithNesting = CheckStructWithNesting(type, propertyInfo);
         }
@@ -39,6 +43,8 @@ namespace RESTyard.AspNetCore.Query
                    && Nullable.GetUnderlyingType(type) == null // check for nullable
                    && type != typeof(DateTime)
                    && type != typeof(DateTimeOffset)
+                   && type != typeof(DateOnly)
+                   && type != typeof(TimeOnly)
                    && type != typeof(TimeSpan);
         }
     }

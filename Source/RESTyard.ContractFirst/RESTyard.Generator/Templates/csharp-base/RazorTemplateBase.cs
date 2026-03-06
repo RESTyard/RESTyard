@@ -26,7 +26,7 @@ public class RazorTemplateBase : ComponentBase
             return text;
         }
 
-        return $"{text[..1].ToUpper()}{text[1..]}";
+        return $"{text[..1].ToUpperInvariant()}{text[1..]}";
     }
 
     public string Uncapitalize(string text)
@@ -36,7 +36,7 @@ public class RazorTemplateBase : ComponentBase
             return text;
         }
 
-        return $"{text[..1].ToLower()}{text[1..]}";
+        return $"{text[..1].ToLowerInvariant()}{text[1..]}";
     }
 
     public void CheckProperties(string typeName, IEnumerable<PropertyType> properties)

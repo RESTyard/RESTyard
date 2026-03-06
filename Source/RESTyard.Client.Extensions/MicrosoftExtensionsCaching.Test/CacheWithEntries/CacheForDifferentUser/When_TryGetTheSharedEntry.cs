@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using RESTyard.Client.Resolver.Caching;
 using Xunit;
 

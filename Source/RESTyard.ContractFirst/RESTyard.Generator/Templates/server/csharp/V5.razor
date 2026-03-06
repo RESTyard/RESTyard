@@ -36,7 +36,7 @@ public static class MimeTypes
 {
 @foreach (var contentType in ContentTypes.Distinct().OrderBy(c => c))
 {
-    @:public const string @StringFunctions.Handleize(@contentType).Replace("-", "_").ToUpper() = "@contentType";
+    @:public const string @StringFunctions.Handleize(@contentType).Replace("-", "_").ToUpperInvariant() = "@contentType";
 }
 }
 

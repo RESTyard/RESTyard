@@ -2,6 +2,7 @@
 using System.Reflection;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.JsonSchema;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
@@ -62,6 +63,11 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         /// If another query string builder should be used provide a type which derives from <see cref="IQueryStringBuilder"/>
         /// </summary>
         public Type? AlternateQueryStringBuilder = null;
+        
+        /// <summary>
+        /// If another JSON schema factory should be used provide a type which derives from <see cref="IJsonSchemaFactory"/>
+        /// </summary>
+        public Type? AlternateJsonSchemaFactory = null;
     }
 
     public class HypermediaConverterConfiguration

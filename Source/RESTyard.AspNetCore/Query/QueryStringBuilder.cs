@@ -50,6 +50,12 @@ namespace RESTyard.AspNetCore.Query
                     result += CreateKeyValue($"{objectPrefix}{propertyInfo.Name}", propertyValue);
                     continue;
                 }
+                
+                if (serializeInfo.IsUri)
+                {
+                    result += CreateKeyValue($"{objectPrefix}{propertyInfo.Name}", ((Uri)propertyValue).ToString());
+                    continue;
+                }
 
                 if (serializeInfo.IsIEnumerable)
                 {

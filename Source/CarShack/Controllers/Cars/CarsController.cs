@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net.Mime;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -63,8 +64,10 @@ namespace CarShack.Controllers.Cars
                     priceDevelopment: [],
                     popularCountries: [],
                     mostPopularIn: new Country(),
+                    lastInspection: new DateOnly(2025, 09, 02),
                     derivedProperty: "some text",
                     derivedOperation: new(() => false),
+                    updateInspection: new(() => true),
                     item: [],
                     derivedLinkKey: Option<HypermediaCustomerHto.Key>.None);
                 return Ok(result);
@@ -142,6 +145,13 @@ namespace CarShack.Controllers.Cars
             var path = await SaveToBinDir(payloadFile.FileName, payloadFile);
 
             return this.Created(Link.To(new CarInsuranceHto(Path.GetFileName(path))));
+        }
+
+        [HttpPatch("{brand}/{id:int}/UpdateInspection")]
+        [HypermediaActionEndpoint<HypermediaCarHto>(nameof(HypermediaCarHto.UpdateInspection))]
+        public async Task<IActionResult> UpdateInspection(int id, string brand, UpdateCarInspection parameter)
+        {
+            return this.Created(Link.ByKey(new HypermediaCarHto.Key(id, brand)));
         }
 
         private static async Task<string> SaveToBinDir(string originalFilename, IFormFile payloadFile)

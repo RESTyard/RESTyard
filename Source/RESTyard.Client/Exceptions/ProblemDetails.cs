@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RESTyard.Client.Exceptions
 {
@@ -51,5 +52,15 @@ namespace RESTyard.Client.Exceptions
         /// In particular, complex types or collection types may not round-trip to the original type when using the built-in JSON or XML formatters.
         /// </remarks>
         public IDictionary<string, object?> Extensions { get; } = new Dictionary<string, object?>(StringComparer.Ordinal);
+
+        public override string ToString()
+        {
+            return $"{base.ToString()}: Status={Status}, Title={Title}, Detail={Detail}, Type={Type}, Instance={Instance}, Extensions={Format(Extensions)}";
+
+            static string Format(IDictionary<string, object?> extensions)
+            {
+                return string.Join("|", extensions.Select(kvp => $"{kvp.Key}:{kvp.Value}"));
+            }
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -58,6 +59,7 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
             serviceCollection.AddSingleton<HypermediaEntityLocationFormatter>();
             serviceCollection.AddSingleton<HypermediaLinkLocationFormatter>();
             serviceCollection.AddSingleton<SirenHypermediaFormatter>();
+            serviceCollection.AddSingletonWithAlternative<IJsonSchemaFactory, JsonSchemaFactory>(hypermediaOptions.AlternateJsonSchemaFactory);
             
             if (hypermediaOptions.AutoDeliverJsonSchemaForActionParameterTypes)
             {

@@ -21,6 +21,8 @@ public class DefaultHypermediaClientBuilder
         register.Register<DerivedCarHco>();
         register.Register<NextLevelDerivedCarHco>();
         register.Register<HypermediaCustomersRootHco>();
+        register.Register<CustomerPurchaseHco>();
+        register.Register<CustomerPurchaseHistoryHco>();
         register.Register<HypermediaCustomerHco>();
         register.Register<HypermediaCustomerQueryResultHco>();
     });
@@ -34,6 +36,8 @@ public partial record NewAddress(AddressTo Address);
 public partial record AddressTo(string Street, string Number, string City, string ZipCode);
 public partial record UploadCarImageParameters(string Text, bool Flag);
 public partial record MarkAsFavoriteParameters(Uri Customer);
+public partial record CustomerPurchaseHistoryQuery(string? CardType = default);
+public partial record UpdateCarInspection(DateOnly NewInspection);
 [HypermediaClientObject("Entrypoint")]
 public partial class HypermediaEntrypointHco : HypermediaClientObject
 {
@@ -80,10 +84,14 @@ public partial class HypermediaCarHco : HypermediaClientObject
     public IEnumerable<float>? PriceDevelopment { get; set; } = default!;
     public List<Country>? PopularCountries { get; set; } = default!;
     public Country? MostPopularIn { get; set; } = default!;
+    public DateOnly? LastInspection { get; set; } = default!;
 
     [Mandatory]
     [HypermediaRelations(new[] { "self" })]
     public MandatoryHypermediaLink<HypermediaCarHco> Self { get; set; } = default!;
+
+    [HypermediaCommand("UpdateInspection")]
+    public IHypermediaClientFunction<HypermediaCarHco, UpdateCarInspection>? UpdateInspection { get; set; }
 }
 
 [HypermediaClientObject("CarImage")]
@@ -160,6 +168,29 @@ public partial class HypermediaCustomersRootHco : HypermediaClientObject
     public IHypermediaClientFunction<HypermediaCustomerQueryResultHco, CustomerQuery>? CreateQuery { get; set; }
 }
 
+[HypermediaClientObject("CustomerPurchase")]
+public partial class CustomerPurchaseHco : HypermediaClientObject
+{
+    public int? Amount { get; set; } = default!;
+
+    [Mandatory]
+    public string CardNumber { get; set; } = default!;
+
+    [Mandatory]
+    public string CardType { get; set; } = default!;
+}
+
+[HypermediaClientObject("CustomerPurchaseHistory")]
+public partial class CustomerPurchaseHistoryHco : HypermediaClientObject
+{
+    [Mandatory]
+    [HypermediaRelations(new[] { "self" })]
+    public MandatoryHypermediaLink<CustomerPurchaseHistoryHco> Self { get; set; } = default!;
+
+    [HypermediaRelations(new[] { "Purchases" })]
+    public List<CustomerPurchaseHco> Purchases { get; set; } = default!;
+}
+
 [HypermediaClientObject("Customer")]
 public partial class HypermediaCustomerHco : HypermediaClientObject
 {
@@ -173,6 +204,10 @@ public partial class HypermediaCustomerHco : HypermediaClientObject
     [Mandatory]
     [HypermediaRelations(new[] { "self" })]
     public MandatoryHypermediaLink<HypermediaCustomerHco> Self { get; set; } = default!;
+
+    [Mandatory]
+    [HypermediaRelations(new[] { "PurchaseHistory" })]
+    public MandatoryHypermediaLink<CustomerPurchaseHistoryHco> PurchaseHistory { get; set; } = default!;
 
     [HypermediaCommand("CustomerMove")]
     public IHypermediaClientAction<NewAddress>? CustomerMove { get; set; }
