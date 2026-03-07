@@ -41,6 +41,10 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions
         {
         }
 
+        protected HypermediaAction() : base(() => true)
+        {
+        }
+
         public override object? GetPrefilledParameter()
         {
             return null;
