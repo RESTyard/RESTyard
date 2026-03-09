@@ -162,6 +162,7 @@
 			<xs:enumeration value="Post"/>
 			<xs:enumeration value="Delete"/>
 			<xs:enumeration value="Patch"/>
+			<xs:enumeration value="Put"/>
 		</xs:restriction>
 	</xs:simpleType>
 
