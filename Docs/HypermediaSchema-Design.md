@@ -46,9 +46,11 @@ Replace the runtime reflection-based Siren serialization with source-generated m
       +-------+-------+
       |               |
   ToSiren()      GetSchema()
-  extension      per HTO
-  method           |
-  per HTO          +---> Per-assembly Schema Registry (generated)
+  extension      extension
+  method         method
+  per HTO        per HTO
+      |                |
+      |                +---> Per-assembly Schema Registry (generated)
       |                         |
       |                         +---> Aggregated via DI at startup (no reflection)
       |                         |
@@ -96,7 +98,7 @@ Describes one type of Siren entity — its data shape and its hypermedia connect
 ```csharp
 public class EntityTypeSchema
 {
-    public string Name { get; set; }                        // Unique name, derived from HTO class (e.g., "Customer" from HypermediaCustomerHto)
+    public string Name { get; set; }                        // Unique name, defaults to full class name (e.g., "HypermediaCustomerHto"), overridable via [HypermediaSchemaName]
     public IReadOnlyList<string> Classes { get; set; }      // Siren classes that identify this entity type
     public string? Title { get; set; }                      // From attribute or XML doc <summary>
     public string? Description { get; set; }                // From XML doc <remarks> or attribute
@@ -232,6 +234,7 @@ The generator finds all types implementing `IHypermediaObject` in the compilatio
 | Source | Data |
 |---|---|
 | `[HypermediaObject(Title, Classes)]` | Entity classes, title |
+| `[HypermediaSchemaName("Name")]` | Custom schema name (default: full class name) |
 | `[HypermediaProperty(Name)]` | Property name override |
 | `[FormatterIgnoreHypermediaProperty]` | Property exclusion |
 | `[Relations(rels)]` on `ILink<T>` | Link relations, target type |
@@ -382,6 +385,8 @@ builder.Services.AddHypermediaSchema(options =>
 ```
 
 This produces a singleton `HypermediaApiSchema` available via DI, combining all per-assembly registries.
+
+**Startup validation:** At startup, the aggregated schema should validate that all `TargetName` references in `LinkDescription`, `ActionDescription.ResultName`, and `EmbeddedEntityDescription` resolve to an existing `EntityTypeSchema.Name`. Dangling references (e.g., a link to `"Order"` when no `OrderHto` exists) indicate a missing or unregistered HTO and should log a warning. An option `AllowUnresolvedReferences = true` (default `false`) can be provided for development scenarios — when enabled, unresolved references generate placeholder `EntityTypeSchema` entries (with empty links/actions/properties) so the schema endpoint and Mermaid diagrams remain functional while the API is still being built.
 
 ## Runtime Schema Endpoint
 
@@ -649,7 +654,13 @@ The existing contract-first XML schema (`Hypermedia.xsd` / `Hypermedia.cs`) cont
 - **HTO inheritance**: Flatten to concrete types. Siren has no inheritance concept, and flattening is simpler for client generators. Each concrete HTO becomes one `EntityTypeSchema`.
 - **Deprecation**: The source generator reads C#'s built-in `[Obsolete("message")]` attribute. The message maps to `DeprecationMessage`, presence maps to `IsDeprecated = true`.
 - **Shared definitions**: All complex types (classes, records) and enums are always extracted to the top-level `Definitions` dictionary and referenced via `$ref`. Primitives and simple collections are inlined. This keeps the generator logic simple — no need to track reuse counts.
-- **Entity naming**: Each `EntityTypeSchema` has a `Name` (derived from HTO class name, e.g., `"Customer"` from `HypermediaCustomerHto`) used as the primary identifier in cross-references, Mermaid diagrams, and documentation. Siren `Classes` are retained for wire-format matching but are not used for referencing within the schema. The generator must verify that both `Name` and `Classes` are unique across all entity types and emit a diagnostic error on collision.
+- **Entity naming**: Each `EntityTypeSchema` has a `Name` used as the primary identifier in cross-references (`TargetName`), Mermaid diagrams, and documentation. By default, the name is the **full C# class name** (e.g., `"HypermediaCustomerHto"`) — no convention-based stripping is applied since user naming conventions may vary. To use a shorter or custom name, apply `[HypermediaSchemaName("Customer")]` on the HTO class:
+  ```csharp
+  [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+  [HypermediaSchemaName("Customer")]
+  public class HypermediaCustomerHto : HypermediaObject { }
+  ```
+  This is a separate attribute (not on `[HypermediaObject]`) because it is a schema concern, not a Siren serialization concern. The generator resolves `TargetName` for links and embedded entities by reading `[HypermediaSchemaName]` from the target HTO type, falling back to the full class name. Siren `Classes` are retained for wire-format matching but are not used for referencing within the schema. The generator must verify that both `Name` and `Classes` are unique across all entity types and emit a diagnostic error on collision. `[HypermediaSchemaName]` also serves to resolve name collisions in multi-assembly APIs — e.g., if both `Billing.CustomerHto` and `Shipping.CustomerHto` exist, they would collide on the default name `"CustomerHto"`. Applying `[HypermediaSchemaName("BillingCustomer")]` and `[HypermediaSchemaName("ShippingCustomer")]` resolves the collision explicitly.
 - **No HTTP method in schema**: `ActionDescription` intentionally omits the HTTP method. Clients discover it at runtime from the Siren action's `method` field. Client generators emit generic "execute action" calls — the runtime Siren response dictates the transport details. This keeps the schema focused on type-level metadata, not transport concerns.
 - **Definition name collisions**: `Definitions` dictionary keys use simple class names (e.g., `"Address"`). When two types share the same simple name but differ by namespace (e.g., `Billing.Address` and `Shipping.Address`), the generator disambiguates by prefixing with the namespace segment: `"Billing_Address"`, `"Shipping_Address"`. Only the colliding names are qualified — non-colliding names stay short. The generator detects collisions across all types discovered in the compilation.
 - **Siren properties as generated POCO, not dictionary**: The Siren `properties` bag is represented as a generated strongly-typed class per HTO (`SirenEntity<TProperties>`) rather than `Dictionary<string, object?>`. This preserves user-defined attributes on HTO properties — serializer converters, naming, third-party attributes — because the generator forwards them to the generated POCO. A dictionary would lose per-property attributes since the serializer would only see `object?` values. The non-generic `SirenEntity` base is used for embedded entity collections where property types are heterogeneous; STJ in .NET 8 serializes `SirenEntity<T>` using the runtime type when referenced through the base.
