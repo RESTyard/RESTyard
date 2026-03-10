@@ -1,0 +1,627 @@
+# Hypermedia Schema — Design Document
+
+## Table of Contents
+
+- [Goal](#goal)
+- [Architecture Overview](#architecture-overview)
+- [Schema Model](#schema-model)
+  - [Top-Level: HypermediaApiSchema](#top-level-hypermediaapischemahttpschema)
+  - [Entity Type: EntityTypeSchema](#entity-type-entitytypeschema)
+  - [Data Shapes and Shared Definitions](#data-shapes-and-shared-definitions)
+  - [Hypermedia Graph: Links](#hypermedia-graph-links)
+  - [Hypermedia Graph: Actions](#hypermedia-graph-actions)
+  - [Hypermedia Graph: Embedded Entities](#hypermedia-graph-embedded-entities)
+- [Source Generator](#source-generator)
+  - [Project Setup](#project-restyard-htosourcegenerators-netstandard20)
+  - [Input Analysis](#input-analysis)
+  - [Generated Output per HTO](#generated-output-per-hto)
+  - [Generated Schema Registry](#generated-schema-registry)
+- [Runtime Schema Endpoint](#runtime-schema-endpoint)
+- [Mermaid Diagram Mapper](#mermaid-diagram-mapper)
+- [Replacing the Siren Formatter](#replacing-the-siren-formatter)
+- [Siren POCO Model](#siren-poco-model)
+- [Project Structure](#project-structure)
+- [Intentionally Excluded from Schema](#intentionally-excluded-from-schema)
+- [Design Decisions](#design-decisions)
+- [Open Questions](#open-questions)
+
+## Goal
+
+Replace the runtime reflection-based Siren serialization with source-generated mappers, and introduce a self-describing schema model for the hypermedia API. The schema model serves as a single source of truth for:
+
+- **Runtime Siren serialization** — generated `ToSiren()` methods per HTO, replacing `SirenConverter` and `SirenHypermediaFormatter`
+- **Runtime schema endpoint** — dedicated endpoint serving the full API schema as JSON
+- **Documentation UI** — consumes the schema endpoint to render an interactive API explorer
+- **Mermaid diagram export** — generates Mermaid class/graph diagrams for markdown-based documentation
+- **Client code generation** — generates typed clients in C#, TypeScript, Python from the schema
+
+## Architecture Overview
+
+```
+  HTO source code + Controller source code
+  (C# classes, attributes, XML doc comments)
+              |
+              | [Source Generator — compile time]
+              v
+      +-------+-------+
+      |               |
+  ToSiren()      GetSchema()
+  extension      per HTO
+  method           |
+  per HTO          +---> Per-assembly Schema Registry (generated)
+      |                         |
+      |                         +---> Aggregated via DI at startup (no reflection)
+      |                         |
+      |                         +---> JSON endpoint (runtime)
+      |                         +---> Mermaid mapper (runtime or build-time)
+      |                         +---> Documentation UI (consumes endpoint)
+      |                         +---> Client generators (consume JSON)
+      |
+      +---> Called directly in controllers
+              -> returns SirenEntity POCO
+              -> standard JSON serialization
+```
+
+## Schema Model
+
+The schema spec describes two things that Siren itself does not provide:
+
+1. **Data shapes** — JSON Schemas for entity properties and action parameters
+2. **Hypermedia graph** — how entity types connect via links, actions, and embedded entities
+
+The Siren spec already defines what an entity *looks like* at runtime (class, title, properties, links, actions, entities). This schema does not duplicate that. Instead it provides the **type-level metadata** that Siren responses lack: what properties a Customer *always* has, what actions are available, what parameters they expect, and how entity types relate to each other.
+
+### Top-Level: `HypermediaApiSchema`
+
+```csharp
+public class HypermediaApiSchema
+{
+    public string SchemaVersion { get; set; }               // Schema format version (semver of this spec format)
+    public string? ApiVersion { get; set; }                 // Version of the API described by this schema
+    public string? Title { get; set; }                      // API title
+    public string? Description { get; set; }                // API description
+    public string? ExternalDocsUrl { get; set; }            // Link to external documentation (e.g., RESTyard-Docs site)
+    public string EntryPointName { get; set; }                   // References EntityTypeSchema.Name of the entry point
+    public IReadOnlyList<EntityTypeSchema> EntityTypes { get; set; }
+    public IDictionary<string, JsonSchema> Definitions { get; set; } // Shared type definitions, referenced via $ref
+}
+```
+
+**Error responses:** All actions are expected to return [RFC 9457 Problem Details](https://www.rfc-editor.org/rfc/rfc9457) on failure. This is a convention of RESTyard APIs and does not need per-action error schema definitions. Client generators should always handle `application/problem+json` responses. The `HypermediaProblem` type on the server side and `IProblemStringReader` on the client side already implement this convention.
+
+### Entity Type: `EntityTypeSchema`
+
+Describes one type of Siren entity — its data shape and its hypermedia connections.
+
+```csharp
+public class EntityTypeSchema
+{
+    public string Name { get; set; }                        // Unique name, derived from HTO class (e.g., "Customer" from HypermediaCustomerHto)
+    public IReadOnlyList<string> Classes { get; set; }      // Siren classes that identify this entity type
+    public string? Title { get; set; }                      // From attribute or XML doc <summary>
+    public string? Description { get; set; }                // From XML doc <remarks> or attribute
+
+    // Data shape — JSON Schema for the Siren "properties" bag
+    public JsonSchema? PropertiesSchema { get; set; }
+
+    // Hypermedia graph — how this entity type connects to others
+    public IReadOnlyList<LinkDescription> Links { get; set; }
+    public IReadOnlyList<ActionDescription> Actions { get; set; }
+    public IReadOnlyList<EmbeddedEntityDescription> EmbeddedEntities { get; set; }
+
+    public bool IsDeprecated { get; set; }                  // Entire entity type marked for removal
+    public string? DeprecationMessage { get; set; }         // Why deprecated and what to use instead
+}
+```
+
+### Data Shapes and Shared Definitions
+
+Entity properties (`PropertiesSchema`) and action parameters (`ActionDescription.ParameterSchema`) are both described using standard JSON Schema. Complex types (classes, records) and enums are always extracted to the top-level `Definitions` dictionary and referenced via `$ref`. Primitives and simple collections are inlined.
+
+Example `PropertiesSchema` referencing a shared `Address` definition:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string", "title": "The customer's full name" },
+    "age": { "type": "integer", "title": "Age in years" },
+    "address": { "$ref": "#/definitions/Address" },
+    "tags": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["name", "age"]
+}
+```
+
+Example `Definitions`:
+
+```json
+{
+  "Address": {
+    "type": "object",
+    "title": "Postal address",
+    "properties": {
+      "street": { "type": "string" },
+      "city": { "type": "string" },
+      "zipCode": { "type": "string" }
+    },
+    "required": ["street", "city", "zipCode"]
+  },
+  "CustomerSortProperties": {
+    "type": "string",
+    "enum": ["name", "age", "createdAt"]
+  }
+}
+```
+
+The source generator populates JSON Schema `title` and `description` from HTO source code (priority: attribute values, then XML doc `<summary>` for title, then `<remarks>` for description). This applies at every level including nested object properties.
+
+### Hypermedia Graph: Links
+
+Describes which relations an entity type exposes and what entity type they point to.
+
+```csharp
+public class LinkDescription
+{
+    public IReadOnlyList<string> Relations { get; set; }    // From [Relations]
+    public string TargetName { get; set; }                  // Name of the target entity type (references EntityTypeSchema.Name)
+    public IReadOnlyList<string> TargetClasses { get; set; }// Siren classes of the target entity type
+    public string? MediaType { get; set; }                   // Media type (e.g., "application/json") — maps to Siren link "type" field
+    public string? Title { get; set; }
+    public string? Description { get; set; }
+    public bool IsTemplated { get; set; }                   // True for ByKey/ByQuery links
+    public bool IsMandatory { get; set; }                   // Non-nullable ILink<T>
+    public bool IsDeprecated { get; set; }                  // Marked for removal in a future version
+    public string? DeprecationMessage { get; set; }         // Why deprecated and what to use instead
+}
+```
+
+### Hypermedia Graph: Actions
+
+Describes which actions an entity type offers and what parameters they accept.
+
+```csharp
+public class ActionDescription
+{
+    public string Name { get; set; }                        // From [HypermediaAction(Name)]
+    public string? Title { get; set; }
+    public string? Description { get; set; }
+    public string? ContentType { get; set; }                // Inferred: multipart/form-data for file uploads, application/json otherwise
+    public JsonSchema? ParameterSchema { get; set; }        // JSON Schema for the parameter type (null if parameterless)
+    public string? ResultName { get; set; }                    // Name of the result entity type (null if no result)
+    public IReadOnlyList<string>? ResultClasses { get; set; } // Siren classes of the result entity (null if no result)
+    public bool IsMandatory { get; set; }                   // Non-nullable action property (always present, may still have CanExecute guard)
+    public bool IsFileUpload { get; set; }                  // FileUploadHypermediaAction
+    public bool IsDeprecated { get; set; }                  // Marked for removal in a future version
+    public string? DeprecationMessage { get; set; }         // Why deprecated and what to use instead
+}
+```
+
+**`ResultName` / `ResultClasses`**: When non-null, indicates the action creates/returns a resource (HTTP `Location` header). `ResultName` references the target `EntityTypeSchema.Name`, `ResultClasses` provides the Siren classes for wire-format matching. Essential for client generators (e.g., `CreateCustomer` → `Customer`) since Siren itself doesn't describe action results. `null` = fire-and-forget.
+
+### Hypermedia Graph: Embedded Entities
+
+Describes which entity types can appear as embedded sub-entities.
+
+```csharp
+public class EmbeddedEntityDescription
+{
+    public IReadOnlyList<string> Relations { get; set; }
+    public string TargetName { get; set; }                  // Name of the target entity type (references EntityTypeSchema.Name)
+    public IReadOnlyList<string> TargetClasses { get; set; }
+    public string? Title { get; set; }
+    public string? Description { get; set; }
+    public bool IsCollection { get; set; }                  // List of embedded entities
+    public bool IsMandatory { get; set; }                   // Non-nullable embedded entity
+    public bool IsDeprecated { get; set; }                  // Marked for removal in a future version
+    public string? DeprecationMessage { get; set; }         // Why deprecated and what to use instead
+}
+```
+
+## Source Generator
+
+### Project: `RESTyard.HtoSourceGenerators` (netstandard2.0)
+
+Required by Roslyn: source generators must target netstandard2.0.
+
+### Input Analysis
+
+The generator finds all types implementing `IHypermediaObject` in the compilation and extracts:
+
+| Source | Data |
+|---|---|
+| `[HypermediaObject(Title, Classes)]` | Entity classes, title |
+| `[HypermediaProperty(Name)]` | Property name override |
+| `[FormatterIgnoreHypermediaProperty]` | Property exclusion |
+| `[Relations(rels)]` on `ILink<T>` | Link relations, target type |
+| `[HypermediaAction(Name, Title)]` | Action name, title |
+| `HypermediaAction<TParam>` | Parameter type |
+| `IHypermediaActionParameter` properties | Action fields |
+| `[Mandatory]` | Required fields |
+| `[Key("name")]` | Route key properties |
+| `FileUploadHypermediaAction` | File upload flag |
+| `CanExecute()` method | Optional action flag (null property = omitted) |
+| `[Title("...")]` (`JsonSchema.Net.Generation`) | Title (primary) |
+| `[Description("...")]` (`JsonSchema.Net.Generation`) | Description (primary) |
+| XML doc `<summary>` | Title (fallback when no `[Title]` attribute) |
+| XML doc `<remarks>` | Description (fallback when no `[Description]` attribute) |
+| Nullable annotations | Nullability of properties, links |
+| `[HypermediaActionEndpoint<THto>("prop")]` on controllers | Action-to-HTO mapping |
+
+**Constraint:** Each HTO has exactly one `[HypermediaObjectEndpoint<THto>]` and each action has exactly one `[HypermediaActionEndpoint<THto>("prop")]` in the codebase. This one-to-one mapping simplifies controller scanning — the generator can find the single matching endpoint for any HTO or action without disambiguation. If the generator finds zero or multiple endpoints for the same HTO/action, it should emit a diagnostic error.
+
+### Generated Output per HTO
+
+For each HTO class `HypermediaCustomerHto`, the generator emits an extension method class and a schema method:
+
+```csharp
+// <auto-generated/>
+public static class HypermediaCustomerHtoSirenMapper
+{
+    public static SirenEntity ToSiren(this HypermediaCustomerHto hto, IHypermediaRouteResolver resolver,
+        SirenMapperOptions? options = null)
+    {
+        var entity = new SirenEntity
+        {
+            Class = ["Customer"],
+            Title = "A Customer",
+            Properties = new Dictionary<string, object?>
+            {
+                ["name"] = hto.Name,
+                ["age"] = hto.Age,
+                // ... mapped properties, respecting [HypermediaProperty] name overrides
+                // ... excluding [FormatterIgnoreHypermediaProperty]
+            }
+        };
+
+        // Self link — auto-generated when options.AutoSelfLink is true (default)
+        if (options?.AutoSelfLink != false)
+        {
+            entity.Links.Add(new SirenLink
+            {
+                Rel = ["self"],
+                Href = resolver.ResolveSelfUrl(hto)
+            });
+        }
+
+        // Links — resolve URLs at runtime
+        if (hto.BestFriend is { } bestFriendLink)
+        {
+            entity.Links.Add(new SirenLink
+            {
+                Rel = ["bestFriend"],
+                Href = resolver.ResolveLinkUrl(bestFriendLink)
+            });
+        }
+
+        // Actions — resolve URLs at runtime, inline parameter schema
+        // Null action property = action not available (omitted from output)
+        if (hto.MarkAsFavorite?.CanExecute() == true)
+        {
+            entity.Actions.Add(new SirenAction
+            {
+                Name = "MarkAsFavorite",
+                Title = "Mark as Favorite",
+                Href = resolver.ResolveActionUrl(hto.MarkAsFavorite),
+                Fields = [ /* mapped from TParameter properties */ ]
+            });
+        }
+
+        // Embedded entities — recursive
+        foreach (var car in hto.Cars)
+        {
+            entity.Entities.Add(new SirenEmbeddedEntity
+            {
+                Rel = ["item"],
+                Entity = car.ToSiren(resolver, options)
+            });
+        }
+
+        return entity;
+    }
+
+    // GetSchema() — returns EntityTypeSchema with PropertiesSchema, Links, Actions, EmbeddedEntities
+    // populated from compile-time analysis (see Schema Model section for structure)
+    public static EntityTypeSchema GetSchema() { /* ... */ }
+}
+```
+
+### Generated Schema Registry
+
+One registry per assembly. APIs spanning multiple assemblies get one registry each; they are aggregated at startup via DI.
+
+```csharp
+// <auto-generated per assembly/>
+public static class HypermediaSchemaRegistry_MyAssembly
+{
+    public static IReadOnlyList<EntityTypeSchema> Schemas => [
+        HypermediaCustomerHtoSirenMapper.GetSchema(),
+        HypermediaEntrypointHtoSirenMapper.GetSchema(),
+        HypermediaCarsRootHtoSirenMapper.GetSchema(),
+        // ... all discovered HTOs in this assembly
+    ];
+}
+```
+
+At startup, all per-assembly registries are collected and composed into the full API schema:
+
+```csharp
+// Aggregation via DI — collects registries from all configured assemblies
+builder.Services.AddHypermediaSchema(options =>
+{
+    options.Title = "My API";
+    options.Description = "Customer management API";
+    options.EntryPointName = "EntryPoint";
+    // Assemblies are already known from AddHypermediaExtensions
+});
+```
+
+This produces a singleton `HypermediaApiSchema` available via DI, combining all per-assembly registries.
+
+## Runtime Schema Endpoint
+
+Served via a dedicated ASP.NET Core endpoint:
+
+```csharp
+app.MapHypermediaSchema("/_schema");
+
+// Internally resolves HypermediaApiSchema from DI and serializes it
+```
+
+Returns JSON. Content type: `application/vnd.restyard.schema+json`.
+
+The schema intentionally does not contain resolved URLs or route templates. Clients discover URLs at runtime by navigating the hypermedia API starting from the entry point — this is a core principle of hypermedia. The schema describes the *shape* of the API (entities, relations, actions, properties) not the *location* of resources.
+
+## Mermaid Diagram Mapper
+
+Converts `HypermediaApiSchema` to Mermaid diagram strings. Two diagram types:
+
+### Entity Relationship Diagram
+
+Shows HTO types, their links, and embedded entity relationships:
+
+```mermaid
+graph LR
+    EntryPoint["EntryPoint"]
+    CustomersRoot["CustomersRoot"]
+    Customer["Customer"]
+    CarsRoot["CarsRoot"]
+    Car["Car"]
+
+    EntryPoint -- "customers" --> CustomersRoot
+    CustomersRoot -- "item" --> Customer
+    Customer -- "cars" --> CarsRoot
+    CarsRoot -- "item" --> Car
+```
+
+### Detailed Class Diagram
+
+Shows properties and actions per entity:
+
+```mermaid
+classDiagram
+    class Customer {
+        +string name
+        +int age
+        +MarkAsFavorite()
+        +BuyCar(carId)
+    }
+    class EntryPoint {
+    }
+    EntryPoint --> CustomersRoot : customers
+    Customer --> CarsRoot : cars
+```
+
+### API
+
+```csharp
+public static class MermaidMapper
+{
+    public static string ToEntityGraph(HypermediaApiSchema schema);       // graph LR
+    public static string ToClassDiagram(HypermediaApiSchema schema);      // classDiagram
+}
+```
+
+Can be used at runtime (via endpoint) or at build time (MSBuild task or CLI tool writing `.md` files).
+
+## Replacing the Siren Formatter
+
+### Current Flow (reflection-based)
+
+```
+Controller returns IHypermediaObject
+    -> SirenHypermediaFormatter (output formatter)
+        -> SirenConverter (reflection: walks properties, attributes)
+            -> IHypermediaRouteResolver (resolves URLs)
+        -> JSON serialization
+    -> HTTP response
+```
+
+### New Flow (source-generated, no formatter)
+
+```
+Controller calls hto.ToSiren(resolver, options)
+    -> returns SirenEntity (plain POCO)
+    -> standard ASP.NET Core JSON serialization
+    -> HTTP response
+```
+
+Controllers call `ToSiren()` directly — no output formatter needed:
+
+```csharp
+[HttpGet("{id}")]
+[HypermediaObjectEndpoint<HypermediaCustomerHto>(typeof(CustomerRouteKeyProducer))]
+public IActionResult Get(int id, [FromServices] IHypermediaRouteResolver resolver)
+{
+    var customer = _customerService.Get(id);
+    var hto = new HypermediaCustomerHto(customer);
+    return Ok(hto.ToSiren(resolver));
+}
+```
+
+The `SirenEntity` is a plain POCO — serialized as regular JSON by ASP.NET Core. This removes `SirenHypermediaFormatter`, `SirenConverter`, and all custom output formatter infrastructure.
+
+**JSON serialization note:** Siren uses `class` as a property name, which is a C# keyword. The Siren POCOs must use `[JsonPropertyName("class")]` on the `Class` properties (or configure a naming policy that lowercases property names). Ensure the serializer is configured with `PropertyNamingPolicy = JsonNamingPolicy.CamelCase` or explicit `[JsonPropertyName]` attributes on all properties.
+
+### SirenMapperOptions
+
+```csharp
+public class SirenMapperOptions
+{
+    /// When true (default), the generated ToSiren() automatically adds a "self" link
+    /// by resolving the HTO's own route via the route resolver.
+    /// Set to false if self links are managed manually via explicit ILink properties.
+    public bool AutoSelfLink { get; set; } = true;
+}
+```
+
+Can be configured via DI (resolved by controller) or passed explicitly per call.
+
+### Migration Path
+
+1. Ship `ToSiren()` alongside existing formatter (opt-in per controller)
+2. Verify parity via integration tests (compare JSON output)
+3. Migrate controllers one by one from returning HTOs to returning `hto.ToSiren(resolver)`
+4. Deprecate `SirenHypermediaFormatter` and `SirenConverter`
+5. Remove in next major version
+
+## Siren POCO Model
+
+Needed for `ToSiren()` return type. Plain C# classes matching the Siren JSON spec. These types are **emitted by the source generator** into the consuming project (not shipped as a separate assembly). Since they are simple data classes with no logic, source generation is ideal — users get the types automatically when they reference the generator package, with no extra NuGet dependency.
+
+```csharp
+public class SirenEntity
+{
+    public IReadOnlyList<string>? Class { get; set; }
+    public string? Title { get; set; }
+    public IDictionary<string, object?>? Properties { get; set; }
+    public IList<SirenLink>? Links { get; set; }
+    public IList<SirenAction>? Actions { get; set; }
+    public IList<SirenSubEntity>? Entities { get; set; }    // embedded or linked
+}
+
+public class SirenLink
+{
+    public IReadOnlyList<string> Rel { get; set; }
+    public string Href { get; set; }
+    public string? Title { get; set; }
+    public string? Type { get; set; }
+}
+
+public class SirenAction
+{
+    public string Name { get; set; }
+    public IReadOnlyList<string>? Class { get; set; }       // Action classification (e.g., ParameterActionClass)
+    public string? Title { get; set; }
+    public string Method { get; set; }
+    public string Href { get; set; }
+    public string? Type { get; set; }                       // Content-Type
+    public IReadOnlyList<SirenField>? Fields { get; set; }
+}
+
+public class SirenField
+{
+    public string Name { get; set; }
+    public IReadOnlyList<string>? Class { get; set; }       // Field classification
+    public string? Type { get; set; }                       // HTML input type
+    public string? Title { get; set; }
+    public object? Value { get; set; }                      // Prefilled value
+}
+
+public abstract class SirenSubEntity
+{
+    public IReadOnlyList<string> Rel { get; set; }
+}
+
+public class SirenEmbeddedEntity : SirenSubEntity
+{
+    public SirenEntity Entity { get; set; }                 // Full inline entity
+}
+
+public class SirenLinkedEntity : SirenSubEntity
+{
+    public string Href { get; set; }                        // Link to entity
+    public IReadOnlyList<string>? Class { get; set; }
+    public string? Title { get; set; }
+    public string? Type { get; set; }
+}
+```
+
+## Project Structure
+
+```
+Source/
+  RESTyard.AspNetCore.Schema/          # Schema model classes, Mermaid mapper (regular library)
+    Model/
+      HypermediaApiSchema.cs
+      EntityTypeSchema.cs
+      LinkDescription.cs
+      ActionDescription.cs
+      EmbeddedEntityDescription.cs
+    Mermaid/
+      MermaidMapper.cs
+  RESTyard.HtoSourceGenerators/        # Source generator (netstandard2.0)
+    HtoSirenGenerator.cs               # Emits ToSiren() per HTO
+    HtoSchemaGenerator.cs              # Emits GetSchema() per HTO
+    HtoRegistryGenerator.cs            # Emits HypermediaSchemaRegistry per assembly
+    Emitted/                           # Source templates for types emitted into consuming project
+      SirenEntity.cs
+      SirenLink.cs
+      SirenAction.cs
+      SirenField.cs
+      SirenSubEntity.cs
+      SirenEmbeddedEntity.cs
+      SirenLinkedEntity.cs
+  RESTyard.AspNetCore/                 # Existing — references Schema, adds endpoint
+    Schema/
+      HypermediaSchemaEndpoint.cs      # MapHypermediaSchema("/_schema")
+  RESTyard.AspNetCore.Schema.Test/     # xunit — unit tests for schema model and Mermaid mapper
+  RESTyard.HtoSourceGenerators.Test/   # xunit + Verify — snapshot tests for generated ToSiren(), GetSchema(), registry
+```
+
+**Why Siren POCOs are emitted, not in a library:** The `ToSiren()` return type (`SirenEntity`) must be available in the consuming project. Emitting these types via the source generator avoids an extra NuGet dependency. The types are simple data classes with no logic — ideal for source generation.
+
+**Why Schema is a separate library:** The schema model (`HypermediaApiSchema`, `EntityTypeSchema`, etc.) needs to be consumed by external tools — client generators, Mermaid CLI, documentation UIs — that deserialize the `/_schema` JSON endpoint. These tools should not need to reference the full ASP.NET Core server library. Keeping the schema model in a lightweight standalone package enables this.
+
+```
+RESTyard.AspNetCore.Schema       (netstandard2.0 — schema model + Mermaid)
+    ^                   ^
+    |                   |
+RESTyard.AspNetCore     External tools (client generators, docs UIs)
+(schema endpoint)       (deserialize /_schema JSON)
+```
+
+## Intentionally Excluded from Schema
+
+The existing contract-first XML schema (`Hypermedia.xsd` / `Hypermedia.cs`) contains several concepts that are **not** included in this runtime schema spec. These were evaluated and excluded for the following reasons:
+
+- **Policies / Permissions** — Authorization is a server-side concern. The schema describes the shape of the API, not access control. Clients discover what operations are available by inspecting the hypermedia responses at runtime — if an action is present, the client is permitted to attempt it. Embedding permission metadata in the schema would couple clients to a specific authorization model.
+
+- **Explicit query model** — The generator models queries as a distinct concept (`query` attribute on links, `isQueryResult` on documents) because it needs to generate `Link.ByQuery<T>()` code. From the schema's perspective, a query is simply an action that returns a result entity — the client POSTs parameters and follows the `Location` header. The existing `ActionDescription.ResultClasses` already captures this relationship. A separate query concept would leak server-side implementation details.
+
+- **Property `isKey`** — Key properties identify which route parameters map to an entity. This is a server-side routing concern. Clients should treat `self` links as opaque identifiers (a core HATEOAS principle) and must not attempt to decompose or construct URLs from entity properties.
+
+- **Property `hidden`** — This is a code-generation hint for UI scaffolding, not a structural API description. If needed, it could be expressed as a JSON Schema extension (`x-hidden`) on individual properties, but it does not warrant a first-class schema concept.
+
+- **`contentType` on links, `parameterTypeName` on links, `collectionName` on entities, `ExternalParameterType`** — These are code-generation plumbing used by the contract-first generator to emit the right C# types and constructors. They have no meaning in a runtime API description.
+
+## Design Decisions
+
+- **Schema versioning**: The schema format has its own semver (`SchemaVersion`), independent of the RESTyard package version. This allows the spec format to evolve at its own pace — a RESTyard update that doesn't change the schema shape doesn't bump the schema version, and vice versa.
+- **External links/actions**: `ExternalLink` and `HypermediaExternalAction` have fixed URLs not resolved via route resolver. This is not a schema concern — the schema describes entity types and their relationships, not runtime URLs. External links are just links from the client's perspective; the client does not distinguish between internal and external.
+- **Schema endpoint media type**: `application/vnd.restyard.schema+json`.
+- **Incremental generator**: Use `IIncrementalGenerator` (the modern Roslyn API, better IDE performance).
+- **HTO inheritance**: Flatten to concrete types. Siren has no inheritance concept, and flattening is simpler for client generators. Each concrete HTO becomes one `EntityTypeSchema`.
+- **Deprecation**: The source generator reads C#'s built-in `[Obsolete("message")]` attribute. The message maps to `DeprecationMessage`, presence maps to `IsDeprecated = true`.
+- **Shared definitions**: All complex types (classes, records) and enums are always extracted to the top-level `Definitions` dictionary and referenced via `$ref`. Primitives and simple collections are inlined. This keeps the generator logic simple — no need to track reuse counts.
+- **Entity naming**: Each `EntityTypeSchema` has a `Name` (derived from HTO class name, e.g., `"Customer"` from `HypermediaCustomerHto`) used as the primary identifier in cross-references, Mermaid diagrams, and documentation. Siren `Classes` are retained for wire-format matching but are not used for referencing within the schema. The generator must verify that both `Name` and `Classes` are unique across all entity types and emit a diagnostic error on collision.
+- **No HTTP method in schema**: `ActionDescription` intentionally omits the HTTP method. Clients discover it at runtime from the Siren action's `method` field. Client generators emit generic "execute action" calls — the runtime Siren response dictates the transport details. This keeps the schema focused on type-level metadata, not transport concerns.
+- **Definition name collisions**: `Definitions` dictionary keys use simple class names (e.g., `"Address"`). When two types share the same simple name but differ by namespace (e.g., `Billing.Address` and `Shipping.Address`), the generator disambiguates by prefixing with the namespace segment: `"Billing_Address"`, `"Shipping_Address"`. Only the colliding names are qualified — non-colliding names stay short. The generator detects collisions across all types discovered in the compilation.
+- **JSON Schema generation**: Use a small internal `JsonSchemaBuilder` class (~200-300 lines) inside the source generator. No external dependencies. Maps Roslyn `ITypeSymbol` to JSON Schema strings. Covers: primitives, string, DateTime/DateOnly/TimeOnly, Uri, Guid, enums (`[EnumMember]`), `Nullable<T>`, arrays/lists, nested objects via `$ref`. Needs cycle detection for recursive types. Edge cases deferred: `Dictionary<string, T>`, polymorphic `oneOf`, data annotation constraints.
+
+## Open Questions
+
+- **Mermaid customization**: Should the mapper support filtering (e.g., only show entities reachable from entry point)? Not for v1.
+- **Parameter validation routes in Siren**: Allow UIs to validate action parameters before form submission by calling a server-side validation endpoint. This requires a Siren format extension — e.g., a `validationHref` field on actions that points to a validation endpoint returning field-level errors. Needs design for: the Siren extension format, the validation request/response contract, how the source generator discovers validation endpoints, and how the schema describes validation availability per action.
+- **Example values**: Add support for example values on entity properties and action parameters in the schema (similar to OpenAPI's `example` keyword). Useful for documentation UIs to show realistic sample data and for client generators to emit test fixtures. Could be expressed as JSON Schema `examples` keyword or as a separate field on `EntityTypeSchema`/`ActionDescription`. To be designed in a future iteration.
+- **Tag groups**: Allow grouping entity types by tags for documentation UIs (e.g., "Admin", "Public", "Billing"). The entity graph already provides natural grouping, but cross-cutting concerns that span multiple entities may benefit from explicit tags. To be designed if a concrete use case arises.
