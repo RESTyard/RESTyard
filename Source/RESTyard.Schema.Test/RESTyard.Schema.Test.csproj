@@ -26,4 +26,10 @@
         <ProjectReference Include="..\RESTyard.Schema\RESTyard.Schema.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Update="MermaidMapperTests.*.verified.md">
+            <DependentUpon>MermaidMapperTests.cs</DependentUpon>
+        </None>
+    </ItemGroup>
+
 </Project>
