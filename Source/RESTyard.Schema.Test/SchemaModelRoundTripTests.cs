@@ -41,7 +41,6 @@ public class SchemaModelRoundTripTests
                             MediaType = "application/vnd.siren+json",
                             Title = "Self link",
                             Description = "Link to itself",
-                            IsTemplated = false,
                             IsMandatory = true,
                             IsDeprecated = false,
                             DeprecationMessage = null,
@@ -124,7 +123,6 @@ public class SchemaModelRoundTripTests
         link.TargetClasses.Should().BeEquivalentTo(new[] { "Car" });
         link.MediaType.Should().Be("application/vnd.siren+json");
         link.Title.Should().Be("Self link");
-        link.IsTemplated.Should().BeFalse();
         link.IsMandatory.Should().BeTrue();
         link.IsDeprecated.Should().BeFalse();
 
@@ -172,7 +170,6 @@ public class SchemaModelRoundTripTests
         json.Should().Contain("\"targetName\"");
         json.Should().Contain("\"targetClasses\"");
         json.Should().Contain("\"mediaType\"");
-        json.Should().Contain("\"isTemplated\"");
         json.Should().Contain("\"isMandatory\"");
         json.Should().Contain("\"isDeprecated\"");
         json.Should().Contain("\"deprecationMessage\"");

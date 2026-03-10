@@ -13,7 +13,7 @@ public class ActionDescription
     /// Name of the action.
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// Human-readable title.

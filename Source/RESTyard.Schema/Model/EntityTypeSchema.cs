@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -13,13 +14,13 @@ public class EntityTypeSchema
     /// Unique name of this entity type.
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// Siren classes for this entity type.
     /// </summary>
     [JsonPropertyName("classes")]
-    public IReadOnlyList<string> Classes { get; set; }
+    public IReadOnlyList<string> Classes { get; set; } = Array.Empty<string>();
 
     /// <summary>
     /// Human-readable title.
@@ -46,19 +47,19 @@ public class EntityTypeSchema
     /// Links available on this entity type.
     /// </summary>
     [JsonPropertyName("links")]
-    public IReadOnlyList<LinkDescription> Links { get; set; }
+    public IReadOnlyList<LinkDescription> Links { get; set; } = Array.Empty<LinkDescription>();
 
     /// <summary>
     /// Actions available on this entity type.
     /// </summary>
     [JsonPropertyName("actions")]
-    public IReadOnlyList<ActionDescription> Actions { get; set; }
+    public IReadOnlyList<ActionDescription> Actions { get; set; } = Array.Empty<ActionDescription>();
 
     /// <summary>
     /// Embedded entities within this entity type.
     /// </summary>
     [JsonPropertyName("embeddedEntities")]
-    public IReadOnlyList<EmbeddedEntityDescription> EmbeddedEntities { get; set; }
+    public IReadOnlyList<EmbeddedEntityDescription> EmbeddedEntities { get; set; } = Array.Empty<EmbeddedEntityDescription>();
 
     /// <summary>
     /// Whether this entity type is deprecated.

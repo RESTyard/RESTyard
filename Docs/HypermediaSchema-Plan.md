@@ -68,13 +68,13 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 **Goal:** Ship the schema model as a standalone NuGet package that external tools can consume.
 
-#### Step 1.1: Create `RESTyard.Schema` project and test project
+#### Step 1.1: ✅ Create `RESTyard.Schema` project and test project
 - New `netstandard2.0` class library project
 - New `RESTyard.Schema.Test` xunit test project
 - Add both to `RESTyard.sln`
 - Set up `Directory.Build.props` integration, NuGet metadata
 
-#### Step 1.2: Implement schema model classes
+#### Step 1.2: ✅ Implement schema model classes
 - `HypermediaApiSchema`, `EntityTypeSchema`, `LinkDescription`, `ActionDescription`, `EmbeddedEntityDescription`
 - Include JSON serialization attributes (`System.Text.Json`)
 - Unit tests: round-trip serialization (model → JSON → deserialize → assert equality)

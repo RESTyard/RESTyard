@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -12,19 +13,19 @@ public class LinkDescription
     /// Link relation types (e.g. "self", "item").
     /// </summary>
     [JsonPropertyName("relations")]
-    public IReadOnlyList<string> Relations { get; set; }
+    public IReadOnlyList<string> Relations { get; set; } = Array.Empty<string>();
 
     /// <summary>
     /// Name of the target entity type.
     /// </summary>
     [JsonPropertyName("targetName")]
-    public string TargetName { get; set; }
+    public string TargetName { get; set; } = string.Empty;
 
     /// <summary>
     /// Siren classes of the target entity type.
     /// </summary>
     [JsonPropertyName("targetClasses")]
-    public IReadOnlyList<string> TargetClasses { get; set; }
+    public IReadOnlyList<string> TargetClasses { get; set; } = Array.Empty<string>();
 
     /// <summary>
     /// Media type of the linked resource.
@@ -46,12 +47,6 @@ public class LinkDescription
     [JsonPropertyName("description")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Description { get; set; }
-
-    /// <summary>
-    /// Whether the link URI is a URI template.
-    /// </summary>
-    [JsonPropertyName("isTemplated")]
-    public bool IsTemplated { get; set; }
 
     /// <summary>
     /// Whether this link is always present on the entity.

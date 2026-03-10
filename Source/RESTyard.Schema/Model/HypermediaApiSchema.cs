@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -13,7 +14,7 @@ public class HypermediaApiSchema
     /// Version of the schema format itself.
     /// </summary>
     [JsonPropertyName("schemaVersion")]
-    public string SchemaVersion { get; set; }
+    public string SchemaVersion { get; set; } = string.Empty;
 
     /// <summary>
     /// Version of the described API.
@@ -47,17 +48,17 @@ public class HypermediaApiSchema
     /// Name of the entry point entity type.
     /// </summary>
     [JsonPropertyName("entryPointName")]
-    public string EntryPointName { get; set; }
+    public string EntryPointName { get; set; } = string.Empty;
 
     /// <summary>
     /// All entity types defined in the API.
     /// </summary>
     [JsonPropertyName("entityTypes")]
-    public IReadOnlyList<EntityTypeSchema> EntityTypes { get; set; }
+    public IReadOnlyList<EntityTypeSchema> EntityTypes { get; set; } = Array.Empty<EntityTypeSchema>();
 
     /// <summary>
     /// Shared type definitions. Each value contains a JSON Schema.
     /// </summary>
     [JsonPropertyName("definitions")]
-    public IDictionary<string, JsonElement> Definitions { get; set; }
+    public IDictionary<string, JsonElement> Definitions { get; set; } = new Dictionary<string, JsonElement>();
 }

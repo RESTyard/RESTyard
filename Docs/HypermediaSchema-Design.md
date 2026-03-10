@@ -169,7 +169,6 @@ public class LinkDescription
     public string? MediaType { get; set; }                   // Media type (e.g., "application/json") — maps to Siren link "type" field
     public string? Title { get; set; }
     public string? Description { get; set; }
-    public bool IsTemplated { get; set; }                   // True for ByKey/ByQuery links
     public bool IsMandatory { get; set; }                   // Non-nullable ILink<T>
     public bool IsDeprecated { get; set; }                  // Marked for removal in a future version
     public string? DeprecationMessage { get; set; }         // Why deprecated and what to use instead
@@ -780,3 +779,4 @@ The existing contract-first XML schema (`Hypermedia.cs`) already models scopes o
 - **Parameter validation routes in Siren**: Allow UIs to validate action parameters before form submission by calling a server-side validation endpoint. This requires a Siren format extension — e.g., a `validationHref` field on actions that points to a validation endpoint returning field-level errors. Needs design for: the Siren extension format, the validation request/response contract, how the source generator discovers validation endpoints, and how the schema describes validation availability per action.
 - **Example values**: Add support for example values on entity properties and action parameters in the schema (similar to OpenAPI's `example` keyword). Useful for documentation UIs to show realistic sample data and for client generators to emit test fixtures. Could be expressed as JSON Schema `examples` keyword or as a separate field on `EntityTypeSchema`/`ActionDescription`. To be designed in a future iteration.
 - **Tag groups**: Allow grouping entity types by tags for documentation UIs (e.g., "Admin", "Public", "Billing"). The entity graph already provides natural grouping, but cross-cutting concerns that span multiple entities may benefit from explicit tags. To be designed if a concrete use case arises.
+- **Target framework**: `RESTyard.Schema` currently targets `netstandard2.0` for broad compatibility (e.g., `RESTyard.Client` multi-targets `netstandard2.0;net8.0`). Reconsider moving to `net10` once all consuming projects have dropped `netstandard2.0` support.

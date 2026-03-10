@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -12,19 +13,19 @@ public class EmbeddedEntityDescription
     /// Relation types for the embedded entity.
     /// </summary>
     [JsonPropertyName("relations")]
-    public IReadOnlyList<string> Relations { get; set; }
+    public IReadOnlyList<string> Relations { get; set; } = Array.Empty<string>();
 
     /// <summary>
     /// Name of the target entity type.
     /// </summary>
     [JsonPropertyName("targetName")]
-    public string TargetName { get; set; }
+    public string TargetName { get; set; } = string.Empty;
 
     /// <summary>
     /// Siren classes of the target entity type.
     /// </summary>
     [JsonPropertyName("targetClasses")]
-    public IReadOnlyList<string> TargetClasses { get; set; }
+    public IReadOnlyList<string> TargetClasses { get; set; } = Array.Empty<string>();
 
     /// <summary>
     /// Human-readable title.
