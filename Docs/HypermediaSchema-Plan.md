@@ -34,7 +34,7 @@ Snapshot tests catch unexpected changes in the generated code; assertion-based t
 
 Cover at minimum:
 - Simple HTO with properties only
-- HTO with links (mandatory, optional, templated)
+- HTO with links (mandatory, optional)
 - HTO with actions (parameterless, with parameters, file upload, with CanExecute)
 - HTO with embedded entities (single, collection)
 - Nested/complex property types
@@ -64,7 +64,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 ## Phases
 
-### Phase 1: Foundation — Schema Model Library
+### Phase 1: ✅  Foundation — Schema Model Library
 
 **Goal:** Ship the schema model as a standalone NuGet package that external tools can consume.
 
@@ -79,7 +79,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Include JSON serialization attributes (`System.Text.Json`)
 - Unit tests: round-trip serialization (model → JSON → deserialize → assert equality)
 
-#### Step 1.3: Implement Mermaid mapper
+#### Step 1.3: ✅  Implement Mermaid mapper
 - `MermaidMapper.ToEntityGraph()` and `MermaidMapper.ToClassDiagram()`
 - Unit tests with snapshot verification against hand-crafted schema inputs
 
@@ -108,8 +108,8 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 #### Step 2.4: Link analysis
 - Scan `ILink<T>` properties with `[Relations]`
-- Populate `LinkDescription` (relations, target name/classes, mandatory from nullability, templated from ByKey/ByQuery)
-- Verify tests: HTO with mandatory/optional/templated links
+- Populate `LinkDescription` (relations, target name/classes, mandatory from nullability)
+- Verify tests: HTO with mandatory/optional links
 
 #### Step 2.5: Action analysis
 - Scan `HypermediaAction` / `HypermediaAction<T>` / `FileUploadHypermediaAction` properties

@@ -83,7 +83,7 @@ public class HypermediaApiSchema
     public string? ExternalDocsUrl { get; set; }            // Link to external documentation (e.g., RESTyard-Docs site)
     public string EntryPointName { get; set; }                   // References EntityTypeSchema.Name of the entry point
     public IReadOnlyList<EntityTypeSchema> EntityTypes { get; set; }
-    public IDictionary<string, JsonSchema> Definitions { get; set; } // Shared type definitions, referenced via $ref
+    public IDictionary<string, JsonElement> Definitions { get; set; } // Shared type definitions, referenced via $ref
 }
 ```
 
@@ -102,7 +102,7 @@ public class EntityTypeSchema
     public string? Description { get; set; }                // From XML doc <remarks> or attribute
 
     // Data shape — JSON Schema for the Siren "properties" bag
-    public JsonSchema? PropertiesSchema { get; set; }
+    public JsonElement? PropertiesSchema { get; set; }
 
     // Hypermedia graph — how this entity type connects to others
     public IReadOnlyList<LinkDescription> Links { get; set; }
@@ -117,6 +117,8 @@ public class EntityTypeSchema
 ### Data Shapes and Shared Definitions
 
 Entity properties (`PropertiesSchema`) and action parameters (`ActionDescription.ParameterSchema`) are both described using standard JSON Schema. Complex types (classes, records) and enums are always extracted to the top-level `Definitions` dictionary and referenced via `$ref`. Primitives and simple collections are inlined.
+
+**JSON Schema representation:** All JSON Schema fields use `System.Text.Json.JsonElement` (or `JsonElement?` for nullable). This avoids a dependency on `JsonSchema.Net` in the schema model library, keeps the model serialization-framework-agnostic, and round-trips naturally with `System.Text.Json`. The source generator produces the JSON Schema strings at compile time; they are parsed into `JsonElement` values for the schema model.
 
 Example `PropertiesSchema` referencing a shared `Address` definition:
 
@@ -186,7 +188,7 @@ public class ActionDescription
     public string? Title { get; set; }
     public string? Description { get; set; }
     public string? ContentType { get; set; }                // Inferred: multipart/form-data for file uploads, application/json otherwise
-    public JsonSchema? ParameterSchema { get; set; }        // JSON Schema for the parameter type (null if parameterless)
+    public JsonElement? ParameterSchema { get; set; }        // JSON Schema for the parameter type (null if parameterless)
     public string? ResultName { get; set; }                    // Name of the result entity type (null if no result)
     public IReadOnlyList<string>? ResultClasses { get; set; } // Siren classes of the result entity (null if no result)
     public bool IsMandatory { get; set; }                   // Non-nullable action property (always present, may still have CanExecute guard)
@@ -446,6 +448,8 @@ public static class MermaidMapper
 ```
 
 Can be used at runtime (via endpoint) or at build time (MSBuild task or CLI tool writing `.md` files).
+
+**JSON Schema parsing limitations:** The class diagram extracts property names and types from `PropertiesSchema` by reading only the top-level `type` field of each property in the JSON Schema `properties` object. Complex constructs (`$ref`, `allOf`/`anyOf`/`oneOf`, nested objects, array item types) are not resolved and display as `object`. This is intentional — the diagram is a visualization aid, not a schema validator.
 
 ## Replacing the Siren Formatter
 
