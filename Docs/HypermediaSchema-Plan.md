@@ -68,9 +68,10 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 **Goal:** Ship the schema model as a standalone NuGet package that external tools can consume.
 
-#### Step 1.1: Create `RESTyard.AspNetCore.Schema` project
+#### Step 1.1: Create `RESTyard.AspNetCore.Schema` project and test project
 - New `netstandard2.0` class library project
-- Add to `RESTyard.sln`
+- New `RESTyard.AspNetCore.Schema.Test` xunit test project
+- Add both to `RESTyard.sln`
 - Set up `Directory.Build.props` integration, NuGet metadata
 
 #### Step 1.2: Implement schema model classes
@@ -82,17 +83,13 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - `MermaidMapper.ToEntityGraph()` and `MermaidMapper.ToClassDiagram()`
 - Unit tests with snapshot verification against hand-crafted schema inputs
 
-#### Step 1.4: Hand-write CarShack schema as test fixture
-- Manually create a `HypermediaApiSchema` instance describing the CarShack API
-- Serialize to JSON, snapshot-verify
-- This serves as the reference for later generator output validation
-
 ### Phase 2: Source Generator — Project Setup and Schema Generation
 
 **Goal:** Set up the generator project and generate `GetSchema()` methods that produce `EntityTypeSchema` per HTO.
 
-#### Step 2.1: Create `RESTyard.HtoSourceGenerators` project
+#### Step 2.1: Create `RESTyard.HtoSourceGenerators` project and test project
 - New `netstandard2.0` class library with `<IsRoslynComponent>true</IsRoslynComponent>`
+- New `RESTyard.HtoSourceGenerators.Test` xunit + Verify test project
 - Implement `IIncrementalGenerator` skeleton
 - Reference from CarShack to verify the generator loads without errors
 
@@ -140,34 +137,30 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Emit per-assembly `HypermediaSchemaRegistry` collecting all `GetSchema()` results
 - Verify: CarShack registry lists all its entity types
 
-### Phase 3: Source Generator — Siren POCOs
+### Phase 3: Schema Endpoint
+
+**Goal:** Serve the schema at runtime via `/_schema`.
+
+#### Step 3.1: DI integration
+- `AddHypermediaSchema(options => { ... })` extension method in `RESTyard.AspNetCore`
+- Aggregates per-assembly registries into singleton `HypermediaApiSchema`
+- Reference `RESTyard.AspNetCore.Schema`
+
+#### Step 3.2: Schema endpoint
+- `MapHypermediaSchema("/_schema")` endpoint
+- Returns `HypermediaApiSchema` as JSON (`application/vnd.restyard.schema+json`)
+- Integration test: CarShack → `WebApplicationFactory` → `GET /_schema` → verify JSON structure
+
+### Phase 4: Source Generator — Siren POCOs
 
 **Goal:** Emit the Siren POCO types into the consuming project.
 
-#### Step 3.1: Emit Siren POCO types
+#### Step 4.1: Emit Siren POCO types
 - Generator emits `SirenEntity` (non-generic base), `SirenEntity<TProperties>` (generic), `SirenLink`, `SirenAction`, `SirenField`, `SirenSubEntity`, `SirenEmbeddedEntity`, `SirenLinkedEntity` into the consuming project
 - `SirenEntity` has no `Properties` — only structural fields (Class, Title, Links, Actions, Entities)
 - `SirenEntity<TProperties> : SirenEntity` adds `TProperties? Properties`
 - `SirenEmbeddedEntity.Entity` is typed as `SirenEntity` (non-generic base)
 - Verify: CarShack can reference the emitted types, compile, and use them in a trivial test
-
-### Phase 4: Schema Endpoint
-
-**Goal:** Serve the schema at runtime via `/_schema`.
-
-#### Step 4.1: DI integration
-- `AddHypermediaSchema(options => { ... })` extension method in `RESTyard.AspNetCore`
-- Aggregates per-assembly registries into singleton `HypermediaApiSchema`
-- Reference `RESTyard.AspNetCore.Schema`
-
-#### Step 4.2: Schema endpoint
-- `MapHypermediaSchema("/_schema")` endpoint
-- Returns `HypermediaApiSchema` as JSON (`application/vnd.restyard.schema+json`)
-- Integration test: CarShack → `WebApplicationFactory` → `GET /_schema` → verify JSON structure
-
-#### Step 4.3: Validate against hand-written fixture
-- Compare generated CarShack schema against the hand-written fixture from Step 1.4
-- This catches any discrepancies between the spec and the generator output
 
 ### Phase 5: Source Generator — ToSiren() Emission
 
@@ -249,35 +242,27 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Document the schema endpoint, model, and Mermaid mapper
 - Add migration guide for existing users
 
-### Phase 9 (Optional): Permission Scopes and Profiles
+### Phase 9 (Optional): Access Groups
 
-> **Optional.** See the "Future Idea: Permission Scopes and Profiles" section in `HypermediaSchema-Design.md` for the full design. Only pursue after the core schema and source generator are stable and a concrete use case demands it.
+> **Optional.** See the "Future Idea: Access Groups" section in `HypermediaSchema-Design.md` for the full design. Only pursue after the core schema and source generator are stable and a concrete use case demands it.
 
-**Goal:** Allow the schema to describe which actions, links, and embedded entities require which permissions, and let clients request a filtered schema for a specific permission profile.
+**Goal:** Allow the schema to describe which actions, links, and embedded entities require which access groups, and let clients request a filtered schema.
 
-#### Step 9.1: `[HypermediaScope]` attribute and generator support
-- Define `[HypermediaScope("scopeName")]` attribute in `RESTyard.AspNetCore`
-- Extend the source generator to read `[HypermediaScope]` from actions, links, and embedded entity properties
-- Emit `RequiredScopes` on `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription`
-- Collect all discovered scopes into `HypermediaApiSchema.DeclaredScopes`
-- Verify tests: HTO with scoped and unscoped elements, `DeclaredScopes` completeness
+#### Step 9.1: `[HypermediaAccessGroup]` attribute and generator support
+- Define `[HypermediaAccessGroup("groupName")]` attribute in `RESTyard.AspNetCore`
+- Extend the source generator to read `[HypermediaAccessGroup]` from actions, links, and embedded entity properties
+- Emit `RequiredAccessGroups` on `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription`
+- Collect all discovered access groups into `HypermediaApiSchema.DeclaredAccessGroups`
+- Verify tests: HTO with grouped and ungrouped elements, `DeclaredAccessGroups` completeness
 
-#### Step 9.2: Permission profiles
-- Add `PermissionProfile` model class and `PermissionProfiles` to `HypermediaApiSchema`
-- Wire into `AddHypermediaSchema(options => { options.PermissionProfiles = [...]; })`
-- Startup validation: warn on scopes referenced in profiles but never declared, and vice versa
-- Verify tests: profile resolution with inheritance
-
-#### Step 9.3: Filtered schema endpoint
-- Implement `HypermediaSchemaFilter.ForProfile(schema, profileName)`
-  - Resolve granted scopes (including inherited profiles)
-  - Remove elements whose `RequiredScopes` are not satisfied
+#### Step 9.2: Filtered schema endpoint
+- Implement `HypermediaSchemaFilter.ForAccessGroups(schema, grantedAccessGroups)`
+  - Remove elements whose `RequiredAccessGroups` are not satisfied by the granted set
   - Remove unreachable entity types
-  - Strip `PermissionProfiles` and `DeclaredScopes` from filtered output
-- Extend `/_schema` endpoint to accept `?profile=` query parameter
-- Integration test: CarShack with scopes and profiles, verify filtered output for each profile
+  - Strip `DeclaredAccessGroups` from filtered output
+- Extend `/_schema` endpoint to accept `?accessGroups=read,write` query parameter
+- Integration test: CarShack with access groups, verify filtered output for different group combinations
 
-#### Step 9.4: CarShack demo
-- Add `[HypermediaScope]` to selected CarShack actions and links
-- Define sample profiles (readonly, user, admin)
+#### Step 9.3: CarShack demo
+- Add `[HypermediaAccessGroup]` to selected CarShack actions and links
 - Verify the full and filtered schema endpoints work end to end

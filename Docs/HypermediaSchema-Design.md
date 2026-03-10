@@ -653,7 +653,7 @@ The existing contract-first XML schema (`Hypermedia.xsd` / `Hypermedia.cs`) cont
 - **RESTyard attributes applied structurally by generator**: `[HypermediaProperty(Name)]` and `[FormatterIgnoreHypermediaProperty]` are consumed by the source generator and applied structurally to the generated properties POCO — `[HypermediaProperty(Name = "x")]` sets the C# property name to `x`, `[FormatterIgnoreHypermediaProperty]` omits the property entirely. These attributes are **not** forwarded to the generated code (they've already been applied). All other attributes on HTO properties are forwarded verbatim. This keeps RESTyard attributes as serializer-agnostic declarations of intent, while letting serializer-specific attributes compose on top. If a user has both `[HypermediaProperty(Name = "sirenName")]` and `[JsonPropertyName("jsonName")]`, the generated POCO property is named `sirenName` with `[JsonPropertyName("jsonName")]` forwarded — the serializer overrides the name, and that's the user's explicit choice.
 - **JSON Schema generation**: Use a small internal `JsonSchemaBuilder` class (~200-300 lines) inside the source generator. No external dependencies. Maps Roslyn `ITypeSymbol` to JSON Schema strings. Covers: primitives, string, DateTime/DateOnly/TimeOnly, Uri, Guid, enums (`[EnumMember]`), `Nullable<T>`, arrays/lists, nested objects via `$ref`. Needs cycle detection for recursive types. Edge cases deferred: `Dictionary<string, T>`, polymorphic `oneOf`, data annotation constraints.
 
-## Future Idea: Permission Scopes and Profiles
+## Future Idea: Access Groups
 
 > **Status:** Future idea — not part of the initial implementation. To be revisited after the core schema and source generator are stable.
 
@@ -661,15 +661,11 @@ The existing contract-first XML schema (`Hypermedia.xsd` / `Hypermedia.cs`) cont
 
 An AI agent or GUI consuming the hypermedia schema benefits from knowing upfront which actions and links require which permissions. Today, a client only discovers this at runtime — if an action is absent from a Siren response, it could mean "you lack permission" or "the entity's current state doesn't allow it." The schema can separate these two dimensions: **state-dependent availability** is already handled by `CanExecute` / nullable action properties, while **permission-dependent availability** is currently invisible.
 
-This is purely descriptive metadata — the server still enforces authorization at runtime and omits actions/links from Siren responses based on actual permissions. The schema scopes tell the client what *could* be there given sufficient permissions.
+This is purely descriptive metadata — the server still enforces authorization at runtime and omits actions/links from Siren responses based on actual permissions. Access groups tell the client what *could* be there given sufficient permissions.
 
-### Approach: Scopes on Elements + Named Profiles
+### Approach: Access Groups on Elements
 
-Two complementary concepts, both independent of ASP.NET Core authorization:
-
-**1. Scopes on elements** — A `RequiredScopes` string list on `LinkDescription`, `ActionDescription`, and `EmbeddedEntityDescription`. Declared via a `[HypermediaScope("...")]` attribute on HTO members. The source generator reads the attribute and emits the strings into the schema. `null` = no restriction (public).
-
-**2. Permission profiles** — Named profiles at the top level that map roles to granted scopes. Profiles support inheritance via `IncludesProfiles`.
+A `RequiredAccessGroups` string list on `LinkDescription`, `ActionDescription`, and `EmbeddedEntityDescription`. Declared via a `[HypermediaAccessGroup("...")]` attribute on HTO members. The source generator reads the attribute and emits the strings into the schema. `null` = no restriction (public). All discovered access groups are collected into `HypermediaApiSchema.DeclaredAccessGroups` automatically.
 
 ### Schema Model Additions
 
@@ -677,99 +673,62 @@ Two complementary concepts, both independent of ASP.NET Core authorization:
 public class HypermediaApiSchema
 {
     // ... existing fields ...
-    public IReadOnlyList<string>? DeclaredScopes { get; set; }            // All scopes found in the API
-    public IReadOnlyList<PermissionProfile>? PermissionProfiles { get; set; }
-}
-
-public class PermissionProfile
-{
-    public string Name { get; set; }                           // e.g., "readonly", "user", "admin"
-    public string? Description { get; set; }
-    public IReadOnlyList<string> IncludesProfiles { get; set; } // Inheritance: "admin" includes "user"
-    public IReadOnlyList<string> GrantedScopes { get; set; }   // ["read", "write", "admin"]
+    public IReadOnlyList<string>? DeclaredAccessGroups { get; set; }  // All access groups found in the API, collected automatically
 }
 
 public class ActionDescription
 {
     // ... existing fields ...
-    public IReadOnlyList<string>? RequiredScopes { get; set; } // null = no restriction (public)
+    public IReadOnlyList<string>? RequiredAccessGroups { get; set; }  // null = no restriction (public)
 }
 
 public class LinkDescription
 {
     // ... existing fields ...
-    public IReadOnlyList<string>? RequiredScopes { get; set; }
+    public IReadOnlyList<string>? RequiredAccessGroups { get; set; }
 }
 
 public class EmbeddedEntityDescription
 {
     // ... existing fields ...
-    public IReadOnlyList<string>? RequiredScopes { get; set; }
+    public IReadOnlyList<string>? RequiredAccessGroups { get; set; }
 }
 ```
 
 ### Developer Usage
 
-Scopes are declared close to the code via attributes:
+Access groups are declared close to the code via attributes:
 
 ```csharp
 [HypermediaAction(Name = "DeleteCustomer")]
-[HypermediaScope("admin")]
+[HypermediaAccessGroup("admin")]
 public HypermediaAction? DeleteCustomer { get; set; }
 
+[HypermediaAction(Name = "MarkAsFavorite")]
+[HypermediaAccessGroup("write")]
+public HypermediaAction? MarkAsFavorite { get; set; }
+
 [Relations(["orders"])]
-[HypermediaScope("authenticated")]
+[HypermediaAccessGroup("read")]
 public ILink<HypermediaOrdersHto>? Orders { get; set; }
 ```
 
-Profiles are defined centrally at startup:
-
-```csharp
-builder.Services.AddHypermediaSchema(options =>
-{
-    options.PermissionProfiles =
-    [
-        new PermissionProfile
-        {
-            Name = "readonly",
-            Description = "Public read-only access",
-            GrantedScopes = ["read"]
-        },
-        new PermissionProfile
-        {
-            Name = "user",
-            IncludesProfiles = ["readonly"],
-            GrantedScopes = ["write"]
-        },
-        new PermissionProfile
-        {
-            Name = "admin",
-            IncludesProfiles = ["user"],
-            GrantedScopes = ["admin"]
-        }
-    ];
-});
-```
+No startup configuration needed — the source generator collects everything from attributes.
 
 ### Example Schema JSON
 
 ```json
 {
-  "declaredScopes": ["read", "write", "admin"],
-  "permissionProfiles": [
-    { "name": "readonly", "grantedScopes": ["read"], "includesProfiles": [] },
-    { "name": "user", "includesProfiles": ["readonly"], "grantedScopes": ["write"] },
-    { "name": "admin", "includesProfiles": ["user"], "grantedScopes": ["admin"] }
-  ],
+  "declaredAccessGroups": ["read", "write", "admin"],
   "entityTypes": [
     {
       "name": "Customer",
       "actions": [
-        { "name": "MarkAsFavorite", "requiredScopes": ["write"] },
-        { "name": "DeleteCustomer", "requiredScopes": ["admin"] }
+        { "name": "MarkAsFavorite", "requiredAccessGroups": ["write"] },
+        { "name": "DeleteCustomer", "requiredAccessGroups": ["admin"] }
       ],
       "links": [
-        { "relations": ["orders"], "requiredScopes": ["read"] }
+        { "relations": ["orders"], "requiredAccessGroups": ["read"] }
       ]
     }
   ]
@@ -778,38 +737,42 @@ builder.Services.AddHypermediaSchema(options =>
 
 ### Filtered Schema Endpoint
 
-The `/_schema` endpoint supports a `profile` query parameter to return a filtered sub-document containing only the elements visible to that profile:
+The `/_schema` endpoint supports an `accessGroups` query parameter to return a filtered sub-document containing only the elements visible to the given access groups:
 
 ```
-GET /_schema                          → full schema (all scopes, all profiles)
-GET /_schema?profile=readonly         → filtered: only elements visible to "readonly"
+GET /_schema                              → full schema (all access groups)
+GET /_schema?accessGroups=read            → filtered: only elements requiring "read" or no access groups
+GET /_schema?accessGroups=read,write      → filtered: elements requiring "read", "write", or no access groups
 ```
 
-Filtering logic for a given profile:
-1. Resolve granted scopes (including inherited profiles)
-2. Remove actions where `RequiredScopes` contains any scope not in the granted set
-3. Remove links where `RequiredScopes` contains any scope not in the granted set
-4. Same for embedded entities
-5. Remove entity types that become unreachable (no links, no actions, no embedded entities, and not referenced by any remaining element)
-6. Strip `PermissionProfiles` and `DeclaredScopes` from the filtered output (irrelevant)
+Filtering logic for a given set of granted access groups:
+1. Remove actions where `RequiredAccessGroups` contains any group not in the granted set
+2. Remove links where `RequiredAccessGroups` contains any group not in the granted set
+3. Same for embedded entities
+4. Remove entity types that become unreachable (no links, no actions, no embedded entities, and not referenced by any remaining element)
+5. Strip `DeclaredAccessGroups` from the filtered output (irrelevant)
 
 ```csharp
 public static class HypermediaSchemaFilter
 {
-    public static HypermediaApiSchema ForProfile(
-        HypermediaApiSchema fullSchema, string profileName);
+    public static HypermediaApiSchema ForAccessGroups(
+        HypermediaApiSchema fullSchema, IReadOnlySet<string> grantedAccessGroups);
 }
 ```
 
-This is especially useful for AI agents — they request the schema for their permission level and get a clean document with only the actions they can actually use.
+Clients typically know their access groups from their auth context (JWT claims, API key metadata, etc.) and pass them directly — no need for a server-side role-to-group mapping layer.
+
+### Prior Art
+
+The existing contract-first XML schema (`Hypermedia.cs`) already models scopes on documents (`DocumentType.Policies`) and operations (`OperationType.Policies`) via `PermissionType.scope`. Our design extends this with access groups on links and embedded entities, and a runtime-filtered endpoint.
 
 ### Design Notes
 
-- **No ASP.NET Core coupling**: `[HypermediaScope]` is a RESTyard attribute read by the source generator. It has no connection to `[Authorize]`, policies, or claims. Developers are free to align them or not.
-- **Scopes are freeform strings**: No predefined vocabulary. Each API defines its own scope names.
-- **Profiles are optional**: If an API doesn't define profiles, clients still see `RequiredScopes` per element and can reason about it directly. Profiles are a convenience layer.
-- **The source generator collects `DeclaredScopes`** automatically from all `[HypermediaScope]` attributes found in the compilation. This enables tooling to detect typos (scope used in a profile but never declared on any element, or vice versa).
-- **State vs. permissions are orthogonal**: A `null` action in a Siren response means either "no permission" or "state doesn't allow it." The schema scopes describe only the permission dimension. State-dependent availability is already captured by `IsMandatory` and the `CanExecute` pattern.
+- **No ASP.NET Core coupling**: `[HypermediaAccessGroup]` is a RESTyard attribute read by the source generator. It has no connection to `[Authorize]`, policies, or claims. Developers are free to align them or not.
+- **Access groups are freeform strings**: No predefined vocabulary. Each API defines its own group names.
+- **The source generator collects `DeclaredAccessGroups`** automatically from all `[HypermediaAccessGroup]` attributes found in the compilation. This enables tooling to detect typos.
+- **State vs. permissions are orthogonal**: A `null` action in a Siren response means either "no permission" or "state doesn't allow it." Access groups describe only the permission dimension. State-dependent availability is already captured by `IsMandatory` and the `CanExecute` pattern.
+- **No permission profiles**: Role-to-group mappings (e.g., "admin = read + write + admin") are an identity/authorization concern, not an API schema concern. Clients know their access groups from their auth context and filter directly. This avoids duplicating role definitions that already exist in identity providers.
 
 ## Open Questions
 
