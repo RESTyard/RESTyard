@@ -202,4 +202,51 @@ public class MermaidMapperTests() : VerifyBase()
         var markdown = $"```mermaid\n{result}\n```";
         return Verify(markdown, extension: "md");
     }
+
+    [Fact]
+    public Task ToClassDiagram_VariousPropertyTypes()
+    {
+        var propertiesSchema = JsonDocument.Parse("""
+            {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "integer" },
+                    "name": { "type": "string" },
+                    "price": { "type": "number" },
+                    "isActive": { "type": "boolean" },
+                    "tags": { "type": "array" },
+                    "address": { "type": "object" },
+                    "nullableField": { "type": "null" },
+                    "noTypeField": { "description": "has no type keyword" },
+                    "nestedObject": {
+                        "type": "object",
+                        "properties": {
+                            "street": { "type": "string" },
+                            "city": { "type": "string" }
+                        }
+                    },
+                    "refField": { "$ref": "#/definitions/Brand" }
+                }
+            }
+            """).RootElement.Clone();
+
+        var schema = new HypermediaApiSchema
+        {
+            SchemaVersion = "1.0",
+            EntryPointName = "Product",
+            EntityTypes = new[]
+            {
+                new EntityTypeSchema
+                {
+                    Name = "Product",
+                    Classes = new[] { "Product" },
+                    PropertiesSchema = propertiesSchema,
+                },
+            },
+            Definitions = new Dictionary<string, JsonElement>(),
+        };
+        var result = MermaidMapper.ToClassDiagram(schema);
+        var markdown = $"```mermaid\n{result}\n```";
+        return Verify(markdown, extension: "md");
+    }
 }

@@ -26,6 +26,12 @@ public static class MermaidMapper
         var sb = new StringBuilder();
         sb.AppendLine("graph LR");
 
+        if (schema.EntityTypes.Count == 0)
+        {
+            sb.AppendLine("    NoEntities[\"No entities defined\"]");
+            return sb.ToString().TrimEnd();
+        }
+
         foreach (var entity in schema.EntityTypes)
         {
             sb.AppendLine($"    {entity.Name}[\"{entity.Name}\"]");
@@ -70,6 +76,14 @@ public static class MermaidMapper
     {
         var sb = new StringBuilder();
         sb.AppendLine("classDiagram");
+
+        if (schema.EntityTypes.Count == 0)
+        {
+            sb.AppendLine("    class NoEntities {");
+            sb.AppendLine("        <<No entities defined>>");
+            sb.AppendLine("    }");
+            return sb.ToString().TrimEnd();
+        }
 
         foreach (var entity in schema.EntityTypes)
         {
