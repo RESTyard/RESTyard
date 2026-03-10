@@ -68,9 +68,9 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 **Goal:** Ship the schema model as a standalone NuGet package that external tools can consume.
 
-#### Step 1.1: Create `RESTyard.AspNetCore.Schema` project and test project
+#### Step 1.1: Create `RESTyard.Schema` project and test project
 - New `netstandard2.0` class library project
-- New `RESTyard.AspNetCore.Schema.Test` xunit test project
+- New `RESTyard.Schema.Test` xunit test project
 - Add both to `RESTyard.sln`
 - Set up `Directory.Build.props` integration, NuGet metadata
 
@@ -144,7 +144,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 #### Step 3.1: DI integration
 - `AddHypermediaSchema(options => { ... })` extension method in `RESTyard.AspNetCore`
 - Aggregates per-assembly registries into singleton `HypermediaApiSchema`
-- Reference `RESTyard.AspNetCore.Schema`
+- Reference `RESTyard.Schema`
 
 #### Step 3.2: Schema endpoint
 - `MapHypermediaSchema("/_schema")` endpoint

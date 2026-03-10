@@ -583,7 +583,7 @@ public class SirenLinkedEntity : SirenSubEntity
 
 ```
 Source/
-  RESTyard.AspNetCore.Schema/          # Schema model classes, Mermaid mapper (regular library)
+  RESTyard.Schema/          # Schema model classes, Mermaid mapper (regular library)
     Model/
       HypermediaApiSchema.cs
       EntityTypeSchema.cs
@@ -607,7 +607,7 @@ Source/
   RESTyard.AspNetCore/                 # Existing — references Schema, adds endpoint
     Schema/
       HypermediaSchemaEndpoint.cs      # MapHypermediaSchema("/_schema")
-  RESTyard.AspNetCore.Schema.Test/     # xunit — unit tests for schema model and Mermaid mapper
+  RESTyard.Schema.Test/     # xunit — unit tests for schema model and Mermaid mapper
   RESTyard.HtoSourceGenerators.Test/   # xunit + Verify — snapshot tests for generated ToSiren(), GetSchema(), registry
 ```
 
@@ -616,7 +616,7 @@ Source/
 **Why Schema is a separate library:** The schema model (`HypermediaApiSchema`, `EntityTypeSchema`, etc.) needs to be consumed by external tools — client generators, Mermaid CLI, documentation UIs — that deserialize the `/_schema` JSON endpoint. These tools should not need to reference the full ASP.NET Core server library. Keeping the schema model in a lightweight standalone package enables this.
 
 ```
-RESTyard.AspNetCore.Schema       (netstandard2.0 — schema model + Mermaid)
+RESTyard.Schema       (netstandard2.0 — schema model + Mermaid)
     ^                   ^
     |                   |
 RESTyard.AspNetCore     External tools (client generators, docs UIs)
