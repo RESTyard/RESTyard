@@ -45,6 +45,11 @@ Cover at minimum:
 - Controller scanning for action endpoint matching
 - Per-assembly registry generation
 - Multi-assembly scenario
+- Generated properties POCO: correct property names, `[HypermediaProperty]` name applied structurally
+- Generated properties POCO: `[FormatterIgnoreHypermediaProperty]` properties omitted
+- Generated properties POCO: non-RESTyard attributes forwarded verbatim (e.g., `[JsonConverter]`, `[JsonPropertyName]`, custom attributes)
+- Generated properties POCO: RESTyard-specific attributes NOT forwarded (`[Key]`, `[Relations]`, etc.)
+- `SirenEntity<TProperties>` return type from `ToSiren()`
 
 ### Schema Model Tests
 
@@ -140,7 +145,10 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 **Goal:** Emit the Siren POCO types into the consuming project.
 
 #### Step 3.1: Emit Siren POCO types
-- Generator emits `SirenEntity`, `SirenLink`, `SirenAction`, `SirenField`, `SirenSubEntity`, `SirenEmbeddedEntity`, `SirenLinkedEntity` into the consuming project
+- Generator emits `SirenEntity` (non-generic base), `SirenEntity<TProperties>` (generic), `SirenLink`, `SirenAction`, `SirenField`, `SirenSubEntity`, `SirenEmbeddedEntity`, `SirenLinkedEntity` into the consuming project
+- `SirenEntity` has no `Properties` — only structural fields (Class, Title, Links, Actions, Entities)
+- `SirenEntity<TProperties> : SirenEntity` adds `TProperties? Properties`
+- `SirenEmbeddedEntity.Entity` is typed as `SirenEntity` (non-generic base)
 - Verify: CarShack can reference the emitted types, compile, and use them in a trivial test
 
 ### Phase 4: Schema Endpoint
@@ -165,12 +173,17 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 **Goal:** Generate `ToSiren()` extension methods replacing the reflection-based `SirenConverter`.
 
-#### Step 5.1: Basic entity mapping
-- Emit `ToSiren()` extension method per HTO
+#### Step 5.1: Generate properties POCOs and basic entity mapping
+- For each HTO, emit a properties POCO class (e.g., `HypermediaCustomerHtoSirenProperties`)
+  - Include only data properties (exclude `[FormatterIgnoreHypermediaProperty]`, links, actions, keys, embedded entities)
+  - Apply `[HypermediaProperty(Name = "x")]` structurally: use `x` as the C# property name on the POCO
+  - Forward all other attributes from the HTO property verbatim (serializer attributes, converters, third-party — generator copies without interpreting)
+  - Do NOT forward RESTyard-specific attributes: `[Key]`, `[Relations]`, `[HypermediaAction]`, `[HypermediaProperty]`, `[FormatterIgnoreHypermediaProperty]`
+- Emit `ToSiren()` extension method per HTO returning `SirenEntity<TProperties>`
 - Map `[HypermediaObject]` → `SirenEntity.Class`, `Title`
-- Map properties → `SirenEntity.Properties` (respecting `[HypermediaProperty]`, `[FormatterIgnoreHypermediaProperty]`)
+- Map properties → generated properties POCO instance
 - Self link via `IHypermediaRouteResolver`
-- Verify tests: snapshot output for a simple HTO
+- Verify tests: snapshot output for a simple HTO, attribute forwarding, property name override via `[HypermediaProperty]`
 
 #### Step 5.2: Link resolution
 - Resolve `ILink<T>` properties → `SirenLink` with URL from `IHypermediaRouteResolver`
@@ -235,3 +248,36 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 #### Step 8.2: Update RESTyard-Docs
 - Document the schema endpoint, model, and Mermaid mapper
 - Add migration guide for existing users
+
+### Phase 9 (Optional): Permission Scopes and Profiles
+
+> **Optional.** See the "Future Idea: Permission Scopes and Profiles" section in `HypermediaSchema-Design.md` for the full design. Only pursue after the core schema and source generator are stable and a concrete use case demands it.
+
+**Goal:** Allow the schema to describe which actions, links, and embedded entities require which permissions, and let clients request a filtered schema for a specific permission profile.
+
+#### Step 9.1: `[HypermediaScope]` attribute and generator support
+- Define `[HypermediaScope("scopeName")]` attribute in `RESTyard.AspNetCore`
+- Extend the source generator to read `[HypermediaScope]` from actions, links, and embedded entity properties
+- Emit `RequiredScopes` on `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription`
+- Collect all discovered scopes into `HypermediaApiSchema.DeclaredScopes`
+- Verify tests: HTO with scoped and unscoped elements, `DeclaredScopes` completeness
+
+#### Step 9.2: Permission profiles
+- Add `PermissionProfile` model class and `PermissionProfiles` to `HypermediaApiSchema`
+- Wire into `AddHypermediaSchema(options => { options.PermissionProfiles = [...]; })`
+- Startup validation: warn on scopes referenced in profiles but never declared, and vice versa
+- Verify tests: profile resolution with inheritance
+
+#### Step 9.3: Filtered schema endpoint
+- Implement `HypermediaSchemaFilter.ForProfile(schema, profileName)`
+  - Resolve granted scopes (including inherited profiles)
+  - Remove elements whose `RequiredScopes` are not satisfied
+  - Remove unreachable entity types
+  - Strip `PermissionProfiles` and `DeclaredScopes` from filtered output
+- Extend `/_schema` endpoint to accept `?profile=` query parameter
+- Integration test: CarShack with scopes and profiles, verify filtered output for each profile
+
+#### Step 9.4: CarShack demo
+- Add `[HypermediaScope]` to selected CarShack actions and links
+- Define sample profiles (readonly, user, admin)
+- Verify the full and filtered schema endpoints work end to end
