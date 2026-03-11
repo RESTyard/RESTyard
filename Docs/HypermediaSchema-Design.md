@@ -249,6 +249,11 @@ The generator finds all types implementing `IHypermediaObject` in the compilatio
 | `[Description("...")]` (`JsonSchema.Net.Generation`) | Description (primary) |
 | XML doc `<summary>` | Title (fallback when no `[Title]` attribute) |
 | XML doc `<remarks>` | Description (fallback when no `[Description]` attribute) |
+| XML doc `<summary>` on HTO class | `EntityTypeSchema.Title` (fallback when no `[HypermediaObject(Title)]`) |
+| XML doc `<remarks>` on HTO class | `EntityTypeSchema.Description` |
+| XML doc `<summary>` on link property | `LinkDescription.Description` |
+| XML doc `<summary>` on action property | `ActionDescription.Description` (fallback when no `[HypermediaAction(Title)]` for title) |
+| XML doc `<summary>` on embedded entity property | `EmbeddedEntityDescription.Description` |
 | Nullable annotations | Nullability of properties, links |
 | `[HypermediaActionEndpoint<THto>("prop")]` on controllers | Action-to-HTO mapping |
 
@@ -661,6 +666,23 @@ The existing contract-first XML schema (`Hypermedia.xsd` / `Hypermedia.cs`) cont
   public class HypermediaCustomerHto : HypermediaObject { }
   ```
   This is a separate attribute (not on `[HypermediaObject]`) because it is a schema concern, not a Siren serialization concern. The generator resolves `TargetName` for links and embedded entities by reading `[HypermediaSchemaName]` from the target HTO type, falling back to the full class name. Siren `Classes` are retained for wire-format matching but are not used for referencing within the schema. The generator must verify that both `Name` and `Classes` are unique across all entity types and emit a diagnostic error on collision. `[HypermediaSchemaName]` also serves to resolve name collisions in multi-assembly APIs — e.g., if both `Billing.CustomerHto` and `Shipping.CustomerHto` exist, they would collide on the default name `"CustomerHto"`. Applying `[HypermediaSchemaName("BillingCustomer")]` and `[HypermediaSchemaName("ShippingCustomer")]` resolves the collision explicitly.
+- **Description population via XML doc extraction**: The source generator populates `Description` fields on `EntityTypeSchema`, `LinkDescription`, `ActionDescription`, and `EmbeddedEntityDescription` by extracting XML doc comments from the C# source via `ISymbol.GetDocumentationCommentXml()`. For **entity types**, `<summary>` maps to `Title` (fallback when `[HypermediaObject(Title)]` is not set) and `<remarks>` maps to `Description`. For **links, actions, and embedded entities** (which are properties on the HTO class), `<summary>` maps to `Description` since these elements already get their `Title` from attributes. This requires no new attributes — developers use standard XML doc comments that also serve IntelliSense. The same extraction pattern already applies to JSON Schema `title`/`description` on properties (lines 248-251). Example:
+  ```csharp
+  /// <summary>A customer with profile and order history.</summary>
+  /// <remarks>Represents an active customer account in the system.</remarks>
+  [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+  public class HypermediaCustomerHto : HypermediaObject
+  {
+      /// <summary>The customer's complete order history.</summary>
+      [Relations(["orders"])]
+      public ILink<HypermediaOrderListHto>? Orders { get; set; }
+
+      /// <summary>Creates a new order for this customer.</summary>
+      [HypermediaAction(Name = "CreateOrder", Title = "Create Order")]
+      public CreateOrderAction? CreateOrder { get; set; }
+  }
+  ```
+  This produces: `EntityTypeSchema.Description = "Represents an active customer account in the system."`, `LinkDescription.Description = "The customer's complete order history."`, `ActionDescription.Description = "Creates a new order for this customer."`. This is particularly valuable for the Generic MCP Server design (see `GenericMcp-Design.md`) where descriptions become MCP tool descriptions that help LLMs understand what each action/link does.
 - **No HTTP method in schema**: `ActionDescription` intentionally omits the HTTP method. Clients discover it at runtime from the Siren action's `method` field. Client generators emit generic "execute action" calls — the runtime Siren response dictates the transport details. This keeps the schema focused on type-level metadata, not transport concerns.
 - **Definition name collisions**: `Definitions` dictionary keys use simple class names (e.g., `"Address"`). When two types share the same simple name but differ by namespace (e.g., `Billing.Address` and `Shipping.Address`), the generator disambiguates by prefixing with the namespace segment: `"Billing_Address"`, `"Shipping_Address"`. Only the colliding names are qualified — non-colliding names stay short. The generator detects collisions across all types discovered in the compilation.
 - **Siren properties as generated POCO, not dictionary**: The Siren `properties` bag is represented as a generated strongly-typed class per HTO (`SirenEntity<TProperties>`) rather than `Dictionary<string, object?>`. This preserves user-defined attributes on HTO properties — serializer converters, naming, third-party attributes — because the generator forwards them to the generated POCO. A dictionary would lose per-property attributes since the serializer would only see `object?` values. The non-generic `SirenEntity` base is used for embedded entity collections where property types are heterogeneous; STJ in .NET 8 serializes `SirenEntity<T>` using the runtime type when referenced through the base.
