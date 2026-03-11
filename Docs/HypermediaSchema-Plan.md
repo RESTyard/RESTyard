@@ -94,7 +94,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - When `IncludeActions = false`, omit action lines from class boxes
 - Update existing tests, add tests for options combinations
 
-#### Step 1.5: Implement Markdown documentation mapper
+#### Step 1.5: ✅ Implement Markdown documentation mapper
 - `schema.ToDocumentation(MarkdownMapperOptions?)` in `RESTyard.Schema`
 - `MarkdownMapperOptions` with `IncludeTableOfContents` (default true) and `IncludeDiagram` (default true)
 - **Header section**: API title, description, version, external docs URL
