@@ -1,5 +1,7 @@
 ﻿# API Documentation
 
+**Entry Point:** [EntryPoint](#entrypoint)
+
 ## Table of Contents
 
 - [EntryPoint](#entrypoint)
@@ -21,7 +23,9 @@ graph LR
 
 ## EntryPoint
 
-**Classes:** `EntryPoint`
+#### Classes
+
+`EntryPoint`
 
 ### Links
 
@@ -46,8 +50,12 @@ graph LR
 
 > This entity is deprecated. Use NewEntity instead.
 
-**Classes:** `OldEntity`
+#### Classes
+
+`OldEntity`
 
 ## NewEntity
 
-**Classes:** `NewEntity`
+#### Classes
+
+`NewEntity`

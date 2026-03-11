@@ -1,5 +1,7 @@
 ﻿# Car Shop API
 
+**Entry Point:** [EntryPoint](#entrypoint)
+
 ## API Map
 
 ```mermaid
@@ -18,7 +20,9 @@ graph LR
 
 ## EntryPoint
 
-**Classes:** `EntryPoint`
+#### Classes
+
+`EntryPoint`
 
 ### Links
 
@@ -30,7 +34,9 @@ graph LR
 
 ## CustomersRoot
 
-**Classes:** `CustomersRoot`
+#### Classes
+
+`CustomersRoot`
 
 ### Embedded Entities
 
@@ -40,7 +46,9 @@ graph LR
 
 ## CarsRoot
 
-**Classes:** `CarsRoot`
+#### Classes
+
+`CarsRoot`
 
 ### Embedded Entities
 
@@ -50,7 +58,9 @@ graph LR
 
 ## Customer
 
-**Classes:** `Customer`
+#### Classes
+
+`Customer`
 
 ### Properties
 
@@ -78,4 +88,6 @@ graph LR
 
 ## Car
 
-**Classes:** `Car`
+#### Classes
+
+`Car`

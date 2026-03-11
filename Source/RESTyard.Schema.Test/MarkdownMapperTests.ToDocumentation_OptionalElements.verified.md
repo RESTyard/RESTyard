@@ -1,5 +1,7 @@
 ﻿# API Documentation
 
+**Entry Point:** [Root](#root)
+
 ## Table of Contents
 
 - [Root](#root)
@@ -20,7 +22,9 @@ graph LR
 
 ## Root
 
-**Classes:** `Root`
+#### Classes
+
+`Root`
 
 ### Links
 
@@ -46,4 +50,6 @@ graph LR
 
 ## Target
 
-**Classes:** `Target`
+#### Classes
+
+`Target`

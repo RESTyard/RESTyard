@@ -1,5 +1,7 @@
 ﻿# API Documentation
 
+**Entry Point:** [A](#a)
+
 ## Table of Contents
 
 - [A](#a)
@@ -21,7 +23,9 @@ graph LR
 
 ## A
 
-**Classes:** `A`
+#### Classes
+
+`A`
 
 ### Links
 
@@ -31,7 +35,9 @@ graph LR
 
 ## B
 
-**Classes:** `B`
+#### Classes
+
+`B`
 
 ### Links
 
@@ -41,7 +47,9 @@ graph LR
 
 ## C
 
-**Classes:** `C`
+#### Classes
+
+`C`
 
 ### Links
 

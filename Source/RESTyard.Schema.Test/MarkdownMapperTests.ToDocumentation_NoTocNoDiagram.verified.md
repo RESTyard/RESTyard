@@ -1,8 +1,12 @@
 ﻿# Car Shop API
 
+**Entry Point:** [EntryPoint](#entrypoint)
+
 ## EntryPoint
 
-**Classes:** `EntryPoint`
+#### Classes
+
+`EntryPoint`
 
 ### Links
 
@@ -14,7 +18,9 @@
 
 ## CustomersRoot
 
-**Classes:** `CustomersRoot`
+#### Classes
+
+`CustomersRoot`
 
 ### Embedded Entities
 
@@ -24,7 +30,9 @@
 
 ## CarsRoot
 
-**Classes:** `CarsRoot`
+#### Classes
+
+`CarsRoot`
 
 ### Embedded Entities
 
@@ -34,7 +42,9 @@
 
 ## Customer
 
-**Classes:** `Customer`
+#### Classes
+
+`Customer`
 
 ### Properties
 
@@ -62,4 +72,6 @@
 
 ## Car
 
-**Classes:** `Car`
+#### Classes
+
+`Car`

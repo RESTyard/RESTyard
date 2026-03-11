@@ -14,13 +14,248 @@ public class MarkdownMapperTests() : VerifyBase()
     [Fact]
     public Task ToDocumentation_MultipleEntities()
     {
-        var schema = TestSchemaFactory.CreateMultiEntitySchema();
-        schema.Title = "Car Shop API";
-        schema.Description = "A sample API for managing cars and customers.";
-        schema.ApiVersion = "2.0.0";
-        schema.ExternalDocsUrl = "https://example.com/docs";
+        var schema = CreateRichSchema();
         var result = schema.ToDocumentation();
         return Verify(result, extension: "md");
+    }
+
+    private static HypermediaApiSchema CreateRichSchema()
+    {
+        var customerProperties = JsonDocument.Parse("""
+            {
+                "type": "object",
+                "required": ["name", "email"],
+                "properties": {
+                    "name": { "type": "string", "description": "Full name of the customer" },
+                    "email": { "type": "string", "description": "Primary email address" },
+                    "age": { "type": "integer", "description": "Age in years" },
+                    "isVip": { "type": "boolean", "description": "Whether the customer has VIP status" }
+                }
+            }
+            """).RootElement.Clone();
+
+        var carProperties = JsonDocument.Parse("""
+            {
+                "type": "object",
+                "required": ["brand", "model", "price"],
+                "properties": {
+                    "brand": { "type": "string", "description": "Car manufacturer" },
+                    "model": { "type": "string", "description": "Model name" },
+                    "year": { "type": "integer", "description": "Year of manufacture" },
+                    "price": { "type": "number", "description": "Price in EUR" },
+                    "color": { "type": "string" },
+                    "features": { "type": "array", "description": "List of optional features" }
+                }
+            }
+            """).RootElement.Clone();
+
+        var buyCarParams = JsonDocument.Parse("""
+            {
+                "type": "object",
+                "required": ["carId"],
+                "properties": {
+                    "carId": { "type": "integer", "description": "The car to purchase" },
+                    "financingOption": { "type": "string", "description": "Payment plan: cash, lease, or finance" }
+                }
+            }
+            """).RootElement.Clone();
+
+        var createCustomerParams = JsonDocument.Parse("""
+            {
+                "type": "object",
+                "required": ["name", "email"],
+                "properties": {
+                    "name": { "type": "string", "description": "Full name" },
+                    "email": { "type": "string", "description": "Email address" },
+                    "referralCode": { "type": "string", "description": "Optional referral code for discounts" }
+                }
+            }
+            """).RootElement.Clone();
+
+        return new HypermediaApiSchema
+        {
+            SchemaVersion = "1.0",
+            Title = "Car Shop API",
+            Description = "A sample API for managing cars and customers.",
+            ApiVersion = "2.0.0",
+            ExternalDocsUrl = "https://example.com/docs",
+            EntryPointName = "EntryPoint",
+            EntityTypes = new[]
+            {
+                new EntityTypeSchema
+                {
+                    Name = "EntryPoint",
+                    Title = "API Entry Point",
+                    Description = "The root resource of the Car Shop API. Start here to discover available resources.",
+                    Classes = new[] { "EntryPoint" },
+                    Links = new[]
+                    {
+                        new LinkDescription
+                        {
+                            Relations = new[] { "self" },
+                            TargetName = "EntryPoint",
+                            TargetClasses = new[] { "EntryPoint" },
+                            IsMandatory = true,
+                        },
+                        new LinkDescription
+                        {
+                            Relations = new[] { "customers" },
+                            TargetName = "CustomersRoot",
+                            TargetClasses = new[] { "CustomersRoot" },
+                            IsMandatory = true,
+                            Description = "Browse and manage customers",
+                        },
+                        new LinkDescription
+                        {
+                            Relations = new[] { "cars" },
+                            TargetName = "CarsRoot",
+                            TargetClasses = new[] { "CarsRoot" },
+                            IsMandatory = true,
+                            Description = "Browse available cars",
+                        },
+                    },
+                    Actions = System.Array.Empty<ActionDescription>(),
+                    EmbeddedEntities = System.Array.Empty<EmbeddedEntityDescription>(),
+                },
+                new EntityTypeSchema
+                {
+                    Name = "CustomersRoot",
+                    Title = "Customers Collection",
+                    Description = "Lists all customers with the ability to create new ones.",
+                    Classes = new[] { "CustomersRoot", "Collection" },
+                    Links = new[]
+                    {
+                        new LinkDescription
+                        {
+                            Relations = new[] { "self" },
+                            TargetName = "CustomersRoot",
+                            TargetClasses = new[] { "CustomersRoot" },
+                            IsMandatory = true,
+                        },
+                    },
+                    Actions = new[]
+                    {
+                        new ActionDescription
+                        {
+                            Name = "CreateCustomer",
+                            Title = "Create a new customer",
+                            Description = "Registers a new customer in the system.",
+                            ParameterSchema = createCustomerParams,
+                            ResultName = "Customer",
+                            ResultClasses = new[] { "Customer" },
+                            IsMandatory = true,
+                        },
+                    },
+                    EmbeddedEntities = new[]
+                    {
+                        new EmbeddedEntityDescription
+                        {
+                            Relations = new[] { "item" },
+                            TargetName = "Customer",
+                            TargetClasses = new[] { "Customer" },
+                            IsCollection = true,
+                            IsMandatory = true,
+                            Description = "Customer entries in the collection",
+                        },
+                    },
+                },
+                new EntityTypeSchema
+                {
+                    Name = "Customer",
+                    Title = "Customer",
+                    Description = "Represents an individual customer with their profile and available actions.",
+                    Classes = new[] { "Customer" },
+                    PropertiesSchema = customerProperties,
+                    Links = new[]
+                    {
+                        new LinkDescription
+                        {
+                            Relations = new[] { "self" },
+                            TargetName = "Customer",
+                            TargetClasses = new[] { "Customer" },
+                            IsMandatory = true,
+                        },
+                        new LinkDescription
+                        {
+                            Relations = new[] { "orders" },
+                            TargetName = "CarsRoot",
+                            TargetClasses = new[] { "CarsRoot" },
+                            Description = "Cars purchased by this customer",
+                        },
+                    },
+                    Actions = new[]
+                    {
+                        new ActionDescription
+                        {
+                            Name = "MarkAsFavorite",
+                            Title = "Mark as favorite",
+                            Description = "Marks this customer as a favorite for quick access.",
+                        },
+                        new ActionDescription
+                        {
+                            Name = "BuyCar",
+                            Title = "Purchase a car",
+                            Description = "Initiates a car purchase for this customer.",
+                            ParameterSchema = buyCarParams,
+                            ResultName = "Car",
+                            ResultClasses = new[] { "Car" },
+                        },
+                    },
+                    EmbeddedEntities = System.Array.Empty<EmbeddedEntityDescription>(),
+                },
+                new EntityTypeSchema
+                {
+                    Name = "CarsRoot",
+                    Title = "Cars Collection",
+                    Description = "Browseable list of all available cars.",
+                    Classes = new[] { "CarsRoot", "Collection" },
+                    Links = new[]
+                    {
+                        new LinkDescription
+                        {
+                            Relations = new[] { "self" },
+                            TargetName = "CarsRoot",
+                            TargetClasses = new[] { "CarsRoot" },
+                            IsMandatory = true,
+                        },
+                    },
+                    Actions = System.Array.Empty<ActionDescription>(),
+                    EmbeddedEntities = new[]
+                    {
+                        new EmbeddedEntityDescription
+                        {
+                            Relations = new[] { "item" },
+                            TargetName = "Car",
+                            TargetClasses = new[] { "Car" },
+                            IsCollection = true,
+                            IsMandatory = true,
+                            Description = "Car entries in the collection",
+                        },
+                    },
+                },
+                new EntityTypeSchema
+                {
+                    Name = "Car",
+                    Title = "Car",
+                    Description = "Represents an individual car available for purchase.",
+                    Classes = new[] { "Car" },
+                    PropertiesSchema = carProperties,
+                    Links = new[]
+                    {
+                        new LinkDescription
+                        {
+                            Relations = new[] { "self" },
+                            TargetName = "Car",
+                            TargetClasses = new[] { "Car" },
+                            IsMandatory = true,
+                        },
+                    },
+                    Actions = System.Array.Empty<ActionDescription>(),
+                    EmbeddedEntities = System.Array.Empty<EmbeddedEntityDescription>(),
+                },
+            },
+            Definitions = new Dictionary<string, JsonElement>(),
+        };
     }
 
     [Fact]

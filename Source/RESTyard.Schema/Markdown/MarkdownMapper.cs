@@ -74,6 +74,12 @@ public static class MarkdownMapper
             sb.AppendLine();
             sb.AppendLine($"**Documentation:** {schema.ExternalDocsUrl}");
         }
+
+        if (!string.IsNullOrEmpty(schema.EntryPointName))
+        {
+            sb.AppendLine();
+            sb.AppendLine($"**Entry Point:** [{schema.EntryPointName}](#{ToAnchor(schema.EntryPointName)})");
+        }
     }
 
     private static void AppendTableOfContents(StringBuilder sb, IReadOnlyList<EntityTypeSchema> entities)
@@ -118,11 +124,15 @@ public static class MarkdownMapper
         if (entity.Title != null)
         {
             sb.AppendLine();
+            sb.AppendLine("#### Title");
+            sb.AppendLine();
             sb.AppendLine(entity.Title);
         }
 
         if (entity.Description != null)
         {
+            sb.AppendLine();
+            sb.AppendLine("#### Description");
             sb.AppendLine();
             sb.AppendLine(entity.Description);
         }
@@ -130,7 +140,9 @@ public static class MarkdownMapper
         if (entity.Classes.Count > 0)
         {
             sb.AppendLine();
-            sb.AppendLine($"**Classes:** {string.Join(", ", entity.Classes.Select(c => $"`{c}`"))}");
+            sb.AppendLine("#### Classes");
+            sb.AppendLine();
+            sb.AppendLine(string.Join(", ", entity.Classes.Select(c => $"`{c}`")));
         }
 
         AppendPropertiesTable(sb, entity);

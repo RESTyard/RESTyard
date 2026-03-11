@@ -1,5 +1,7 @@
 ﻿# API Documentation
 
+**Entry Point:** [Root](#root)
+
 ## Table of Contents
 
 - [Root](#root)
@@ -15,7 +17,9 @@ graph LR
 
 ## Root
 
-**Classes:** `Root`
+#### Classes
+
+`Root`
 
 ### Actions
 
@@ -25,4 +29,6 @@ graph LR
 
 ## Item
 
-**Classes:** `Item`
+#### Classes
+
+`Item`
