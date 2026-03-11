@@ -71,9 +71,12 @@ public static class MermaidMapper
     /// Complex types (arrays, nested objects, <c>$ref</c>) are shown as <c>object</c>.
     /// </remarks>
     /// <param name="schema">The hypermedia API schema to visualize.</param>
+    /// <param name="options">Optional settings to control what details appear in class boxes.
+    /// When null, all properties and actions are included.</param>
     /// <returns>A Mermaid diagram string in <c>classDiagram</c> format.</returns>
-    public static string ToClassDiagram(HypermediaApiSchema schema)
+    public static string ToClassDiagram(HypermediaApiSchema schema, MermaidMapperOptions? options = null)
     {
+        var opts = options ?? new MermaidMapperOptions();
         var sb = new StringBuilder();
         sb.AppendLine("classDiagram");
 
@@ -89,7 +92,8 @@ public static class MermaidMapper
         {
             sb.AppendLine($"    class {entity.Name} {{");
 
-            if (entity.PropertiesSchema is { } propSchema
+            if (opts.IncludeProperties
+                && entity.PropertiesSchema is { } propSchema
                 && propSchema.TryGetProperty("properties", out var props))
             {
                 foreach (var prop in props.EnumerateObject())
@@ -101,10 +105,13 @@ public static class MermaidMapper
                 }
             }
 
-            foreach (var action in entity.Actions)
+            if (opts.IncludeActions)
             {
-                var paramIndicator = action.ParameterSchema != null ? "params" : "";
-                sb.AppendLine($"        +{action.Name}({paramIndicator})");
+                foreach (var action in entity.Actions)
+                {
+                    var paramIndicator = action.ParameterSchema != null ? "params" : "";
+                    sb.AppendLine($"        +{action.Name}({paramIndicator})");
+                }
             }
 
             sb.AppendLine("    }");

@@ -204,6 +204,36 @@ public class MermaidMapperTests() : VerifyBase()
     }
 
     [Fact]
+    public Task ToClassDiagram_NoProperties()
+    {
+        var schema = CreateMultiEntitySchema();
+        var options = new MermaidMapperOptions { IncludeProperties = false };
+        var result = MermaidMapper.ToClassDiagram(schema, options);
+        var markdown = $"```mermaid\n{result}\n```";
+        return Verify(markdown, extension: "md");
+    }
+
+    [Fact]
+    public Task ToClassDiagram_NoActions()
+    {
+        var schema = CreateMultiEntitySchema();
+        var options = new MermaidMapperOptions { IncludeActions = false };
+        var result = MermaidMapper.ToClassDiagram(schema, options);
+        var markdown = $"```mermaid\n{result}\n```";
+        return Verify(markdown, extension: "md");
+    }
+
+    [Fact]
+    public Task ToClassDiagram_NoPropertiesNoActions()
+    {
+        var schema = CreateMultiEntitySchema();
+        var options = new MermaidMapperOptions { IncludeProperties = false, IncludeActions = false };
+        var result = MermaidMapper.ToClassDiagram(schema, options);
+        var markdown = $"```mermaid\n{result}\n```";
+        return Verify(markdown, extension: "md");
+    }
+
+    [Fact]
     public Task ToClassDiagram_VariousPropertyTypes()
     {
         var propertiesSchema = JsonDocument.Parse("""
