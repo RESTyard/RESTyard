@@ -84,10 +84,10 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Unit tests: round-trip serialization (model → JSON → deserialize → assert equality)
 
 #### Step 1.3: ✅  Implement Mermaid mapper
-- `MermaidMapper.ToEntityGraph()` and `MermaidMapper.ToClassDiagram()`
+- `schema.ToApiMap()` and `schema.ToClassDiagram()`
 - Unit tests with snapshot verification against hand-crafted schema inputs
 
-#### Step 1.4: Add `MermaidMapperOptions` to class diagram
+#### Step 1.4: ✅ Add `MermaidMapperOptions` to class diagram
 - `MermaidMapperOptions` with `IncludeProperties` (default true) and `IncludeActions` (default true)
 - Update `ToClassDiagram()` signature to accept optional `MermaidMapperOptions`
 - When `IncludeProperties = false`, omit property lines from class boxes
@@ -95,11 +95,11 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Update existing tests, add tests for options combinations
 
 #### Step 1.5: Implement Markdown documentation mapper
-- `MarkdownMapper.ToDocumentation(HypermediaApiSchema, MarkdownMapperOptions?)` in `RESTyard.Schema`
+- `schema.ToDocumentation(MarkdownMapperOptions?)` in `RESTyard.Schema`
 - `MarkdownMapperOptions` with `IncludeTableOfContents` (default true) and `IncludeDiagram` (default true)
 - **Header section**: API title, description, version, external docs URL
 - **Table of Contents**: anchor links to each entity section (opt-out via options)
-- **API Map**: embedded Mermaid entity graph via `MermaidMapper.ToEntityGraph()` (opt-out via options)
+- **API Map**: embedded Mermaid entity graph via `schema.ToApiMap()` (opt-out via options)
 - **Entity sections** ordered by BFS from entry point (cycle-safe via visited set):
   - Title/description, Siren classes
   - Properties table (from `PropertiesSchema` JSON Schema — same `type`-only parsing as Mermaid)

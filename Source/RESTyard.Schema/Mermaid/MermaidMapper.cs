@@ -21,7 +21,7 @@ public static class MermaidMapper
     /// </summary>
     /// <param name="schema">The hypermedia API schema to visualize.</param>
     /// <returns>A Mermaid diagram string in <c>graph LR</c> format.</returns>
-    public static string ToEntityGraph(HypermediaApiSchema schema)
+    public static string ToApiMap(this HypermediaApiSchema schema)
     {
         var sb = new StringBuilder();
         sb.AppendLine("graph LR");
@@ -74,7 +74,7 @@ public static class MermaidMapper
     /// <param name="options">Optional settings to control what details appear in class boxes.
     /// When null, all properties and actions are included.</param>
     /// <returns>A Mermaid diagram string in <c>classDiagram</c> format.</returns>
-    public static string ToClassDiagram(HypermediaApiSchema schema, MermaidMapperOptions? options = null)
+    public static string ToClassDiagram(this HypermediaApiSchema schema, MermaidMapperOptions? options = null)
     {
         var opts = options ?? new MermaidMapperOptions();
         var sb = new StringBuilder();
@@ -138,7 +138,7 @@ public static class MermaidMapper
         return sb.ToString().TrimEnd();
     }
 
-    private static string GetFirstRelation(System.Collections.Generic.IReadOnlyList<string> relations)
+    internal static string GetFirstRelation(System.Collections.Generic.IReadOnlyList<string> relations)
     {
         return relations.Count > 0 ? relations[0] : "related";
     }

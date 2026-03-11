@@ -467,8 +467,8 @@ public class MermaidMapperOptions
 ```csharp
 public static class MermaidMapper
 {
-    public static string ToEntityGraph(HypermediaApiSchema schema);       // graph LR
-    public static string ToClassDiagram(HypermediaApiSchema schema, MermaidMapperOptions? options = null); // classDiagram
+    public static string ToApiMap(this HypermediaApiSchema schema);       // graph LR
+    public static string ToClassDiagram(this HypermediaApiSchema schema, MermaidMapperOptions? options = null); // classDiagram
 }
 ```
 
@@ -484,7 +484,7 @@ Converts `HypermediaApiSchema` to a Markdown API reference document. Designed fo
 
 1. **Header** — API title, description, version, external docs link (from `HypermediaApiSchema` top-level fields)
 2. **Table of Contents** — anchor links to each entity section (optional, default: included)
-3. **API Map** — embedded Mermaid entity graph via `MermaidMapper.ToEntityGraph()` (optional, default: included)
+3. **API Map** — embedded Mermaid entity graph via `schema.ToApiMap()` (optional, default: included)
 4. **Entity sections** — one `##` section per entity type, ordered by BFS from entry point (cycle-safe via visited set)
 
 ### Entity Section Layout
@@ -557,7 +557,7 @@ public class MarkdownMapperOptions
 ```csharp
 public static class MarkdownMapper
 {
-    public static string ToDocumentation(HypermediaApiSchema schema, MarkdownMapperOptions? options = null);
+    public static string ToDocumentation(this HypermediaApiSchema schema, MarkdownMapperOptions? options = null);
 }
 ```
 

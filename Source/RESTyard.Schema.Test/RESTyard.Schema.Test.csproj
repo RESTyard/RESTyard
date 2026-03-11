@@ -30,6 +30,9 @@
         <None Update="MermaidMapperTests.*.verified.md">
             <DependentUpon>MermaidMapperTests.cs</DependentUpon>
         </None>
+        <None Update="MarkdownMapperTests.*.verified.md">
+            <DependentUpon>MarkdownMapperTests.cs</DependentUpon>
+        </None>
     </ItemGroup>
 
 </Project>
