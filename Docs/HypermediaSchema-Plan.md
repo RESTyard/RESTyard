@@ -120,7 +120,17 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - New `netstandard2.0` class library with `<IsRoslynComponent>true</IsRoslynComponent>`
 - New `RESTyard.HtoSourceGenerators.Test` xunit + Verify test project
 - Implement `IIncrementalGenerator` skeleton
-- Reference from CarShack to verify the generator loads without errors
+- Set up `CSharpGeneratorDriver`-based test infrastructure:
+  - `GeneratorTestHelper` class that compiles HTO source strings via `CSharpCompilation`, runs the generator via `CSharpGeneratorDriver`, and returns the `GeneratorDriverRunResult` for snapshot verification and assertions
+  - Include `MetadataReference`s to corlib, `RESTyard.AspNetCore` (for HTO attributes/base types), and other required assemblies
+- Create `TestHtoSources` static class with reusable HTO/controller source strings (similar pattern to `TestSchemaFactory` in `RESTyard.Schema.Test`):
+  - `SimpleHto` — minimal HTO with properties only
+  - `HtoWithLinks` — mandatory and optional links
+  - `HtoWithActions` — parameterless, with parameters, file upload
+  - `HtoWithEmbedded` — single and collection embedded entities
+  - `FullHto` — combines all features (properties, links, actions, embedded)
+  - Additional sources added as later steps require them (attributes, XML docs, deprecation, etc.)
+  - Each source is a `const string` that can be reused across snapshot tests and assertion-based tests in Steps 2.2–2.9
 
 #### Step 2.2: HTO discovery and basic metadata
 - Find all `IHypermediaObject` types in compilation
