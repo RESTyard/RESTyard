@@ -57,6 +57,10 @@ Cover at minimum:
 - Schema endpoint integration test: start CarShack via `WebApplicationFactory`, call `/_schema`, verify the returned JSON matches expected structure
 - Validate that the schema JSON is stable (snapshot test) — breaking changes in the schema format should be caught
 - Mermaid mapper output: snapshot tests for both diagram types against known schemas
+- Mermaid mapper options: tests for `IncludeProperties`/`IncludeActions` toggle behavior
+- Markdown mapper output: snapshot tests for full documentation against known schemas
+- Markdown mapper options: tests for `IncludeTableOfContents`/`IncludeDiagram` toggle behavior
+- Markdown mapper BFS ordering: tests with cyclic entity graphs to verify cycle safety
 
 ### Parity Tests
 
@@ -82,6 +86,31 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 #### Step 1.3: ✅  Implement Mermaid mapper
 - `MermaidMapper.ToEntityGraph()` and `MermaidMapper.ToClassDiagram()`
 - Unit tests with snapshot verification against hand-crafted schema inputs
+
+#### Step 1.4: Add `MermaidMapperOptions` to class diagram
+- `MermaidMapperOptions` with `IncludeProperties` (default true) and `IncludeActions` (default true)
+- Update `ToClassDiagram()` signature to accept optional `MermaidMapperOptions`
+- When `IncludeProperties = false`, omit property lines from class boxes
+- When `IncludeActions = false`, omit action lines from class boxes
+- Update existing tests, add tests for options combinations
+
+#### Step 1.5: Implement Markdown documentation mapper
+- `MarkdownMapper.ToDocumentation(HypermediaApiSchema, MarkdownMapperOptions?)` in `RESTyard.Schema`
+- `MarkdownMapperOptions` with `IncludeTableOfContents` (default true) and `IncludeDiagram` (default true)
+- **Header section**: API title, description, version, external docs URL
+- **Table of Contents**: anchor links to each entity section (opt-out via options)
+- **API Map**: embedded Mermaid entity graph via `MermaidMapper.ToEntityGraph()` (opt-out via options)
+- **Entity sections** ordered by BFS from entry point (cycle-safe via visited set):
+  - Title/description, Siren classes
+  - Properties table (from `PropertiesSchema` JSON Schema — same `type`-only parsing as Mermaid)
+  - Links table with cross-links to target entity sections, `*(optional)*` suffix on non-mandatory
+  - Actions table with parameter sub-tables, `Returns: [Target](#anchor)` for actions with `ResultName`
+  - Embedded entities table with cross-links, collection indicator
+  - `**[Deprecated]**` badge + message on deprecated elements
+  - Self links included
+- Snapshot tests against hand-crafted schema inputs
+- Tests for options (TOC on/off, diagram on/off)
+- Tests for cycle handling in BFS ordering
 
 ### Phase 2: Source Generator — Project Setup and Schema Generation
 
@@ -226,6 +255,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Update the spec accordingly — move resolved items to Design Decisions, remove closed items
 
 #### Step 7.2: Evaluate deferred features
+- **Full `$ref` resolution in all mappers** — resolve `$ref` to definition names (e.g., `Address` instead of `object`) in the Mermaid class diagram, Mermaid entity graph, and Markdown documentation mapper. When implementing, revisit whether the Markdown mapper should add a dedicated Definitions section with cross-links from property/parameter tables.
 - **Parameter validation routes** — is there a concrete use case from CarShack or real projects?
 - **Example values** — would CarShack benefit from examples in the schema?
 - **Tag groups** — is there a grouping need beyond the entity graph?

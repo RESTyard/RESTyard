@@ -447,19 +447,119 @@ classDiagram
     Customer --> CarsRoot : cars
 ```
 
+### MermaidMapperOptions
+
+```csharp
+public class MermaidMapperOptions
+{
+    /// When true (default), the class diagram includes entity properties.
+    /// Set to false to reduce diagram size for APIs with many properties.
+    public bool IncludeProperties { get; set; } = true;
+
+    /// When true (default), the class diagram includes actions.
+    /// Set to false to reduce diagram size for APIs with many actions.
+    public bool IncludeActions { get; set; } = true;
+}
+```
+
 ### API
 
 ```csharp
 public static class MermaidMapper
 {
     public static string ToEntityGraph(HypermediaApiSchema schema);       // graph LR
-    public static string ToClassDiagram(HypermediaApiSchema schema);      // classDiagram
+    public static string ToClassDiagram(HypermediaApiSchema schema, MermaidMapperOptions? options = null); // classDiagram
 }
 ```
 
 Can be used at runtime (via endpoint) or at build time (MSBuild task or CLI tool writing `.md` files).
 
 **JSON Schema parsing limitations:** The class diagram extracts property names and types from `PropertiesSchema` by reading only the top-level `type` field of each property in the JSON Schema `properties` object. Complex constructs (`$ref`, `allOf`/`anyOf`/`oneOf`, nested objects, array item types) are not resolved and display as `object`. This is intentional — the diagram is a visualization aid, not a schema validator.
+
+## Markdown Documentation Mapper
+
+Converts `HypermediaApiSchema` to a Markdown API reference document. Designed for human consumption — describes entity types, their properties, links, actions, and embedded entities. No URL layout.
+
+### Document Structure
+
+1. **Header** — API title, description, version, external docs link (from `HypermediaApiSchema` top-level fields)
+2. **Table of Contents** — anchor links to each entity section (optional, default: included)
+3. **API Map** — embedded Mermaid entity graph via `MermaidMapper.ToEntityGraph()` (optional, default: included)
+4. **Entity sections** — one `##` section per entity type, ordered by BFS from entry point (cycle-safe via visited set)
+
+### Entity Section Layout
+
+Each entity section contains:
+
+- **Title** — entity name as `##` heading, with `[Deprecated]` badge if applicable
+- **Description** — from `EntityTypeSchema.Title` and `Description`
+- **Siren classes** — listed for reference
+- **Properties table** — from `PropertiesSchema` JSON Schema:
+
+  | Property | Type | Required | Description |
+  |---|---|---|---|
+  | name | string | yes | The customer's full name |
+  | age | integer | yes | |
+  | address | object | no | |
+
+- **Links table**:
+
+  | Relation | Target | Description |
+  |---|---|---|
+  | self | [Customer](#customer) | |
+  | bestFriend *(optional)* | [Customer](#customer) | The customer's best friend |
+  | orders | [OrdersRoot](#ordersroot) | Order history |
+
+- **Actions table**:
+
+  | Action | Description |
+  |---|---|
+  | MarkAsFavorite | Mark as favorite |
+  | CreateOrder | Creates a new order. Returns: [Order](#order) |
+
+  For actions with parameters, an indented parameter sub-table follows:
+
+  | Parameter | Type | Required |
+  |---|---|---|
+  | carId | integer | yes |
+  | color | string | no |
+
+- **Embedded Entities table**:
+
+  | Relation | Target | Collection | Description |
+  |---|---|---|---|
+  | item | [Car](#car) | yes | |
+
+### Rendering Rules
+
+- **Deprecation**: Bold `**[Deprecated]**` badge before the name, `DeprecationMessage` shown as a note underneath. Applies to entities, actions, links, and embedded entities.
+- **Optional indicators**: Non-mandatory links, actions, and embedded entities get an `*(optional)*` suffix on their name/relation. Mandatory is the default — no annotation.
+- **Self links**: Included in the links table (unlike the Mermaid mapper which skips them).
+- **Action results**: When `ActionDescription.ResultName` is set, the action description includes "Returns: [TargetName](#anchor)".
+- **Cross-links**: Target names in links and embedded entities are rendered as Markdown anchor links `[Name](#anchor)` pointing to the corresponding entity section.
+- **JSON Schema parsing**: Same limitation as the Mermaid mapper — only top-level `type` is read, complex types show as `object`. `$ref` is not resolved. See Open Questions for planned improvement.
+
+### MarkdownMapperOptions
+
+```csharp
+public class MarkdownMapperOptions
+{
+    /// When true (default), includes a Table of Contents at the top.
+    public bool IncludeTableOfContents { get; set; } = true;
+
+    /// When true (default), embeds a Mermaid entity graph diagram after the header.
+    public bool IncludeDiagram { get; set; } = true;
+}
+```
+
+### API
+
+```csharp
+public static class MarkdownMapper
+{
+    public static string ToDocumentation(HypermediaApiSchema schema, MarkdownMapperOptions? options = null);
+}
+```
 
 ## Replacing the Siren Formatter
 
@@ -596,7 +696,7 @@ public class SirenLinkedEntity : SirenSubEntity
 
 ```
 Source/
-  RESTyard.Schema/          # Schema model classes, Mermaid mapper (regular library)
+  RESTyard.Schema/          # Schema model classes, mappers (regular library)
     Model/
       HypermediaApiSchema.cs
       EntityTypeSchema.cs
@@ -605,6 +705,10 @@ Source/
       EmbeddedEntityDescription.cs
     Mermaid/
       MermaidMapper.cs
+      MermaidMapperOptions.cs
+    Markdown/
+      MarkdownMapper.cs
+      MarkdownMapperOptions.cs
   RESTyard.HtoSourceGenerators/        # Source generator (netstandard2.0)
     HtoSirenGenerator.cs               # Emits ToSiren() per HTO
     HtoSchemaGenerator.cs              # Emits GetSchema() per HTO
@@ -812,6 +916,7 @@ The existing contract-first XML schema (`Hypermedia.cs`) already models scopes o
 
 ## Open Questions
 
+- **Full `$ref` resolution in mappers**: All three mappers (Mermaid class diagram, Mermaid entity graph, Markdown documentation) currently show `object` for complex types and do not resolve `$ref` references. A future improvement should resolve `$ref` to the definition name (e.g., show `Address` instead of `object`) using the `Definitions` dictionary. When implementing this, also revisit whether the Markdown mapper should include a dedicated **Definitions** section at the end listing shared types as their own tables, with cross-links from property/parameter tables.
 - **Mermaid customization**: Should the mapper support filtering (e.g., only show entities reachable from entry point)? Not for v1.
 - **Parameter validation routes in Siren**: Allow UIs to validate action parameters before form submission by calling a server-side validation endpoint. This requires a Siren format extension — e.g., a `validationHref` field on actions that points to a validation endpoint returning field-level errors. Needs design for: the Siren extension format, the validation request/response contract, how the source generator discovers validation endpoints, and how the schema describes validation availability per action.
 - **Example values**: Add support for example values on entity properties and action parameters in the schema (similar to OpenAPI's `example` keyword). Useful for documentation UIs to show realistic sample data and for client generators to emit test fixtures. Could be expressed as JSON Schema `examples` keyword or as a separate field on `EntityTypeSchema`/`ActionDescription`. To be designed in a future iteration.
