@@ -16,6 +16,10 @@ A sample API for managing cars and customers.
 - [Customer](#customer)
 - [Car](#car)
 
+**Definitions**
+
+- [Address](#definition-address)
+
 ## API Map
 
 ```mermaid
@@ -45,7 +49,9 @@ The root resource of the Car Shop API. Start here to discover available resource
 
 #### Classes
 
-`EntryPoint`
+- `EntryPoint`
+
+<a id="entrypoint-links"></a>
 
 ### Links
 
@@ -67,7 +73,10 @@ Lists all customers with the ability to create new ones.
 
 #### Classes
 
-`CustomersRoot`, `Collection`
+- `CustomersRoot`
+- `Collection`
+
+<a id="customersroot-links"></a>
 
 ### Links
 
@@ -75,23 +84,31 @@ Lists all customers with the ability to create new ones.
 |---|---|---|
 | self | [CustomersRoot](#customersroot) |  |
 
+<a id="customersroot-actions"></a>
+
 ### Actions
 
-| Action | Description |
-|---|---|
-| CreateCustomer | Registers a new customer in the system. Returns: [Customer](#customer) |
+| Action | Description | Links to |
+|---|---|---|
+| CreateCustomer | Registers a new customer in the system. | [Customer](#customer) |
 
-  | Parameter | Type | Required |
-  |---|---|---|
-  | name | string | yes |
-  | email | string | yes |
-  | referralCode | string | no |
+  | Parameter | Type | Required | Description |
+  |---|---|---|---|
+  | name | string | yes | Full name |
+  | email | string | yes | Email address |
+  | referralCode | string | no | Optional referral code for discounts |
+
+<a id="customersroot-embedded"></a>
 
 ### Embedded Entities
 
 | Relation | Target | Collection | Description |
 |---|---|---|---|
 | item | [Customer](#customer) | yes | Customer entries in the collection |
+
+**Referenced by:**
+
+- [EntryPoint](#entrypoint-links) (link: customers)
 
 ## CarsRoot
 
@@ -105,7 +122,10 @@ Browseable list of all available cars.
 
 #### Classes
 
-`CarsRoot`, `Collection`
+- `CarsRoot`
+- `Collection`
+
+<a id="carsroot-links"></a>
 
 ### Links
 
@@ -113,11 +133,18 @@ Browseable list of all available cars.
 |---|---|---|
 | self | [CarsRoot](#carsroot) |  |
 
+<a id="carsroot-embedded"></a>
+
 ### Embedded Entities
 
 | Relation | Target | Collection | Description |
 |---|---|---|---|
 | item | [Car](#car) | yes | Car entries in the collection |
+
+**Referenced by:**
+
+- [EntryPoint](#entrypoint-links) (link: cars)
+- [Customer](#customer-links) (link: orders)
 
 ## Customer
 
@@ -131,16 +158,21 @@ Represents an individual customer with their profile and available actions.
 
 #### Classes
 
-`Customer`
+- `Customer`
+
+<a id="customer-properties"></a>
 
 ### Properties
 
 | Property | Type | Required | Description |
 |---|---|---|---|
 | name | string | yes | Full name of the customer |
-| email | string | yes | Primary email address |
+| email | string | yes | Primary email address. Format: `email` |
 | age | integer | no | Age in years |
 | isVip | boolean | no | Whether the customer has VIP status |
+| address | [Address](#definition-address) | no | Home address |
+
+<a id="customer-links"></a>
 
 ### Links
 
@@ -149,17 +181,24 @@ Represents an individual customer with their profile and available actions.
 | self | [Customer](#customer) |  |
 | orders *(optional)* | [CarsRoot](#carsroot) | Cars purchased by this customer |
 
+<a id="customer-actions"></a>
+
 ### Actions
 
-| Action | Description |
-|---|---|
-| MarkAsFavorite *(optional)* | Marks this customer as a favorite for quick access. |
-| BuyCar *(optional)* | Initiates a car purchase for this customer. Returns: [Car](#car) |
+| Action | Description | Links to |
+|---|---|---|
+| MarkAsFavorite *(optional)* | Marks this customer as a favorite for quick access. |  |
+| BuyCar *(optional)* | Initiates a car purchase for this customer. | [Car](#car) |
 
-  | Parameter | Type | Required |
-  |---|---|---|
-  | carId | integer | yes |
-  | financingOption | string | no |
+  | Parameter | Type | Required | Description |
+  |---|---|---|---|
+  | carId | integer | yes | The car to purchase |
+  | financingOption | string | no | Payment plan. Values: `cash`, `lease`, `finance`. Default: `cash` |
+
+**Referenced by:**
+
+- [CustomersRoot](#customersroot-embedded) (embedded: item)
+- [CustomersRoot](#customersroot-actions) (action: CreateCustomer)
 
 ## Car
 
@@ -173,7 +212,9 @@ Represents an individual car available for purchase.
 
 #### Classes
 
-`Car`
+- `Car`
+
+<a id="car-properties"></a>
 
 ### Properties
 
@@ -183,11 +224,32 @@ Represents an individual car available for purchase.
 | model | string | yes | Model name |
 | year | integer | no | Year of manufacture |
 | price | number | yes | Price in EUR |
-| color | string | no |  |
-| features | array | no | List of optional features |
+| color | string | no | Default: `white` |
+| features | string[] | no | List of optional features |
+
+<a id="car-links"></a>
 
 ### Links
 
 | Relation | Target | Description |
 |---|---|---|
 | self | [Car](#car) |  |
+
+**Referenced by:**
+
+- [Customer](#customer-actions) (action: BuyCar)
+- [CarsRoot](#carsroot-embedded) (embedded: item)
+
+## Definitions
+
+### Definition: Address
+
+A postal address.
+
+**Used by:** [Customer](#customer)
+
+| Property | Type | Required | Description |
+|---|---|---|---|
+| street | string | yes | Street name and number |
+| city | string | yes | City name |
+| zip | string | no | Postal code |

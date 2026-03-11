@@ -25,7 +25,9 @@ graph LR
 
 #### Classes
 
-`EntryPoint`
+- `EntryPoint`
+
+<a id="entrypoint-links"></a>
 
 ### Links
 
@@ -34,11 +36,15 @@ graph LR
 | **[Deprecated]** oldResource *(optional)* | [OldEntity](#oldentity) | Use newResource instead |
 | newResource *(optional)* | [NewEntity](#newentity) |  |
 
+<a id="entrypoint-actions"></a>
+
 ### Actions
 
-| Action | Description |
-|---|---|
-| **[Deprecated]** OldAction *(optional)* | Use NewAction instead |
+| Action | Description | Links to |
+|---|---|---|
+| **[Deprecated]** OldAction *(optional)* | Use NewAction instead |  |
+
+<a id="entrypoint-embedded"></a>
 
 ### Embedded Entities
 
@@ -52,10 +58,19 @@ graph LR
 
 #### Classes
 
-`OldEntity`
+- `OldEntity`
+
+**Referenced by:**
+
+- [EntryPoint](#entrypoint-links) (link: oldResource)
+- [EntryPoint](#entrypoint-embedded) (embedded: legacyItems)
 
 ## NewEntity
 
 #### Classes
 
-`NewEntity`
+- `NewEntity`
+
+**Referenced by:**
+
+- [EntryPoint](#entrypoint-links) (link: newResource)

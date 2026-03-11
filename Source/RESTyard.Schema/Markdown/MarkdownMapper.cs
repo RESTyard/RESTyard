@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Json.Schema;
 using RESTyard.Schema.Mermaid;
 using RESTyard.Schema.Model;
 
@@ -11,10 +12,10 @@ namespace RESTyard.Schema.Markdown;
 /// Converts a <see cref="HypermediaApiSchema"/> to a Markdown API reference document.
 /// </summary>
 /// <remarks>
-/// JSON Schema parsing limitations: Only the top-level <c>type</c> field of each property
-/// in a JSON Schema <c>properties</c> object is read. Complex constructs such as
-/// <c>$ref</c>, <c>allOf</c>/<c>anyOf</c>/<c>oneOf</c>, nested objects, and array
-/// item types are not resolved — they display as <c>object</c>.
+/// Property types are extracted from <c>JsonSchema.Net</c> keywords. <c>$ref</c> references
+/// resolve to definition names, array <c>items</c> are shown as <c>T[]</c>, and nullable types
+/// strip the <c>Null</c> flag. <c>allOf</c>/<c>anyOf</c>/<c>oneOf</c> compositions are not yet
+/// resolved and display as <c>object</c>.
 /// </remarks>
 public static class MarkdownMapper
 {
@@ -34,9 +35,9 @@ public static class MarkdownMapper
 
         var orderedEntities = GetBfsOrderedEntities(schema);
 
-        if (opts.IncludeTableOfContents && orderedEntities.Count > 0)
+        if (opts.IncludeTableOfContents && (orderedEntities.Count > 0 || schema.Definitions.Count > 0))
         {
-            AppendTableOfContents(sb, orderedEntities);
+            AppendTableOfContents(sb, orderedEntities, schema.Definitions);
         }
 
         if (opts.IncludeDiagram && schema.EntityTypes.Count > 0)
@@ -44,9 +45,17 @@ public static class MarkdownMapper
             AppendDiagram(sb, schema);
         }
 
+        var incomingLinks = CollectIncomingLinks(schema);
+
         foreach (var entity in orderedEntities)
         {
-            AppendEntitySection(sb, entity);
+            AppendEntitySection(sb, entity, incomingLinks);
+        }
+
+        if (schema.Definitions.Count > 0)
+        {
+            var usages = CollectDefinitionUsages(schema);
+            AppendDefinitionsSection(sb, schema.Definitions, usages);
         }
 
         return sb.ToString().TrimEnd();
@@ -82,14 +91,29 @@ public static class MarkdownMapper
         }
     }
 
-    private static void AppendTableOfContents(StringBuilder sb, IReadOnlyList<EntityTypeSchema> entities)
+    private static void AppendTableOfContents(
+        StringBuilder sb,
+        IReadOnlyList<EntityTypeSchema> entities,
+        IDictionary<string, JsonSchema> definitions)
     {
         sb.AppendLine();
         sb.AppendLine("## Table of Contents");
         sb.AppendLine();
+
         foreach (var entity in entities)
         {
             sb.AppendLine($"- [{entity.Name}](#{ToAnchor(entity.Name)})");
+        }
+
+        if (definitions.Count > 0)
+        {
+            sb.AppendLine();
+            sb.AppendLine("**Definitions**");
+            sb.AppendLine();
+            foreach (var def in definitions)
+            {
+                sb.AppendLine($"- [{def.Key}](#definition-{def.Key.ToLowerInvariant()})");
+            }
         }
     }
 
@@ -103,7 +127,10 @@ public static class MarkdownMapper
         sb.AppendLine("```");
     }
 
-    private static void AppendEntitySection(StringBuilder sb, EntityTypeSchema entity)
+    private static void AppendEntitySection(
+        StringBuilder sb,
+        EntityTypeSchema entity,
+        Dictionary<string, List<string>> incomingLinks)
     {
         sb.AppendLine();
 
@@ -142,53 +169,42 @@ public static class MarkdownMapper
             sb.AppendLine();
             sb.AppendLine("#### Classes");
             sb.AppendLine();
-            sb.AppendLine(string.Join(", ", entity.Classes.Select(c => $"`{c}`")));
+            foreach (var c in entity.Classes)
+            {
+                sb.AppendLine($"- `{c}`");
+            }
         }
 
         AppendPropertiesTable(sb, entity);
         AppendLinksTable(sb, entity);
         AppendActionsTable(sb, entity);
         AppendEmbeddedEntitiesTable(sb, entity);
+        AppendReferencedBy(sb, entity, incomingLinks);
     }
 
     private static void AppendPropertiesTable(StringBuilder sb, EntityTypeSchema entity)
     {
         if (entity.PropertiesSchema is not { } propSchema
-            || !propSchema.TryGetProperty("properties", out var props))
+            || propSchema.GetProperties() is not { } props
+            || props.Count == 0)
             return;
 
-        var properties = props.EnumerateObject().ToList();
-        if (properties.Count == 0)
-            return;
+        var requiredFields = new HashSet<string>(propSchema.GetRequired() ?? Array.Empty<string>());
 
-        // Determine required fields
-        var requiredFields = new HashSet<string>();
-        if (propSchema.TryGetProperty("required", out var requiredArray))
-        {
-            foreach (var item in requiredArray.EnumerateArray())
-            {
-                var name = item.GetString();
-                if (name != null)
-                    requiredFields.Add(name);
-            }
-        }
-
+        sb.AppendLine();
+        sb.AppendLine($"<a id=\"{ToAnchor(entity.Name)}-properties\"></a>");
         sb.AppendLine();
         sb.AppendLine("### Properties");
         sb.AppendLine();
         sb.AppendLine("| Property | Type | Required | Description |");
         sb.AppendLine("|---|---|---|---|");
 
-        foreach (var prop in properties)
+        foreach (var prop in props)
         {
-            var typeName = prop.Value.TryGetProperty("type", out var t)
-                ? t.GetString() ?? "object"
-                : "object";
-            var required = requiredFields.Contains(prop.Name) ? "yes" : "no";
-            var description = prop.Value.TryGetProperty("description", out var d)
-                ? d.GetString() ?? ""
-                : "";
-            sb.AppendLine($"| {prop.Name} | {typeName} | {required} | {description} |");
+            var typeName = JsonSchemaExtensions.SchemaToLinkedTypeString(prop.Value);
+            var required = requiredFields.Contains(prop.Key) ? "yes" : "no";
+            var description = BuildPropertyDescription(prop.Value);
+            sb.AppendLine($"| {prop.Key} | {typeName} | {required} | {description} |");
         }
     }
 
@@ -197,6 +213,8 @@ public static class MarkdownMapper
         if (entity.Links.Count == 0)
             return;
 
+        sb.AppendLine();
+        sb.AppendLine($"<a id=\"{ToAnchor(entity.Name)}-links\"></a>");
         sb.AppendLine();
         sb.AppendLine("### Links");
         sb.AppendLine();
@@ -219,16 +237,21 @@ public static class MarkdownMapper
             return;
 
         sb.AppendLine();
+        sb.AppendLine($"<a id=\"{ToAnchor(entity.Name)}-actions\"></a>");
+        sb.AppendLine();
         sb.AppendLine("### Actions");
         sb.AppendLine();
-        sb.AppendLine("| Action | Description |");
-        sb.AppendLine("|---|---|");
+        sb.AppendLine("| Action | Description | Links to |");
+        sb.AppendLine("|---|---|---|");
 
         foreach (var action in entity.Actions)
         {
             var nameDisplay = FormatActionName(action);
-            var description = BuildActionDescription(action);
-            sb.AppendLine($"| {nameDisplay} | {description} |");
+            var description = action.Description ?? "";
+            var returns = action.ResultName != null
+                ? $"[{action.ResultName}](#{ToAnchor(action.ResultName)})"
+                : "";
+            sb.AppendLine($"| {nameDisplay} | {description} | {returns} |");
 
             AppendActionParametersTable(sb, action);
         }
@@ -244,48 +267,25 @@ public static class MarkdownMapper
         return name;
     }
 
-    private static string BuildActionDescription(ActionDescription action)
-    {
-        var parts = new List<string>();
-        if (action.Description != null)
-            parts.Add(action.Description);
-        if (action.ResultName != null)
-            parts.Add($"Returns: [{action.ResultName}](#{ToAnchor(action.ResultName)})");
-        return string.Join(" ", parts);
-    }
-
     private static void AppendActionParametersTable(StringBuilder sb, ActionDescription action)
     {
         if (action.ParameterSchema is not { } paramSchema
-            || !paramSchema.TryGetProperty("properties", out var props))
+            || paramSchema.GetProperties() is not { } props
+            || props.Count == 0)
             return;
 
-        var parameters = props.EnumerateObject().ToList();
-        if (parameters.Count == 0)
-            return;
-
-        var requiredFields = new HashSet<string>();
-        if (paramSchema.TryGetProperty("required", out var requiredArray))
-        {
-            foreach (var item in requiredArray.EnumerateArray())
-            {
-                var name = item.GetString();
-                if (name != null)
-                    requiredFields.Add(name);
-            }
-        }
+        var requiredFields = new HashSet<string>(paramSchema.GetRequired() ?? Array.Empty<string>());
 
         sb.AppendLine();
-        sb.AppendLine("  | Parameter | Type | Required |");
-        sb.AppendLine("  |---|---|---|");
+        sb.AppendLine("  | Parameter | Type | Required | Description |");
+        sb.AppendLine("  |---|---|---|---|");
 
-        foreach (var prop in parameters)
+        foreach (var prop in props)
         {
-            var typeName = prop.Value.TryGetProperty("type", out var t)
-                ? t.GetString() ?? "object"
-                : "object";
-            var required = requiredFields.Contains(prop.Name) ? "yes" : "no";
-            sb.AppendLine($"  | {prop.Name} | {typeName} | {required} |");
+            var typeName = JsonSchemaExtensions.SchemaToLinkedTypeString(prop.Value);
+            var required = requiredFields.Contains(prop.Key) ? "yes" : "no";
+            var description = BuildPropertyDescription(prop.Value);
+            sb.AppendLine($"  | {prop.Key} | {typeName} | {required} | {description} |");
         }
     }
 
@@ -294,6 +294,8 @@ public static class MarkdownMapper
         if (entity.EmbeddedEntities.Count == 0)
             return;
 
+        sb.AppendLine();
+        sb.AppendLine($"<a id=\"{ToAnchor(entity.Name)}-embedded\"></a>");
         sb.AppendLine();
         sb.AppendLine("### Embedded Entities");
         sb.AppendLine();
@@ -308,6 +310,201 @@ public static class MarkdownMapper
             var collection = embedded.IsCollection ? "yes" : "no";
             var description = embedded.Description ?? "";
             sb.AppendLine($"| {relDisplay} | {target} | {collection} | {description} |");
+        }
+    }
+
+    private static string BuildPropertyDescription(JsonSchema propSchema)
+    {
+        var parts = new List<string>();
+
+        var desc = propSchema.GetDescription();
+        if (desc != null)
+            parts.Add(desc);
+
+        var format = propSchema.GetFormat();
+        if (format != null)
+            parts.Add($"Format: `{format}`");
+
+        var enumValues = propSchema.GetEnum();
+        if (enumValues != null && enumValues.Count > 0)
+        {
+            var values = string.Join(", ", enumValues.Select(v => $"`{v?.ToString() ?? "null"}`"));
+            parts.Add($"Values: {values}");
+        }
+
+        var defaultValue = propSchema.GetDefault();
+        if (defaultValue != null)
+            parts.Add($"Default: `{defaultValue}`");
+
+        return string.Join(". ", parts);
+    }
+
+    private static Dictionary<string, List<string>> CollectIncomingLinks(HypermediaApiSchema schema)
+    {
+        var incoming = new Dictionary<string, List<string>>();
+
+        foreach (var entity in schema.EntityTypes)
+        {
+            foreach (var link in entity.Links)
+            {
+                var rel = MermaidMapper.GetFirstRelation(link.Relations);
+                if (string.Equals(rel, "self", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                AddUsage(incoming, link.TargetName,
+                    $"[{entity.Name}](#{ToAnchor(entity.Name)}-links) (link: {rel})");
+            }
+
+            foreach (var embedded in entity.EmbeddedEntities)
+            {
+                var rel = MermaidMapper.GetFirstRelation(embedded.Relations);
+                AddUsage(incoming, embedded.TargetName,
+                    $"[{entity.Name}](#{ToAnchor(entity.Name)}-embedded) (embedded: {rel})");
+            }
+
+            foreach (var action in entity.Actions)
+            {
+                if (action.ResultName != null)
+                {
+                    AddUsage(incoming, action.ResultName,
+                        $"[{entity.Name}](#{ToAnchor(entity.Name)}-actions) (action: {action.Name})");
+                }
+            }
+        }
+
+        return incoming;
+    }
+
+    private static void AppendReferencedBy(
+        StringBuilder sb,
+        EntityTypeSchema entity,
+        Dictionary<string, List<string>> incomingLinks)
+    {
+        if (!incomingLinks.TryGetValue(entity.Name, out var refs) || refs.Count == 0)
+            return;
+
+        sb.AppendLine();
+        sb.AppendLine("**Referenced by:**");
+        sb.AppendLine();
+        foreach (var r in refs)
+        {
+            sb.AppendLine($"- {r}");
+        }
+    }
+
+    /// <summary>
+    /// Scans all entity properties and action parameters for <c>$ref</c> references,
+    /// returning a map from definition name to the list of places that reference it.
+    /// </summary>
+    private static Dictionary<string, List<string>> CollectDefinitionUsages(HypermediaApiSchema schema)
+    {
+        var usages = new Dictionary<string, List<string>>();
+
+        foreach (var entity in schema.EntityTypes)
+        {
+            // Scan entity properties
+            if (entity.PropertiesSchema is { } propSchema
+                && propSchema.GetProperties() is { } props)
+            {
+                foreach (var prop in props)
+                {
+                    var defName = ExtractRefDefinitionName(prop.Value);
+                    if (defName != null)
+                        AddUsage(usages, defName, $"[{entity.Name}](#{ToAnchor(entity.Name)})");
+                }
+            }
+
+            // Scan action parameters
+            foreach (var action in entity.Actions)
+            {
+                if (action.ParameterSchema is { } paramSchema
+                    && paramSchema.GetProperties() is { } paramProps)
+                {
+                    foreach (var prop in paramProps)
+                    {
+                        var defName = ExtractRefDefinitionName(prop.Value);
+                        if (defName != null)
+                            AddUsage(usages, defName, $"[{entity.Name} → {action.Name}](#{ToAnchor(entity.Name)})");
+                    }
+                }
+            }
+        }
+
+        return usages;
+    }
+
+    private static string? ExtractRefDefinitionName(JsonSchema propSchema)
+    {
+        var refUri = propSchema.GetRef();
+        if (refUri != null)
+        {
+            var refString = refUri.OriginalString;
+            var lastSlash = refString.LastIndexOf('/');
+            if (lastSlash >= 0 && lastSlash < refString.Length - 1)
+                return refString.Substring(lastSlash + 1);
+        }
+
+        // Also check array items for $ref
+        if (propSchema.GetItemsSchema() is { } itemsSchema)
+            return ExtractRefDefinitionName(itemsSchema);
+
+        return null;
+    }
+
+    private static void AddUsage(Dictionary<string, List<string>> usages, string defName, string usage)
+    {
+        if (!usages.TryGetValue(defName, out var list))
+        {
+            list = new List<string>();
+            usages[defName] = list;
+        }
+        if (!list.Contains(usage))
+            list.Add(usage);
+    }
+
+    private static void AppendDefinitionsSection(
+        StringBuilder sb,
+        IDictionary<string, JsonSchema> definitions,
+        Dictionary<string, List<string>> usages)
+    {
+        sb.AppendLine();
+        sb.AppendLine("## Definitions");
+
+        foreach (var def in definitions)
+        {
+            sb.AppendLine();
+            sb.AppendLine($"### Definition: {def.Key}");
+
+            var description = def.Value.GetDescription();
+            if (description != null)
+            {
+                sb.AppendLine();
+                sb.AppendLine(description);
+            }
+
+            if (usages.TryGetValue(def.Key, out var refs) && refs.Count > 0)
+            {
+                sb.AppendLine();
+                sb.AppendLine($"**Used by:** {string.Join(", ", refs)}");
+            }
+
+            var props = def.Value.GetProperties();
+            if (props != null && props.Count > 0)
+            {
+                var requiredFields = new HashSet<string>(def.Value.GetRequired() ?? Array.Empty<string>());
+
+                sb.AppendLine();
+                sb.AppendLine("| Property | Type | Required | Description |");
+                sb.AppendLine("|---|---|---|---|");
+
+                foreach (var prop in props)
+                {
+                    var typeName = JsonSchemaExtensions.SchemaToLinkedTypeString(prop.Value);
+                    var required = requiredFields.Contains(prop.Key) ? "yes" : "no";
+                    var propDescription = BuildPropertyDescription(prop.Value);
+                    sb.AppendLine($"| {prop.Key} | {typeName} | {required} | {propDescription} |");
+                }
+            }
         }
     }
 

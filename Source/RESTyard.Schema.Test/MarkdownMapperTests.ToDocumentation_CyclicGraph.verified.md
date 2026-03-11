@@ -25,7 +25,9 @@ graph LR
 
 #### Classes
 
-`A`
+- `A`
+
+<a id="a-links"></a>
 
 ### Links
 
@@ -33,11 +35,17 @@ graph LR
 |---|---|---|
 | next *(optional)* | [B](#b) |  |
 
+**Referenced by:**
+
+- [C](#c-links) (link: back)
+
 ## B
 
 #### Classes
 
-`B`
+- `B`
+
+<a id="b-links"></a>
 
 ### Links
 
@@ -45,14 +53,24 @@ graph LR
 |---|---|---|
 | next *(optional)* | [C](#c) |  |
 
+**Referenced by:**
+
+- [A](#a-links) (link: next)
+
 ## C
 
 #### Classes
 
-`C`
+- `C`
+
+<a id="c-links"></a>
 
 ### Links
 
 | Relation | Target | Description |
 |---|---|---|
 | back *(optional)* | [A](#a) |  |
+
+**Referenced by:**
+
+- [B](#b-links) (link: next)

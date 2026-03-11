@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading.Tasks;
+using Json.Schema;
 using RESTyard.Schema.Markdown;
 using RESTyard.Schema.Model;
 using VerifyXunit;
@@ -21,20 +21,21 @@ public class MarkdownMapperTests() : VerifyBase()
 
     private static HypermediaApiSchema CreateRichSchema()
     {
-        var customerProperties = JsonDocument.Parse("""
+        var customerProperties = JsonSchema.FromText("""
             {
                 "type": "object",
                 "required": ["name", "email"],
                 "properties": {
                     "name": { "type": "string", "description": "Full name of the customer" },
-                    "email": { "type": "string", "description": "Primary email address" },
+                    "email": { "type": "string", "description": "Primary email address", "format": "email" },
                     "age": { "type": "integer", "description": "Age in years" },
-                    "isVip": { "type": "boolean", "description": "Whether the customer has VIP status" }
+                    "isVip": { "type": "boolean", "description": "Whether the customer has VIP status" },
+                    "address": { "$ref": "#/definitions/Address", "description": "Home address" }
                 }
             }
-            """).RootElement.Clone();
+            """);
 
-        var carProperties = JsonDocument.Parse("""
+        var carProperties = JsonSchema.FromText("""
             {
                 "type": "object",
                 "required": ["brand", "model", "price"],
@@ -43,24 +44,24 @@ public class MarkdownMapperTests() : VerifyBase()
                     "model": { "type": "string", "description": "Model name" },
                     "year": { "type": "integer", "description": "Year of manufacture" },
                     "price": { "type": "number", "description": "Price in EUR" },
-                    "color": { "type": "string" },
-                    "features": { "type": "array", "description": "List of optional features" }
+                    "color": { "type": "string", "default": "white" },
+                    "features": { "type": "array", "items": { "type": "string" }, "description": "List of optional features" }
                 }
             }
-            """).RootElement.Clone();
+            """);
 
-        var buyCarParams = JsonDocument.Parse("""
+        var buyCarParams = JsonSchema.FromText("""
             {
                 "type": "object",
                 "required": ["carId"],
                 "properties": {
                     "carId": { "type": "integer", "description": "The car to purchase" },
-                    "financingOption": { "type": "string", "description": "Payment plan: cash, lease, or finance" }
+                    "financingOption": { "type": "string", "description": "Payment plan", "enum": ["cash", "lease", "finance"], "default": "cash" }
                 }
             }
-            """).RootElement.Clone();
+            """);
 
-        var createCustomerParams = JsonDocument.Parse("""
+        var createCustomerParams = JsonSchema.FromText("""
             {
                 "type": "object",
                 "required": ["name", "email"],
@@ -70,7 +71,7 @@ public class MarkdownMapperTests() : VerifyBase()
                     "referralCode": { "type": "string", "description": "Optional referral code for discounts" }
                 }
             }
-            """).RootElement.Clone();
+            """);
 
         return new HypermediaApiSchema
         {
@@ -254,7 +255,21 @@ public class MarkdownMapperTests() : VerifyBase()
                     EmbeddedEntities = System.Array.Empty<EmbeddedEntityDescription>(),
                 },
             },
-            Definitions = new Dictionary<string, JsonElement>(),
+            Definitions = new Dictionary<string, JsonSchema>
+            {
+                ["Address"] = JsonSchema.FromText("""
+                    {
+                        "type": "object",
+                        "description": "A postal address.",
+                        "required": ["street", "city"],
+                        "properties": {
+                            "street": { "type": "string", "description": "Street name and number" },
+                            "city": { "type": "string", "description": "City name" },
+                            "zip": { "type": "string", "description": "Postal code" }
+                        }
+                    }
+                    """),
+            },
         };
     }
 
@@ -266,7 +281,7 @@ public class MarkdownMapperTests() : VerifyBase()
             SchemaVersion = "1.0",
             Title = "Empty API",
             EntryPointName = "EntryPoint",
-            Definitions = new Dictionary<string, JsonElement>(),
+            Definitions = new Dictionary<string, JsonSchema>(),
         };
         var result = schema.ToDocumentation();
         return Verify(result, extension: "md");
@@ -366,7 +381,7 @@ public class MarkdownMapperTests() : VerifyBase()
                     Classes = new[] { "NewEntity" },
                 },
             },
-            Definitions = new Dictionary<string, JsonElement>(),
+            Definitions = new Dictionary<string, JsonSchema>(),
         };
         var result = schema.ToDocumentation();
         return Verify(result, extension: "md");
@@ -424,7 +439,7 @@ public class MarkdownMapperTests() : VerifyBase()
                     },
                 },
             },
-            Definitions = new Dictionary<string, JsonElement>(),
+            Definitions = new Dictionary<string, JsonSchema>(),
         };
         var result = schema.ToDocumentation();
         return Verify(result, extension: "md");
@@ -504,7 +519,7 @@ public class MarkdownMapperTests() : VerifyBase()
                     Classes = new[] { "Target" },
                 },
             },
-            Definitions = new Dictionary<string, JsonElement>(),
+            Definitions = new Dictionary<string, JsonSchema>(),
         };
         var result = schema.ToDocumentation();
         return Verify(result, extension: "md");
@@ -540,7 +555,7 @@ public class MarkdownMapperTests() : VerifyBase()
                     Classes = new[] { "Item" },
                 },
             },
-            Definitions = new Dictionary<string, JsonElement>(),
+            Definitions = new Dictionary<string, JsonSchema>(),
         };
         var result = schema.ToDocumentation();
         return Verify(result, extension: "md");
@@ -549,9 +564,9 @@ public class MarkdownMapperTests() : VerifyBase()
     [Fact]
     public Task ToDocumentation_ActionWithParameters()
     {
-        var paramSchema = JsonDocument.Parse(
+        var paramSchema = JsonSchema.FromText(
             """{"type":"object","required":["carId"],"properties":{"carId":{"type":"integer","description":"The car identifier"},"color":{"type":"string"}}}"""
-        ).RootElement.Clone();
+        );
 
         var schema = new HypermediaApiSchema
         {
@@ -574,7 +589,7 @@ public class MarkdownMapperTests() : VerifyBase()
                     },
                 },
             },
-            Definitions = new Dictionary<string, JsonElement>(),
+            Definitions = new Dictionary<string, JsonSchema>(),
         };
         var result = schema.ToDocumentation();
         return Verify(result, extension: "md");

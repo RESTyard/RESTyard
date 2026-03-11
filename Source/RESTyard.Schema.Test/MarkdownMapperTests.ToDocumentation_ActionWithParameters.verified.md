@@ -17,15 +17,17 @@ graph LR
 
 #### Classes
 
-`Root`
+- `Root`
+
+<a id="root-actions"></a>
 
 ### Actions
 
-| Action | Description |
-|---|---|
-| BuyCar *(optional)* | Purchase a car. |
+| Action | Description | Links to |
+|---|---|---|
+| BuyCar *(optional)* | Purchase a car. |  |
 
-  | Parameter | Type | Required |
-  |---|---|---|
-  | carId | integer | yes |
-  | color | string | no |
+  | Parameter | Type | Required | Description |
+  |---|---|---|---|
+  | carId | integer | yes | The car identifier |
+  | color | string | no |  |

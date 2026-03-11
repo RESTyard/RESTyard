@@ -23,6 +23,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="JsonSchema.Net" Version="7.4.0" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\RESTyard.Schema\RESTyard.Schema.csproj" />
     </ItemGroup>
 

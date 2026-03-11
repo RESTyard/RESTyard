@@ -5,11 +5,11 @@ classDiagram
         +string name
         +number price
         +boolean isActive
-        +array tags
+        +string[] tags
         +object address
         +null nullableField
         +object noTypeField
         +object nestedObject
-        +object refField
+        +Brand refField
     }
 ```

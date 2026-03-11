@@ -19,16 +19,22 @@ graph LR
 
 #### Classes
 
-`Root`
+- `Root`
+
+<a id="root-actions"></a>
 
 ### Actions
 
-| Action | Description |
-|---|---|
-| CreateItem *(optional)* | Creates a new item. Returns: [Item](#item) |
+| Action | Description | Links to |
+|---|---|---|
+| CreateItem *(optional)* | Creates a new item. | [Item](#item) |
 
 ## Item
 
 #### Classes
 
-`Item`
+- `Item`
+
+**Referenced by:**
+
+- [Root](#root-actions) (action: CreateItem)

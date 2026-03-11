@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using Json.Schema;
 using RESTyard.Schema.Model;
 
 namespace RESTyard.Schema.Mermaid;
@@ -8,10 +9,10 @@ namespace RESTyard.Schema.Mermaid;
 /// Converts a <see cref="HypermediaApiSchema"/> to Mermaid diagram strings.
 /// </summary>
 /// <remarks>
-/// JSON Schema parsing limitations: Only the top-level <c>type</c> field of each property
-/// in a JSON Schema <c>properties</c> object is read. Complex constructs such as
-/// <c>$ref</c>, <c>allOf</c>/<c>anyOf</c>/<c>oneOf</c>, nested objects, and array
-/// item types are not resolved — they display as <c>object</c>.
+/// Property types are extracted from <c>JsonSchema.Net</c> keywords. <c>$ref</c> references
+/// resolve to definition names, array <c>items</c> are shown as <c>T[]</c>, and nullable types
+/// strip the <c>Null</c> flag. <c>allOf</c>/<c>anyOf</c>/<c>oneOf</c> compositions are not yet
+/// resolved and display as <c>object</c>.
 /// </remarks>
 public static class MermaidMapper
 {
@@ -67,7 +68,7 @@ public static class MermaidMapper
     /// with their properties (from <c>PropertiesSchema</c>) and actions.
     /// </summary>
     /// <remarks>
-    /// Property types are extracted from the JSON Schema <c>type</c> field only.
+    /// Property types are extracted from the JSON Schema <c>type</c> keyword.
     /// Complex types (arrays, nested objects, <c>$ref</c>) are shown as <c>object</c>.
     /// </remarks>
     /// <param name="schema">The hypermedia API schema to visualize.</param>
@@ -94,14 +95,12 @@ public static class MermaidMapper
 
             if (opts.IncludeProperties
                 && entity.PropertiesSchema is { } propSchema
-                && propSchema.TryGetProperty("properties", out var props))
+                && propSchema.GetProperties() is { } props)
             {
-                foreach (var prop in props.EnumerateObject())
+                foreach (var prop in props)
                 {
-                    var typeName = prop.Value.TryGetProperty("type", out var t)
-                        ? t.GetString() ?? "object"
-                        : "object";
-                    sb.AppendLine($"        +{typeName} {prop.Name}");
+                    var typeName = JsonSchemaExtensions.SchemaToTypeString(prop.Value);
+                    sb.AppendLine($"        +{typeName} {prop.Key}");
                 }
             }
 
@@ -109,7 +108,7 @@ public static class MermaidMapper
             {
                 foreach (var action in entity.Actions)
                 {
-                    var paramIndicator = action.ParameterSchema != null ? "params" : "";
+                    var paramIndicator = action.ParameterSchema is not null ? "params" : "";
                     sb.AppendLine($"        +{action.Name}({paramIndicator})");
                 }
             }

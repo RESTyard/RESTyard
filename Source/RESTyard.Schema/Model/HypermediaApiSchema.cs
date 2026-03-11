@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Text.Json.Serialization;
+using Json.Schema;
 
 namespace RESTyard.Schema.Model;
 
@@ -60,5 +60,5 @@ public class HypermediaApiSchema
     /// Shared type definitions. Each value contains a JSON Schema.
     /// </summary>
     [JsonPropertyName("definitions")]
-    public IDictionary<string, JsonElement> Definitions { get; set; } = new Dictionary<string, JsonElement>();
+    public IDictionary<string, JsonSchema> Definitions { get; set; } = new Dictionary<string, JsonSchema>();
 }

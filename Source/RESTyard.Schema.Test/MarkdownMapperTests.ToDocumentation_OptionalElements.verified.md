@@ -24,7 +24,9 @@ graph LR
 
 #### Classes
 
-`Root`
+- `Root`
+
+<a id="root-links"></a>
 
 ### Links
 
@@ -34,12 +36,16 @@ graph LR
 | optionalLink *(optional)* | [Target](#target) |  |
 | mandatoryLink | [Target](#target) |  |
 
+<a id="root-actions"></a>
+
 ### Actions
 
-| Action | Description |
-|---|---|
-| OptionalAction *(optional)* |  |
-| MandatoryAction |  |
+| Action | Description | Links to |
+|---|---|---|
+| OptionalAction *(optional)* |  |  |
+| MandatoryAction |  |  |
+
+<a id="root-embedded"></a>
 
 ### Embedded Entities
 
@@ -52,4 +58,11 @@ graph LR
 
 #### Classes
 
-`Target`
+- `Target`
+
+**Referenced by:**
+
+- [Root](#root-links) (link: optionalLink)
+- [Root](#root-links) (link: mandatoryLink)
+- [Root](#root-embedded) (embedded: optionalEmbed)
+- [Root](#root-embedded) (embedded: mandatoryEmbed)

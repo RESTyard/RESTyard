@@ -22,7 +22,9 @@ graph LR
 
 #### Classes
 
-`EntryPoint`
+- `EntryPoint`
+
+<a id="entrypoint-links"></a>
 
 ### Links
 
@@ -36,7 +38,9 @@ graph LR
 
 #### Classes
 
-`CustomersRoot`
+- `CustomersRoot`
+
+<a id="customersroot-embedded"></a>
 
 ### Embedded Entities
 
@@ -44,11 +48,17 @@ graph LR
 |---|---|---|---|
 | item *(optional)* | [Customer](#customer) | yes |  |
 
+**Referenced by:**
+
+- [EntryPoint](#entrypoint-links) (link: customers)
+
 ## CarsRoot
 
 #### Classes
 
-`CarsRoot`
+- `CarsRoot`
+
+<a id="carsroot-embedded"></a>
 
 ### Embedded Entities
 
@@ -56,11 +66,17 @@ graph LR
 |---|---|---|---|
 | item *(optional)* | [Car](#car) | yes |  |
 
+**Referenced by:**
+
+- [EntryPoint](#entrypoint-links) (link: cars)
+
 ## Customer
 
 #### Classes
 
-`Customer`
+- `Customer`
+
+<a id="customer-properties"></a>
 
 ### Properties
 
@@ -69,25 +85,37 @@ graph LR
 | name | string | no |  |
 | age | integer | no |  |
 
+<a id="customer-links"></a>
+
 ### Links
 
 | Relation | Target | Description |
 |---|---|---|
 | self *(optional)* | [Customer](#customer) |  |
 
+<a id="customer-actions"></a>
+
 ### Actions
 
-| Action | Description |
-|---|---|
-| MarkAsFavorite *(optional)* |  |
-| BuyCar *(optional)* |  |
+| Action | Description | Links to |
+|---|---|---|
+| MarkAsFavorite *(optional)* |  |  |
+| BuyCar *(optional)* |  |  |
 
-  | Parameter | Type | Required |
-  |---|---|---|
-  | carId | string | no |
+  | Parameter | Type | Required | Description |
+  |---|---|---|---|
+  | carId | string | no |  |
+
+**Referenced by:**
+
+- [CustomersRoot](#customersroot-embedded) (embedded: item)
 
 ## Car
 
 #### Classes
 
-`Car`
+- `Car`
+
+**Referenced by:**
+
+- [CarsRoot](#carsroot-embedded) (embedded: item)

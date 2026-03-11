@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Text.Json;
+using Json.Schema;
 using RESTyard.Schema.Mermaid;
 using RESTyard.Schema.Model;
 using VerifyTests;
@@ -37,7 +37,7 @@ public class MermaidMapperTests() : VerifyBase()
         {
             SchemaVersion = "1.0",
             EntryPointName = "EntryPoint",
-            Definitions = new Dictionary<string, JsonElement>(),
+            Definitions = new Dictionary<string, JsonSchema>(),
         };
         var result = schema.ToApiMap();
         var markdown = $"```mermaid\n{result}\n```";
@@ -51,7 +51,7 @@ public class MermaidMapperTests() : VerifyBase()
         {
             SchemaVersion = "1.0",
             EntryPointName = "EntryPoint",
-            Definitions = new Dictionary<string, JsonElement>(),
+            Definitions = new Dictionary<string, JsonSchema>(),
         };
         var result = schema.ToClassDiagram();
         var markdown = $"```mermaid\n{result}\n```";
@@ -84,7 +84,7 @@ public class MermaidMapperTests() : VerifyBase()
                     EmbeddedEntities = System.Array.Empty<EmbeddedEntityDescription>(),
                 },
             },
-            Definitions = new Dictionary<string, JsonElement>(),
+            Definitions = new Dictionary<string, JsonSchema>(),
         };
         var result = schema.ToApiMap();
         var markdown = $"```mermaid\n{result}\n```";
@@ -124,7 +124,7 @@ public class MermaidMapperTests() : VerifyBase()
     [Fact]
     public Task ToClassDiagram_VariousPropertyTypes()
     {
-        var propertiesSchema = JsonDocument.Parse("""
+        var propertiesSchema = JsonSchema.FromText("""
             {
                 "type": "object",
                 "properties": {
@@ -132,7 +132,7 @@ public class MermaidMapperTests() : VerifyBase()
                     "name": { "type": "string" },
                     "price": { "type": "number" },
                     "isActive": { "type": "boolean" },
-                    "tags": { "type": "array" },
+                    "tags": { "type": "array", "items": { "type": "string" } },
                     "address": { "type": "object" },
                     "nullableField": { "type": "null" },
                     "noTypeField": { "description": "has no type keyword" },
@@ -146,7 +146,7 @@ public class MermaidMapperTests() : VerifyBase()
                     "refField": { "$ref": "#/definitions/Brand" }
                 }
             }
-            """).RootElement.Clone();
+            """);
 
         var schema = new HypermediaApiSchema
         {
@@ -161,7 +161,7 @@ public class MermaidMapperTests() : VerifyBase()
                     PropertiesSchema = propertiesSchema,
                 },
             },
-            Definitions = new Dictionary<string, JsonElement>(),
+            Definitions = new Dictionary<string, JsonSchema>(),
         };
         var result = schema.ToClassDiagram();
         var markdown = $"```mermaid\n{result}\n```";

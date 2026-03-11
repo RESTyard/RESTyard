@@ -85,7 +85,7 @@ public class HypermediaApiSchema
     public string? ExternalDocsUrl { get; set; }            // Link to external documentation (e.g., RESTyard-Docs site)
     public string EntryPointName { get; set; }                   // References EntityTypeSchema.Name of the entry point
     public IReadOnlyList<EntityTypeSchema> EntityTypes { get; set; }
-    public IDictionary<string, JsonElement> Definitions { get; set; } // Shared type definitions, referenced via $ref
+    public IDictionary<string, JsonSchema> Definitions { get; set; } // Shared type definitions, referenced via $ref
 }
 ```
 
@@ -104,7 +104,7 @@ public class EntityTypeSchema
     public string? Description { get; set; }                // From XML doc <remarks> or attribute
 
     // Data shape — JSON Schema for the Siren "properties" bag
-    public JsonElement? PropertiesSchema { get; set; }
+    public JsonSchema? PropertiesSchema { get; set; }
 
     // Hypermedia graph — how this entity type connects to others
     public IReadOnlyList<LinkDescription> Links { get; set; }
@@ -120,7 +120,7 @@ public class EntityTypeSchema
 
 Entity properties (`PropertiesSchema`) and action parameters (`ActionDescription.ParameterSchema`) are both described using standard JSON Schema. Complex types (classes, records) and enums are always extracted to the top-level `Definitions` dictionary and referenced via `$ref`. Primitives and simple collections are inlined.
 
-**JSON Schema representation:** All JSON Schema fields use `System.Text.Json.JsonElement` (or `JsonElement?` for nullable). This avoids a dependency on `JsonSchema.Net` in the schema model library, keeps the model serialization-framework-agnostic, and round-trips naturally with `System.Text.Json`. The source generator produces the JSON Schema strings at compile time; they are parsed into `JsonElement` values for the schema model.
+**JSON Schema representation:** All JSON Schema fields use `JsonSchema` from the `JsonSchema.Net` library. This provides strongly-typed keyword access (e.g., `PropertiesKeyword`, `TypeKeyword`, `RequiredKeyword`) for the Mermaid and Markdown mappers, eliminating manual JSON parsing. `JsonSchema` round-trips naturally with `System.Text.Json` via its built-in converter. The source generator produces the JSON Schema strings at compile time; they are deserialized into `JsonSchema` instances for the schema model.
 
 Example `PropertiesSchema` referencing a shared `Address` definition:
 
@@ -190,7 +190,7 @@ public class ActionDescription
     public string? Title { get; set; }
     public string? Description { get; set; }
     public string? ContentType { get; set; }                // Inferred: multipart/form-data for file uploads, application/json otherwise
-    public JsonElement? ParameterSchema { get; set; }        // JSON Schema for the parameter type (null if parameterless)
+    public JsonSchema? ParameterSchema { get; set; }          // JSON Schema for the parameter type (null if parameterless)
     public string? ResultName { get; set; }                    // Name of the result entity type (null if no result)
     public IReadOnlyList<string>? ResultClasses { get; set; } // Siren classes of the result entity (null if no result)
     public bool IsMandatory { get; set; }                   // Non-nullable action property (always present, may still have CanExecute guard)
@@ -756,6 +756,7 @@ The existing contract-first XML schema (`Hypermedia.xsd` / `Hypermedia.cs`) cont
 
 ## Design Decisions
 
+- **`JsonSchema.Net` for schema representation**: `PropertiesSchema`, `ParameterSchema`, and `Definitions` values use `JsonSchema` from the `JsonSchema.Net` library (v7.4.0) instead of raw `System.Text.Json.JsonElement`. This provides strongly-typed keyword access (`PropertiesKeyword`, `TypeKeyword`, `RequiredKeyword`, `DescriptionKeyword`, etc.) for the Mermaid and Markdown mappers, eliminating manual JSON parsing. `JsonSchema` round-trips with `System.Text.Json` via its built-in converter, so the serialized schema JSON is unchanged. The dependency is acceptable because: (1) `RESTyard.AspNetCore` already depends on `JsonSchema.Net.Generation` which pulls in `JsonSchema.Net` transitively, (2) any consumer working with JSON Schema data will likely need the library anyway, and (3) it enables future `$ref` resolution in mappers without additional parsing infrastructure.
 - **Schema versioning**: The schema format has its own semver (`SchemaVersion`), independent of the RESTyard package version. This allows the spec format to evolve at its own pace — a RESTyard update that doesn't change the schema shape doesn't bump the schema version, and vice versa.
 - **External links/actions**: `ExternalLink` and `HypermediaExternalAction` have fixed URLs not resolved via route resolver. This is not a schema concern — the schema describes entity types and their relationships, not runtime URLs. External links are just links from the client's perspective; the client does not distinguish between internal and external.
 - **Schema endpoint media type**: `application/vnd.restyard.schema+json`.
@@ -916,7 +917,7 @@ The existing contract-first XML schema (`Hypermedia.cs`) already models scopes o
 
 ## Open Questions
 
-- **Full `$ref` resolution in mappers**: All three mappers (Mermaid class diagram, Mermaid entity graph, Markdown documentation) currently show `object` for complex types and do not resolve `$ref` references. A future improvement should resolve `$ref` to the definition name (e.g., show `Address` instead of `object`) using the `Definitions` dictionary. When implementing this, also revisit whether the Markdown mapper should include a dedicated **Definitions** section at the end listing shared types as their own tables, with cross-links from property/parameter tables.
+- **Full `$ref` resolution in mappers**: All three mappers (Mermaid class diagram, Mermaid entity graph, Markdown documentation) currently show `object` for complex types and do not resolve `$ref` references. With `JsonSchema.Net` now available, `RefKeyword` can be accessed directly to extract the definition name from `$ref` paths (e.g., `#/definitions/Address` → `Address`). A future improvement should resolve these to the definition name using the `Definitions` dictionary. When implementing this, also revisit whether the Markdown mapper should include a dedicated **Definitions** section at the end listing shared types as their own tables, with cross-links from property/parameter tables.
 - **Mermaid customization**: Should the mapper support filtering (e.g., only show entities reachable from entry point)? Not for v1.
 - **Parameter validation routes in Siren**: Allow UIs to validate action parameters before form submission by calling a server-side validation endpoint. This requires a Siren format extension — e.g., a `validationHref` field on actions that points to a validation endpoint returning field-level errors. Needs design for: the Siren extension format, the validation request/response contract, how the source generator discovers validation endpoints, and how the schema describes validation availability per action.
 - **Example values**: Add support for example values on entity properties and action parameters in the schema (similar to OpenAPI's `example` keyword). Useful for documentation UIs to show realistic sample data and for client generators to emit test fixtures. Could be expressed as JSON Schema `examples` keyword or as a separate field on `EntityTypeSchema`/`ActionDescription`. To be designed in a future iteration.

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
+using Json.Schema;
 using RESTyard.Schema.Model;
 
 namespace RESTyard.Schema.Test;
@@ -9,13 +9,13 @@ internal static class TestSchemaFactory
 {
     internal static HypermediaApiSchema CreateMultiEntitySchema()
     {
-        var customerProperties = JsonDocument.Parse(
+        var customerProperties = JsonSchema.FromText(
             """{"type":"object","properties":{"name":{"type":"string"},"age":{"type":"integer"}}}"""
-        ).RootElement.Clone();
+        );
 
-        var buyCarParams = JsonDocument.Parse(
+        var buyCarParams = JsonSchema.FromText(
             """{"type":"object","properties":{"carId":{"type":"string"}}}"""
-        ).RootElement.Clone();
+        );
 
         return new HypermediaApiSchema
         {
@@ -115,7 +115,7 @@ internal static class TestSchemaFactory
                     EmbeddedEntities = System.Array.Empty<EmbeddedEntityDescription>(),
                 },
             },
-            Definitions = new Dictionary<string, JsonElement>(),
+            Definitions = new Dictionary<string, JsonSchema>(),
         };
     }
 }
