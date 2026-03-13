@@ -116,7 +116,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 **Goal:** Set up the generator project and generate `GetSchema()` methods that produce `EntityTypeSchema` per HTO.
 
-#### Step 2.1: Create `RESTyard.HtoSourceGenerators` project and test project
+#### Step 2.1: ✅ Create `RESTyard.HtoSourceGenerators` project and test project
 - New `netstandard2.0` class library with `<IsRoslynComponent>true</IsRoslynComponent>`
 - New `RESTyard.HtoSourceGenerators.Test` xunit + Verify test project
 - Implement `IIncrementalGenerator` skeleton

@@ -1,5 +1,7 @@
 # Hypermedia Schema — Design Document
 
+> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Next task: **Step 2.2**
+
 ## Table of Contents
 
 - [Goal](#goal)
