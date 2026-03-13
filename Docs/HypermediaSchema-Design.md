@@ -23,6 +23,7 @@
 - [Project Structure](#project-structure)
 - [Intentionally Excluded from Schema](#intentionally-excluded-from-schema)
 - [Design Decisions](#design-decisions)
+- [CLI Tooling for Schema and Diagram Generation](#cli-tooling-for-schema-and-diagram-generation)
 - [Open Questions](#open-questions)
 
 ## Goal
@@ -878,26 +879,49 @@ No startup configuration needed — the source generator collects everything fro
 
 ### Filtered Schema Endpoint
 
-The `/_schema` endpoint supports an `accessGroups` query parameter to return a filtered sub-document containing only the elements visible to the given access groups:
+The `/_schema` endpoint supports access group filtering via query parameters. Two filtering modes are available — **include** and **exclude** — to cover the most common use cases:
 
 ```
-GET /_schema                              → full schema (all access groups)
-GET /_schema?accessGroups=read            → filtered: only elements requiring "read" or no access groups
-GET /_schema?accessGroups=read,write      → filtered: elements requiring "read", "write", or no access groups
+GET /_schema                                          → full schema (all access groups)
+GET /_schema?accessGroups=read                        → include: only elements requiring "read" or no access groups
+GET /_schema?accessGroups=read,write                  → include: elements requiring "read", "write", or no access groups
+GET /_schema?excludeAccessGroups=admin                → exclude: all elements except those requiring "admin"
+GET /_schema?excludeAccessGroups=admin,internal       → exclude: all elements except those requiring "admin" or "internal"
 ```
+Revisit: can t his be doen with a RESTyard action so we stay in the libs design?
 
-Filtering logic for a given set of granted access groups:
+**Include mode** (`accessGroups`): Returns only elements whose `RequiredAccessGroups` are satisfied by the given set, plus elements with no access group restriction. Use case: "show me what the `read` role can see."
+
+**Exclude mode** (`excludeAccessGroups`): Returns all elements *except* those whose `RequiredAccessGroups` intersect with the excluded set. Use case: "show me everything except `admin`-only elements."
+
+Specifying both `accessGroups` and `excludeAccessGroups` is invalid — the endpoint returns `400 Bad Request in problem json format`.
+
+Filtering logic:
+
+**Include mode** (given a set of granted access groups):
 1. Remove actions where `RequiredAccessGroups` contains any group not in the granted set
 2. Remove links where `RequiredAccessGroups` contains any group not in the granted set
 3. Same for embedded entities
 4. Remove entity types that become unreachable (no links, no actions, no embedded entities, and not referenced by any remaining element)
 5. Strip `DeclaredAccessGroups` from the filtered output (irrelevant)
 
+**Exclude mode** (given a set of excluded access groups):
+1. Remove actions where `RequiredAccessGroups` intersects with the excluded set
+2. Remove links where `RequiredAccessGroups` intersects with the excluded set
+3. Same for embedded entities
+4. Remove entity types that become unreachable
+5. Strip `DeclaredAccessGroups` from the filtered output
+
 ```csharp
 public static class HypermediaSchemaFilter
 {
+    /// Include mode: keep elements whose RequiredAccessGroups ⊆ grantedAccessGroups (or null).
     public static HypermediaApiSchema ForAccessGroups(
         HypermediaApiSchema fullSchema, IReadOnlySet<string> grantedAccessGroups);
+
+    /// Exclude mode: remove elements whose RequiredAccessGroups ∩ excludedAccessGroups ≠ ∅.
+    public static HypermediaApiSchema ExcludeAccessGroups(
+        HypermediaApiSchema fullSchema, IReadOnlySet<string> excludedAccessGroups);
 }
 ```
 
@@ -914,6 +938,80 @@ The existing contract-first XML schema (`Hypermedia.cs`) already models scopes o
 - **The source generator collects `DeclaredAccessGroups`** automatically from all `[HypermediaAccessGroup]` attributes found in the compilation. This enables tooling to detect typos.
 - **State vs. permissions are orthogonal**: A `null` action in a Siren response means either "no permission" or "state doesn't allow it." Access groups describe only the permission dimension. State-dependent availability is already captured by `IsMandatory` and the `CanExecute` pattern.
 - **No permission profiles**: Role-to-group mappings (e.g., "admin = read + write + admin") are an identity/authorization concern, not an API schema concern. Clients know their access groups from their auth context and filter directly. This avoids duplicating role definitions that already exist in identity providers.
+
+## CLI Tooling for Schema and Diagram Generation
+
+### Motivation
+
+Developers and CI pipelines need a way to generate schema JSON, Mermaid diagrams, and Markdown documentation **without manually running the server and hitting `/_schema`**. Use cases:
+
+- Generate API documentation as part of a CI build
+- Produce Mermaid diagrams filtered by access group (e.g., "readonly" view of the API, or "everything except admin")
+- Keep documentation artifacts in version control and diff them across commits
+
+### Approach: Server with Generate-and-Exit Mode
+
+> **Status:** Needs investigation and design. The approach below is a starting point — the exact mechanism depends on what ASP.NET Core supports cleanly.
+
+The idea is to allow the server application itself to generate schema artifacts on startup and then exit, without actually listening for HTTP requests. This reuses the full DI container, source-generated schema registries, and all configuration — no separate tool needs to reconstruct the schema from scratch.
+
+**Possible mechanisms to investigate:**
+
+1. **Command-line argument on the server app** — e.g., `dotnet run --project CarShack -- --generate-schema --output ./docs`. The app's `Program.cs` checks for this argument after building the `WebApplication` (so DI is available), generates the artifacts, and calls `Environment.Exit(0)` before `app.Run()`. Simple but couples generation logic into the server app.
+
+2. **`IHostedService` that runs and stops the host** — Register a hosted service that resolves `HypermediaApiSchema` from DI, generates files, then signals the host to stop. Triggered by an environment variable or command-line flag. Cleaner separation but more moving parts.
+
+3. **Separate CLI tool that references the server assembly** — A standalone `dotnet tool` (like `restyard-generator` already exists for contract-first) that loads the server's assemblys, finds the `HypermediaSchemaRegistry`, and produces artifacts. Avoids running the server but requires the assembly to be built first and may miss runtime-only DI configuration.
+
+4. **MSBuild task** — Run as a post-build step. Similar tradeoffs to option 3.
+
+The recommended starting point is **option 1** (command-line argument) as it is the simplest to implement and guarantees full fidelity with the runtime schema. If it proves too invasive, option 2 is the natural evolution.
+
+### CLI Parameters (Proposed)
+
+Regardless of the mechanism, the generation should support these parameters:
+
+```
+--generate-schema              Trigger schema generation mode (exit after generating)
+--schema-output <path>         Output directory for generated files (default: ./generated-schema)
+--schema-format <formats>      Comma-separated: json, mermaid-map, mermaid-class, markdown (default: all)
+--access-groups <groups>       Include filter: only elements visible to these access groups
+--exclude-access-groups <groups>  Exclude filter: remove elements requiring these access groups
+--mermaid-include-properties   Include properties in Mermaid class diagram (default: true)
+--mermaid-include-actions      Include actions in Mermaid class diagram (default: true)
+--markdown-include-toc         Include table of contents in Markdown (default: true)
+--markdown-include-diagram     Include Mermaid diagram in Markdown (default: true)
+```
+
+**Access group filtering** reuses the same `HypermediaSchemaFilter` from the filtered schema endpoint — the CLI applies the filter before passing the schema to the mappers. `--access-groups` and `--exclude-access-groups` are mutually exclusive (same as the endpoint).
+
+### Example CI Usage
+
+```bash
+# Generate full documentation
+dotnet run --project src/MyApi -- --generate-schema --schema-output ./docs
+
+# Generate readonly view (only elements visible to "read" access group)
+dotnet run --project src/MyApi -- --generate-schema --access-groups read --schema-output ./docs/readonly
+
+# Generate everything except admin-only elements
+dotnet run --project src/MyApi -- --generate-schema --exclude-access-groups admin --schema-output ./docs/public
+
+# Generate only Mermaid diagrams, no properties
+dotnet run --project src/MyApi -- --generate-schema --schema-format mermaid-map,mermaid-class --mermaid-include-properties false --schema-output ./docs/diagrams
+```
+
+### Output Files
+
+The generator produces files named by format:
+
+```
+<output-dir>/
+  schema.json              # Full (or filtered) HypermediaApiSchema JSON
+  api-map.md               # Mermaid entity relationship diagram
+  class-diagram.md         # Mermaid class diagram
+  api-documentation.md         # Markdown API reference
+```
 
 ## Open Questions
 

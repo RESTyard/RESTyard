@@ -272,14 +272,34 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - **Mermaid customization** — filtering by reachability from entry point
 - For each: implement if justified, otherwise document the decision to defer in the spec
 
-### Phase 8: Documentation and Tooling
+### Phase 8: Documentation and CLI Tooling
 
-#### Step 8.1: Mermaid diagram integration
-- CLI command or MSBuild task to generate Mermaid `.md` files from `/_schema`
-- Test with CarShack
+**Goal:** Provide a CLI mechanism for developers and CI pipelines to generate schema JSON, Mermaid diagrams, and Markdown documentation — with access group filtering — without manually running the server.
 
-#### Step 8.2: Update RESTyard-Docs
+#### Step 8.1: Investigate generate-and-exit mechanism
+- Spike the approaches described in the design doc (command-line argument on server app, `IHostedService`, separate CLI tool, MSBuild task)
+- Must be a lib functionality that can be added to a server
+- Evaluate: how cleanly can the full DI container and schema registries be accessed without actually listening for HTTP requests?
+- Decide on the approach and document the decision in the design doc
+- Acceptance criteria: a CarShack invocation that produces `schema.json` and exits
+
+#### Step 8.2: Implement generate-and-exit mode
+- Implement the chosen approach with support for:
+  - `--generate-schema` flag to trigger generation mode
+  - `--schema-output <path>` for output directory
+  - `--schema-format <formats>` to select which artifacts to produce (json, mermaid-map, mermaid-class, markdown)
+  - Mapper options pass-through (`--mermaid-include-properties`, `--mermaid-include-actions`, `--markdown-include-toc`, `--markdown-include-diagram`)
+- Test with CarShack: verify all four output formats are produced correctly
+
+#### Step 8.3: Access group filtering in CLI
+- Add `--access-groups <groups>` (include mode) and `--exclude-access-groups <groups>` (exclude mode) parameters
+- Reuse `HypermediaSchemaFilter.ForAccessGroups` / `ExcludeAccessGroups` from Phase 9
+- Validate mutual exclusivity (error if both specified)
+- Test with CarShack: generate filtered schema/diagrams for specific access group combinations
+
+#### Step 8.4: Update RESTyard-Docs
 - Document the schema endpoint, model, and Mermaid mapper
+- Document the CLI generation mode and access group filtering
 - Add migration guide for existing users
 
 ### Phase 9 (Optional): Access Groups
@@ -295,13 +315,21 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Collect all discovered access groups into `HypermediaApiSchema.DeclaredAccessGroups`
 - Verify tests: HTO with grouped and ungrouped elements, `DeclaredAccessGroups` completeness
 
-#### Step 9.2: Filtered schema endpoint
+#### Step 9.2: Filtered schema endpoint — include mode
 - Implement `HypermediaSchemaFilter.ForAccessGroups(schema, grantedAccessGroups)`
   - Remove elements whose `RequiredAccessGroups` are not satisfied by the granted set
   - Remove unreachable entity types
   - Strip `DeclaredAccessGroups` from filtered output
 - Extend `/_schema` endpoint to accept `?accessGroups=read,write` query parameter
 - Integration test: CarShack with access groups, verify filtered output for different group combinations
+
+#### Step 9.2b: Filtered schema endpoint — exclude mode
+- Implement `HypermediaSchemaFilter.ExcludeAccessGroups(schema, excludedAccessGroups)`
+  - Remove elements whose `RequiredAccessGroups` intersect with the excluded set
+  - Remove unreachable entity types
+  - Strip `DeclaredAccessGroups` from filtered output
+- Extend `/_schema` endpoint to accept `?excludeAccessGroups=admin` query parameter
+- Integration test: CarShack excluding specific access groups, verify elements are removed correctly
 
 #### Step 9.3: CarShack demo
 - Add `[HypermediaAccessGroup]` to selected CarShack actions and links
