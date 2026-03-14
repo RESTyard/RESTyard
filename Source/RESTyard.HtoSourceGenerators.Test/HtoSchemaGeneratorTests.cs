@@ -134,6 +134,163 @@ public class HtoSchemaGeneratorTests
         result.GeneratedTrees.Should().BeEmpty();
     }
 
+    [Fact]
+    public void SimpleHto_calls_factory_for_each_property_type()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.SimpleHto);
+        var source = GetGeneratedSource(result, "HypermediaCustomerHto");
+
+        // Method takes IJsonSchemaFactory parameter
+        source.Should().Contain("GetSchema(IJsonSchemaFactory schemaFactory)");
+
+        // Calls factory for each property type with correct property names
+        source.Should().Contain("propertySchemas[\"Name\"] = schemaFactory.Generate(typeof(");
+        source.Should().Contain("propertySchemas[\"Age\"] = schemaFactory.Generate(typeof(");
+
+        // Calls SchemaHelper to compose
+        source.Should().Contain("SchemaHelper.BuildPropertiesSchema(propertySchemas)");
+        source.Should().Contain("PropertiesSchema = propertiesSchema");
+    }
+
+    [Fact]
+    public void Hto_with_various_property_types_emits_correct_typeof_calls_and_compiles()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithVariousPropertyTypes);
+        var source = GetGeneratedSource(result, "HypermediaAllTypesHto");
+
+        // FullyQualifiedFormat uses keyword aliases for built-in types
+        source.Should().Contain("typeof(string)");
+        source.Should().Contain("typeof(bool)");
+        source.Should().Contain("typeof(int)");
+        source.Should().Contain("typeof(long)");
+        source.Should().Contain("typeof(double)");
+        source.Should().Contain("typeof(decimal)");
+        // Well-known types use global:: prefix
+        source.Should().Contain("typeof(global::System.DateTime)");
+        source.Should().Contain("typeof(global::System.DateTimeOffset)");
+        source.Should().Contain("typeof(global::System.DateOnly)");
+        source.Should().Contain("typeof(global::System.TimeOnly)");
+        source.Should().Contain("typeof(global::System.TimeSpan)");
+        source.Should().Contain("typeof(global::System.Uri)");
+        source.Should().Contain("typeof(global::System.Guid)");
+
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithVariousPropertyTypes);
+    }
+
+    [Fact]
+    public void Nullable_properties_emit_nullable_typeof()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithNullableProperties);
+        var source = GetGeneratedSource(result, "HypermediaNullableHto");
+
+        // Nullable value types should emit their nullable typeof
+        source.Should().Contain("propertySchemas[\"OptionalCount\"] = schemaFactory.Generate(typeof(");
+        source.Should().Contain("propertySchemas[\"OptionalFlag\"] = schemaFactory.Generate(typeof(");
+        source.Should().Contain("propertySchemas[\"OptionalDate\"] = schemaFactory.Generate(typeof(");
+
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithNullableProperties);
+    }
+
+    [Fact]
+    public void Enum_properties_emit_typeof_and_compile()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithEnumProperties);
+        var source = GetGeneratedSource(result, "HypermediaWithEnumHto");
+
+        source.Should().Contain("propertySchemas[\"CurrentStatus\"] = schemaFactory.Generate(typeof(");
+        source.Should().Contain("propertySchemas[\"CurrentPriority\"] = schemaFactory.Generate(typeof(");
+
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithEnumProperties);
+    }
+
+    [Fact]
+    public void Collection_and_array_properties_emit_typeof_and_compile()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithCollections);
+        var source = GetGeneratedSource(result, "HypermediaWithCollectionsHto");
+
+        source.Should().Contain("propertySchemas[\"Tags\"] = schemaFactory.Generate(typeof(");
+        source.Should().Contain("propertySchemas[\"Scores\"] = schemaFactory.Generate(typeof(");
+        source.Should().Contain("propertySchemas[\"Flags\"] = schemaFactory.Generate(typeof(");
+
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithCollections);
+    }
+
+    [Fact]
+    public void Nested_object_property_emits_typeof_and_compiles()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithNestedObject);
+        var source = GetGeneratedSource(result, "HypermediaWithNestedHto");
+
+        source.Should().Contain("propertySchemas[\"Name\"] = schemaFactory.Generate(typeof(");
+        source.Should().Contain("propertySchemas[\"HomeAddress\"] = schemaFactory.Generate(typeof(");
+
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithNestedObject);
+    }
+
+    [Fact]
+    public void HypermediaProperty_Name_renames_and_FormatterIgnore_excludes()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithPropertyAttributes);
+        var source = GetGeneratedSource(result, "HypermediaWithAttributesHto");
+
+        // [HypermediaProperty(Name = "FullName")] should use custom name as the key
+        source.Should().Contain("propertySchemas[\"FullName\"]");
+        // Original C# property name "Name" should not appear as a schema key
+        source.Should().NotContain("propertySchemas[\"Name\"]");
+
+        // [FormatterIgnoreHypermediaProperty] should exclude the property entirely
+        source.Should().NotContain("InternalId");
+
+        // Regular property remains
+        source.Should().Contain("propertySchemas[\"Age\"]");
+    }
+
+    [Fact]
+    public void Links_and_actions_are_excluded_from_properties_schema()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.FullHto);
+        var source = GetGeneratedSource(result, "HypermediaCustomerHto");
+
+        // Data properties should be present
+        source.Should().Contain("propertySchemas[\"Name\"]");
+        source.Should().Contain("propertySchemas[\"Age\"]");
+
+        // Links (marked with [Relations]) should be excluded
+        source.Should().NotContain("\"Self\"");
+        source.Should().NotContain("\"BestFriend\"");
+
+        // Actions (marked with [HypermediaAction]) should be excluded
+        source.Should().NotContain("\"MarkAsFavorite\"");
+        source.Should().NotContain("\"BuyCar\"");
+
+        // Embedded entities (marked with [Relations]) should be excluded
+        source.Should().NotContain("\"Address\"");
+    }
+
+    [Fact]
+    public void Hto_without_properties_omits_PropertiesSchema_and_factory_parameter()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Empty", Classes = ["Empty"])]
+            public class HypermediaEmptyHto : HypermediaObject
+            {
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+        var generated = GetGeneratedSource(result, "HypermediaEmptyHto");
+
+        generated.Should().NotContain("PropertiesSchema");
+        generated.Should().NotContain("IJsonSchemaFactory");
+        generated.Should().Contain("GetSchema()");
+    }
+
     [Theory]
     [InlineData("HypermediaCustomerHto", "Customer")]
     [InlineData("HypermediaCustomer", "Customer")]

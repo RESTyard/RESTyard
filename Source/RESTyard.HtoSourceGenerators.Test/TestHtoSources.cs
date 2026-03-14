@@ -115,6 +115,144 @@ internal static class TestHtoSources
         """;
 
     /// <summary>
+    /// HTO with various primitive and well-known property types.
+    /// </summary>
+    internal const string HtoWithVariousPropertyTypes = $$"""
+        {{Usings}}
+
+        namespace TestHtos;
+
+        [HypermediaObject(Title = "AllTypes", Classes = ["AllTypes"])]
+        public class HypermediaAllTypesHto : HypermediaObject
+        {
+            public string Text { get; set; } = string.Empty;
+            public bool IsActive { get; set; }
+            public int Count { get; set; }
+            public long BigNumber { get; set; }
+            public double Ratio { get; set; }
+            public decimal Price { get; set; }
+            public DateTime CreatedAt { get; set; }
+            public DateTimeOffset ModifiedAt { get; set; }
+            public DateOnly BirthDate { get; set; }
+            public TimeOnly AlarmTime { get; set; }
+            public TimeSpan Duration { get; set; }
+            public Uri Website { get; set; } = default!;
+            public Guid ExternalId { get; set; }
+        }
+        """;
+
+    /// <summary>
+    /// HTO with nullable value-type properties.
+    /// </summary>
+    internal const string HtoWithNullableProperties = $$"""
+        {{Usings}}
+
+        namespace TestHtos;
+
+        [HypermediaObject(Title = "Nullable", Classes = ["Nullable"])]
+        public class HypermediaNullableHto : HypermediaObject
+        {
+            public int? OptionalCount { get; set; }
+            public bool? OptionalFlag { get; set; }
+            public DateTime? OptionalDate { get; set; }
+        }
+        """;
+
+    /// <summary>
+    /// HTO with enum properties including EnumMember attribute.
+    /// </summary>
+    internal const string HtoWithEnumProperties = $$"""
+        {{Usings}}
+        using System.Runtime.Serialization;
+
+        namespace TestHtos;
+
+        public enum Status
+        {
+            Active,
+            Inactive,
+            Deleted
+        }
+
+        public enum Priority
+        {
+            [EnumMember(Value = "low")]
+            Low,
+            [EnumMember(Value = "medium")]
+            Medium,
+            [EnumMember(Value = "high")]
+            High
+        }
+
+        [HypermediaObject(Title = "WithEnum", Classes = ["WithEnum"])]
+        public class HypermediaWithEnumHto : HypermediaObject
+        {
+            public Status CurrentStatus { get; set; }
+            public Priority CurrentPriority { get; set; }
+        }
+        """;
+
+    /// <summary>
+    /// HTO with collection and array properties.
+    /// </summary>
+    internal const string HtoWithCollections = $$"""
+        {{Usings}}
+
+        namespace TestHtos;
+
+        [HypermediaObject(Title = "WithCollections", Classes = ["WithCollections"])]
+        public class HypermediaWithCollectionsHto : HypermediaObject
+        {
+            public string[] Tags { get; set; } = Array.Empty<string>();
+            public List<int> Scores { get; set; } = new();
+            public IEnumerable<bool> Flags { get; set; } = Array.Empty<bool>();
+        }
+        """;
+
+    /// <summary>
+    /// HTO with a nested complex object property.
+    /// </summary>
+    internal const string HtoWithNestedObject = $$"""
+        {{Usings}}
+
+        namespace TestHtos;
+
+        public class Address
+        {
+            public string Street { get; set; } = string.Empty;
+            public string City { get; set; } = string.Empty;
+        }
+
+        [HypermediaObject(Title = "WithNested", Classes = ["WithNested"])]
+        public class HypermediaWithNestedHto : HypermediaObject
+        {
+            public string Name { get; set; } = string.Empty;
+            public Address HomeAddress { get; set; } = default!;
+        }
+        """;
+
+    /// <summary>
+    /// HTO demonstrating [HypermediaProperty(Name)] rename and [FormatterIgnoreHypermediaProperty] exclusion.
+    /// </summary>
+    internal const string HtoWithPropertyAttributes = $$"""
+        {{Usings}}
+
+        namespace TestHtos;
+
+        [HypermediaObject(Title = "WithAttributes", Classes = ["WithAttributes"])]
+        public class HypermediaWithAttributesHto : HypermediaObject
+        {
+            [HypermediaProperty(Name = "FullName")]
+            public string Name { get; set; } = string.Empty;
+
+            [FormatterIgnoreHypermediaProperty]
+            public string InternalId { get; set; } = string.Empty;
+
+            public int Age { get; set; }
+        }
+        """;
+
+    /// <summary>
     /// HTO combining properties, links, actions, and embedded entities.
     /// </summary>
     internal const string FullHto = $$"""

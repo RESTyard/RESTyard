@@ -139,12 +139,12 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Emit `GetSchema()` returning `EntityTypeSchema` with `Name`, `Classes`, `Title`
 - Verify tests: snapshot + assertion for a minimal HTO
 
-#### Step 2.3: Property analysis → JSON Schema
-- Implement `JsonSchemaBuilder` (Roslyn `ITypeSymbol` → JSON Schema string)
-- Handle primitives, strings, DateTime, enums, nullable, arrays/lists, nested objects via `$ref`
-- Populate `PropertiesSchema` on `EntityTypeSchema`
-- Respect `[HypermediaProperty(Name)]`, `[FormatterIgnoreHypermediaProperty]`
-- Verify tests: HTO with various property types
+#### Step 2.3: ✅ Property analysis → runtime JSON Schema via `IJsonSchemaFactory`
+- **Approach change:** Do NOT duplicate JSON Schema type mapping in the source generator. Instead, emit code that calls `IJsonSchemaFactory.Generate(typeof(T))` at runtime. This reuses the existing `JsonSchemaFactory` (custom temporal generators, attribute handlers, user extensions) and guarantees parity with the action parameter schema endpoint.
+- Remove the compile-time `JsonSchemaBuilder` from the source generator project
+- Source generator extracts property metadata at compile time: property names (respecting `[HypermediaProperty(Name)]`), property CLR types, exclusion of `[FormatterIgnoreHypermediaProperty]` / `[Relations]` / `[HypermediaAction]` properties
+- Generated `GetSchema()` method receives `IJsonSchemaFactory` (via parameter) and calls it at runtime to build `PropertiesSchema`
+- Verify tests: HTO with various property types, attribute-based exclusion and renaming, generated code compiles and calls factory
 
 #### Step 2.4: Link analysis
 - Scan `ILink<T>` properties with `[Relations]`

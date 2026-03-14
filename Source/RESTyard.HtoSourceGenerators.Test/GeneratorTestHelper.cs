@@ -1,9 +1,13 @@
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Json.Schema;
 using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.JsonSchema;
 using RESTyard.Schema.Model;
 
 namespace RESTyard.HtoSourceGenerators.Test;
@@ -20,6 +24,12 @@ internal static class GeneratorTestHelper
         MetadataReference.CreateFromFile(Path.Combine(AssemblyDirectory, "System.Collections.dll")),
         MetadataReference.CreateFromFile(typeof(IHypermediaObject).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(EntityTypeSchema).Assembly.Location),
+        MetadataReference.CreateFromFile(typeof(JsonSchema).Assembly.Location),
+        MetadataReference.CreateFromFile(typeof(IJsonSchemaFactory).Assembly.Location),
+        MetadataReference.CreateFromFile(typeof(SchemaHelper).Assembly.Location),
+        MetadataReference.CreateFromFile(typeof(JsonDocument).Assembly.Location),
+        MetadataReference.CreateFromFile(typeof(EnumMemberAttribute).Assembly.Location),
+        MetadataReference.CreateFromFile(typeof(System.Uri).Assembly.Location),
         MetadataReference.CreateFromFile(Path.Combine(AssemblyDirectory, "netstandard.dll")),
     ];
 
