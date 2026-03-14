@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Next task: **Step 2.2**
+> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Next task: **Step 2.3**
 
 ## Table of Contents
 
@@ -229,6 +229,8 @@ public class EmbeddedEntityDescription
 ### Project: `RESTyard.HtoSourceGenerators` (netstandard2.0)
 
 Required by Roslyn: source generators must target netstandard2.0.
+
+**No dependency on `RESTyard.Schema`:** The generator emits source code as strings — it never instantiates schema model types at generator runtime. Adding a project reference would pull `JsonSchema.Net`, `System.Text.Json`, and other transitive dependencies into the compiler host, risking assembly loading conflicts. Instead, all emitted type names, property names, and namespaces are centralized in `SchemaTypeNames` (a constants class within the generator project). When new schema types or properties are emitted, add the corresponding constant there first.
 
 ### Input Analysis
 

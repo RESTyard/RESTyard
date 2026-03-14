@@ -7,6 +7,7 @@ Companion to [HypermediaSchema-Design.md](HypermediaSchema-Design.md) (the spec)
 - **Keep the spec updated.** As implementation progresses, update `HypermediaSchema-Design.md` with any design decisions, edge cases, behavior clarifications, or spec changes discovered during implementation. The spec is the single source of truth and will later be used to create user documentation — treat it as living memory.
 - **Small steps.** Each step below is scoped to be implementable and testable independently.
 - **Test as you go.** Every step includes verification. Don't batch testing to the end.
+- **No magic strings in the generator.** The source generator cannot reference `RESTyard.Schema` (dependency loading issues in the compiler host). All emitted type names, property names, and namespace strings must go through `SchemaTypeNames` constants in the generator project. When a new schema type or property is emitted, add the corresponding constant first.
 
 ## Testing Strategy
 
@@ -132,7 +133,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   - Additional sources added as later steps require them (attributes, XML docs, deprecation, etc.)
   - Each source is a `const string` that can be reused across snapshot tests and assertion-based tests in Steps 2.2–2.9
 
-#### Step 2.2: HTO discovery and basic metadata
+#### Step 2.2: ✅ HTO discovery and basic metadata
 - Find all `IHypermediaObject` types in compilation
 - Extract `[HypermediaObject(Title, Classes)]`
 - Emit `GetSchema()` returning `EntityTypeSchema` with `Name`, `Classes`, `Title`

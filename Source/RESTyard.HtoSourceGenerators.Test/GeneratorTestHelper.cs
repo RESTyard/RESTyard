@@ -4,9 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using RESTyard.AspNetCore.Hypermedia;
-using RESTyard.AspNetCore.Hypermedia.Actions;
-using RESTyard.AspNetCore.Hypermedia.Attributes;
-using RESTyard.HtoSourceGenerators;
+using RESTyard.Schema.Model;
 
 namespace RESTyard.HtoSourceGenerators.Test;
 
@@ -21,9 +19,37 @@ internal static class GeneratorTestHelper
         MetadataReference.CreateFromFile(Path.Combine(AssemblyDirectory, "System.Runtime.dll")),
         MetadataReference.CreateFromFile(Path.Combine(AssemblyDirectory, "System.Collections.dll")),
         MetadataReference.CreateFromFile(typeof(IHypermediaObject).Assembly.Location),
+        MetadataReference.CreateFromFile(typeof(EntityTypeSchema).Assembly.Location),
+        MetadataReference.CreateFromFile(Path.Combine(AssemblyDirectory, "netstandard.dll")),
     ];
 
     internal static GeneratorDriverRunResult RunGenerator(params string[] sources)
+    {
+        var (_, driverResult) = RunGeneratorCore(sources);
+        return driverResult;
+    }
+
+    /// <summary>
+    /// Runs the generator and asserts the combined compilation (input + generated) has no errors.
+    /// </summary>
+    internal static void AssertOutputCompiles(params string[] sources)
+    {
+        var (outputCompilation, _) = RunGeneratorCore(sources);
+
+        var errors = outputCompilation.GetDiagnostics()
+            .Where(d => d.Severity == DiagnosticSeverity.Error)
+            .ToImmutableArray();
+
+        if (!errors.IsEmpty)
+        {
+            var errorMessages = string.Join("\n", errors.Select(d => d.ToString()));
+            throw new System.InvalidOperationException(
+                $"Output compilation has errors:\n{errorMessages}");
+        }
+    }
+
+    private static (Compilation OutputCompilation, GeneratorDriverRunResult DriverResult) RunGeneratorCore(
+        string[] sources)
     {
         var syntaxTrees = sources.Select(s => CSharpSyntaxTree.ParseText(s)).ToArray();
 
@@ -34,7 +60,6 @@ internal static class GeneratorTestHelper
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithNullableContextOptions(NullableContextOptions.Enable));
 
-        // Verify input compilation has no errors (warnings are ok)
         var inputDiagnostics = compilation.GetDiagnostics()
             .Where(d => d.Severity == DiagnosticSeverity.Error)
             .ToImmutableArray();
@@ -49,8 +74,8 @@ internal static class GeneratorTestHelper
         var generator = new HtoSchemaGenerator();
         var driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(
-            compilation, out _, out _);
+            compilation, out var outputCompilation, out _);
 
-        return driver.GetRunResult();
+        return (outputCompilation, driver.GetRunResult());
     }
 }
