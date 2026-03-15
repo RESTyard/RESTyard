@@ -173,7 +173,7 @@ public class LinkDescription
     public IReadOnlyList<string> Relations { get; set; }    // From [Relations]
     public string TargetName { get; set; }                  // Name of the target entity type (references EntityTypeSchema.Name)
     public IReadOnlyList<string> TargetClasses { get; set; }// Siren classes of the target entity type
-    public string? MediaType { get; set; }                   // Media type (e.g., "application/json") — maps to Siren link "type" field
+    public string? MediaType { get; set; }                   // Declared media type hint — see note below
     public string? Title { get; set; }
     public string? Description { get; set; }
     public bool IsMandatory { get; set; }                   // Non-nullable ILink<T>
@@ -181,6 +181,8 @@ public class LinkDescription
     public string? DeprecationMessage { get; set; }         // Why deprecated and what to use instead
 }
 ```
+
+**`MediaType`**: When `null` (the default), the linked resource serves `application/vnd.siren+json`. When set, it declares the expected media type (e.g., `text/html` for an external website, `application/pdf` for a file download). This is a **type-level hint** — the schema declares what the link *typically* serves. However, clients must always check the actual Siren link's `type` field at runtime, because the server can override the media type dynamically per instance via `WithAvailableMediaType()`. A `null` schema `MediaType` does not guarantee Siren — it means "default, but verify at runtime."
 
 ### Hypermedia Graph: Actions
 
@@ -1027,3 +1029,4 @@ The generator produces files named by format:
 - **Example values**: Add support for example values on entity properties and action parameters in the schema (similar to OpenAPI's `example` keyword). Useful for documentation UIs to show realistic sample data and for client generators to emit test fixtures. Could be expressed as JSON Schema `examples` keyword or as a separate field on `EntityTypeSchema`/`ActionDescription`. To be designed in a future iteration.
 - **Tag groups**: Allow grouping entity types by tags for documentation UIs (e.g., "Admin", "Public", "Billing"). The entity graph already provides natural grouping, but cross-cutting concerns that span multiple entities may benefit from explicit tags. To be designed if a concrete use case arises.
 - **Target framework**: `RESTyard.Schema` currently targets `netstandard2.0` for broad compatibility (e.g., `RESTyard.Client` multi-targets `netstandard2.0;net8.0`). Reconsider moving to `net10` once all consuming projects have dropped `netstandard2.0` support.
+- **`[LinkMediaType]` attribute for static media type hints**: Add a `[LinkMediaType("text/html")]` attribute for `ILink<T>` properties where the media type is always the same (e.g., external file downloads). The source generator would read this and populate `LinkDescription.MediaType`, enabling richer client generation — e.g., a generated client method could return `HttpResponseMessage` or `Stream` instead of deserializing Siren when it knows the link serves a non-Siren media type. Only useful for links with a fixed media type; dynamic cases (via `WithAvailableMediaType()`) remain runtime-only. To prevent mismatches between the declared attribute and the runtime `WithAvailableMediaType()` call, consider either: (a) a Roslyn analyzer that warns when a link property has `[LinkMediaType]` but the code also calls `WithAvailableMediaType()` with a different value, or (b) a runtime check in the generated `ToSiren()` method that validates the actual media type matches the declared attribute and throws/logs on mismatch.
