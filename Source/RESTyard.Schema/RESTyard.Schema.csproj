@@ -10,7 +10,7 @@
         </VersionSuffixLocal>
 
         <Version>1.0.0$(VersionSuffixLocal)</Version>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);1591</NoWarn>
 
@@ -43,6 +43,7 @@
 
     <ItemGroup>
         <PackageReference Include="JsonSchema.Net" Version="7.4.0" />
+        <PackageReference Include="JsonSchema.Net.Generation" Version="5.1.1" />
         <PackageReference Include="System.Text.Json" Version="9.0.0" />
     </ItemGroup>
 </Project>

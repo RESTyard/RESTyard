@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
-using RESTyard.AspNetCore.JsonSchema;
+using RESTyard.Schema;
 using RESTyard.AspNetCore.Test.Hypermedia;
 
 namespace RESTyard.AspNetCore.Test.JsonSchema;

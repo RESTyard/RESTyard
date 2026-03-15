@@ -1,13 +1,15 @@
+using System;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Json.Schema;
 using RESTyard.AspNetCore.Hypermedia;
-using RESTyard.AspNetCore.JsonSchema;
+using RESTyard.Schema;
 using RESTyard.Schema.Model;
 
 namespace RESTyard.HtoSourceGenerators.Test;
@@ -26,7 +28,6 @@ internal static class GeneratorTestHelper
         MetadataReference.CreateFromFile(typeof(EntityTypeSchema).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(JsonSchema).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(IJsonSchemaFactory).Assembly.Location),
-        MetadataReference.CreateFromFile(typeof(SchemaHelper).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(JsonDocument).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(EnumMemberAttribute).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(System.Uri).Assembly.Location),
@@ -56,6 +57,48 @@ internal static class GeneratorTestHelper
             throw new System.InvalidOperationException(
                 $"Output compilation has errors:\n{errorMessages}");
         }
+    }
+
+    /// <summary>
+    /// Runs the generator, compiles the output, loads the assembly, and invokes
+    /// the generated GetSchema method via reflection to return the EntityTypeSchema.
+    /// </summary>
+    internal static EntityTypeSchema RunGeneratorAndGetSchema(string htoClassName, params string[] sources)
+    {
+        var (outputCompilation, _) = RunGeneratorCore(sources);
+
+        using var ms = new MemoryStream();
+        var emitResult = outputCompilation.Emit(ms);
+        if (!emitResult.Success)
+        {
+            var errors = string.Join("\n", emitResult.Diagnostics
+                .Where(d => d.Severity == DiagnosticSeverity.Error)
+                .Select(d => d.ToString()));
+            throw new InvalidOperationException($"Emit failed:\n{errors}");
+        }
+
+        ms.Seek(0, SeekOrigin.Begin);
+        var assembly = Assembly.Load(ms.ToArray());
+
+        var mapperTypeName = $"TestHtos.{htoClassName}SirenMapper";
+        var mapperType = assembly.GetType(mapperTypeName)
+                         ?? throw new InvalidOperationException($"Type '{mapperTypeName}' not found in emitted assembly");
+
+        var getSchemaMethod = mapperType.GetMethod("GetSchema", BindingFlags.Public | BindingFlags.Static)
+                              ?? throw new InvalidOperationException($"Method 'GetSchema' not found on '{mapperTypeName}'");
+
+        var parameters = getSchemaMethod.GetParameters();
+        object? result;
+        if (parameters.Length == 1 && parameters[0].ParameterType == typeof(IJsonSchemaFactory))
+        {
+            result = getSchemaMethod.Invoke(null, [new JsonSchemaFactory()]);
+        }
+        else
+        {
+            result = getSchemaMethod.Invoke(null, []);
+        }
+
+        return (EntityTypeSchema)(result ?? throw new InvalidOperationException("GetSchema returned null"));
     }
 
     private static (Compilation OutputCompilation, GeneratorDriverRunResult DriverResult) RunGeneratorCore(

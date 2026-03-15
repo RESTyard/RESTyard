@@ -177,6 +177,15 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Emit per-assembly `HypermediaSchemaRegistry` collecting all `GetSchema()` results
 - Verify: CarShack registry lists all its entity types
 
+#### Step 2.10: Bundle source generator into `RESTyard.AspNetCore` NuGet (deferred)
+- Add the source generator DLL to the `RESTyard.AspNetCore` NuGet package alongside the existing analyzers:
+  ```xml
+  <None Include="..\RESTyard.HtoSourceGenerators\bin\$(Configuration)\netstandard2.0\RESTyard.HtoSourceGenerators.dll"
+        Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  ```
+- This enables consumers who reference only `RESTyard.AspNetCore` to get both the analyzers and the source generator automatically
+- Defer to after the source generator is feature-complete (link analysis, action analysis, etc.)
+
 ### Phase 3: Schema Endpoint
 
 **Goal:** Serve the schema at runtime via `/_schema`.
@@ -184,7 +193,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 #### Step 3.1: DI integration
 - `AddHypermediaSchema(options => { ... })` extension method in `RESTyard.AspNetCore`
 - Aggregates per-assembly registries into singleton `HypermediaApiSchema`
-- Reference `RESTyard.Schema`
+- Reference `RESTyard.Schema` (already added as project reference)
 
 #### Step 3.2: Schema endpoint
 - `MapHypermediaSchema("/_schema")` endpoint

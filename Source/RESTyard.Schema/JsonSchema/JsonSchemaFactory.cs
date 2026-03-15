@@ -1,11 +1,12 @@
-﻿using System;
+using System;
+using System.Collections.Concurrent;
 using System.Text.Json;
 using Json.Schema;
 using Json.Schema.Generation;
 using Json.Schema.Generation.Generators;
 using Json.Schema.Generation.Intents;
 
-namespace RESTyard.AspNetCore.JsonSchema
+namespace RESTyard.Schema
 {
     // DataAnnotations like [Required] not handled. 'required' keyword works
     // required to support e.g. [Required] but this is an own class by the lib
@@ -14,28 +15,36 @@ namespace RESTyard.AspNetCore.JsonSchema
     public class JsonSchemaFactory : IJsonSchemaFactory
     {
         private readonly SchemaGeneratorConfiguration config;
+        private readonly ConcurrentDictionary<Type, JsonDocument> cache = new();
 
         public JsonSchemaFactory()
         {
             config = new SchemaGeneratorConfiguration()
             {
                 Generators = {
+#if NET6_0_OR_GREATER
                     new DateOnlyGenerator(),
                     new TimeOnlyGenerator(),
+#endif
                     new DateTimeOffsetGenerator(),
                     new DateTimeGenerator(),
                     new TimeSpanGenerator(),
                 },
             };
-            
-            
+
+
             AttributeHandler.AddHandler(new DisplayNameAttributeHandler());
             AttributeHandler.AddHandler(new DescriptionAttributeHandler());
         }
 
         public JsonDocument Generate(Type type)
         {
-            var schema =new JsonSchemaBuilder()
+            return cache.GetOrAdd(type, GenerateCore);
+        }
+
+        private JsonDocument GenerateCore(Type type)
+        {
+            var schema = new JsonSchemaBuilder()
                 .Schema(MetaSchemas.Draft202012Id)
                 .FromType(type, config)
                 .Build();
@@ -65,7 +74,8 @@ namespace RESTyard.AspNetCore.JsonSchema
             context.Intents.Insert(0, new DescriptionIntent(att.Description));
         }
     }
-    
+
+#if NET6_0_OR_GREATER
     public class DateOnlyGenerator : ISchemaGenerator
     {
         public bool Handles(Type type)
@@ -77,7 +87,7 @@ namespace RESTyard.AspNetCore.JsonSchema
         public void AddConstraints(SchemaGenerationContextBase context)
         {
             context.Intents.Add(new TypeIntent(SchemaValueType.String));
-            context.Intents.Add(new FormatIntent(Formats.Date)); 
+            context.Intents.Add(new FormatIntent(Formats.Date));
         }
     }
 
@@ -91,10 +101,11 @@ namespace RESTyard.AspNetCore.JsonSchema
         public void AddConstraints(SchemaGenerationContextBase context)
         {
             context.Intents.Add(new TypeIntent(SchemaValueType.String));
-            context.Intents.Add(new FormatIntent(Formats.Time)); 
+            context.Intents.Add(new FormatIntent(Formats.Time));
         }
     }
-    
+#endif
+
     public class DateTimeOffsetGenerator : ISchemaGenerator
     {
         public bool Handles(Type type)
@@ -105,10 +116,10 @@ namespace RESTyard.AspNetCore.JsonSchema
         public void AddConstraints(SchemaGenerationContextBase context)
         {
             context.Intents.Add(new TypeIntent(SchemaValueType.String));
-            context.Intents.Add(new FormatIntent(Formats.DateTime)); 
+            context.Intents.Add(new FormatIntent(Formats.DateTime));
         }
     }
-    
+
     public class DateTimeGenerator : ISchemaGenerator
     {
         public bool Handles(Type type)
@@ -119,10 +130,10 @@ namespace RESTyard.AspNetCore.JsonSchema
         public void AddConstraints(SchemaGenerationContextBase context)
         {
             context.Intents.Add(new TypeIntent(SchemaValueType.String));
-            context.Intents.Add(new FormatIntent(Formats.DateTime)); 
+            context.Intents.Add(new FormatIntent(Formats.DateTime));
         }
     }
-    
+
     public class TimeSpanGenerator : ISchemaGenerator
     {
         public bool Handles(Type type)

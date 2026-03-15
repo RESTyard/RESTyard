@@ -18,8 +18,8 @@ internal static class SchemaTypeNames
     internal const string EntityTypeSchema_Classes = "Classes";
     internal const string EntityTypeSchema_PropertiesSchema = "PropertiesSchema";
 
-    // RESTyard.AspNetCore.JsonSchema
-    internal const string JsonSchemaFactoryNamespace = "RESTyard.AspNetCore.JsonSchema";
+    // RESTyard.Schema
+    internal const string JsonSchemaFactoryNamespace = "RESTyard.Schema";
     internal const string IJsonSchemaFactory = "IJsonSchemaFactory";
     internal const string SchemaHelper = "SchemaHelper";
 

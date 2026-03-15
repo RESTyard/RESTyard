@@ -1,5 +1,6 @@
 using System.Linq;
 using AwesomeAssertions;
+using Json.Schema;
 using Microsoft.CodeAnalysis;
 using Xunit;
 
@@ -301,6 +302,50 @@ public class HtoSchemaGeneratorTests
     public void DeriveSchemaName_produces_expected_name(string className, string expected)
     {
         HtoSchemaGenerator.DeriveSchemaName(className).Should().Be(expected);
+    }
+
+    [Fact]
+    public void SimpleHto_GetSchema_returns_valid_PropertiesSchema()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.SimpleHto);
+
+        schema.Name.Should().Be("Customer");
+        schema.Title.Should().Be("Customer");
+        schema.Classes.Should().BeEquivalentTo("Customer");
+        schema.PropertiesSchema.Should().NotBeNull();
+
+        var properties = schema.PropertiesSchema!.GetProperties();
+        properties.Should().NotBeNull();
+        properties.Should().ContainKey("Name");
+        properties.Should().ContainKey("Age");
+
+        properties!["Name"].GetJsonType().Should().Be(SchemaValueType.String);
+        properties["Age"].GetJsonType().Should().Be(SchemaValueType.Integer);
+    }
+
+    [Fact]
+    public void FullHto_GetSchema_excludes_links_actions_includes_data_properties()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.FullHto);
+
+        schema.Name.Should().Be("Customer");
+        schema.PropertiesSchema.Should().NotBeNull();
+
+        var properties = schema.PropertiesSchema!.GetProperties();
+        properties.Should().NotBeNull();
+
+        // Data properties should be present
+        properties.Should().ContainKey("Name");
+        properties.Should().ContainKey("Age");
+
+        // Links, actions, and embedded entities should be excluded
+        properties.Should().NotContainKey("Self");
+        properties.Should().NotContainKey("BestFriend");
+        properties.Should().NotContainKey("MarkAsFavorite");
+        properties.Should().NotContainKey("BuyCar");
+        properties.Should().NotContainKey("Address");
     }
 
     private static string GetGeneratedSource(

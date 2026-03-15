@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 
-namespace RESTyard.AspNetCore.JsonSchema;
+namespace RESTyard.Schema;
 
 /// <summary>
 /// Helper used by source-generated schema code to compose individual property
