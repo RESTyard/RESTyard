@@ -151,7 +151,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Populate `LinkDescription` (relations, target name/classes, mandatory from nullability)
 - Verify tests: HTO with mandatory/optional links
 
-#### Step 2.5: Action analysis
+#### Step 2.5: ✅ Action analysis
 - Scan `HypermediaAction` / `HypermediaAction<T>` / `FileUploadHypermediaAction` properties
 - Populate `ActionDescription` (name, title, parameter schema, file upload flag, mandatory from nullability)
 - Verify tests: parameterless, with parameters, file upload, nullable actions

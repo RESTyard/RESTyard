@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Json.Schema;
 
@@ -8,9 +9,16 @@ namespace RESTyard.Schema;
 
 /// <summary>
 /// Extension methods for extracting common keywords from <see cref="JsonSchema"/>.
+/// Used internally by mappers — public API uses <see cref="JsonDocument"/>.
 /// </summary>
 internal static class JsonSchemaExtensions
 {
+    /// <summary>
+    /// Parses a <see cref="JsonDocument"/> into a <see cref="JsonSchema"/>.
+    /// </summary>
+    internal static JsonSchema ToJsonSchema(this JsonDocument document)
+        => JsonSchema.FromText(document.RootElement.GetRawText());
+
     internal static IReadOnlyDictionary<string, JsonSchema>? GetProperties(this JsonSchema schema)
         => schema.Keywords?.OfType<PropertiesKeyword>().FirstOrDefault()?.Properties;
 

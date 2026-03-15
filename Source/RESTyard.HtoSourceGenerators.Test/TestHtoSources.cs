@@ -253,6 +253,29 @@ internal static class TestHtoSources
         """;
 
     /// <summary>
+    /// HTO with file upload action.
+    /// </summary>
+    internal const string HtoWithFileUpload = $$"""
+        {{Usings}}
+
+        namespace TestHtos;
+
+        public class UploadAction : FileUploadHypermediaAction
+        {
+            public UploadAction() : base(() => true) { }
+        }
+
+        [HypermediaObject(Title = "Document", Classes = ["Document"])]
+        public class HypermediaDocumentHto : HypermediaObject
+        {
+            public string Title { get; set; } = string.Empty;
+
+            [HypermediaAction(Name = "Upload", Title = "Upload File")]
+            public UploadAction? Upload { get; set; }
+        }
+        """;
+
+    /// <summary>
     /// HTO combining properties, links, actions, and embedded entities.
     /// </summary>
     internal const string FullHto = $$"""

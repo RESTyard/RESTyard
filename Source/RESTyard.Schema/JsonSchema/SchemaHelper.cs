@@ -15,7 +15,7 @@ public static class SchemaHelper
     /// Builds a JSON Schema of type "object" whose "properties" map contains
     /// the provided property name → schema pairs.
     /// </summary>
-    public static Json.Schema.JsonSchema BuildPropertiesSchema(Dictionary<string, JsonDocument> propertySchemas)
+    public static JsonDocument BuildPropertiesSchema(Dictionary<string, JsonDocument> propertySchemas)
     {
         var sb = new StringBuilder();
         sb.Append("{\"type\":\"object\",\"properties\":{");
@@ -35,7 +35,7 @@ public static class SchemaHelper
 
         sb.Append("}}");
 
-        return Json.Schema.JsonSchema.FromText(sb.ToString());
+        return JsonDocument.Parse(sb.ToString());
     }
 
     private static string EscapeJsonString(string value)

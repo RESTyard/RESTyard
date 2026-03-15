@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
-using Json.Schema;
 
 namespace RESTyard.Schema.Model;
 
@@ -41,7 +41,7 @@ public class EntityTypeSchema
     /// </summary>
     [JsonPropertyName("propertiesSchema")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public JsonSchema? PropertiesSchema { get; set; }
+    public JsonDocument? PropertiesSchema { get; set; }
 
     /// <summary>
     /// Links available on this entity type.

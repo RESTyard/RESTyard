@@ -26,6 +26,16 @@ internal static class SchemaTypeNames
     internal const string LinkDescription_TargetClasses = "TargetClasses";
     internal const string LinkDescription_IsMandatory = "IsMandatory";
 
+    // ActionDescription
+    internal const string ActionDescription = "ActionDescription";
+    internal const string ActionDescription_Name = "Name";
+    internal const string ActionDescription_Title = "Title";
+    internal const string ActionDescription_ContentType = "ContentType";
+    internal const string ActionDescription_ParameterSchema = "ParameterSchema";
+    internal const string ActionDescription_IsMandatory = "IsMandatory";
+    internal const string ActionDescription_IsFileUpload = "IsFileUpload";
+    internal const string EntityTypeSchema_Actions = "Actions";
+
     // RESTyard.Schema
     internal const string JsonSchemaFactoryNamespace = "RESTyard.Schema";
     internal const string IJsonSchemaFactory = "IJsonSchemaFactory";

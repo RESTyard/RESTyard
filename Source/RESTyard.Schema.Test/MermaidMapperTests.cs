@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Json.Schema;
 using RESTyard.Schema.Mermaid;
 using RESTyard.Schema.Model;
 using VerifyTests;
@@ -37,7 +37,7 @@ public class MermaidMapperTests() : VerifyBase()
         {
             SchemaVersion = "1.0",
             EntryPointName = "EntryPoint",
-            Definitions = new Dictionary<string, JsonSchema>(),
+            Definitions = new Dictionary<string, JsonDocument>(),
         };
         var result = schema.ToApiMap();
         var markdown = $"```mermaid\n{result}\n```";
@@ -51,7 +51,7 @@ public class MermaidMapperTests() : VerifyBase()
         {
             SchemaVersion = "1.0",
             EntryPointName = "EntryPoint",
-            Definitions = new Dictionary<string, JsonSchema>(),
+            Definitions = new Dictionary<string, JsonDocument>(),
         };
         var result = schema.ToClassDiagram();
         var markdown = $"```mermaid\n{result}\n```";
@@ -84,7 +84,7 @@ public class MermaidMapperTests() : VerifyBase()
                     EmbeddedEntities = System.Array.Empty<EmbeddedEntityDescription>(),
                 },
             },
-            Definitions = new Dictionary<string, JsonSchema>(),
+            Definitions = new Dictionary<string, JsonDocument>(),
         };
         var result = schema.ToApiMap();
         var markdown = $"```mermaid\n{result}\n```";
@@ -124,7 +124,7 @@ public class MermaidMapperTests() : VerifyBase()
     [Fact]
     public Task ToClassDiagram_VariousPropertyTypes()
     {
-        var propertiesSchema = JsonSchema.FromText("""
+        var propertiesSchema = JsonDocument.Parse("""
             {
                 "type": "object",
                 "properties": {
@@ -161,7 +161,7 @@ public class MermaidMapperTests() : VerifyBase()
                     PropertiesSchema = propertiesSchema,
                 },
             },
-            Definitions = new Dictionary<string, JsonSchema>(),
+            Definitions = new Dictionary<string, JsonDocument>(),
         };
         var result = schema.ToClassDiagram();
         var markdown = $"```mermaid\n{result}\n```";

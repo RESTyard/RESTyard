@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Json.Schema;
 using RESTyard.Schema.Markdown;
 using RESTyard.Schema.Model;
 using VerifyXunit;
@@ -21,7 +21,7 @@ public class MarkdownMapperTests() : VerifyBase()
 
     private static HypermediaApiSchema CreateRichSchema()
     {
-        var customerProperties = JsonSchema.FromText("""
+        var customerProperties = JsonDocument.Parse("""
             {
                 "type": "object",
                 "required": ["name", "email"],
@@ -35,7 +35,7 @@ public class MarkdownMapperTests() : VerifyBase()
             }
             """);
 
-        var carProperties = JsonSchema.FromText("""
+        var carProperties = JsonDocument.Parse("""
             {
                 "type": "object",
                 "required": ["brand", "model", "price"],
@@ -50,7 +50,7 @@ public class MarkdownMapperTests() : VerifyBase()
             }
             """);
 
-        var buyCarParams = JsonSchema.FromText("""
+        var buyCarParams = JsonDocument.Parse("""
             {
                 "type": "object",
                 "required": ["carId"],
@@ -61,7 +61,7 @@ public class MarkdownMapperTests() : VerifyBase()
             }
             """);
 
-        var createCustomerParams = JsonSchema.FromText("""
+        var createCustomerParams = JsonDocument.Parse("""
             {
                 "type": "object",
                 "required": ["name", "email"],
@@ -255,9 +255,9 @@ public class MarkdownMapperTests() : VerifyBase()
                     EmbeddedEntities = System.Array.Empty<EmbeddedEntityDescription>(),
                 },
             },
-            Definitions = new Dictionary<string, JsonSchema>
+            Definitions = new Dictionary<string, JsonDocument>
             {
-                ["Address"] = JsonSchema.FromText("""
+                ["Address"] = JsonDocument.Parse("""
                     {
                         "type": "object",
                         "description": "A postal address.",
@@ -281,7 +281,7 @@ public class MarkdownMapperTests() : VerifyBase()
             SchemaVersion = "1.0",
             Title = "Empty API",
             EntryPointName = "EntryPoint",
-            Definitions = new Dictionary<string, JsonSchema>(),
+            Definitions = new Dictionary<string, JsonDocument>(),
         };
         var result = schema.ToDocumentation();
         return Verify(result, extension: "md");
@@ -381,7 +381,7 @@ public class MarkdownMapperTests() : VerifyBase()
                     Classes = new[] { "NewEntity" },
                 },
             },
-            Definitions = new Dictionary<string, JsonSchema>(),
+            Definitions = new Dictionary<string, JsonDocument>(),
         };
         var result = schema.ToDocumentation();
         return Verify(result, extension: "md");
@@ -439,7 +439,7 @@ public class MarkdownMapperTests() : VerifyBase()
                     },
                 },
             },
-            Definitions = new Dictionary<string, JsonSchema>(),
+            Definitions = new Dictionary<string, JsonDocument>(),
         };
         var result = schema.ToDocumentation();
         return Verify(result, extension: "md");
@@ -519,7 +519,7 @@ public class MarkdownMapperTests() : VerifyBase()
                     Classes = new[] { "Target" },
                 },
             },
-            Definitions = new Dictionary<string, JsonSchema>(),
+            Definitions = new Dictionary<string, JsonDocument>(),
         };
         var result = schema.ToDocumentation();
         return Verify(result, extension: "md");
@@ -555,7 +555,7 @@ public class MarkdownMapperTests() : VerifyBase()
                     Classes = new[] { "Item" },
                 },
             },
-            Definitions = new Dictionary<string, JsonSchema>(),
+            Definitions = new Dictionary<string, JsonDocument>(),
         };
         var result = schema.ToDocumentation();
         return Verify(result, extension: "md");
@@ -564,7 +564,7 @@ public class MarkdownMapperTests() : VerifyBase()
     [Fact]
     public Task ToDocumentation_ActionWithParameters()
     {
-        var paramSchema = JsonSchema.FromText(
+        var paramSchema = JsonDocument.Parse(
             """{"type":"object","required":["carId"],"properties":{"carId":{"type":"integer","description":"The car identifier"},"color":{"type":"string"}}}"""
         );
 
@@ -589,7 +589,7 @@ public class MarkdownMapperTests() : VerifyBase()
                     },
                 },
             },
-            Definitions = new Dictionary<string, JsonSchema>(),
+            Definitions = new Dictionary<string, JsonDocument>(),
         };
         var result = schema.ToDocumentation();
         return Verify(result, extension: "md");

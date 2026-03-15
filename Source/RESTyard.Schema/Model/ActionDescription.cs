@@ -1,6 +1,6 @@
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
-using Json.Schema;
 
 namespace RESTyard.Schema.Model;
 
@@ -41,7 +41,7 @@ public class ActionDescription
     /// </summary>
     [JsonPropertyName("parameterSchema")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public JsonSchema? ParameterSchema { get; set; }
+    public JsonDocument? ParameterSchema { get; set; }
 
     /// <summary>
     /// Name of the result entity type, if the action returns one.

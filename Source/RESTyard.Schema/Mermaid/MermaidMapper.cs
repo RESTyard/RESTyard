@@ -1,6 +1,5 @@
 using System;
 using System.Text;
-using Json.Schema;
 using RESTyard.Schema.Model;
 
 namespace RESTyard.Schema.Mermaid;
@@ -94,8 +93,8 @@ public static class MermaidMapper
             sb.AppendLine($"    class {entity.Name} {{");
 
             if (opts.IncludeProperties
-                && entity.PropertiesSchema is { } propSchema
-                && propSchema.GetProperties() is { } props)
+                && entity.PropertiesSchema is { } propDoc
+                && propDoc.ToJsonSchema().GetProperties() is { } props)
             {
                 foreach (var prop in props)
                 {

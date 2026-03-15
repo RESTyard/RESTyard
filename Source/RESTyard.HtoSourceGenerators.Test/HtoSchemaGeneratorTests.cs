@@ -1,6 +1,6 @@
 using System.Linq;
+using System.Text.Json;
 using AwesomeAssertions;
-using Json.Schema;
 using Microsoft.CodeAnalysis;
 using Xunit;
 
@@ -315,13 +315,12 @@ public class HtoSchemaGeneratorTests
         schema.Classes.Should().BeEquivalentTo("Customer");
         schema.PropertiesSchema.Should().NotBeNull();
 
-        var properties = schema.PropertiesSchema!.GetProperties();
-        properties.Should().NotBeNull();
-        properties.Should().ContainKey("Name");
-        properties.Should().ContainKey("Age");
+        var props = schema.PropertiesSchema!.RootElement.GetProperty("properties");
+        props.TryGetProperty("Name", out _).Should().BeTrue();
+        props.TryGetProperty("Age", out _).Should().BeTrue();
 
-        properties!["Name"].GetJsonType().Should().Be(SchemaValueType.String);
-        properties["Age"].GetJsonType().Should().Be(SchemaValueType.Integer);
+        props.GetProperty("Name").GetProperty("type").GetString().Should().Be("string");
+        props.GetProperty("Age").GetProperty("type").GetString().Should().Be("integer");
     }
 
     [Fact]
@@ -333,19 +332,18 @@ public class HtoSchemaGeneratorTests
         schema.Name.Should().Be("Customer");
         schema.PropertiesSchema.Should().NotBeNull();
 
-        var properties = schema.PropertiesSchema!.GetProperties();
-        properties.Should().NotBeNull();
+        var props = schema.PropertiesSchema!.RootElement.GetProperty("properties");
 
         // Data properties should be present
-        properties.Should().ContainKey("Name");
-        properties.Should().ContainKey("Age");
+        props.TryGetProperty("Name", out _).Should().BeTrue();
+        props.TryGetProperty("Age", out _).Should().BeTrue();
 
         // Links, actions, and embedded entities should be excluded
-        properties.Should().NotContainKey("Self");
-        properties.Should().NotContainKey("BestFriend");
-        properties.Should().NotContainKey("MarkAsFavorite");
-        properties.Should().NotContainKey("BuyCar");
-        properties.Should().NotContainKey("Address");
+        props.TryGetProperty("Self", out _).Should().BeFalse();
+        props.TryGetProperty("BestFriend", out _).Should().BeFalse();
+        props.TryGetProperty("MarkAsFavorite", out _).Should().BeFalse();
+        props.TryGetProperty("BuyCar", out _).Should().BeFalse();
+        props.TryGetProperty("Address", out _).Should().BeFalse();
     }
 
     [Fact]
@@ -429,6 +427,154 @@ public class HtoSchemaGeneratorTests
             "HypermediaCustomerHto", TestHtoSources.SimpleHto);
 
         schema.Links.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void HtoWithActions_generates_actions_array_in_source()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithActions);
+        var source = GetGeneratedSource(result, "HypermediaCustomerHto");
+
+        source.Should().Contain("Actions = new ActionDescription[]");
+        source.Should().Contain("Name = \"MarkAsFavorite\"");
+        source.Should().Contain("Name = \"BuyCar\"");
+    }
+
+    [Fact]
+    public void HtoWithActions_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithActions);
+    }
+
+    [Fact]
+    public void HtoWithActions_GetSchema_returns_correct_actions()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithActions);
+
+        schema.Actions.Should().HaveCount(2);
+
+        var markAsFavorite = schema.Actions.Single(a => a.Name == "MarkAsFavorite");
+        markAsFavorite.ParameterSchema.Should().BeNull();
+        markAsFavorite.IsMandatory.Should().BeFalse();
+        markAsFavorite.IsFileUpload.Should().BeFalse();
+
+        var buyCar = schema.Actions.Single(a => a.Name == "BuyCar");
+        buyCar.ParameterSchema.Should().NotBeNull();
+        buyCar.IsMandatory.Should().BeFalse();
+        buyCar.IsFileUpload.Should().BeFalse();
+    }
+
+    [Fact]
+    public void HtoWithActions_parameterized_action_has_schema_with_properties()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithActions);
+
+        var buyCar = schema.Actions.Single(a => a.Name == "BuyCar");
+        buyCar.ParameterSchema.Should().NotBeNull();
+
+        var paramProps = buyCar.ParameterSchema!.RootElement.GetProperty("properties");
+        paramProps.TryGetProperty("CarId", out _).Should().BeTrue();
+    }
+
+    [Fact]
+    public void HtoWithActions_custom_name_and_title_from_attribute()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Actions;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            namespace TestHtos;
+
+            public class DoSomethingAction : HypermediaAction
+            {
+                public DoSomethingAction() : base(() => true) { }
+            }
+
+            [HypermediaObject(Title = "Thing", Classes = ["Thing"])]
+            public class HypermediaThingHto : HypermediaObject
+            {
+                [HypermediaAction(Name = "CustomName", Title = "Custom Title")]
+                public DoSomethingAction? DoIt { get; set; }
+            }
+            """;
+
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaThingHto", source);
+
+        schema.Actions.Should().ContainSingle();
+        var action = schema.Actions[0];
+        action.Name.Should().Be("CustomName");
+        action.Title.Should().Be("Custom Title");
+    }
+
+    [Fact]
+    public void HtoWithFileUpload_generates_file_upload_action()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaDocumentHto", TestHtoSources.HtoWithFileUpload);
+
+        schema.Actions.Should().ContainSingle();
+        var action = schema.Actions[0];
+        action.Name.Should().Be("Upload");
+        action.Title.Should().Be("Upload File");
+        action.IsFileUpload.Should().BeTrue();
+        action.ContentType.Should().Be("multipart/form-data");
+        action.ParameterSchema.Should().BeNull();
+        action.IsMandatory.Should().BeFalse();
+    }
+
+    [Fact]
+    public void HtoWithFileUpload_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithFileUpload);
+    }
+
+    [Fact]
+    public void Hto_without_actions_has_empty_actions_collection()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.SimpleHto);
+
+        schema.Actions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void HtoWithActions_only_parameterized_action_still_gets_schema_factory()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Actions;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            namespace TestHtos;
+
+            public class SearchParameters : IHypermediaActionParameter
+            {
+                public string Query { get; set; } = string.Empty;
+            }
+
+            public class SearchAction : HypermediaAction<SearchParameters>
+            {
+                public SearchAction() : base() { }
+            }
+
+            [HypermediaObject(Title = "Search", Classes = ["Search"])]
+            public class HypermediaSearchHto : HypermediaObject
+            {
+                [HypermediaAction(Name = "Search")]
+                public SearchAction? Search { get; set; }
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+        var generated = GetGeneratedSource(result, "HypermediaSearchHto");
+
+        // No data properties, but has parameterized action -> needs factory
+        generated.Should().Contain("GetSchema(IJsonSchemaFactory schemaFactory)");
+        generated.Should().Contain("schemaFactory.Generate(typeof(");
     }
 
     private static string GetGeneratedSource(

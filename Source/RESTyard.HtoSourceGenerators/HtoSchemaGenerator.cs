@@ -36,6 +36,18 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     private const string ILinkFullName =
         "RESTyard.AspNetCore.Hypermedia.ILink<THto>";
 
+    private const string HypermediaActionBaseFullName =
+        "RESTyard.AspNetCore.Hypermedia.Actions.HypermediaActionBase";
+
+    private const string FileUploadHypermediaActionFullName =
+        "RESTyard.AspNetCore.Hypermedia.Actions.FileUploadHypermediaAction";
+
+    private const string FileUploadHypermediaActionGenericFullName =
+        "RESTyard.AspNetCore.Hypermedia.Actions.FileUploadHypermediaAction<TParameter>";
+
+    private const string HypermediaActionGenericFullName =
+        "RESTyard.AspNetCore.Hypermedia.Actions.HypermediaAction<TParameter>";
+
     /// <inheritdoc />
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -76,6 +88,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         var classes = GetNamedArgumentStringArray(attribute, "Classes");
         var properties = ExtractProperties(symbol);
         var links = ExtractLinks(symbol);
+        var actions = ExtractActions(symbol);
 
         var ns = symbol.ContainingNamespace.IsGlobalNamespace
             ? string.Empty
@@ -88,7 +101,8 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             title,
             new EquatableArray<string>(classes),
             properties,
-            links);
+            links,
+            actions);
     }
 
     private static EquatableArray<PropertyMetadata> ExtractProperties(INamedTypeSymbol symbol)
@@ -180,6 +194,117 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         }
 
         return new EquatableArray<LinkMetadata>(links.ToImmutableArray());
+    }
+
+    private static EquatableArray<ActionMetadata> ExtractActions(INamedTypeSymbol symbol)
+    {
+        var actions = new List<ActionMetadata>();
+        var seen = new HashSet<string>();
+
+        var current = symbol;
+        while (current != null && current.SpecialType != SpecialType.System_Object)
+        {
+            foreach (var member in current.GetMembers().OfType<IPropertySymbol>())
+            {
+                if (member.DeclaredAccessibility != Accessibility.Public
+                    || member.IsStatic
+                    || member.IsIndexer)
+                {
+                    continue;
+                }
+
+                if (!seen.Add(member.Name))
+                {
+                    continue;
+                }
+
+                var actionAttr = member.GetAttributes()
+                    .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == HypermediaActionAttributeFullName);
+                if (actionAttr == null)
+                {
+                    continue;
+                }
+
+                if (!IsActionType(member.Type))
+                {
+                    continue;
+                }
+
+                var name = GetNamedArgumentString(actionAttr, "Name") ?? member.Name;
+                var title = GetNamedArgumentString(actionAttr, "Title");
+                var parameterTypeFullName = GetActionParameterType(member.Type);
+                var isFileUpload = IsFileUploadAction(member.Type);
+                var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
+
+                actions.Add(new ActionMetadata(name, title, parameterTypeFullName, isFileUpload, isMandatory));
+            }
+
+            current = current.BaseType;
+        }
+
+        return new EquatableArray<ActionMetadata>(actions.ToImmutableArray());
+    }
+
+    private static bool IsActionType(ITypeSymbol type)
+    {
+        var current = type;
+        while (current != null)
+        {
+            if (current is INamedTypeSymbol named)
+            {
+                var fullName = named.OriginalDefinition.ToDisplayString();
+                if (fullName == HypermediaActionBaseFullName)
+                {
+                    return true;
+                }
+            }
+
+            current = current.BaseType;
+        }
+
+        return false;
+    }
+
+    private static string? GetActionParameterType(ITypeSymbol type)
+    {
+        var current = type;
+        while (current != null)
+        {
+            if (current is INamedTypeSymbol named && named.IsGenericType)
+            {
+                var fullName = named.OriginalDefinition.ToDisplayString();
+                if (fullName == HypermediaActionGenericFullName
+                    || fullName == FileUploadHypermediaActionGenericFullName)
+                {
+                    return named.TypeArguments[0].ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                }
+            }
+
+            current = current.BaseType;
+        }
+
+        return null;
+    }
+
+    private static bool IsFileUploadAction(ITypeSymbol type)
+    {
+        var current = type;
+        while (current != null)
+        {
+            if (current is INamedTypeSymbol named)
+            {
+                var fullName = named.OriginalDefinition.ToDisplayString();
+                if (fullName == FileUploadHypermediaActionFullName
+                    || fullName == FileUploadHypermediaActionGenericFullName)
+                {
+                    return true;
+                }
+            }
+
+            current = current.BaseType;
+        }
+
+        return false;
     }
 
     private static INamedTypeSymbol? GetLinkTargetType(IPropertySymbol property)
@@ -329,7 +454,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         sb.AppendLine();
         sb.Append("using ").Append(SchemaTypeNames.SchemaModelNamespace).AppendLine(";");
 
-        if (metadata.Properties.Length > 0)
+        if (metadata.NeedsSchemaFactory)
         {
             sb.Append("using ").Append(SchemaTypeNames.JsonSchemaFactoryNamespace).AppendLine(";");
             sb.Append("using ").Append(SchemaTypeNames.JsonSchemaNamespace).AppendLine(";");
@@ -347,8 +472,8 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         sb.Append("public static class ").Append(metadata.ClassName).AppendLine("SirenMapper");
         sb.AppendLine("{");
 
-        // GetSchema() accepts IJsonSchemaFactory when there are properties to resolve
-        if (metadata.Properties.Length > 0)
+        // GetSchema() accepts IJsonSchemaFactory when there are properties or parameterized actions
+        if (metadata.NeedsSchemaFactory)
         {
             sb.Append("    public static ").Append(SchemaTypeNames.EntityTypeSchema)
                 .Append(" GetSchema(").Append(SchemaTypeNames.IJsonSchemaFactory)
@@ -390,6 +515,11 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         if (metadata.Links.Length > 0)
         {
             EmitLinksArray(sb, metadata.Links);
+        }
+
+        if (metadata.Actions.Length > 0)
+        {
+            EmitActionsArray(sb, metadata.Actions);
         }
 
         sb.AppendLine("        };");
@@ -440,6 +570,48 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 .Append(" = new[] { ").Append(classLiterals).AppendLine(" },");
             sb.Append("                    ").Append(SchemaTypeNames.LinkDescription_IsMandatory)
                 .Append(" = ").Append(link.IsMandatory ? "true" : "false").AppendLine(",");
+            sb.AppendLine("                },");
+        }
+
+        sb.AppendLine("            },");
+    }
+
+    private static void EmitActionsArray(StringBuilder sb, EquatableArray<ActionMetadata> actions)
+    {
+        sb.Append("            ").Append(SchemaTypeNames.EntityTypeSchema_Actions)
+            .Append(" = new ").Append(SchemaTypeNames.ActionDescription).AppendLine("[]");
+        sb.AppendLine("            {");
+
+        foreach (var action in actions)
+        {
+            sb.Append("                new ").AppendLine(SchemaTypeNames.ActionDescription);
+            sb.AppendLine("                {");
+            sb.Append("                    ").Append(SchemaTypeNames.ActionDescription_Name)
+                .Append(" = \"").Append(EscapeString(action.Name)).AppendLine("\",");
+
+            if (action.Title != null)
+            {
+                sb.Append("                    ").Append(SchemaTypeNames.ActionDescription_Title)
+                    .Append(" = \"").Append(EscapeString(action.Title)).AppendLine("\",");
+            }
+
+            if (action.IsFileUpload)
+            {
+                sb.Append("                    ").Append(SchemaTypeNames.ActionDescription_ContentType)
+                    .AppendLine(" = \"multipart/form-data\",");
+                sb.Append("                    ").Append(SchemaTypeNames.ActionDescription_IsFileUpload)
+                    .AppendLine(" = true,");
+            }
+
+            if (action.ParameterTypeFullName != null)
+            {
+                sb.Append("                    ").Append(SchemaTypeNames.ActionDescription_ParameterSchema)
+                    .Append(" = schemaFactory.Generate(typeof(")
+                    .Append(action.ParameterTypeFullName).AppendLine(")),");
+            }
+
+            sb.Append("                    ").Append(SchemaTypeNames.ActionDescription_IsMandatory)
+                .Append(" = ").Append(action.IsMandatory ? "true" : "false").AppendLine(",");
             sb.AppendLine("                },");
         }
 

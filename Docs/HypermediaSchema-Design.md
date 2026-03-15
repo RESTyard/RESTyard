@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Last completed: **Step 2.4** (Link analysis). Next: **Step 2.5** (Action analysis)
+> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Last completed: **Step 2.5** (Action analysis). Next: **Step 2.6** (Embedded entity analysis)
 
 ## Table of Contents
 
@@ -88,7 +88,7 @@ public class HypermediaApiSchema
     public string? ExternalDocsUrl { get; set; }            // Link to external documentation (e.g., RESTyard-Docs site)
     public string EntryPointName { get; set; }                   // References EntityTypeSchema.Name of the entry point
     public IReadOnlyList<EntityTypeSchema> EntityTypes { get; set; }
-    public IDictionary<string, JsonSchema> Definitions { get; set; } // Shared type definitions, referenced via $ref
+    public IDictionary<string, JsonDocument> Definitions { get; set; } // Shared type definitions, referenced via $ref
 }
 ```
 
@@ -107,7 +107,7 @@ public class EntityTypeSchema
     public string? Description { get; set; }                // From XML doc <remarks> or attribute
 
     // Data shape — JSON Schema for the Siren "properties" bag
-    public JsonSchema? PropertiesSchema { get; set; }
+    public JsonDocument? PropertiesSchema { get; set; }
 
     // Hypermedia graph — how this entity type connects to others
     public IReadOnlyList<LinkDescription> Links { get; set; }
@@ -123,7 +123,7 @@ public class EntityTypeSchema
 
 Entity properties (`PropertiesSchema`) and action parameters (`ActionDescription.ParameterSchema`) are both described using standard JSON Schema. Complex types (classes, records) and enums are always extracted to the top-level `Definitions` dictionary and referenced via `$ref`. Primitives and simple collections are inlined.
 
-**JSON Schema representation:** All JSON Schema fields use `JsonSchema` from the `JsonSchema.Net` library. This provides strongly-typed keyword access (e.g., `PropertiesKeyword`, `TypeKeyword`, `RequiredKeyword`) for the Mermaid and Markdown mappers, eliminating manual JSON parsing. `JsonSchema` round-trips naturally with `System.Text.Json` via its built-in converter. The source generator produces the JSON Schema strings at compile time; they are deserialized into `JsonSchema` instances for the schema model.
+**JSON Schema representation:** All JSON Schema fields use `System.Text.Json.JsonDocument` on the public model types, keeping the schema model free of third-party type dependencies. The Mermaid and Markdown mappers convert to `JsonSchema` (from `JsonSchema.Net`) internally for strongly-typed keyword access. `IJsonSchemaFactory.Generate()` returns `JsonDocument`, and the source generator emits code that passes these directly into the schema model.
 
 Example `PropertiesSchema` referencing a shared `Address` definition:
 
@@ -195,7 +195,7 @@ public class ActionDescription
     public string? Title { get; set; }
     public string? Description { get; set; }
     public string? ContentType { get; set; }                // Inferred: multipart/form-data for file uploads, application/json otherwise
-    public JsonSchema? ParameterSchema { get; set; }          // JSON Schema for the parameter type (null if parameterless)
+    public JsonDocument? ParameterSchema { get; set; }          // JSON Schema for the parameter type (null if parameterless)
     public string? ResultName { get; set; }                    // Name of the result entity type (null if no result)
     public IReadOnlyList<string>? ResultClasses { get; set; } // Siren classes of the result entity (null if no result)
     public bool IsMandatory { get; set; }                   // Non-nullable action property (always present, may still have CanExecute guard)
@@ -763,7 +763,7 @@ The existing contract-first XML schema (`Hypermedia.xsd` / `Hypermedia.cs`) cont
 
 ## Design Decisions
 
-- **`JsonSchema.Net` for schema representation**: `PropertiesSchema`, `ParameterSchema`, and `Definitions` values use `JsonSchema` from the `JsonSchema.Net` library (v7.4.0) instead of raw `System.Text.Json.JsonElement`. This provides strongly-typed keyword access (`PropertiesKeyword`, `TypeKeyword`, `RequiredKeyword`, `DescriptionKeyword`, etc.) for the Mermaid and Markdown mappers, eliminating manual JSON parsing. `JsonSchema` round-trips with `System.Text.Json` via its built-in converter, so the serialized schema JSON is unchanged. The dependency is acceptable because: (1) `RESTyard.AspNetCore` already depends on `JsonSchema.Net.Generation` which pulls in `JsonSchema.Net` transitively, (2) any consumer working with JSON Schema data will likely need the library anyway, and (3) it enables future `$ref` resolution in mappers without additional parsing infrastructure.
+- **`JsonDocument` for schema representation, `JsonSchema.Net` internal to mappers**: `PropertiesSchema`, `ParameterSchema`, and `Definitions` values use `System.Text.Json.JsonDocument` on the public model types — not `JsonSchema` from `JsonSchema.Net`. This keeps the schema model library-agnostic: consumers that deserialize the `/_schema` endpoint only need `System.Text.Json`, not `JsonSchema.Net`. The Mermaid and Markdown mappers convert `JsonDocument` to `JsonSchema` internally (via `JsonSchemaExtensions.ToJsonSchema()`) to use strongly-typed keyword access (`PropertiesKeyword`, `TypeKeyword`, etc.) for extracting property names, types, and descriptions. `JsonSchema.Net` remains a dependency of `RESTyard.Schema` (for the mappers and `IJsonSchemaFactory` implementation) but does not leak onto the public API surface. `IJsonSchemaFactory` returns `JsonDocument`, and `JsonSchemaFactory` uses `JsonSchema.Net.Generation` internally behind this abstraction.
 - **Schema versioning**: The schema format has its own semver (`SchemaVersion`), independent of the RESTyard package version. This allows the spec format to evolve at its own pace — a RESTyard update that doesn't change the schema shape doesn't bump the schema version, and vice versa.
 - **External links/actions**: `ExternalLink` and `HypermediaExternalAction` have fixed URLs not resolved via route resolver. This is not a schema concern — the schema describes entity types and their relationships, not runtime URLs. External links are just links from the client's perspective; the client does not distinguish between internal and external.
 - **Schema endpoint media type**: `application/vnd.restyard.schema+json`.
@@ -1029,4 +1029,4 @@ The generator produces files named by format:
 - **Example values**: Add support for example values on entity properties and action parameters in the schema (similar to OpenAPI's `example` keyword). Useful for documentation UIs to show realistic sample data and for client generators to emit test fixtures. Could be expressed as JSON Schema `examples` keyword or as a separate field on `EntityTypeSchema`/`ActionDescription`. To be designed in a future iteration.
 - **Tag groups**: Allow grouping entity types by tags for documentation UIs (e.g., "Admin", "Public", "Billing"). The entity graph already provides natural grouping, but cross-cutting concerns that span multiple entities may benefit from explicit tags. To be designed if a concrete use case arises.
 - **Target framework**: `RESTyard.Schema` currently targets `netstandard2.0` for broad compatibility (e.g., `RESTyard.Client` multi-targets `netstandard2.0;net8.0`). Reconsider moving to `net10` once all consuming projects have dropped `netstandard2.0` support.
-- **`[LinkMediaType]` attribute for static media type hints**: Add a `[LinkMediaType("text/html")]` attribute for `ILink<T>` properties where the media type is always the same (e.g., external file downloads). The source generator would read this and populate `LinkDescription.MediaType`, enabling richer client generation — e.g., a generated client method could return `HttpResponseMessage` or `Stream` instead of deserializing Siren when it knows the link serves a non-Siren media type. Only useful for links with a fixed media type; dynamic cases (via `WithAvailableMediaType()`) remain runtime-only. To prevent mismatches between the declared attribute and the runtime `WithAvailableMediaType()` call, consider either: (a) a Roslyn analyzer that warns when a link property has `[LinkMediaType]` but the code also calls `WithAvailableMediaType()` with a different value, or (b) a runtime check in the generated `ToSiren()` method that validates the actual media type matches the declared attribute and throws/logs on mismatch.
+- **`[LinkMediaType]` attribute for static media type hints**: Add a `[LinkMediaType("text/html")]` attribute for `ILink<T>` properties where the media type is always the same (e.g., external file downloads). The source generator would read this and populate `LinkDescription.MediaType`, enabling richer client generation — e.g., a generated client method could return `HttpResponseMessage` or `Stream` instead of deserializing Siren when it knows the link serves a non-Siren media type. Only useful for links with a fixed media type; dynamic cases (via `WithAvailableMediaType()`) remain runtime-only. To prevent mismatches between the declared attribute and the runtime `WithAvailableMediaType()` call, consider either: (a) a Roslyn analyzer that warns when a link property has `[LinkMediaType]` but the code also calls `WithAvailableMediaType()` with a different value, or (b) a runtime check in the generated `ToSiren()` method that validates the actual media type matches the declared attribute and throws/logs on mismatch. This must also be supported by thy current SirenConverter that uses reflection to be backwards compattible.

@@ -9,7 +9,7 @@ namespace RESTyard.Schema;
 public interface IJsonSchemaFactory
 {
     /// <summary>
-    /// Called by teh endpoint for automatic schema generation to retrieve a schema for given type.
+    /// Called by the endpoint for automatic schema generation to retrieve a schema for given type.
     /// </summary>
     JsonDocument Generate(Type type);
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace RESTyard.HtoSourceGenerators;
 
@@ -15,6 +16,7 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
     public EquatableArray<string> Classes { get; }
     public EquatableArray<PropertyMetadata> Properties { get; }
     public EquatableArray<LinkMetadata> Links { get; }
+    public EquatableArray<ActionMetadata> Actions { get; }
 
     public HtoMetadata(
         string ns,
@@ -23,7 +25,8 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
         string? title,
         EquatableArray<string> classes,
         EquatableArray<PropertyMetadata> properties,
-        EquatableArray<LinkMetadata> links)
+        EquatableArray<LinkMetadata> links,
+        EquatableArray<ActionMetadata> actions)
     {
         Namespace = ns;
         ClassName = className;
@@ -32,7 +35,15 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
         Classes = classes;
         Properties = properties;
         Links = links;
+        Actions = actions;
     }
+
+    /// <summary>
+    /// Whether GetSchema() needs an <c>IJsonSchemaFactory</c> parameter
+    /// (true when there are data properties or parameterized actions).
+    /// </summary>
+    public bool NeedsSchemaFactory
+        => Properties.Length > 0 || Actions.Any(a => a.ParameterTypeFullName != null);
 
     public bool Equals(HtoMetadata other)
         => Namespace == other.Namespace
@@ -41,7 +52,8 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
            && Title == other.Title
            && Classes.Equals(other.Classes)
            && Properties.Equals(other.Properties)
-           && Links.Equals(other.Links);
+           && Links.Equals(other.Links)
+           && Actions.Equals(other.Actions);
 
     public override bool Equals(object? obj)
         => obj is HtoMetadata other && Equals(other);
@@ -58,6 +70,7 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
             hash = hash * 31 + Classes.GetHashCode();
             hash = hash * 31 + Properties.GetHashCode();
             hash = hash * 31 + Links.GetHashCode();
+            hash = hash * 31 + Actions.GetHashCode();
             return hash;
         }
     }

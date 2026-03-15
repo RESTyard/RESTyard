@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Json.Schema;
+using System.Text.Json;
 using RESTyard.Schema.Mermaid;
 using RESTyard.Schema.Model;
 
@@ -94,7 +94,7 @@ public static class MarkdownMapper
     private static void AppendTableOfContents(
         StringBuilder sb,
         IReadOnlyList<EntityTypeSchema> entities,
-        IDictionary<string, JsonSchema> definitions)
+        IDictionary<string, JsonDocument> definitions)
     {
         sb.AppendLine();
         sb.AppendLine("## Table of Contents");
@@ -184,9 +184,11 @@ public static class MarkdownMapper
 
     private static void AppendPropertiesTable(StringBuilder sb, EntityTypeSchema entity)
     {
-        if (entity.PropertiesSchema is not { } propSchema
-            || propSchema.GetProperties() is not { } props
-            || props.Count == 0)
+        if (entity.PropertiesSchema is not { } propDoc)
+            return;
+
+        var propSchema = propDoc.ToJsonSchema();
+        if (propSchema.GetProperties() is not { } props || props.Count == 0)
             return;
 
         var requiredFields = new HashSet<string>(propSchema.GetRequired() ?? Array.Empty<string>());
@@ -269,9 +271,11 @@ public static class MarkdownMapper
 
     private static void AppendActionParametersTable(StringBuilder sb, ActionDescription action)
     {
-        if (action.ParameterSchema is not { } paramSchema
-            || paramSchema.GetProperties() is not { } props
-            || props.Count == 0)
+        if (action.ParameterSchema is not { } paramDoc)
+            return;
+
+        var paramSchema = paramDoc.ToJsonSchema();
+        if (paramSchema.GetProperties() is not { } props || props.Count == 0)
             return;
 
         var requiredFields = new HashSet<string>(paramSchema.GetRequired() ?? Array.Empty<string>());
@@ -313,7 +317,7 @@ public static class MarkdownMapper
         }
     }
 
-    private static string BuildPropertyDescription(JsonSchema propSchema)
+    private static string BuildPropertyDescription(Json.Schema.JsonSchema propSchema)
     {
         var parts = new List<string>();
 
@@ -403,8 +407,8 @@ public static class MarkdownMapper
         foreach (var entity in schema.EntityTypes)
         {
             // Scan entity properties
-            if (entity.PropertiesSchema is { } propSchema
-                && propSchema.GetProperties() is { } props)
+            if (entity.PropertiesSchema is { } propDoc
+                && propDoc.ToJsonSchema().GetProperties() is { } props)
             {
                 foreach (var prop in props)
                 {
@@ -417,8 +421,8 @@ public static class MarkdownMapper
             // Scan action parameters
             foreach (var action in entity.Actions)
             {
-                if (action.ParameterSchema is { } paramSchema
-                    && paramSchema.GetProperties() is { } paramProps)
+                if (action.ParameterSchema is { } paramDoc
+                    && paramDoc.ToJsonSchema().GetProperties() is { } paramProps)
                 {
                     foreach (var prop in paramProps)
                     {
@@ -433,7 +437,7 @@ public static class MarkdownMapper
         return usages;
     }
 
-    private static string? ExtractRefDefinitionName(JsonSchema propSchema)
+    private static string? ExtractRefDefinitionName(Json.Schema.JsonSchema propSchema)
     {
         var refUri = propSchema.GetRef();
         if (refUri != null)
@@ -464,7 +468,7 @@ public static class MarkdownMapper
 
     private static void AppendDefinitionsSection(
         StringBuilder sb,
-        IDictionary<string, JsonSchema> definitions,
+        IDictionary<string, JsonDocument> definitions,
         Dictionary<string, List<string>> usages)
     {
         sb.AppendLine();
@@ -475,7 +479,8 @@ public static class MarkdownMapper
             sb.AppendLine();
             sb.AppendLine($"### Definition: {def.Key}");
 
-            var description = def.Value.GetDescription();
+            var defSchema = def.Value.ToJsonSchema();
+            var description = defSchema.GetDescription();
             if (description != null)
             {
                 sb.AppendLine();
@@ -488,10 +493,10 @@ public static class MarkdownMapper
                 sb.AppendLine($"**Used by:** {string.Join(", ", refs)}");
             }
 
-            var props = def.Value.GetProperties();
+            var props = defSchema.GetProperties();
             if (props != null && props.Count > 0)
             {
-                var requiredFields = new HashSet<string>(def.Value.GetRequired() ?? Array.Empty<string>());
+                var requiredFields = new HashSet<string>(defSchema.GetRequired() ?? Array.Empty<string>());
 
                 sb.AppendLine();
                 sb.AppendLine("| Property | Type | Required | Description |");

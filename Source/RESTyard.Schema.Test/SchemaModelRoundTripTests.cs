@@ -1,8 +1,6 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using AwesomeAssertions;
-using Json.Schema;
 using RESTyard.Schema.Model;
 using Xunit;
 
@@ -12,9 +10,9 @@ public class SchemaModelRoundTripTests
 {
     private static HypermediaApiSchema CreateFullSchema()
     {
-        var propertiesSchema = JsonSchema.FromText("""{"type":"object","properties":{"id":{"type":"integer"},"name":{"type":"string"}}}""");
-        var parameterSchema = JsonSchema.FromText("""{"type":"object","properties":{"brand":{"type":"string"}},"required":["brand"]}""");
-        var definitionSchema = JsonSchema.FromText("""{"type":"string","minLength":1}""");
+        var propertiesSchema = JsonDocument.Parse("""{"type":"object","properties":{"id":{"type":"integer"},"name":{"type":"string"}}}""");
+        var parameterSchema = JsonDocument.Parse("""{"type":"object","properties":{"brand":{"type":"string"}},"required":["brand"]}""");
+        var definitionSchema = JsonDocument.Parse("""{"type":"string","minLength":1}""");
 
         return new HypermediaApiSchema
         {
@@ -84,7 +82,7 @@ public class SchemaModelRoundTripTests
                     DeprecationMessage = null,
                 },
             },
-            Definitions = new Dictionary<string, JsonSchema>
+            Definitions = new Dictionary<string, JsonDocument>
             {
                 ["Brand"] = definitionSchema,
             },
@@ -114,8 +112,7 @@ public class SchemaModelRoundTripTests
         entity.Title.Should().Be("A car entity");
         entity.Description.Should().Be("Represents a single car");
         entity.PropertiesSchema.Should().NotBeNull();
-        var propsType = entity.PropertiesSchema!.Keywords!.OfType<TypeKeyword>().FirstOrDefault()?.Type;
-        propsType.Should().Be(SchemaValueType.Object);
+        entity.PropertiesSchema!.RootElement.GetProperty("type").GetString().Should().Be("object");
         entity.IsDeprecated.Should().BeFalse();
         entity.DeprecationMessage.Should().BeNull();
 
@@ -135,9 +132,9 @@ public class SchemaModelRoundTripTests
         action.Title.Should().Be("Update a car");
         action.ContentType.Should().Be("application/json");
         action.ParameterSchema.Should().NotBeNull();
-        var requiredProps = action.ParameterSchema!.Keywords!.OfType<RequiredKeyword>().FirstOrDefault()?.Properties;
-        requiredProps.Should().NotBeNull();
-        requiredProps![0].Should().Be("brand");
+        var requiredArray = action.ParameterSchema!.RootElement.GetProperty("required");
+        requiredArray.GetArrayLength().Should().BeGreaterThan(0);
+        requiredArray[0].GetString().Should().Be("brand");
         action.ResultName.Should().Be("Car");
         action.ResultClasses.Should().BeEquivalentTo(new[] { "Car" });
         action.IsMandatory.Should().BeFalse();
@@ -156,8 +153,7 @@ public class SchemaModelRoundTripTests
         embedded.IsDeprecated.Should().BeFalse();
 
         deserialized.Definitions.Should().ContainKey("Brand");
-        var brandType = deserialized.Definitions["Brand"].Keywords!.OfType<TypeKeyword>().FirstOrDefault()?.Type;
-        brandType.Should().Be(SchemaValueType.String);
+        deserialized.Definitions["Brand"].RootElement.GetProperty("type").GetString().Should().Be("string");
     }
 
     [Fact]
@@ -219,7 +215,7 @@ public class SchemaModelRoundTripTests
                     DeprecationMessage = null,
                 },
             },
-            Definitions = new Dictionary<string, JsonSchema>(),
+            Definitions = new Dictionary<string, JsonDocument>(),
         };
 
         var json = JsonSerializer.Serialize(schema);
