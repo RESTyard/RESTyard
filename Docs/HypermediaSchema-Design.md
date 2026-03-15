@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Last completed: **Step 2.3** (Property analysis → runtime JSON Schema via IJsonSchemaFactory). Next: **Step 2.4** (Link analysis)
+> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Last completed: **Step 2.4** (Link analysis). Next: **Step 2.5** (Action analysis)
 
 ## Table of Contents
 

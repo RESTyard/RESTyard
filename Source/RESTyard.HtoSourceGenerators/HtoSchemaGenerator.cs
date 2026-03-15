@@ -33,6 +33,9 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     private const string HypermediaPropertyAttributeFullName =
         "RESTyard.AspNetCore.Hypermedia.Attributes.HypermediaPropertyAttribute";
 
+    private const string ILinkFullName =
+        "RESTyard.AspNetCore.Hypermedia.ILink<THto>";
+
     /// <inheritdoc />
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -72,6 +75,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
 
         var classes = GetNamedArgumentStringArray(attribute, "Classes");
         var properties = ExtractProperties(symbol);
+        var links = ExtractLinks(symbol);
 
         var ns = symbol.ContainingNamespace.IsGlobalNamespace
             ? string.Empty
@@ -83,7 +87,8 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             DeriveSchemaName(symbol.Name),
             title,
             new EquatableArray<string>(classes),
-            properties);
+            properties,
+            links);
     }
 
     private static EquatableArray<PropertyMetadata> ExtractProperties(INamedTypeSymbol symbol)
@@ -122,6 +127,126 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         }
 
         return new EquatableArray<PropertyMetadata>(properties.ToImmutableArray());
+    }
+
+    private static EquatableArray<LinkMetadata> ExtractLinks(INamedTypeSymbol symbol)
+    {
+        var links = new List<LinkMetadata>();
+        var seen = new HashSet<string>();
+
+        var current = symbol;
+        while (current != null && current.SpecialType != SpecialType.System_Object)
+        {
+            foreach (var member in current.GetMembers().OfType<IPropertySymbol>())
+            {
+                if (member.DeclaredAccessibility != Accessibility.Public
+                    || member.IsStatic
+                    || member.IsIndexer)
+                {
+                    continue;
+                }
+
+                if (!seen.Add(member.Name))
+                {
+                    continue;
+                }
+
+                var targetType = GetLinkTargetType(member);
+                if (targetType == null)
+                {
+                    continue;
+                }
+
+                var relationsAttr = member.GetAttributes()
+                    .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == RelationsAttributeFullName);
+                if (relationsAttr == null)
+                {
+                    continue;
+                }
+
+                var relations = GetRelationsFromAttribute(relationsAttr);
+                var targetSchemaName = DeriveSchemaName(targetType.Name);
+                var targetClasses = GetTargetClasses(targetType);
+                var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
+
+                links.Add(new LinkMetadata(
+                    new EquatableArray<string>(relations),
+                    targetSchemaName,
+                    new EquatableArray<string>(targetClasses),
+                    isMandatory));
+            }
+
+            current = current.BaseType;
+        }
+
+        return new EquatableArray<LinkMetadata>(links.ToImmutableArray());
+    }
+
+    private static INamedTypeSymbol? GetLinkTargetType(IPropertySymbol property)
+    {
+        var type = property.Type;
+
+        // Unwrap nullable: ILink<T>? -> ILink<T>
+        if (type is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } nullable)
+        {
+            type = nullable.TypeArguments[0];
+        }
+
+        // Check if the type itself is ILink<T>
+        if (type is INamedTypeSymbol named && IsILinkGeneric(named))
+        {
+            return named.TypeArguments[0] as INamedTypeSymbol;
+        }
+
+        // Check implemented interfaces for ILink<T>
+        if (type is INamedTypeSymbol namedType)
+        {
+            foreach (var iface in namedType.AllInterfaces)
+            {
+                if (IsILinkGeneric(iface))
+                {
+                    return iface.TypeArguments[0] as INamedTypeSymbol;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static bool IsILinkGeneric(INamedTypeSymbol type)
+    {
+        return type.IsGenericType
+               && type.OriginalDefinition.ToDisplayString() == ILinkFullName;
+    }
+
+    private static ImmutableArray<string> GetRelationsFromAttribute(AttributeData relationsAttr)
+    {
+        if (relationsAttr.ConstructorArguments.Length > 0)
+        {
+            var arg = relationsAttr.ConstructorArguments[0];
+            if (arg.Kind == TypedConstantKind.Array)
+            {
+                return arg.Values
+                    .Where(v => v.Value is string)
+                    .Select(v => (string)v.Value!)
+                    .ToImmutableArray();
+            }
+        }
+
+        return ImmutableArray<string>.Empty;
+    }
+
+    private static ImmutableArray<string> GetTargetClasses(INamedTypeSymbol targetType)
+    {
+        var htoAttr = targetType.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == HypermediaObjectAttributeFullName);
+
+        if (htoAttr != null)
+        {
+            return GetNamedArgumentStringArray(htoAttr, "Classes");
+        }
+
+        return ImmutableArray<string>.Empty;
     }
 
     private static bool ShouldExcludeProperty(IPropertySymbol property)
@@ -262,6 +387,11 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 .AppendLine(" = propertiesSchema,");
         }
 
+        if (metadata.Links.Length > 0)
+        {
+            EmitLinksArray(sb, metadata.Links);
+        }
+
         sb.AppendLine("        };");
         sb.AppendLine("    }");
         sb.AppendLine("}");
@@ -287,6 +417,33 @@ public class HtoSchemaGenerator : IIncrementalGenerator
 
         sb.AppendLine("        var propertiesSchema = SchemaHelper.BuildPropertiesSchema(propertySchemas);");
         sb.AppendLine();
+    }
+
+    private static void EmitLinksArray(StringBuilder sb, EquatableArray<LinkMetadata> links)
+    {
+        sb.Append("            ").Append(SchemaTypeNames.EntityTypeSchema_Links)
+            .Append(" = new ").Append(SchemaTypeNames.LinkDescription).AppendLine("[]");
+        sb.AppendLine("            {");
+
+        foreach (var link in links)
+        {
+            var relLiterals = string.Join(", ", link.Relations.Select(r => $"\"{EscapeString(r)}\""));
+            var classLiterals = string.Join(", ", link.TargetClasses.Select(c => $"\"{EscapeString(c)}\""));
+
+            sb.Append("                new ").AppendLine(SchemaTypeNames.LinkDescription);
+            sb.AppendLine("                {");
+            sb.Append("                    ").Append(SchemaTypeNames.LinkDescription_Relations)
+                .Append(" = new[] { ").Append(relLiterals).AppendLine(" },");
+            sb.Append("                    ").Append(SchemaTypeNames.LinkDescription_TargetName)
+                .Append(" = \"").Append(EscapeString(link.TargetSchemaName)).AppendLine("\",");
+            sb.Append("                    ").Append(SchemaTypeNames.LinkDescription_TargetClasses)
+                .Append(" = new[] { ").Append(classLiterals).AppendLine(" },");
+            sb.Append("                    ").Append(SchemaTypeNames.LinkDescription_IsMandatory)
+                .Append(" = ").Append(link.IsMandatory ? "true" : "false").AppendLine(",");
+            sb.AppendLine("                },");
+        }
+
+        sb.AppendLine("            },");
     }
 
     private static string EscapeString(string value)

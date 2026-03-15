@@ -17,6 +17,14 @@ internal static class SchemaTypeNames
     internal const string EntityTypeSchema_Title = "Title";
     internal const string EntityTypeSchema_Classes = "Classes";
     internal const string EntityTypeSchema_PropertiesSchema = "PropertiesSchema";
+    internal const string EntityTypeSchema_Links = "Links";
+
+    // LinkDescription
+    internal const string LinkDescription = "LinkDescription";
+    internal const string LinkDescription_Relations = "Relations";
+    internal const string LinkDescription_TargetName = "TargetName";
+    internal const string LinkDescription_TargetClasses = "TargetClasses";
+    internal const string LinkDescription_IsMandatory = "IsMandatory";
 
     // RESTyard.Schema
     internal const string JsonSchemaFactoryNamespace = "RESTyard.Schema";

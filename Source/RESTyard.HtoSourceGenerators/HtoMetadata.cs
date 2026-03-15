@@ -14,6 +14,7 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
     public string? Title { get; }
     public EquatableArray<string> Classes { get; }
     public EquatableArray<PropertyMetadata> Properties { get; }
+    public EquatableArray<LinkMetadata> Links { get; }
 
     public HtoMetadata(
         string ns,
@@ -21,7 +22,8 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
         string schemaName,
         string? title,
         EquatableArray<string> classes,
-        EquatableArray<PropertyMetadata> properties)
+        EquatableArray<PropertyMetadata> properties,
+        EquatableArray<LinkMetadata> links)
     {
         Namespace = ns;
         ClassName = className;
@@ -29,6 +31,7 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
         Title = title;
         Classes = classes;
         Properties = properties;
+        Links = links;
     }
 
     public bool Equals(HtoMetadata other)
@@ -37,7 +40,8 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
            && SchemaName == other.SchemaName
            && Title == other.Title
            && Classes.Equals(other.Classes)
-           && Properties.Equals(other.Properties);
+           && Properties.Equals(other.Properties)
+           && Links.Equals(other.Links);
 
     public override bool Equals(object? obj)
         => obj is HtoMetadata other && Equals(other);
@@ -53,6 +57,7 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
             hash = hash * 31 + (Title?.GetHashCode() ?? 0);
             hash = hash * 31 + Classes.GetHashCode();
             hash = hash * 31 + Properties.GetHashCode();
+            hash = hash * 31 + Links.GetHashCode();
             return hash;
         }
     }

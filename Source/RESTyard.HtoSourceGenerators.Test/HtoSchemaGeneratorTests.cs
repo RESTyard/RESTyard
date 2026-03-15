@@ -257,16 +257,16 @@ public class HtoSchemaGeneratorTests
         source.Should().Contain("propertySchemas[\"Name\"]");
         source.Should().Contain("propertySchemas[\"Age\"]");
 
-        // Links (marked with [Relations]) should be excluded
-        source.Should().NotContain("\"Self\"");
-        source.Should().NotContain("\"BestFriend\"");
+        // Links should not appear in propertySchemas (they go to Links array)
+        source.Should().NotContain("propertySchemas[\"Self\"]");
+        source.Should().NotContain("propertySchemas[\"BestFriend\"]");
 
-        // Actions (marked with [HypermediaAction]) should be excluded
-        source.Should().NotContain("\"MarkAsFavorite\"");
-        source.Should().NotContain("\"BuyCar\"");
+        // Actions should not appear in propertySchemas
+        source.Should().NotContain("propertySchemas[\"MarkAsFavorite\"]");
+        source.Should().NotContain("propertySchemas[\"BuyCar\"]");
 
-        // Embedded entities (marked with [Relations]) should be excluded
-        source.Should().NotContain("\"Address\"");
+        // Embedded entities should not appear in propertySchemas
+        source.Should().NotContain("propertySchemas[\"Address\"]");
     }
 
     [Fact]
@@ -346,6 +346,89 @@ public class HtoSchemaGeneratorTests
         properties.Should().NotContainKey("MarkAsFavorite");
         properties.Should().NotContainKey("BuyCar");
         properties.Should().NotContainKey("Address");
+    }
+
+    [Fact]
+    public void HtoWithLinks_generates_links_array_in_source()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithLinks);
+        var source = GetGeneratedSource(result, "HypermediaCustomerHto");
+
+        source.Should().Contain("Links = new LinkDescription[]");
+        source.Should().Contain("Relations = new[] { \"self\" }");
+        source.Should().Contain("Relations = new[] { \"bestFriend\" }");
+        source.Should().Contain("TargetName = \"Customer\"");
+        source.Should().Contain("TargetClasses = new[] { \"Customer\" }");
+    }
+
+    [Fact]
+    public void HtoWithLinks_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithLinks);
+    }
+
+    [Fact]
+    public void HtoWithLinks_GetSchema_returns_correct_links()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithLinks);
+
+        schema.Links.Should().HaveCount(2);
+
+        var selfLink = schema.Links.Single(l => l.Relations.Contains("self"));
+        selfLink.TargetName.Should().Be("Customer");
+        selfLink.TargetClasses.Should().BeEquivalentTo("Customer");
+        selfLink.IsMandatory.Should().BeTrue();
+
+        var bestFriendLink = schema.Links.Single(l => l.Relations.Contains("bestFriend"));
+        bestFriendLink.TargetName.Should().Be("Customer");
+        bestFriendLink.TargetClasses.Should().BeEquivalentTo("Customer");
+        bestFriendLink.IsMandatory.Should().BeFalse();
+    }
+
+    [Fact]
+    public void HtoWithLinks_to_different_target_resolves_target_metadata()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Order", Classes = ["Order", "Document"])]
+            public class HypermediaOrderHto : HypermediaObject
+            {
+                public string OrderNumber { get; set; } = string.Empty;
+            }
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                public string Name { get; set; } = string.Empty;
+
+                [Relations(["latestOrder"])]
+                public ILink<HypermediaOrderHto>? LatestOrder { get; set; }
+            }
+            """;
+
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", source);
+
+        schema.Links.Should().ContainSingle();
+        var link = schema.Links[0];
+        link.Relations.Should().BeEquivalentTo("latestOrder");
+        link.TargetName.Should().Be("Order");
+        link.TargetClasses.Should().BeEquivalentTo("Order", "Document");
+        link.IsMandatory.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Hto_without_links_has_empty_links_collection()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.SimpleHto);
+
+        schema.Links.Should().BeEmpty();
     }
 
     private static string GetGeneratedSource(

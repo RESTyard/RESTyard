@@ -146,7 +146,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Generated `GetSchema()` method receives `IJsonSchemaFactory` (via parameter) and calls it at runtime to build `PropertiesSchema`
 - Verify tests: HTO with various property types, attribute-based exclusion and renaming, generated code compiles and calls factory
 
-#### Step 2.4: Link analysis
+#### Step 2.4: ✅ Link analysis
 - Scan `ILink<T>` properties with `[Relations]`
 - Populate `LinkDescription` (relations, target name/classes, mandatory from nullability)
 - Verify tests: HTO with mandatory/optional links
