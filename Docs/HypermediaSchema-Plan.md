@@ -174,10 +174,53 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Verify tests
 
 #### Step 2.9: Schema registry generation
-- Emit per-assembly `HypermediaSchemaRegistry` collecting all `GetSchema()` results
-- Verify: CarShack registry lists all its entity types
+- Emit per-assembly `HypermediaSchemaRegistry_<AssemblyName>` class with static `GetSchemas(IJsonSchemaFactory)` collecting all `GetSchema()` results
+- Emit `[assembly: HypermediaSchemaRegistryAttribute(typeof(Registry))]` attribute for discovery
+- Define `HypermediaSchemaRegistryAttribute` in `RESTyard.AspNetCore` (so it's available at runtime for the CLI extension method to scan)
+- The registry method calls each HTO's `GetSchema()` — passing `IJsonSchemaFactory` where needed, parameterless where not
+- Verify tests: snapshot the generated registry for a multi-HTO source, verify attribute is emitted
+- Verify with CarShack: registry lists all its entity types
 
-#### Step 2.10: Bundle source generator into `RESTyard.AspNetCore` NuGet (deferred)
+#### Step 2.9.1: `HypermediaSchemaOptions` and DI integration
+- Define `HypermediaSchemaOptions` class in `RESTyard.AspNetCore`: `Title`, `Description`, `ApiVersion`, `EntryPointName`, `ExternalDocsUrl` — all nullable with sensible defaults (assembly name for title, assembly version for ApiVersion, auto-detect entry point from entity with Siren class `"EntryPoint"`)
+- Add `SchemaOptions` property to `HypermediaExtensionsOptions` (type `HypermediaSchemaOptions`, default `new()`)
+- Register `HypermediaSchemaOptions` as singleton via DI (resolved from `HypermediaExtensionsOptions.SchemaOptions`)
+- In `AddHypermediaExtensions`, aggregate per-assembly registries (via `[HypermediaSchemaRegistryAttribute]`) and `HypermediaSchemaOptions` into a singleton `HypermediaApiSchema` available via DI — this is the single source of truth for the schema at runtime
+- Reference `RESTyard.Schema` from `RESTyard.AspNetCore` (already added as project reference)
+- Add `HypermediaSchemaBuilder.Build(IServiceProvider, HypermediaSchemaOptions? options = null)` as standalone helper for programmatic use (tests, custom tooling)
+- Test: resolve `HypermediaApiSchema` from CarShack DI, verify it contains all entity types with correct metadata from `SchemaOptions`
+
+#### Step 2.9.2: CLI schema generation (`GenerateSchemaIfRequested`)
+- Add `GenerateSchemaIfRequested(this IHost host, string[] args, HypermediaSchemaOptions? options = null)` extension method in `RESTyard.AspNetCore` — extends `IHost` (not `WebApplication`) so it works with generic host and non-web scenarios. When `options` is passed explicitly, it rebuilds the schema with the overridden options instead of using the DI singleton (xmldoc documents this).
+- Parse CLI args: `--generate-schema` (trigger), `--schema-output <path>` (default: `./generated-schema`), `--schema-format <formats>` (default: all)
+- Resolve `HypermediaApiSchema` singleton from DI (already aggregated during `AddHypermediaExtensions`); if explicit `options` passed, rebuild with overridden options
+- Generate requested output files using `RESTyard.Schema` mappers (JSON serialization, `ToApiMap()`, `ToClassDiagram()`, `ToDocumentation()`)
+- Return `true` if `--generate-schema` was present, `false` otherwise
+- Test with CarShack: configure `SchemaOptions` in `AddHypermediaExtensions`, run `dotnet run -- --generate-schema --schema-output ./test-output`, verify all four files produced with correct metadata, process exits with code 0
+- Schema format selection: `--schema-format json` produces only `schema.json`, `--schema-format mermaid-map,markdown` produces only those two
+- Acceptance: CarShack `Program.cs` has one added line, schema JSON contains configured title/description
+
+#### Step 2.9.3: Document the HypermediaApiSchema for users
+- Write user-facing documentation for the schema model in RESTyard-Docs
+- **Schema overview**: what the schema describes (type-level metadata, not runtime URLs), how it complements Siren responses
+- **Top-level `HypermediaApiSchema`**: explain each field — `SchemaVersion` (format versioning), `ApiVersion` (user's API version), `EntryPointName` (navigation start), `Definitions` (shared JSON Schema types referenced via `$ref`)
+- **`EntityTypeSchema`**: `Name` (identifier for cross-references, derived from class name or `[HypermediaSchemaName]`), `Classes` (Siren wire-format matching), `PropertiesSchema` (JSON Schema as `JsonDocument` — type, required, descriptions), relationship to the Siren `properties` bag
+- **`LinkDescription`**: `Relations` (Siren rel array), `TargetName`/`TargetClasses` (cross-reference to another entity type), `IsMandatory` (nullability-derived — always present vs. conditional), `MediaType` (default `application/vnd.siren+json`, verify at runtime)
+- **`ActionDescription`**: `Name`/`Title` (from `[HypermediaAction]`), `ParameterSchema` (JSON Schema for the action parameter type, null if parameterless), `IsFileUpload`, `IsMandatory`, `ContentType` (inferred), `ResultName`/`ResultClasses` (action returns a resource)
+- **`EmbeddedEntityDescription`**: `Relations`, `TargetName`/`TargetClasses`, `IsCollection`, `IsMandatory`
+- **Target audience**: client generator authors, documentation tool authors, AI agents consuming the schema — explain what each field is useful for and when it can be null
+- **Examples**: annotated JSON snippets showing a real schema (e.g., from CarShack) with callouts explaining each section
+- **CLI usage**: how to generate schema artifacts with `--generate-schema`, format selection
+
+#### Step 2.10: Document the source generator for server developers (RESTyard-Docs)
+- Getting started guide: how the source generator is enabled (bundled in NuGet after 2.10), what it generates (`GetSchema()`, schema registry, assembly attribute)
+- Explain `[HypermediaSchemaName]` for custom entity names, when and why to use it (multi-assembly collisions, shorter names for docs/diagrams)
+- What `GetSchema()` produces and how it uses `IJsonSchemaFactory` at runtime
+- How to verify generation works: check for `*SirenMapper.g.cs` in build output, common troubleshooting (missing assembly reference, generator not running)
+- How to use `GenerateSchemaIfRequested` in `Program.cs` — one-line setup, CLI args reference
+- How to use `HypermediaSchemaBuilder.Build(IServiceProvider)` for programmatic access
+
+#### Step 2.11: Bundle source generator into `RESTyard.AspNetCore` NuGet (deferred)
 - Add the source generator DLL to the `RESTyard.AspNetCore` NuGet package alongside the existing analyzers:
   ```xml
   <None Include="..\RESTyard.HtoSourceGenerators\bin\$(Configuration)\netstandard2.0\RESTyard.HtoSourceGenerators.dll"
@@ -188,14 +231,9 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 ### Phase 3: Schema Endpoint
 
-**Goal:** Serve the schema at runtime via `/_schema`.
+**Goal:** Serve the schema at runtime via `/_schema`. DI integration (singleton `HypermediaApiSchema`) is already done in Step 2.9.2.
 
-#### Step 3.1: DI integration
-- `AddHypermediaSchema(options => { ... })` extension method in `RESTyard.AspNetCore`
-- Aggregates per-assembly registries into singleton `HypermediaApiSchema`
-- Reference `RESTyard.Schema` (already added as project reference)
-
-#### Step 3.2: Schema endpoint
+#### Step 3.1: Schema endpoint
 - `MapHypermediaSchema("/_schema")` endpoint
 - Returns `HypermediaApiSchema` as JSON (`application/vnd.restyard.schema+json`)
 - Integration test: CarShack → `WebApplicationFactory` → `GET /_schema` → verify JSON structure
@@ -310,7 +348,16 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 #### Step 8.4: Update RESTyard-Docs
 - Document the schema endpoint, model, and Mermaid mapper
 - Document the CLI generation mode and access group filtering
+- Document `MermaidMapperOptions` (`IncludeProperties`, `IncludeActions`) and `MarkdownMapperOptions` (`IncludeTableOfContents`, `IncludeDiagram`) — API usage and corresponding CLI args (`--mermaid-include-properties`, `--mermaid-include-actions`, `--markdown-include-toc`, `--markdown-include-diagram`)
 - Add migration guide for existing users
+
+#### Step 8.5: Document `ToSiren()` migration path (Phase 6)
+- Document how to migrate from the reflection-based `SirenHypermediaFormatter` to the source-generated `ToSiren()` extension methods
+- Cover: per-controller opt-in, how to call `hto.ToSiren(resolver)` in controllers, how to verify parity with the existing formatter
+- Document `SirenMapperOptions` (`AutoSelfLink`) and how to configure via DI or explicit parameter
+- Explain the generated Siren POCOs (`SirenEntity<TProperties>`) and how attribute forwarding works (serializer attributes, `[HypermediaProperty(Name)]` applied structurally)
+- List known behavioral differences (if any discovered during Phase 6 parity testing)
+- Provide a checklist for migrating a full project: enable generator → migrate controllers one by one → run parity tests → deprecate formatter
 
 ### Phase 9 (Optional): Access Groups
 
@@ -344,3 +391,17 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 #### Step 9.3: CarShack demo
 - Add `[HypermediaAccessGroup]` to selected CarShack actions and links
 - Verify the full and filtered schema endpoints work end to end
+
+#### Step 9.4: Access group filtering in CLI
+- Add `--access-groups <groups>` (include mode) and `--exclude-access-groups <groups>` (exclude mode) to `GenerateSchemaIfRequested`
+- Reuse `HypermediaSchemaFilter.ForAccessGroups` / `ExcludeAccessGroups` — apply filter before passing schema to mappers
+- Validate mutual exclusivity (error if both specified)
+- Test with CarShack: generate filtered schema/diagrams for specific access group combinations
+
+#### Step 9.5: Update documentation for access groups
+- Document the `[HypermediaAccessGroup]` attribute: usage, semantics (descriptive not enforcing), relation to `[Authorize]`
+- Document `RequiredAccessGroups` on `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription` — what null vs. populated means
+- Document `DeclaredAccessGroups` on `HypermediaApiSchema` — auto-collected, useful for typo detection
+- Document the filtered `/_schema` endpoint: `?accessGroups=` and `?excludeAccessGroups=` query parameters, include vs. exclude semantics, mutual exclusivity
+- Document the CLI access group args: `--access-groups`, `--exclude-access-groups`, examples
+- Add examples: annotated JSON showing filtered vs. full schema, CarShack access group setup

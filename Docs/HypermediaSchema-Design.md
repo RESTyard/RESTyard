@@ -383,18 +383,43 @@ public static class HypermediaSchemaRegistry_MyAssembly
 }
 ```
 
-At startup, all per-assembly registries are collected and composed into the full API schema:
+At startup, all per-assembly registries are collected and composed into the full API schema. The schema metadata is configured through `HypermediaSchemaOptions`, which is part of the existing `AddHypermediaExtensions` setup:
 
 ```csharp
-// Aggregation via DI — collects registries from all configured assemblies
-builder.Services.AddHypermediaSchema(options =>
+builder.Services.AddHypermediaExtensions(o =>
 {
-    options.Title = "My API";
-    options.Description = "Customer management API";
-    options.EntryPointName = "EntryPoint";
-    // Assemblies are already known from AddHypermediaExtensions
+    o.ControllerAndHypermediaAssemblies = [typeof(EntryPointController).Assembly];
+
+    // Optional: configure schema metadata (all fields have sensible defaults)
+    o.SchemaOptions = new HypermediaSchemaOptions
+    {
+        Title = "Customer Management API",
+        Description = "RESTyard-powered hypermedia API for managing customers and orders",
+        ApiVersion = "1.2.0",
+        EntryPointName = "Entrypoint",
+        ExternalDocsUrl = "https://docs.example.com/api"
+    };
 });
 ```
+
+```csharp
+public class HypermediaSchemaOptions
+{
+    public string? Title { get; set; }                  // Default: entry assembly name
+    public string? Description { get; set; }            // Default: null
+    public string? ApiVersion { get; set; }             // Default: entry assembly version
+    public string? EntryPointName { get; set; }         // Default: auto-detected from [HypermediaObject] with "EntryPoint" class
+    public string? ExternalDocsUrl { get; set; }        // Default: null
+}
+```
+
+**Defaults:** When `SchemaOptions` is not set or individual fields are null, sensible defaults are applied:
+- `Title` → entry assembly name (e.g., `"CarShack"`)
+- `ApiVersion` → entry assembly informational version or `AssemblyVersion`
+- `EntryPointName` → auto-detected from entity types (first entity with Siren class `"EntryPoint"`, or null if none found)
+- `Description` and `ExternalDocsUrl` → null (omitted from JSON)
+
+`HypermediaSchemaOptions` is registered as a singleton via DI (as part of `HypermediaExtensionsOptions`). Both `GenerateSchemaIfRequested` and the schema endpoint (Phase 3) resolve it from DI. `GenerateSchemaIfRequested` also accepts an optional explicit `HypermediaSchemaOptions` parameter that overrides DI — useful for generating variants (e.g., different title for internal vs. external docs).
 
 This produces a singleton `HypermediaApiSchema` available via DI, combining all per-assembly registries.
 
@@ -957,68 +982,149 @@ Developers and CI pipelines need a way to generate schema JSON, Mermaid diagrams
 - Produce Mermaid diagrams filtered by access group (e.g., "readonly" view of the API, or "everything except admin")
 - Keep documentation artifacts in version control and diff them across commits
 
-### Approach: Server with Generate-and-Exit Mode
+### Approach: Extension Method on `WebApplication`
 
-> **Status:** Needs investigation and design. The approach below is a starting point — the exact mechanism depends on what ASP.NET Core supports cleanly.
+The server application generates schema artifacts after building the DI container but before `app.Run()`. This reuses the full DI container, source-generated schema registries, `IJsonSchemaFactory` configuration, and all user extensions — no separate tool needs to reconstruct the schema from scratch.
 
-The idea is to allow the server application itself to generate schema artifacts on startup and then exit, without actually listening for HTTP requests. This reuses the full DI container, source-generated schema registries, and all configuration — no separate tool needs to reconstruct the schema from scratch.
+The user adds one line to `Program.cs`:
 
-**Possible mechanisms to investigate:**
+```csharp
+var app = builder.Build();
 
-1. **Command-line argument on the server app** — e.g., `dotnet run --project CarShack -- --generate-schema --output ./docs`. The app's `Program.cs` checks for this argument after building the `WebApplication` (so DI is available), generates the artifacts, and calls `Environment.Exit(0)` before `app.Run()`. Simple but couples generation logic into the server app.
+// Generate schema and exit if --generate-schema is passed
+if (app.GenerateSchemaIfRequested(args))
+    return;
 
-2. **`IHostedService` that runs and stops the host** — Register a hosted service that resolves `HypermediaApiSchema` from DI, generates files, then signals the host to stop. Triggered by an environment variable or command-line flag. Cleaner separation but more moving parts.
+app.Run();
+```
 
-3. **Separate CLI tool that references the server assembly** — A standalone `dotnet tool` (like `restyard-generator` already exists for contract-first) that loads the server's assemblys, finds the `HypermediaSchemaRegistry`, and produces artifacts. Avoids running the server but requires the assembly to be built first and may miss runtime-only DI configuration.
+`GenerateSchemaIfRequested` is an extension method on `IHost` (not `WebApplication`), so it also works with the generic host for non-web scenarios:
 
-4. **MSBuild task** — Run as a post-build step. Similar tradeoffs to option 3.
+```csharp
+var host = Host.CreateDefaultBuilder(args).Build();
+if (host.GenerateSchemaIfRequested(args)) return;
+host.Run();
+```
 
-The recommended starting point is **option 1** (command-line argument) as it is the simplest to implement and guarantees full fidelity with the runtime schema. If it proves too invasive, option 2 is the natural evolution.
+It checks for `--generate-schema` in `args`. If present, it generates the requested artifacts, writes them to disk, and returns `true` (the caller exits). If absent, it returns `false` and the host starts normally.
 
-### CLI Parameters (Proposed)
+The method accepts an optional `HypermediaSchemaOptions` parameter that overrides the DI-registered options — useful for generating variants (e.g., different title for internal vs. external docs):
 
-Regardless of the mechanism, the generation should support these parameters:
+```csharp
+// Override schema metadata for this generation
+if (app.GenerateSchemaIfRequested(args, new HypermediaSchemaOptions
+{
+    Title = "Internal API Reference",
+    Description = "Full schema including admin endpoints"
+}))
+    return;
+```
+
+For programmatic use (tests, custom tooling), the core building logic is also available as a standalone helper:
+
+```csharp
+var schema = HypermediaSchemaBuilder.Build(serviceProvider);
+var schema = HypermediaSchemaBuilder.Build(serviceProvider, customOptions);
+```
+
+**Design decision:** Chose an explicit extension method on `IHost` over `IHostedService` (hidden magic, harder to debug) and over a separate CLI tool (can't access runtime DI configuration, misses user-registered `IJsonSchemaFactory` extensions). `IHost` rather than `WebApplication` because the schema generation needs only `IServiceProvider` — nothing web-specific. The extension method is simple, visible in `Program.cs`, and guarantees full fidelity with the runtime schema.
+
+### How It Works
+
+**DI setup** (during `AddHypermediaExtensions`):
+
+1. Scan `ControllerAndHypermediaAssemblies` for `[HypermediaSchemaRegistryAttribute]`
+2. Call each registry's `GetSchemas(IJsonSchemaFactory)` to collect all `EntityTypeSchema` instances
+3. Log warning for assemblies with no registry attribute (source generator likely missing)
+4. Aggregate into a singleton `HypermediaApiSchema`, populating top-level fields from `HypermediaSchemaOptions` (with defaults for unset fields)
+
+**CLI generation** (during `GenerateSchemaIfRequested`):
+
+1. Parse `args` for `--generate-schema`; if absent, return `false`
+2. Resolve the `HypermediaApiSchema` singleton from DI
+3. If explicit `HypermediaSchemaOptions` parameter was passed, rebuild the schema with overridden options
+4. Parse remaining args (`--schema-output`, `--schema-format`)
+5. Generate requested output files using the mappers from `RESTyard.Schema`
+6. Return `true`
+
+### Registry Discovery
+
+The source generator emits a `[HypermediaSchemaRegistry]` assembly-level attribute pointing to the generated registry class:
+
+```csharp
+// <auto-generated/>
+[assembly: HypermediaSchemaRegistryAttribute(typeof(HypermediaSchemaRegistry_CarShack))]
+
+public static class HypermediaSchemaRegistry_CarShack
+{
+    public static IReadOnlyList<EntityTypeSchema> GetSchemas(IJsonSchemaFactory schemaFactory) => [
+        HypermediaCustomerHtoSirenMapper.GetSchema(schemaFactory),
+        HypermediaEntrypointHtoSirenMapper.GetSchema(),
+        // ... all discovered HTOs in this assembly
+    ];
+}
+```
+
+`GenerateSchemaIfRequested` scans each assembly in `ControllerAndHypermediaAssemblies` for this attribute and invokes the registry. If an assembly has no `[HypermediaSchemaRegistry]` attribute, a warning is logged — this typically means the source generator is not referenced for that assembly.
+
+### CLI Parameters
 
 ```
 --generate-schema              Trigger schema generation mode (exit after generating)
 --schema-output <path>         Output directory for generated files (default: ./generated-schema)
 --schema-format <formats>      Comma-separated: json, mermaid-map, mermaid-class, markdown (default: all)
---access-groups <groups>       Include filter: only elements visible to these access groups
---exclude-access-groups <groups>  Exclude filter: remove elements requiring these access groups
---mermaid-include-properties   Include properties in Mermaid class diagram (default: true)
---mermaid-include-actions      Include actions in Mermaid class diagram (default: true)
---markdown-include-toc         Include table of contents in Markdown (default: true)
---markdown-include-diagram     Include Mermaid diagram in Markdown (default: true)
 ```
 
-**Access group filtering** reuses the same `HypermediaSchemaFilter` from the filtered schema endpoint — the CLI applies the filter before passing the schema to the mappers. `--access-groups` and `--exclude-access-groups` are mutually exclusive (same as the endpoint).
+**`--schema-format` values:**
+
+| Value | Output file | Description |
+|---|---|---|
+| `json` | `schema.json` | Full `HypermediaApiSchema` as JSON |
+| `mermaid-map` | `api-map.md` | Entity relationship graph (`graph LR`) |
+| `mermaid-class` | `class-diagram.md` | Class diagram with properties/actions |
+| `markdown` | `api-documentation.md` | Full Markdown API reference |
+
+When `--schema-format` is omitted, all four formats are generated. When specified, only the listed formats are produced.
+
+**Deferred parameters** (Phase 8: mapper options, Phase 9: access groups):
+
+```
+--access-groups <groups>       Include filter: only elements visible to these access groups (Phase 9)
+--exclude-access-groups <groups>  Exclude filter: remove elements requiring these access groups (Phase 9)
+--mermaid-include-properties   Include properties in Mermaid class diagram (default: true) (Phase 8)
+--mermaid-include-actions      Include actions in Mermaid class diagram (default: true) (Phase 8)
+--markdown-include-toc         Include table of contents in Markdown (default: true) (Phase 8)
+--markdown-include-diagram     Include Mermaid diagram in Markdown (default: true) (Phase 8)
+```
+
+Access group filtering in the CLI reuses the same `HypermediaSchemaFilter` from the filtered schema endpoint — the filter is applied before passing the schema to the mappers. `--access-groups` and `--exclude-access-groups` are mutually exclusive (error if both specified). See Phase 9 (Step 9.4) in the plan.
+
+Access group filtering reuses `HypermediaSchemaFilter` from the filtered schema endpoint. Mapper options pass through to the respective mappers. Both are deferred until the features they depend on are implemented.
 
 ### Example CI Usage
 
 ```bash
-# Generate full documentation
+# Generate all documentation artifacts
 dotnet run --project src/MyApi -- --generate-schema --schema-output ./docs
 
-# Generate readonly view (only elements visible to "read" access group)
-dotnet run --project src/MyApi -- --generate-schema --access-groups read --schema-output ./docs/readonly
+# Generate only JSON schema
+dotnet run --project src/MyApi -- --generate-schema --schema-format json --schema-output ./docs
 
-# Generate everything except admin-only elements
-dotnet run --project src/MyApi -- --generate-schema --exclude-access-groups admin --schema-output ./docs/public
+# Generate JSON + Mermaid diagrams, no Markdown
+dotnet run --project src/MyApi -- --generate-schema --schema-format json,mermaid-map,mermaid-class --schema-output ./docs
 
-# Generate only Mermaid diagrams, no properties
-dotnet run --project src/MyApi -- --generate-schema --schema-format mermaid-map,mermaid-class --mermaid-include-properties false --schema-output ./docs/diagrams
+# Generate only Markdown documentation
+dotnet run --project src/MyApi -- --generate-schema --schema-format markdown --schema-output ./docs
 ```
 
 ### Output Files
 
-The generator produces files named by format:
-
 ```
 <output-dir>/
-  schema.json              # Full (or filtered) HypermediaApiSchema JSON
+  schema.json              # Full HypermediaApiSchema JSON
   api-map.md               # Mermaid entity relationship diagram
   class-diagram.md         # Mermaid class diagram
-  api-documentation.md         # Markdown API reference
+  api-documentation.md     # Markdown API reference
 ```
 
 ## Open Questions
