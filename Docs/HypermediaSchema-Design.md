@@ -430,7 +430,8 @@ This produces a singleton `HypermediaApiSchema` available via DI, combining all 
 Served via a dedicated ASP.NET Core endpoint:
 
 ```csharp
-app.MapHypermediaSchema("/_schema");
+app.MapHypermediaSchema();                          // default: /hypermedia-schema
+app.MapHypermediaSchema("/custom/schema/route");     // or configure a custom route
 
 // Internally resolves HypermediaApiSchema from DI and serializes it
 ```
@@ -755,21 +756,21 @@ Source/
       SirenLinkedEntity.cs
   RESTyard.AspNetCore/                 # Existing — references Schema, adds endpoint
     Schema/
-      HypermediaSchemaEndpoint.cs      # MapHypermediaSchema("/_schema")
+      HypermediaSchemaEndpoint.cs      # MapHypermediaSchema() — default route: /hypermedia-schema
   RESTyard.Schema.Test/     # xunit — unit tests for schema model and Mermaid mapper
   RESTyard.HtoSourceGenerators.Test/   # xunit + Verify — snapshot tests for generated ToSiren(), GetSchema(), registry
 ```
 
 **Why Siren POCOs are emitted, not in a library:** The `ToSiren()` return type (`SirenEntity`) must be available in the consuming project. Emitting these types via the source generator avoids an extra NuGet dependency. The types are simple data classes with no logic — ideal for source generation.
 
-**Why Schema is a separate library:** The schema model (`HypermediaApiSchema`, `EntityTypeSchema`, etc.) needs to be consumed by external tools — client generators, Mermaid CLI, documentation UIs — that deserialize the `/_schema` JSON endpoint. These tools should not need to reference the full ASP.NET Core server library. Keeping the schema model in a lightweight standalone package enables this.
+**Why Schema is a separate library:** The schema model (`HypermediaApiSchema`, `EntityTypeSchema`, etc.) needs to be consumed by external tools — client generators, Mermaid CLI, documentation UIs — that deserialize the `/hypermedia-schema` JSON endpoint. These tools should not need to reference the full ASP.NET Core server library. Keeping the schema model in a lightweight standalone package enables this.
 
 ```
 RESTyard.Schema       (netstandard2.0 — schema model + Mermaid)
     ^                   ^
     |                   |
 RESTyard.AspNetCore     External tools (client generators, docs UIs)
-(schema endpoint)       (deserialize /_schema JSON)
+(schema endpoint)       (deserialize /hypermedia-schema JSON)
 ```
 
 ## Intentionally Excluded from Schema
@@ -788,7 +789,7 @@ The existing contract-first XML schema (`Hypermedia.xsd` / `Hypermedia.cs`) cont
 
 ## Design Decisions
 
-- **`JsonDocument` for schema representation, `JsonSchema.Net` internal to mappers**: `PropertiesSchema`, `ParameterSchema`, and `Definitions` values use `System.Text.Json.JsonDocument` on the public model types — not `JsonSchema` from `JsonSchema.Net`. This keeps the schema model library-agnostic: consumers that deserialize the `/_schema` endpoint only need `System.Text.Json`, not `JsonSchema.Net`. The Mermaid and Markdown mappers convert `JsonDocument` to `JsonSchema` internally (via `JsonSchemaExtensions.ToJsonSchema()`) to use strongly-typed keyword access (`PropertiesKeyword`, `TypeKeyword`, etc.) for extracting property names, types, and descriptions. `JsonSchema.Net` remains a dependency of `RESTyard.Schema` (for the mappers and `IJsonSchemaFactory` implementation) but does not leak onto the public API surface. `IJsonSchemaFactory` returns `JsonDocument`, and `JsonSchemaFactory` uses `JsonSchema.Net.Generation` internally behind this abstraction.
+- **`JsonDocument` for schema representation, `JsonSchema.Net` internal to mappers**: `PropertiesSchema`, `ParameterSchema`, and `Definitions` values use `System.Text.Json.JsonDocument` on the public model types — not `JsonSchema` from `JsonSchema.Net`. This keeps the schema model library-agnostic: consumers that deserialize the `/hypermedia-schema` endpoint only need `System.Text.Json`, not `JsonSchema.Net`. The Mermaid and Markdown mappers convert `JsonDocument` to `JsonSchema` internally (via `JsonSchemaExtensions.ToJsonSchema()`) to use strongly-typed keyword access (`PropertiesKeyword`, `TypeKeyword`, etc.) for extracting property names, types, and descriptions. `JsonSchema.Net` remains a dependency of `RESTyard.Schema` (for the mappers and `IJsonSchemaFactory` implementation) but does not leak onto the public API surface. `IJsonSchemaFactory` returns `JsonDocument`, and `JsonSchemaFactory` uses `JsonSchema.Net.Generation` internally behind this abstraction.
 - **Schema versioning**: The schema format has its own semver (`SchemaVersion`), independent of the RESTyard package version. This allows the spec format to evolve at its own pace — a RESTyard update that doesn't change the schema shape doesn't bump the schema version, and vice versa.
 - **External links/actions**: `ExternalLink` and `HypermediaExternalAction` have fixed URLs not resolved via route resolver. This is not a schema concern — the schema describes entity types and their relationships, not runtime URLs. External links are just links from the client's perspective; the client does not distinguish between internal and external.
 - **Schema endpoint media type**: `application/vnd.restyard.schema+json`.
@@ -912,14 +913,14 @@ No startup configuration needed — the source generator collects everything fro
 
 ### Filtered Schema Endpoint
 
-The `/_schema` endpoint supports access group filtering via query parameters. Two filtering modes are available — **include** and **exclude** — to cover the most common use cases:
+The `/hypermedia-schema` endpoint supports access group filtering via query parameters. Two filtering modes are available — **include** and **exclude** — to cover the most common use cases:
 
 ```
-GET /_schema                                          → full schema (all access groups)
-GET /_schema?accessGroups=read                        → include: only elements requiring "read" or no access groups
-GET /_schema?accessGroups=read,write                  → include: elements requiring "read", "write", or no access groups
-GET /_schema?excludeAccessGroups=admin                → exclude: all elements except those requiring "admin"
-GET /_schema?excludeAccessGroups=admin,internal       → exclude: all elements except those requiring "admin" or "internal"
+GET /hypermedia-schema                                          → full schema (all access groups)
+GET /hypermedia-schema?accessGroups=read                        → include: only elements requiring "read" or no access groups
+GET /hypermedia-schema?accessGroups=read,write                  → include: elements requiring "read", "write", or no access groups
+GET /hypermedia-schema?excludeAccessGroups=admin                → exclude: all elements except those requiring "admin"
+GET /hypermedia-schema?excludeAccessGroups=admin,internal       → exclude: all elements except those requiring "admin" or "internal"
 ```
 
 **Include mode** (`accessGroups`): Returns only elements whose `RequiredAccessGroups` are satisfied by the given set, plus elements with no access group restriction. Use case: "show me what the `read` role can see."
@@ -978,7 +979,7 @@ The sanitizer is called **before** `HypermediaSchemaFilter` — the filter only 
 
 ### Future Idea: Schema as a RESTyard HTO
 
-> **Status:** Idea — not designed. To be explored after the basic `/_schema` endpoint and access group filtering are stable.
+> **Status:** Idea — not designed. To be explored after the basic `/hypermedia-schema` endpoint and access group filtering are stable.
 
 Instead of a plain JSON endpoint, the schema could be served as a proper RESTyard hypermedia resource — an HTO with a query action for filtering:
 
@@ -992,7 +993,7 @@ Instead of a plain JSON endpoint, the schema could be served as a proper RESTyar
 
 This approach stays within RESTyard's hypermedia design: the client discovers filtering capabilities by inspecting the schema HTO's actions rather than knowing the query parameter API. The `ISchemaAccessGroupSanitizer` hook feeds into `AvailableAccessGroups` — if a user can't see `admin`, it doesn't appear in the list and the query action doesn't accept it.
 
-**Trade-off:** More complex to implement (needs a controller, route registration, Siren serialization of the schema HTO) vs. the simple `/_schema` JSON endpoint. The plain endpoint is sufficient for programmatic consumers (client generators, AI agents) while the HTO approach benefits interactive UIs (HUI, API explorers).
+**Trade-off:** More complex to implement (needs a controller, route registration, Siren serialization of the schema HTO) vs. the simple `/hypermedia-schema` JSON endpoint. The plain endpoint is sufficient for programmatic consumers (client generators, AI agents) while the HTO approach benefits interactive UIs (HUI, API explorers).
 
 Filtering logic:
 
@@ -1041,7 +1042,7 @@ The existing contract-first XML schema (`Hypermedia.cs`) already models scopes o
 
 ### Motivation
 
-Developers and CI pipelines need a way to generate schema JSON, Mermaid diagrams, and Markdown documentation **without manually running the server and hitting `/_schema`**. Use cases:
+Developers and CI pipelines need a way to generate schema JSON, Mermaid diagrams, and Markdown documentation **without manually running the server and hitting `/hypermedia-schema`**. Use cases:
 
 - Generate API documentation as part of a CI build
 - Produce Mermaid diagrams filtered by access group (e.g., "readonly" view of the API, or "everything except admin")
@@ -1200,7 +1201,7 @@ dotnet run --project src/MyApi -- --generate-schema --schema-format markdown --s
 - **Example values**: Add support for example values on entity properties and action parameters in the schema (similar to OpenAPI's `example` keyword). Useful for documentation UIs to show realistic sample data and for client generators to emit test fixtures. Could be expressed as JSON Schema `examples` keyword or as a separate field on `EntityTypeSchema`/`ActionDescription`. To be designed in a future iteration.
 - **Tag groups**: Allow grouping entity types by tags for documentation UIs (e.g., "Admin", "Public", "Billing"). The entity graph already provides natural grouping, but cross-cutting concerns that span multiple entities may benefit from explicit tags. To be designed if a concrete use case arises.
 - **Target framework**: `RESTyard.Schema` currently targets `netstandard2.0` for broad compatibility (e.g., `RESTyard.Client` multi-targets `netstandard2.0;net8.0`). Reconsider moving to `net10` once all consuming projects have dropped `netstandard2.0` support.
-- **Authorization for auto-registered endpoints — minimal API and configurable policy**: The new `/_schema` endpoint (and potential `SchemaRootHto`) should be implemented as **minimal API endpoints**, not MVC controllers. Reason: RESTyard's `HypermediaApiExplorer` uses `IApiDescriptionGroupCollectionProvider` which scans `EndpointMetadata` — this works for both MVC controllers and minimal API endpoints (via `.WithMetadata()`). Minimal API makes authorization trivial via `.RequireAuthorization()` and avoids the complexity of applying policies dynamically to controllers.
+- **Authorization for auto-registered endpoints — minimal API and configurable policy**: The new `/hypermedia-schema` endpoint (and potential `SchemaRootHto`) should be implemented as **minimal API endpoints**, not MVC controllers. Reason: RESTyard's `HypermediaApiExplorer` uses `IApiDescriptionGroupCollectionProvider` which scans `EndpointMetadata` — this works for both MVC controllers and minimal API endpoints (via `.WithMetadata()`). Minimal API makes authorization trivial via `.RequireAuthorization()` and avoids the complexity of applying policies dynamically to controllers.
   - **Configurable authorization**: `HypermediaExtensionsOptions` should expose an `EndpointAuthorizationPolicy` (string, nullable). When set, RESTyard applies it to all auto-registered endpoints via `.RequireAuthorization(policy)`. When null (default), endpoints are anonymous — backwards compatible.
   - **`ActionParameterTypes` migration**: The existing `ActionParameterTypes` controller has no `[Authorize]` attribute and relies on global MVC filters for auth (if any). Consider migrating it to minimal API for consistency with the new schema endpoints and to enable the configurable authorization policy. **This is a breaking change** for users who rely on global MVC filters (`options.Filters.Add(new AuthorizeFilter())`) — those filters don't apply to minimal API endpoints. The migration should be documented, and the configurable `EndpointAuthorizationPolicy` provides the replacement mechanism. Evaluate whether to do this in the same release as the schema endpoint or defer to a major version bump.
   - **Analysis**: RESTyard's route discovery (`AttributedRoutesRegister`) scans `ActionDescriptor.EndpointMetadata` for `IHypermediaEndpointMetadata`. Since `IEndpointNameMetadata` (which `IHypermediaEndpointMetadata` extends) is an ASP.NET Core routing interface that works at the endpoint level (not controller level), minimal API endpoints with `.WithMetadata(new HypermediaObjectEndpointAttribute<THto>())` are discovered by the same scanning code. No changes needed to the route resolver.

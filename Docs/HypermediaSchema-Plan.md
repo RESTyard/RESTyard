@@ -55,7 +55,7 @@ Cover at minimum:
 ### Schema Model Tests
 
 - Round-trip serialization: `HypermediaApiSchema` → JSON → deserialize → assert equality
-- Schema endpoint integration test: start CarShack via `WebApplicationFactory`, call `/_schema`, verify the returned JSON matches expected structure
+- Schema endpoint integration test: start CarShack via `WebApplicationFactory`, call `/hypermedia-schema`, verify the returned JSON matches expected structure
 - Validate that the schema JSON is stable (snapshot test) — breaking changes in the schema format should be caught
 - Mermaid mapper output: snapshot tests for both diagram types against known schemas
 - Mermaid mapper options: tests for `IncludeProperties`/`IncludeActions` toggle behavior
@@ -231,12 +231,12 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 ### Phase 3: Schema Endpoint
 
-**Goal:** Serve the schema at runtime via `/_schema`. DI integration (singleton `HypermediaApiSchema`) is already done in Step 2.9.1.
+**Goal:** Serve the schema at runtime via `/hypermedia-schema`. DI integration (singleton `HypermediaApiSchema`) is already done in Step 2.9.1.
 
 #### Step 3.1: Schema endpoint
-- `MapHypermediaSchema("/_schema")` endpoint
+- `MapHypermediaSchema()` endpoint (default route: `/hypermedia-schema`, configurable in HypermediaSchemaOptions )
 - Returns `HypermediaApiSchema` as JSON (`application/vnd.restyard.schema+json`)
-- Integration test: CarShack → `WebApplicationFactory` → `GET /_schema` → verify JSON structure
+- Integration test: CarShack → `WebApplicationFactory` → `GET /hypermedia-schema` → verify JSON structure
 
 ### Phase 4: Source Generator — Siren POCOs
 
@@ -377,7 +377,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   - Remove elements whose `RequiredAccessGroups` are not satisfied by the granted set
   - Remove unreachable entity types
   - Strip `DeclaredAccessGroups` from filtered output
-- Extend `/_schema` endpoint to accept `?accessGroups=read,write` query parameter
+- Extend `/hypermedia-schema` endpoint to accept `?accessGroups=read,write` query parameter
 - Integration test: CarShack with access groups, verify filtered output for different group combinations
 
 #### Step 9.2b: Filtered schema endpoint — exclude mode
@@ -385,13 +385,13 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   - Remove elements whose `RequiredAccessGroups` intersect with the excluded set
   - Remove unreachable entity types
   - Strip `DeclaredAccessGroups` from filtered output
-- Extend `/_schema` endpoint to accept `?excludeAccessGroups=admin` query parameter
+- Extend `/hypermedia-schema` endpoint to accept `?excludeAccessGroups=admin` query parameter
 - Integration test: CarShack excluding specific access groups, verify elements are removed correctly
 
 #### Step 9.3: `ISchemaAccessGroupSanitizer` hook
 - Define `ISchemaAccessGroupSanitizer` interface in `RESTyard.AspNetCore`: `SanitizeRequestedGroups(IReadOnlySet<string> requestedGroups, HttpContext httpContext)` → returns the groups the user is allowed to query
 - Default behavior when no implementation registered: pass through unchanged (schema is public)
-- Wire into the `/_schema` endpoint: sanitize before calling `HypermediaSchemaFilter`
+- Wire into the `/hypermedia-schema` endpoint: sanitize before calling `HypermediaSchemaFilter`
 - Unit test: sanitizer removes groups, verify filtered output reflects sanitized set
 - Integration test: register a role-based sanitizer in CarShack, verify non-admin can't query admin-only groups
 
@@ -411,7 +411,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Document the `[HypermediaAccessGroup]` attribute: usage, semantics (descriptive not enforcing), relation to `[Authorize]`
 - Document `RequiredAccessGroups` on `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription` — what null vs. populated means
 - Document `DeclaredAccessGroups` on `HypermediaApiSchema` — auto-collected, useful for typo detection
-- Document the filtered `/_schema` endpoint: `?accessGroups=` and `?excludeAccessGroups=` query parameters, include vs. exclude semantics, mutual exclusivity
+- Document the filtered `/hypermedia-schema` endpoint: `?accessGroups=` and `?excludeAccessGroups=` query parameters, include vs. exclude semantics, mutual exclusivity
 - Document `ISchemaAccessGroupSanitizer`: purpose, default behavior, example implementation
 - Document the CLI access group args: `--access-groups`, `--exclude-access-groups`, examples
 - Add examples: annotated JSON showing filtered vs. full schema, CarShack access group setup
