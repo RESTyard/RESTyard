@@ -231,7 +231,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 ### Phase 3: Schema Endpoint
 
-**Goal:** Serve the schema at runtime via `/_schema`. DI integration (singleton `HypermediaApiSchema`) is already done in Step 2.9.2.
+**Goal:** Serve the schema at runtime via `/_schema`. DI integration (singleton `HypermediaApiSchema`) is already done in Step 2.9.1.
 
 #### Step 3.1: Schema endpoint
 - `MapHypermediaSchema("/_schema")` endpoint
@@ -400,14 +400,14 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Register a sample `ISchemaAccessGroupSanitizer` that restricts `admin` group to admin users
 - Verify the full and filtered schema endpoints work end to end
 
-#### Step 9.6: Access group filtering in CLI
+#### Step 9.5: Access group filtering in CLI
 - Add `--access-groups <groups>` (include mode) and `--exclude-access-groups <groups>` (exclude mode) to `GenerateSchemaIfRequested`
 - Reuse `HypermediaSchemaFilter.ForAccessGroups` / `ExcludeAccessGroups` — apply filter before passing schema to mappers
 - Validate mutual exclusivity (error if both specified)
 - Note: CLI does not use `ISchemaAccessGroupSanitizer` (no HTTP context) — the caller is trusted
 - Test with CarShack: generate filtered schema/diagrams for specific access group combinations
 
-#### Step 9.7: Update documentation for access groups
+#### Step 9.6: Update documentation for access groups
 - Document the `[HypermediaAccessGroup]` attribute: usage, semantics (descriptive not enforcing), relation to `[Authorize]`
 - Document `RequiredAccessGroups` on `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription` — what null vs. populated means
 - Document `DeclaredAccessGroups` on `HypermediaApiSchema` — auto-collected, useful for typo detection
@@ -416,7 +416,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Document the CLI access group args: `--access-groups`, `--exclude-access-groups`, examples
 - Add examples: annotated JSON showing filtered vs. full schema, CarShack access group setup
 
-#### Step 9.8 (Future idea): Schema as RESTyard HTO with query action in SchemaRootHto
+#### Step 9.7 (Future idea): Schema as RESTyard HTO with query action in SchemaRootHto
 - **Not designed yet** — to be explored after basic filtering is stable
 - Serve the schema as `HypermediaSchemaHto` — a proper RESTyard hypermedia resource
 - Query action accepts `accessGroups` / `excludeAccessGroups` as parameters, returns filtered schema
