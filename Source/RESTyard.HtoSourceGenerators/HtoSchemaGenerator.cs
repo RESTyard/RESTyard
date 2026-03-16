@@ -45,8 +45,30 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     private const string FileUploadHypermediaActionGenericFullName =
         "RESTyard.AspNetCore.Hypermedia.Actions.FileUploadHypermediaAction<TParameter>";
 
+    private const string IEmbeddedEntityFullName =
+        "RESTyard.AspNetCore.Hypermedia.IEmbeddedEntity<THto>";
+
+    private const string IEmbeddedEntityBaseFullName =
+        "RESTyard.AspNetCore.Hypermedia.IEmbeddedEntity";
+
     private const string HypermediaActionGenericFullName =
         "RESTyard.AspNetCore.Hypermedia.Actions.HypermediaAction<TParameter>";
+
+    private static readonly DiagnosticDescriptor EmbeddedEntityMissingRelations = new(
+        id: "RY0020",
+        title: "Embedded entity property missing [Relations] attribute",
+        messageFormat: "Property '{0}' on '{1}' is of type IEmbeddedEntity but has no [Relations] attribute — it will be ignored in the schema",
+        category: "RESTyard.Schema",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor LinkMissingRelations = new(
+        id: "RY0021",
+        title: "Link property missing [Relations] attribute",
+        messageFormat: "Property '{0}' on '{1}' is of type ILink but has no [Relations] attribute — it will be ignored in the schema",
+        category: "RESTyard.Schema",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 
     /// <inheritdoc />
     public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -60,9 +82,29 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             .Select(static (m, _) => m!.Value);
 
         context.RegisterSourceOutput(htoTypes, static (spc, metadata) =>
+        {
+            foreach (var propertyName in metadata.EmbeddedEntityPropertiesWithoutRelations)
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(
+                    EmbeddedEntityMissingRelations,
+                    Location.None,
+                    propertyName,
+                    metadata.ClassName));
+            }
+
+            foreach (var propertyName in metadata.LinkPropertiesWithoutRelations)
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(
+                    LinkMissingRelations,
+                    Location.None,
+                    propertyName,
+                    metadata.ClassName));
+            }
+
             spc.AddSource(
                 $"{metadata.ClassName}SirenMapper.g.cs",
-                GenerateSchemaSource(metadata)));
+                GenerateSchemaSource(metadata));
+        });
     }
 
     private static HtoMetadata? ExtractHtoMetadata(GeneratorAttributeSyntaxContext context)
@@ -89,6 +131,9 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         var properties = ExtractProperties(symbol);
         var links = ExtractLinks(symbol);
         var actions = ExtractActions(symbol);
+        var embeddedEntities = ExtractEmbeddedEntities(symbol);
+        var embeddedWithoutRelations = FindEmbeddedEntityPropertiesWithoutRelations(symbol);
+        var linksWithoutRelations = FindLinkPropertiesWithoutRelations(symbol);
 
         var ns = symbol.ContainingNamespace.IsGlobalNamespace
             ? string.Empty
@@ -102,7 +147,10 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             new EquatableArray<string>(classes),
             properties,
             links,
-            actions);
+            actions,
+            embeddedEntities,
+            embeddedWithoutRelations,
+            linksWithoutRelations);
     }
 
     private static EquatableArray<PropertyMetadata> ExtractProperties(INamedTypeSymbol symbol)
@@ -245,6 +293,149 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         return new EquatableArray<ActionMetadata>(actions.ToImmutableArray());
     }
 
+    private static EquatableArray<EmbeddedEntityMetadata> ExtractEmbeddedEntities(INamedTypeSymbol symbol)
+    {
+        var embeddedEntities = new List<EmbeddedEntityMetadata>();
+        var seen = new HashSet<string>();
+
+        var current = symbol;
+        while (current != null && current.SpecialType != SpecialType.System_Object)
+        {
+            foreach (var member in current.GetMembers().OfType<IPropertySymbol>())
+            {
+                if (member.DeclaredAccessibility != Accessibility.Public
+                    || member.IsStatic
+                    || member.IsIndexer)
+                {
+                    continue;
+                }
+
+                if (!seen.Add(member.Name))
+                {
+                    continue;
+                }
+
+                var relationsAttr = member.GetAttributes()
+                    .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == RelationsAttributeFullName);
+                if (relationsAttr == null)
+                {
+                    continue;
+                }
+
+                // Skip link properties — those are handled by ExtractLinks
+                if (GetLinkTargetType(member) != null)
+                {
+                    continue;
+                }
+
+                // Try single embedded entity: IEmbeddedEntity<THto>
+                var (targetType, isCollection) = GetEmbeddedEntityTargetType(member);
+                if (targetType == null)
+                {
+                    continue;
+                }
+
+                var relations = GetRelationsFromAttribute(relationsAttr);
+                var targetSchemaName = DeriveSchemaName(targetType.Name);
+                var targetClasses = GetTargetClasses(targetType);
+                var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
+
+                embeddedEntities.Add(new EmbeddedEntityMetadata(
+                    new EquatableArray<string>(relations),
+                    targetSchemaName,
+                    new EquatableArray<string>(targetClasses),
+                    isCollection,
+                    isMandatory));
+            }
+
+            current = current.BaseType;
+        }
+
+        return new EquatableArray<EmbeddedEntityMetadata>(embeddedEntities.ToImmutableArray());
+    }
+
+    /// <summary>
+    /// Extracts the target HTO type from an embedded entity property.
+    /// Returns the target type and whether it's a collection.
+    /// Supports <c>IEmbeddedEntity&lt;THto&gt;</c> (single) and
+    /// <c>List&lt;IEmbeddedEntity&lt;THto&gt;&gt;</c> / <c>IList&lt;...&gt;</c> / etc. (collection).
+    /// </summary>
+    private static (INamedTypeSymbol? TargetType, bool IsCollection) GetEmbeddedEntityTargetType(
+        IPropertySymbol property)
+    {
+        var type = property.Type;
+
+        // Unwrap nullable
+        if (type is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } nullable)
+        {
+            type = nullable.TypeArguments[0];
+        }
+
+        // Check if the type itself is IEmbeddedEntity<THto>
+        var singleTarget = GetIEmbeddedEntityTypeArgument(type);
+        if (singleTarget != null)
+        {
+            return (singleTarget, false);
+        }
+
+        // Check if the type is a collection of IEmbeddedEntity<THto>
+        var collectionTarget = GetCollectionEmbeddedEntityTarget(type);
+        if (collectionTarget != null)
+        {
+            return (collectionTarget, true);
+        }
+
+        return (null, false);
+    }
+
+    /// <summary>
+    /// If <paramref name="type"/> is or implements <c>IEmbeddedEntity&lt;THto&gt;</c>,
+    /// returns THto. Otherwise returns null.
+    /// </summary>
+    private static INamedTypeSymbol? GetIEmbeddedEntityTypeArgument(ITypeSymbol type)
+    {
+        if (type is INamedTypeSymbol named && IsIEmbeddedEntityGeneric(named))
+        {
+            return named.TypeArguments[0] as INamedTypeSymbol;
+        }
+
+        if (type is INamedTypeSymbol namedType)
+        {
+            foreach (var iface in namedType.AllInterfaces)
+            {
+                if (IsIEmbeddedEntityGeneric(iface))
+                {
+                    return iface.TypeArguments[0] as INamedTypeSymbol;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static bool IsIEmbeddedEntityGeneric(INamedTypeSymbol type)
+    {
+        return type.IsGenericType
+               && type.OriginalDefinition.ToDisplayString() == IEmbeddedEntityFullName;
+    }
+
+    /// <summary>
+    /// Checks if the type is a generic collection (List, IList, ICollection, IEnumerable,
+    /// IReadOnlyList, IReadOnlyCollection) whose element type is <c>IEmbeddedEntity&lt;THto&gt;</c>.
+    /// Returns THto if found.
+    /// </summary>
+    private static INamedTypeSymbol? GetCollectionEmbeddedEntityTarget(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol named || !named.IsGenericType)
+        {
+            return null;
+        }
+
+        // Check the element type of the first type argument
+        var elementType = named.TypeArguments[0];
+        return GetIEmbeddedEntityTypeArgument(elementType);
+    }
+
     private static bool IsActionType(ITypeSymbol type)
     {
         var current = type;
@@ -379,7 +570,167 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         var attributes = property.GetAttributes();
         return HasAttribute(attributes, FormatterIgnoreAttributeFullName)
                || HasAttribute(attributes, RelationsAttributeFullName)
-               || HasAttribute(attributes, HypermediaActionAttributeFullName);
+               || HasAttribute(attributes, HypermediaActionAttributeFullName)
+               || IsEmbeddedEntityType(property.Type)
+               || IsLinkType(property.Type);
+    }
+
+    /// <summary>
+    /// Checks whether a type is <c>ILink&lt;T&gt;</c>.
+    /// Used to exclude link properties from the data properties schema
+    /// even when they are missing the <c>[Relations]</c> attribute.
+    /// </summary>
+    private static bool IsLinkType(ITypeSymbol type)
+    {
+        // Unwrap nullable
+        if (type is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } nullable)
+        {
+            type = nullable.TypeArguments[0];
+        }
+
+        return GetLinkTargetType(type) != null;
+    }
+
+    /// <summary>
+    /// Overload of <see cref="GetLinkTargetType(IPropertySymbol)"/> that works on the type directly.
+    /// </summary>
+    private static INamedTypeSymbol? GetLinkTargetType(ITypeSymbol type)
+    {
+        if (type is INamedTypeSymbol named && IsILinkGeneric(named))
+        {
+            return named.TypeArguments[0] as INamedTypeSymbol;
+        }
+
+        if (type is INamedTypeSymbol namedType)
+        {
+            foreach (var iface in namedType.AllInterfaces)
+            {
+                if (IsILinkGeneric(iface))
+                {
+                    return iface.TypeArguments[0] as INamedTypeSymbol;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Checks whether a type is or contains <c>IEmbeddedEntity</c> (the non-generic base).
+    /// Used to exclude embedded entity properties from the data properties schema
+    /// even when they are missing the <c>[Relations]</c> attribute.
+    /// </summary>
+    private static bool IsEmbeddedEntityType(ITypeSymbol type)
+    {
+        // Unwrap nullable
+        if (type is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } nullable)
+        {
+            type = nullable.TypeArguments[0];
+        }
+
+        // Direct IEmbeddedEntity<T>
+        if (GetIEmbeddedEntityTypeArgument(type) != null)
+        {
+            return true;
+        }
+
+        // Collection of IEmbeddedEntity<T>
+        if (GetCollectionEmbeddedEntityTarget(type) != null)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Finds embedded entity properties (IEmbeddedEntity or collections thereof) that are
+    /// missing <c>[Relations]</c>. These are reported as RY0020 warnings.
+    /// </summary>
+    private static EquatableArray<string> FindEmbeddedEntityPropertiesWithoutRelations(INamedTypeSymbol symbol)
+    {
+        var names = new List<string>();
+        var seen = new HashSet<string>();
+
+        var current = symbol;
+        while (current != null && current.SpecialType != SpecialType.System_Object)
+        {
+            foreach (var member in current.GetMembers().OfType<IPropertySymbol>())
+            {
+                if (member.DeclaredAccessibility != Accessibility.Public
+                    || member.IsStatic
+                    || member.IsIndexer)
+                {
+                    continue;
+                }
+
+                if (!seen.Add(member.Name))
+                {
+                    continue;
+                }
+
+                if (!IsEmbeddedEntityType(member.Type))
+                {
+                    continue;
+                }
+
+                var hasRelations = member.GetAttributes()
+                    .Any(a => a.AttributeClass?.ToDisplayString() == RelationsAttributeFullName);
+                if (!hasRelations)
+                {
+                    names.Add(member.Name);
+                }
+            }
+
+            current = current.BaseType;
+        }
+
+        return new EquatableArray<string>(names.ToImmutableArray());
+    }
+
+    /// <summary>
+    /// Finds link properties (ILink&lt;T&gt;) that are missing <c>[Relations]</c>.
+    /// These are reported as RY0021 warnings.
+    /// </summary>
+    private static EquatableArray<string> FindLinkPropertiesWithoutRelations(INamedTypeSymbol symbol)
+    {
+        var names = new List<string>();
+        var seen = new HashSet<string>();
+
+        var current = symbol;
+        while (current != null && current.SpecialType != SpecialType.System_Object)
+        {
+            foreach (var member in current.GetMembers().OfType<IPropertySymbol>())
+            {
+                if (member.DeclaredAccessibility != Accessibility.Public
+                    || member.IsStatic
+                    || member.IsIndexer)
+                {
+                    continue;
+                }
+
+                if (!seen.Add(member.Name))
+                {
+                    continue;
+                }
+
+                if (!IsLinkType(member.Type))
+                {
+                    continue;
+                }
+
+                var hasRelations = member.GetAttributes()
+                    .Any(a => a.AttributeClass?.ToDisplayString() == RelationsAttributeFullName);
+                if (!hasRelations)
+                {
+                    names.Add(member.Name);
+                }
+            }
+
+            current = current.BaseType;
+        }
+
+        return new EquatableArray<string>(names.ToImmutableArray());
     }
 
     private static string GetPropertySerializationName(IPropertySymbol property)
@@ -522,6 +873,11 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             EmitActionsArray(sb, metadata.Actions);
         }
 
+        if (metadata.EmbeddedEntities.Length > 0)
+        {
+            EmitEmbeddedEntitiesArray(sb, metadata.EmbeddedEntities);
+        }
+
         sb.AppendLine("        };");
         sb.AppendLine("    }");
         sb.AppendLine("}");
@@ -612,6 +968,35 @@ public class HtoSchemaGenerator : IIncrementalGenerator
 
             sb.Append("                    ").Append(SchemaTypeNames.ActionDescription_IsMandatory)
                 .Append(" = ").Append(action.IsMandatory ? "true" : "false").AppendLine(",");
+            sb.AppendLine("                },");
+        }
+
+        sb.AppendLine("            },");
+    }
+
+    private static void EmitEmbeddedEntitiesArray(StringBuilder sb, EquatableArray<EmbeddedEntityMetadata> embeddedEntities)
+    {
+        sb.Append("            ").Append(SchemaTypeNames.EntityTypeSchema_EmbeddedEntities)
+            .Append(" = new ").Append(SchemaTypeNames.EmbeddedEntityDescription).AppendLine("[]");
+        sb.AppendLine("            {");
+
+        foreach (var embedded in embeddedEntities)
+        {
+            var relLiterals = string.Join(", ", embedded.Relations.Select(r => $"\"{EscapeString(r)}\""));
+            var classLiterals = string.Join(", ", embedded.TargetClasses.Select(c => $"\"{EscapeString(c)}\""));
+
+            sb.Append("                new ").AppendLine(SchemaTypeNames.EmbeddedEntityDescription);
+            sb.AppendLine("                {");
+            sb.Append("                    ").Append(SchemaTypeNames.EmbeddedEntityDescription_Relations)
+                .Append(" = new[] { ").Append(relLiterals).AppendLine(" },");
+            sb.Append("                    ").Append(SchemaTypeNames.EmbeddedEntityDescription_TargetName)
+                .Append(" = \"").Append(EscapeString(embedded.TargetSchemaName)).AppendLine("\",");
+            sb.Append("                    ").Append(SchemaTypeNames.EmbeddedEntityDescription_TargetClasses)
+                .Append(" = new[] { ").Append(classLiterals).AppendLine(" },");
+            sb.Append("                    ").Append(SchemaTypeNames.EmbeddedEntityDescription_IsCollection)
+                .Append(" = ").Append(embedded.IsCollection ? "true" : "false").AppendLine(",");
+            sb.Append("                    ").Append(SchemaTypeNames.EmbeddedEntityDescription_IsMandatory)
+                .Append(" = ").Append(embedded.IsMandatory ? "true" : "false").AppendLine(",");
             sb.AppendLine("                },");
         }
 

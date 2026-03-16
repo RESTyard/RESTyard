@@ -107,10 +107,10 @@ internal static class TestHtoSources
             public string Name { get; set; } = string.Empty;
 
             [Relations(["address"])]
-            public HypermediaAddressHto? Address { get; set; }
+            public IEmbeddedEntity<HypermediaAddressHto>? Address { get; set; }
 
-            [Relations(["orders"])]
-            public List<HypermediaAddressHto> Addresses { get; set; } = new();
+            [Relations(["addresses"])]
+            public List<IEmbeddedEntity<HypermediaAddressHto>> Addresses { get; set; } = new();
         }
         """;
 
@@ -324,7 +324,7 @@ internal static class TestHtoSources
             public BuyCarAction? BuyCar { get; set; }
 
             [Relations(["address"])]
-            public HypermediaAddressHto? Address { get; set; }
+            public IEmbeddedEntity<HypermediaAddressHto>? Address { get; set; }
         }
         """;
 }

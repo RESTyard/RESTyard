@@ -577,6 +577,257 @@ public class HtoSchemaGeneratorTests
         generated.Should().Contain("schemaFactory.Generate(typeof(");
     }
 
+    [Fact]
+    public void HtoWithEmbedded_generates_embedded_entities_array_in_source()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithEmbedded);
+        var source = GetGeneratedSource(result, "HypermediaCustomerHto");
+
+        source.Should().Contain("EmbeddedEntities = new EmbeddedEntityDescription[]");
+        source.Should().Contain("Relations = new[] { \"address\" }");
+        source.Should().Contain("Relations = new[] { \"addresses\" }");
+        source.Should().Contain("TargetName = \"Address\"");
+        source.Should().Contain("TargetClasses = new[] { \"Address\" }");
+    }
+
+    [Fact]
+    public void HtoWithEmbedded_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithEmbedded);
+    }
+
+    [Fact]
+    public void HtoWithEmbedded_GetSchema_returns_correct_embedded_entities()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithEmbedded);
+
+        schema.EmbeddedEntities.Should().HaveCount(2);
+
+        var address = schema.EmbeddedEntities.Single(e => e.Relations.Contains("address"));
+        address.TargetName.Should().Be("Address");
+        address.TargetClasses.Should().BeEquivalentTo("Address");
+        address.IsCollection.Should().BeFalse();
+        address.IsMandatory.Should().BeFalse();
+
+        var addresses = schema.EmbeddedEntities.Single(e => e.Relations.Contains("addresses"));
+        addresses.TargetName.Should().Be("Address");
+        addresses.TargetClasses.Should().BeEquivalentTo("Address");
+        addresses.IsCollection.Should().BeTrue();
+        addresses.IsMandatory.Should().BeTrue();
+    }
+
+    [Fact]
+    public void HtoWithEmbedded_to_different_target_resolves_target_metadata()
+    {
+        const string source = """
+            using System.Collections.Generic;
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Order", Classes = ["Order", "Document"])]
+            public class HypermediaOrderHto : HypermediaObject
+            {
+                public string OrderNumber { get; set; } = string.Empty;
+            }
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                public string Name { get; set; } = string.Empty;
+
+                [Relations(["orders"])]
+                public List<IEmbeddedEntity<HypermediaOrderHto>> Orders { get; set; } = new();
+            }
+            """;
+
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", source);
+
+        schema.EmbeddedEntities.Should().ContainSingle();
+        var embedded = schema.EmbeddedEntities[0];
+        embedded.Relations.Should().BeEquivalentTo("orders");
+        embedded.TargetName.Should().Be("Order");
+        embedded.TargetClasses.Should().BeEquivalentTo("Order", "Document");
+        embedded.IsCollection.Should().BeTrue();
+        embedded.IsMandatory.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Hto_without_embedded_entities_has_empty_collection()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.SimpleHto);
+
+        schema.EmbeddedEntities.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Embedded_entities_are_excluded_from_properties_schema()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithEmbedded);
+
+        schema.PropertiesSchema.Should().NotBeNull();
+        var props = schema.PropertiesSchema!.RootElement.GetProperty("properties");
+
+        // Data property should be present
+        props.TryGetProperty("Name", out _).Should().BeTrue();
+
+        // Embedded entities should not appear in properties
+        props.TryGetProperty("Address", out _).Should().BeFalse();
+        props.TryGetProperty("Addresses", out _).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Embedded_entity_without_relations_emits_RY0020_warning()
+    {
+        const string source = """
+            using System.Collections.Generic;
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Address", Classes = ["Address"])]
+            public class HypermediaAddressHto : HypermediaObject
+            {
+                public string Street { get; set; } = string.Empty;
+            }
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                public string Name { get; set; } = string.Empty;
+
+                public IEmbeddedEntity<HypermediaAddressHto>? MissingRelations { get; set; }
+
+                public List<IEmbeddedEntity<HypermediaAddressHto>> AlsoMissing { get; set; } = new();
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        result.Diagnostics.Should().HaveCount(2);
+        result.Diagnostics.Should().OnlyContain(d => d.Id == "RY0020");
+        result.Diagnostics.Should().Contain(d => d.GetMessage().Contains("MissingRelations"));
+        result.Diagnostics.Should().Contain(d => d.GetMessage().Contains("AlsoMissing"));
+    }
+
+    [Fact]
+    public void Link_without_relations_emits_RY0021_warning()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Other", Classes = ["Other"])]
+            public class HypermediaOtherHto : HypermediaObject { }
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                public string Name { get; set; } = string.Empty;
+
+                public ILink<HypermediaOtherHto>? MissingRelLink { get; set; }
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        var customerDiags = result.Diagnostics
+            .Where(d => d.GetMessage().Contains("HypermediaCustomerHto"))
+            .ToArray();
+        customerDiags.Should().ContainSingle();
+        customerDiags[0].Id.Should().Be("RY0021");
+        customerDiags[0].GetMessage().Should().Contain("MissingRelLink");
+    }
+
+    [Fact]
+    public void Link_without_relations_is_excluded_from_properties()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Other", Classes = ["Other"])]
+            public class HypermediaOtherHto : HypermediaObject { }
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                public string Name { get; set; } = string.Empty;
+
+                public ILink<HypermediaOtherHto>? OrphanLink { get; set; }
+            }
+            """;
+
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", source);
+
+        schema.PropertiesSchema.Should().NotBeNull();
+        var props = schema.PropertiesSchema!.RootElement.GetProperty("properties");
+        props.TryGetProperty("Name", out _).Should().BeTrue();
+        props.TryGetProperty("OrphanLink", out _).Should().BeFalse();
+
+        schema.Links.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Embedded_entity_without_relations_is_excluded_from_properties()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Address", Classes = ["Address"])]
+            public class HypermediaAddressHto : HypermediaObject
+            {
+                public string Street { get; set; } = string.Empty;
+            }
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                public string Name { get; set; } = string.Empty;
+
+                public IEmbeddedEntity<HypermediaAddressHto>? Orphan { get; set; }
+            }
+            """;
+
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", source);
+
+        schema.PropertiesSchema.Should().NotBeNull();
+        var props = schema.PropertiesSchema!.RootElement.GetProperty("properties");
+        props.TryGetProperty("Name", out _).Should().BeTrue();
+        props.TryGetProperty("Orphan", out _).Should().BeFalse();
+
+        schema.EmbeddedEntities.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void FullHto_GetSchema_has_embedded_entity()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.FullHto);
+
+        schema.EmbeddedEntities.Should().ContainSingle();
+        var embedded = schema.EmbeddedEntities[0];
+        embedded.Relations.Should().BeEquivalentTo("address");
+        embedded.TargetName.Should().Be("Address");
+        embedded.IsCollection.Should().BeFalse();
+        embedded.IsMandatory.Should().BeFalse();
+    }
+
     private static string GetGeneratedSource(
         GeneratorDriverRunResult result,
         string htoClassName)

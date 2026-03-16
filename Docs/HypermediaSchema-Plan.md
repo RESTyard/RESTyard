@@ -156,10 +156,10 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Populate `ActionDescription` (name, title, parameter schema, file upload flag, mandatory from nullability)
 - Verify tests: parameterless, with parameters, file upload, nullable actions
 
-#### Step 2.6: Embedded entity analysis
-- Scan embedded `IHypermediaObject` properties and collections
-- Populate `EmbeddedEntityDescription`
-- Verify tests: single embedded, collection
+#### Step 2.6: ✅ Embedded entity analysis
+- Scan `IEmbeddedEntity<THto>` properties and `List<IEmbeddedEntity<THto>>` collections with `[Relations]`
+- Populate `EmbeddedEntityDescription` (relations, target name/classes, isCollection, isMandatory)
+- Verify tests: single embedded, collection, different target, empty, exclusion from properties schema
 
 #### Step 2.7: Title and description harvesting
 - Primary source: `[Title("...")]` and `[Description("...")]` from `JsonSchema.Net.Generation` (already in the dependency tree, used on `IHypermediaActionParameter` types)

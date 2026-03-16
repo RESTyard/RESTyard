@@ -36,6 +36,15 @@ internal static class SchemaTypeNames
     internal const string ActionDescription_IsFileUpload = "IsFileUpload";
     internal const string EntityTypeSchema_Actions = "Actions";
 
+    // EmbeddedEntityDescription
+    internal const string EmbeddedEntityDescription = "EmbeddedEntityDescription";
+    internal const string EmbeddedEntityDescription_Relations = "Relations";
+    internal const string EmbeddedEntityDescription_TargetName = "TargetName";
+    internal const string EmbeddedEntityDescription_TargetClasses = "TargetClasses";
+    internal const string EmbeddedEntityDescription_IsCollection = "IsCollection";
+    internal const string EmbeddedEntityDescription_IsMandatory = "IsMandatory";
+    internal const string EntityTypeSchema_EmbeddedEntities = "EmbeddedEntities";
+
     // RESTyard.Schema
     internal const string JsonSchemaFactoryNamespace = "RESTyard.Schema";
     internal const string IJsonSchemaFactory = "IJsonSchemaFactory";
