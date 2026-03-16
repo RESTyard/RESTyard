@@ -388,20 +388,42 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Extend `/_schema` endpoint to accept `?excludeAccessGroups=admin` query parameter
 - Integration test: CarShack excluding specific access groups, verify elements are removed correctly
 
-#### Step 9.3: CarShack demo
+#### Step 9.3: `ISchemaAccessGroupSanitizer` hook
+- Define `ISchemaAccessGroupSanitizer` interface in `RESTyard.AspNetCore`: `SanitizeRequestedGroups(IReadOnlySet<string> requestedGroups, HttpContext httpContext)` → returns the groups the user is allowed to query
+- Default behavior when no implementation registered: pass through unchanged (schema is public)
+- Wire into the `/_schema` endpoint: sanitize before calling `HypermediaSchemaFilter`
+- Unit test: sanitizer removes groups, verify filtered output reflects sanitized set
+- Integration test: register a role-based sanitizer in CarShack, verify non-admin can't query admin-only groups
+
+#### Step 9.4: CarShack demo
 - Add `[HypermediaAccessGroup]` to selected CarShack actions and links
+- Register a sample `ISchemaAccessGroupSanitizer` that restricts `admin` group to admin users
 - Verify the full and filtered schema endpoints work end to end
 
-#### Step 9.4: Access group filtering in CLI
+#### Step 9.6: Access group filtering in CLI
 - Add `--access-groups <groups>` (include mode) and `--exclude-access-groups <groups>` (exclude mode) to `GenerateSchemaIfRequested`
 - Reuse `HypermediaSchemaFilter.ForAccessGroups` / `ExcludeAccessGroups` — apply filter before passing schema to mappers
 - Validate mutual exclusivity (error if both specified)
+- Note: CLI does not use `ISchemaAccessGroupSanitizer` (no HTTP context) — the caller is trusted
 - Test with CarShack: generate filtered schema/diagrams for specific access group combinations
 
-#### Step 9.5: Update documentation for access groups
+#### Step 9.7: Update documentation for access groups
 - Document the `[HypermediaAccessGroup]` attribute: usage, semantics (descriptive not enforcing), relation to `[Authorize]`
 - Document `RequiredAccessGroups` on `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription` — what null vs. populated means
 - Document `DeclaredAccessGroups` on `HypermediaApiSchema` — auto-collected, useful for typo detection
 - Document the filtered `/_schema` endpoint: `?accessGroups=` and `?excludeAccessGroups=` query parameters, include vs. exclude semantics, mutual exclusivity
+- Document `ISchemaAccessGroupSanitizer`: purpose, default behavior, example implementation
 - Document the CLI access group args: `--access-groups`, `--exclude-access-groups`, examples
 - Add examples: annotated JSON showing filtered vs. full schema, CarShack access group setup
+
+#### Step 9.8 (Future idea): Schema as RESTyard HTO with query action in SchemaRootHto
+- **Not designed yet** — to be explored after basic filtering is stable
+- Serve the schema as `HypermediaSchemaHto` — a proper RESTyard hypermedia resource
+- Query action accepts `accessGroups` / `excludeAccessGroups` as parameters, returns filtered schema
+- `AvailableAccessGroups` property lists only the groups the current user can query (post-sanitization via `ISchemaAccessGroupSanitizer`)
+- Query action parameter is a string list — client selects from `AvailableAccessGroups`
+- Stays within RESTyard's hypermedia design: client discovers filtering via the HTO's actions
+- Trade-off: more complex (controller, route registration, Siren serialization) vs. the simple JSON endpoint
+- Both query parameters and `AvailableAccessGroups` are sanitized by `ISchemaAccessGroupSanitizer`
+- Schema is still a JSON download link (not rendered as Siren) — the HTO wraps the query/filtering, not the schema content
+- Consider making this a default endpoint (auto-registered like action parameter schema endpoints)

@@ -921,13 +921,78 @@ GET /_schema?accessGroups=read,write                  → include: elements requ
 GET /_schema?excludeAccessGroups=admin                → exclude: all elements except those requiring "admin"
 GET /_schema?excludeAccessGroups=admin,internal       → exclude: all elements except those requiring "admin" or "internal"
 ```
-Revisit: can t his be doen with a RESTyard action so we stay in the libs design?
 
 **Include mode** (`accessGroups`): Returns only elements whose `RequiredAccessGroups` are satisfied by the given set, plus elements with no access group restriction. Use case: "show me what the `read` role can see."
 
 **Exclude mode** (`excludeAccessGroups`): Returns all elements *except* those whose `RequiredAccessGroups` intersect with the excluded set. Use case: "show me everything except `admin`-only elements."
 
 Specifying both `accessGroups` and `excludeAccessGroups` is invalid — the endpoint returns `400 Bad Request in problem json format`.
+
+### Server-Side Access Group Sanitization
+
+The raw query parameters above are client-provided — the server must not blindly trust them. A server-side hook sanitizes the requested access groups based on the current user's permissions before filtering:
+
+```csharp
+/// <summary>
+/// Hook that sanitizes access group filter requests based on the current user's context.
+/// Registered via DI. Called by the schema endpoint before applying the filter.
+/// </summary>
+public interface ISchemaAccessGroupSanitizer
+{
+    /// <summary>
+    /// Given the access groups the client requested, returns the access groups
+    /// the client is actually allowed to see. The server can remove groups
+    /// the user is not permitted to query, or add implicit groups.
+    /// </summary>
+    IReadOnlySet<string> SanitizeRequestedGroups(
+        IReadOnlySet<string> requestedGroups,
+        HttpContext httpContext);
+}
+```
+
+**Default behavior** (when no `ISchemaAccessGroupSanitizer` is registered): pass through the requested groups unchanged — the schema endpoint is open. This matches the common case where the schema is public documentation.
+
+**Example: admin-only groups hidden from non-admins:**
+
+```csharp
+public class RoleBasedSanitizer : ISchemaAccessGroupSanitizer
+{
+    public IReadOnlySet<string> SanitizeRequestedGroups(
+        IReadOnlySet<string> requestedGroups, HttpContext httpContext)
+    {
+        var userRoles = httpContext.User.Claims
+            .Where(c => c.Type == ClaimTypes.Role)
+            .Select(c => c.Value)
+            .ToHashSet();
+
+        // Non-admins cannot request the "admin" access group — silently remove it
+        if (!userRoles.Contains("admin"))
+            return requestedGroups.Except(new[] { "admin" }).ToHashSet();
+
+        return requestedGroups;
+    }
+}
+```
+
+The sanitizer is called **before** `HypermediaSchemaFilter` — the filter only sees the sanitized groups. This means a non-admin requesting `?accessGroups=read,admin` gets the same result as `?accessGroups=read`.
+
+### Future Idea: Schema as a RESTyard HTO
+
+> **Status:** Idea — not designed. To be explored after the basic `/_schema` endpoint and access group filtering are stable.
+
+Instead of a plain JSON endpoint, the schema could be served as a proper RESTyard hypermedia resource — an HTO with a query action for filtering:
+
+- **`HypermediaSchemaHto`** — the schema entity, with `DeclaredAccessGroups` exposed as a property
+- **Query action** — accepts `accessGroups` / `excludeAccessGroups` as parameters, returns a filtered schema
+- **`AvailableAccessGroups` property** — lists only the access groups the current user is allowed to query (post-sanitization), so the client knows upfront what it can filter by
+- The query action's parameter is a string list — the client selects from `AvailableAccessGroups` (no dynamic enum generation needed)
+- Both the query action parameters and the `AvailableAccessGroups` property are sanitized by `ISchemaAccessGroupSanitizer` — the user only sees and can query groups they are permitted to access
+- The schema itself is still served as a JSON download link (not rendered as Siren) — the HTO wraps the query/filtering, not the schema content. This makes access group queries easy to discover and execute via the standard hypermedia pattern
+- Consider making this a default endpoint (auto-registered like the existing action parameter schema endpoints) so users get it without manual controller setup
+
+This approach stays within RESTyard's hypermedia design: the client discovers filtering capabilities by inspecting the schema HTO's actions rather than knowing the query parameter API. The `ISchemaAccessGroupSanitizer` hook feeds into `AvailableAccessGroups` — if a user can't see `admin`, it doesn't appear in the list and the query action doesn't accept it.
+
+**Trade-off:** More complex to implement (needs a controller, route registration, Siren serialization of the schema HTO) vs. the simple `/_schema` JSON endpoint. The plain endpoint is sufficient for programmatic consumers (client generators, AI agents) while the HTO approach benefits interactive UIs (HUI, API explorers).
 
 Filtering logic:
 
@@ -1135,4 +1200,5 @@ dotnet run --project src/MyApi -- --generate-schema --schema-format markdown --s
 - **Example values**: Add support for example values on entity properties and action parameters in the schema (similar to OpenAPI's `example` keyword). Useful for documentation UIs to show realistic sample data and for client generators to emit test fixtures. Could be expressed as JSON Schema `examples` keyword or as a separate field on `EntityTypeSchema`/`ActionDescription`. To be designed in a future iteration.
 - **Tag groups**: Allow grouping entity types by tags for documentation UIs (e.g., "Admin", "Public", "Billing"). The entity graph already provides natural grouping, but cross-cutting concerns that span multiple entities may benefit from explicit tags. To be designed if a concrete use case arises.
 - **Target framework**: `RESTyard.Schema` currently targets `netstandard2.0` for broad compatibility (e.g., `RESTyard.Client` multi-targets `netstandard2.0;net8.0`). Reconsider moving to `net10` once all consuming projects have dropped `netstandard2.0` support.
+- **Authorization for auto-registered endpoints**: The existing `ActionParameterTypes` controller and the future `/_schema` endpoint (and potential `SchemaRootHto`) are auto-registered without `[Authorize]`. If the API uses per-controller authorization (not global), these endpoints are open to anonymous requests — leaking API structure (parameter shapes, entity types, access groups) to unauthenticated users. Options: (1) inherit from app-level auth policy (works if global auth is configured, which is the current behavior), (2) add a configurable auth policy on `HypermediaSchemaOptions` (e.g., `SchemaEndpointPolicy = "AdminOnly"`) that RESTyard applies to auto-registered endpoints, (3) document as the user's responsibility — RESTyard doesn't enforce, user adds global filters or overrides. This also affects `ActionParameterTypes` retroactively. Decide before shipping the schema endpoint.
 - **`[LinkMediaType]` attribute for static media type hints**: Add a `[LinkMediaType("text/html")]` attribute for `ILink<T>` properties where the media type is always the same (e.g., external file downloads). The source generator would read this and populate `LinkDescription.MediaType`, enabling richer client generation — e.g., a generated client method could return `HttpResponseMessage` or `Stream` instead of deserializing Siren when it knows the link serves a non-Siren media type. Only useful for links with a fixed media type; dynamic cases (via `WithAvailableMediaType()`) remain runtime-only. To prevent mismatches between the declared attribute and the runtime `WithAvailableMediaType()` call, consider either: (a) a Roslyn analyzer that warns when a link property has `[LinkMediaType]` but the code also calls `WithAvailableMediaType()` with a different value, or (b) a runtime check in the generated `ToSiren()` method that validates the actual media type matches the declared attribute and throws/logs on mismatch. This must also be supported by thy current SirenConverter that uses reflection to be backwards compattible.
