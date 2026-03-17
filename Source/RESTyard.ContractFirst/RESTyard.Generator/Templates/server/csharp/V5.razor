@@ -55,6 +55,8 @@ public static class MimeTypes
 @code {
     [Parameter] public string? Namespace { get; set; }
     [Parameter] public string Includes { get; set; } = null!;
+    [Parameter] public Dictionary<string, string> TemplateArgs { get; set; } = [];
 
     public List<string> ContentTypes { get; set; } = ["application/vnd.siren+json"];
+    
 }

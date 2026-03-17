@@ -1,3 +1,4 @@
+@using FunicularSwitch.Extensions
 @using RESTyard.Generator.Templates.csharp_base
 @inherits RazorTemplateBase
 @implements ITemplateBase
@@ -5,6 +6,7 @@
 @code {
     [Parameter] public string? Namespace { get; set; }
     [Parameter] public string Includes { get; set; } = null!;
+    [Parameter] public Dictionary<string, string> TemplateArgs { get; set; } = [];
 
     private static string JoinIfSet(string separator, params string?[] parts) => string.Join(separator, parts.Where(p => !string.IsNullOrEmpty(p)));
     private static string PrefixIfSet(string prefix, string? input) => string.IsNullOrEmpty(input) ? string.Empty : $"{prefix}{input}";
@@ -31,6 +33,9 @@
 
 @{
     var allLinksWithQuery = GetAllLinksWithQuery(Schema.Documents).ToArray();
+
+    var controllerRoutePrefix = TemplateArgs.TryGetValue("controller_route_prefix").GetValueOrDefault("api");
+    var controllerBaseClass = TemplateArgs.TryGetValue("controller_base").GetValueOrDefault("ControllerBase");
 }
 
 @Includes
@@ -62,25 +67,26 @@ using RESTyard.MediaTypes;
         throw new ArgumentException($"A link with a query parameter points to document '{document.name}', but the document is not marked as a query result.");
     }
 
-    @:[Route("api/[controller]"),
+    @:[Route("@(controllerRoutePrefix)/[controller]"),
     @: ApiController]
-    @:public partial class @(document.name)Controller : ControllerBase
+    @:public partial class @(document.name)Controller : @(controllerBaseClass)
     @:{
 
-
-    @:[HttpGet@(InParenthesesIfSet(InQuotesIfSet(keyTemplate))),
-    @: HypermediaObjectEndpoint@("<")@(document.name)Hto@(">")
-    if (document.Policies?.Permissions?.authorize ?? false)
+    if (document.hasSelfLink)
     {
-        foreach (var permission in document.Policies.Permissions.Permission)
+        @:[HttpGet@(InParenthesesIfSet(InQuotesIfSet(keyTemplate))),
+        @: HypermediaObjectEndpoint@("<")@(document.name)Hto@(">")
+        if (document.Policies?.Permissions?.authorize ?? false)
         {
-            @: Authorize(PermissionScopes.@(FormatScopeName(permission.scope)))
+            foreach (var permission in document.Policies.Permissions.Permission)
+            {
+                @: Authorize(PermissionScopes.@(FormatScopeName(permission.scope)))
+            }
         }
+
+        @:]
+        @:public partial Task@("<")IActionResult@(">") Get@(document.name)Async(@(JoinIfSet(", ", keyParams, linkQueryParam)));
     }
-
-    @:]
-    @:public partial Task@("<")IActionResult@(">") Get@(document.name)Async(@(JoinIfSet(", ", keyParams, linkQueryParam)));
-
 
     foreach (var operation in document.Operations)
     {
@@ -89,7 +95,7 @@ using RESTyard.MediaTypes;
 
         @:[
         @: Http@(MethodToString(operation.method))@InParenthesesIfSet(InQuotesIfSet(JoinIfSet("/", keyTemplate, Uncapitalize(operation.name)))),
-        @: HypermediaActionEndpoint@("<")@(document.name)Hto@(">")(nameof(@(document.name)Hto.@(operation.name))@(operation.isUploadAction ? ", DefaultMediaTypes.MultipartFormData": string.Empty))
+        @: HypermediaActionEndpoint@("<")@(document.name)Hto@(">")(nameof(@(document.name)Hto.@(operation.name))@(operation.isUploadAction ? ", DefaultMediaTypes.MultipartFormData" : string.Empty))
         if (operation.Policies?.Permissions?.authorize ?? false)
         {
             foreach (var permission in operation.Policies.Permissions.Permission)

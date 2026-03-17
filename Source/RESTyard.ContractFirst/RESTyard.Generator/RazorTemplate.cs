@@ -10,7 +10,12 @@ namespace RESTyard.Generator
 {
     public class RazorTemplate
     {
-        public static async Task<string> Render(HypermediaType schema, Type componentType, string? @namespace, string includeContent)
+        public static async Task<string> Render(
+            HypermediaType schema,
+            Type componentType,
+            string? @namespace,
+            string includeContent,
+            Dictionary<string, string> templateArgs)
         {
             var services = new ServiceCollection();
             services.AddLogging();
@@ -27,6 +32,7 @@ namespace RESTyard.Generator
                     [nameof(ITemplateBase.Schema)] = schema,
                     [nameof(ITemplateBase.Namespace)] = @namespace,
                     [nameof(ITemplateBase.Includes)] = includeContent,
+                    [nameof(ITemplateBase.TemplateArgs)] = templateArgs,
                 };
                 var parameters = ParameterView.FromDictionary(dictionary);
                 var output = await renderer.RenderComponentAsync(componentType, parameters);

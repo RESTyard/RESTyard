@@ -53,6 +53,15 @@ public static class Program
         var includeFileOption = new Option<string>("--include-file");
         var includeTypeOption = new Option<IEnumerable<string>>("--include-type");
         var excludeTypeOption = new Option<IEnumerable<string>>("--exclude-type");
+        var templateArgOption = new Option<IEnumerable<string>>("--template-arg")
+        {
+            Description = """
+                          Additional arguments to pass to the template. Format: key=value
+                          server/csharp-controller/v5 supports the following additional arguments:
+                            --template-arg controller_route_prefix=api/v1 (default: api)
+                            --template-arg controller_base=ControllerBase (default: ControllerBase)
+                          """
+        };
 
         var rootCommand = new RootCommand
         {
@@ -63,6 +72,7 @@ public static class Program
             includeFileOption,
             includeTypeOption,
             excludeTypeOption,
+            templateArgOption
         };
         rootCommand.Handler = CommandHandler.Create(Run);
 
@@ -87,7 +97,8 @@ public static class Program
 
         Func<T, bool> IsIncluded<T>(Func<T, string> nameSelector) => x => includedTypeNames.Contains(nameSelector(x));
 
-        Func<T, bool> IsNotExcluded<T>(Func<T, string> nameSelector) => x => !excludedTypeNames.Contains(nameSelector(x));
+        Func<T, bool> IsNotExcluded<T>(Func<T, string> nameSelector) =>
+            x => !excludedTypeNames.Contains(nameSelector(x));
 
         T[] Filter<T>(IEnumerable<T> sequence, Func<T, string> nameSelector) => sequence
             .Where(Condition(nameSelector))
@@ -100,14 +111,22 @@ public static class Program
         TemplateInfo template,
         string outputPath,
         string? @namespace,
-        string? includeFile)
+        string? includeFile,
+        IEnumerable<string> templateArgs)
     {
-        var includeContent = string.IsNullOrEmpty(includeFile) ? string.Empty : await File.ReadAllTextAsync(includeFile);
+        var includeContent =
+            string.IsNullOrEmpty(includeFile) ? string.Empty : await File.ReadAllTextAsync(includeFile);
+
+        var templateKeyValueArguments = templateArgs.Select(arg => arg.Split('=', 2) switch
+        {
+            [var key, var value] => new KeyValuePair<string, string>(key, value),
+            _ => throw new ArgumentException($"Invalid template argument: {arg}. Expected format: key=value")
+        }).ToDictionary();
 
         var code = await template.Match(
             scribanTemplate: sbn => ScribanTemplate.Render(schema, sbn.FileInfo, @namespace, includeContent),
             razorTemplate: razor =>
-                RazorTemplate.Render(schema, razor.RazorType, @namespace, includeContent));
+                RazorTemplate.Render(schema, razor.RazorType, @namespace, includeContent, templateKeyValueArguments));
         string formattedCode;
         if (templatePath.Contains("csharp"))
         {
@@ -127,6 +146,7 @@ public static class Program
         string outputFile,
         IEnumerable<string> includeType,
         IEnumerable<string> excludeType,
+        IEnumerable<string> templateArg,
         string? @namespace = default,
         string? includeFile = default)
     {
@@ -143,14 +163,15 @@ public static class Program
         }
 
         FilterTypes(schema, includeType.ToList(), excludeType.ToList());
-        await RenderTemplate(schema, template, templateFile, outputFile, @namespace, includeFile);
-        
+        await RenderTemplate(schema, template, templateFile, outputFile, @namespace, includeFile, templateArg);
+
         Console.WriteLine("Done.");
     }
 
     private static TemplateInfo? TryGetTemplateInfo(string template)
     {
-        var installedScribanTemplatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", $"{template}.sbn");
+        var installedScribanTemplatePath =
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", $"{template}.sbn");
         if (File.Exists(installedScribanTemplatePath))
         {
             return TemplateInfo.ScribanTemplate(new FileInfo(installedScribanTemplatePath));
@@ -164,7 +185,8 @@ public static class Program
         return template.Split('/', '\\') switch
         {
             ["server", "csharp", "v5"] => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp.V5)),
-            ["server", "csharp-controller", "v5"] => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp_controller.V5)),
+            ["server", "csharp-controller", "v5"] => TemplateInfo.RazorTemplate(
+                typeof(Templates.server.csharp_controller.V5)),
             _ => null,
         };
     }
@@ -182,6 +204,7 @@ public static class Program
                 link.QueryParameters ??= [];
                 link.ResultDocuments ??= [];
             }
+
             schemaDocument.Operations ??= [];
             schemaDocument.Properties ??= [];
         }
