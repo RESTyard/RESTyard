@@ -67,6 +67,12 @@ using RESTyard.MediaTypes;
         throw new ArgumentException($"A link with a query parameter points to document '{document.name}', but the document is not marked as a query result.");
     }
 
+    if (!document.hasSelfLink && document.Operations.Length == 0)
+    {
+        // If there are no operations and no self-link, we won't generate a controller for this document, so we can skip it.
+        continue;
+    }
+
     @:[Route("@(controllerRoutePrefix)/[controller]"),
     @: ApiController]
     @:public partial class @(document.name)Controller : @(controllerBaseClass)
