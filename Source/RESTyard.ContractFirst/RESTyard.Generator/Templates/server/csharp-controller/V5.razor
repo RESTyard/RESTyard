@@ -84,9 +84,15 @@ using RESTyard.MediaTypes;
         @: HypermediaObjectEndpoint@("<")@(document.name)Hto@(">")
         if (document.Policies?.Permissions?.authorize ?? false)
         {
-            foreach (var permission in document.Policies.Permissions.Permission)
+            @: ,
+            for (var index = 0; index < document.Policies.Permissions.Permission.Length; index++)
             {
-                @: Authorize(PermissionScopes.@(FormatScopeName(permission.scope)))
+                if(index > 0)
+                {
+                    @: ,
+                }
+                var permission = document.Policies.Permissions.Permission[index];
+                @:Authorize(PermissionScopes.@FormatScopeName(permission.scope))
             }
         }
 
