@@ -9,7 +9,7 @@ using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
 using RESTyard.AspNetCore.Exceptions;
 using RESTyard.AspNetCore.Hypermedia;
-using RESTyard.Schema;
+using RESTyard.Schema.SchemaGeneration;
 using RESTyard.AspNetCore.WebApi;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;

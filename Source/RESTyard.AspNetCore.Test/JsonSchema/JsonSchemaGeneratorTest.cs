@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.JsonSchema;
-using RESTyard.Schema;
+using RESTyard.Schema.SchemaGeneration;
 using RESTyard.AspNetCore.Test.Helpers;
 using RESTyard.AspNetCore.Test.Hypermedia;
 

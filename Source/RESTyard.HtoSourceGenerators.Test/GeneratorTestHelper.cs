@@ -10,7 +10,7 @@ using Json.Schema.Generation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using RESTyard.AspNetCore.Hypermedia;
-using RESTyard.Schema;
+using RESTyard.Schema.SchemaGeneration;
 using RESTyard.Schema.Model;
 
 namespace RESTyard.HtoSourceGenerators.Test;

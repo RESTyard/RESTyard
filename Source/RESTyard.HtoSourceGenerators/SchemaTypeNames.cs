@@ -52,7 +52,7 @@ internal static class SchemaTypeNames
     internal const string EntityTypeSchema_EmbeddedEntities = "EmbeddedEntities";
 
     // RESTyard.Schema
-    internal const string JsonSchemaFactoryNamespace = "RESTyard.Schema";
+    internal const string JsonSchemaFactoryNamespace = "RESTyard.Schema.SchemaGeneration";
     internal const string IJsonSchemaFactory = "IJsonSchemaFactory";
 
     // Json.Schema (JsonSchema.Net)

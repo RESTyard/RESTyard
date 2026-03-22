@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json;
 
-namespace RESTyard.Schema;
+namespace RESTyard.Schema.SchemaGeneration;
 
 /// <summary>
 /// Defines what is needed for automatic schema generation.

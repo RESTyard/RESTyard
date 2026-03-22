@@ -6,7 +6,7 @@ using Json.Schema.Generation;
 using Json.Schema.Generation.Generators;
 using Json.Schema.Generation.Intents;
 
-namespace RESTyard.Schema
+namespace RESTyard.Schema.SchemaGeneration
 {
     // DataAnnotations like [Required] not handled. 'required' keyword works
     // required to support e.g. [Required] but this is an own class by the lib

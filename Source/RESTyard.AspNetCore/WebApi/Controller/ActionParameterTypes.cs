@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using RESTyard.Schema;
+using RESTyard.Schema.SchemaGeneration;
 using RESTyard.AspNetCore.Util;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 using RESTyard.AspNetCore.WebApi.Formatter;

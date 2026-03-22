@@ -2,7 +2,7 @@
 using System.Reflection;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
-using RESTyard.Schema;
+using RESTyard.Schema.SchemaGeneration;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 using RESTyard.AspNetCore.WebApi.RouteResolver;

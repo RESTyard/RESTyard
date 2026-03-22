@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 using RESTyard.AspNetCore.Exceptions;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.JsonSchema;
-using RESTyard.Schema;
+using RESTyard.Schema.SchemaGeneration;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.Util;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
