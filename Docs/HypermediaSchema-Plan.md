@@ -168,7 +168,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Apply to entity types, properties, actions, links
 - Verify tests: HTO with attributes, with XML docs, with both (attribute wins)
 
-#### Step 2.7.1a: Emit properties POCO class per HTO
+#### Step 2.7.1a: 🔄 Emit properties POCO class per HTO
 - Emit a properties POCO class per HTO (e.g., `HypermediaCustomerHtoProperties`) containing only data properties — same filtering rules as Step 5.1 (exclude `[FormatterIgnoreHypermediaProperty]`, links, actions, keys, embedded entities)
 - Apply `[HypermediaProperty(Name = "x")]` structurally: use `x` as the C# property name on the POCO
 - Forward all non-RESTyard attributes from the HTO property verbatim (serializer attributes, `[Title]`, `[Description]`, 3rd-party)

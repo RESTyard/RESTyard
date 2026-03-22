@@ -4,7 +4,8 @@ namespace RESTyard.HtoSourceGenerators;
 
 /// <summary>
 /// Compile-time metadata for a single data property on an HTO,
-/// storing the serialized name and the CLR type for runtime schema generation.
+/// storing the serialized name, CLR type, forwarded attributes,
+/// and XML doc comments for runtime schema generation and POCO emission.
 /// </summary>
 internal readonly struct PropertyMetadata : IEquatable<PropertyMetadata>
 {
@@ -20,14 +21,35 @@ internal readonly struct PropertyMetadata : IEquatable<PropertyMetadata>
     /// </summary>
     public string TypeFullName { get; }
 
-    public PropertyMetadata(string name, string typeFullName)
+    /// <summary>
+    /// Non-RESTyard attributes from the HTO property, serialized as source code strings
+    /// ready to emit on the generated POCO property (e.g., <c>[JsonConverter(typeof(MyConverter))]</c>).
+    /// </summary>
+    public EquatableArray<string> ForwardedAttributes { get; }
+
+    /// <summary>
+    /// XML doc comment from the HTO property, to be copied verbatim onto the generated POCO property.
+    /// Null when no XML doc comment is present.
+    /// </summary>
+    public string? XmlDocComment { get; }
+
+    public PropertyMetadata(
+        string name,
+        string typeFullName,
+        EquatableArray<string> forwardedAttributes,
+        string? xmlDocComment)
     {
         Name = name;
         TypeFullName = typeFullName;
+        ForwardedAttributes = forwardedAttributes;
+        XmlDocComment = xmlDocComment;
     }
 
     public bool Equals(PropertyMetadata other)
-        => Name == other.Name && TypeFullName == other.TypeFullName;
+        => Name == other.Name
+           && TypeFullName == other.TypeFullName
+           && ForwardedAttributes.Equals(other.ForwardedAttributes)
+           && XmlDocComment == other.XmlDocComment;
 
     public override bool Equals(object? obj)
         => obj is PropertyMetadata other && Equals(other);
@@ -36,7 +58,11 @@ internal readonly struct PropertyMetadata : IEquatable<PropertyMetadata>
     {
         unchecked
         {
-            return (Name.GetHashCode() * 31) + TypeFullName.GetHashCode();
+            var hash = Name.GetHashCode() * 31;
+            hash = (hash + TypeFullName.GetHashCode()) * 31;
+            hash = (hash + ForwardedAttributes.GetHashCode()) * 31;
+            hash += XmlDocComment?.GetHashCode() ?? 0;
+            return hash;
         }
     }
 }

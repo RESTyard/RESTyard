@@ -43,7 +43,9 @@ public class HtoSchemaGeneratorTests
             .ToArray();
 
         fileNames.Should().BeEquivalentTo(
+            "HypermediaAddressHtoProperties.g.cs",
             "HypermediaAddressHtoSirenMapper.g.cs",
+            "HypermediaCustomerHtoProperties.g.cs",
             "HypermediaCustomerHtoSirenMapper.g.cs");
 
         GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.FullHto);
@@ -969,6 +971,151 @@ public class HtoSchemaGeneratorTests
         source.Should().Contain("Description = \"Represents a customer in the system.\"");
     }
 
+    // --- Step 2.7.1a: Properties POCO generation ---
+
+    [Fact]
+    public void SimpleHto_generates_properties_poco()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.SimpleHto);
+        var poco = GetGeneratedPoco(result, "HypermediaCustomerHto");
+
+        poco.Should().Contain("public class HypermediaCustomerHtoProperties");
+        poco.Should().Contain("public string Name { get; set; }");
+        poco.Should().Contain("public int Age { get; set; }");
+    }
+
+    [Fact]
+    public void SimpleHto_properties_poco_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.SimpleHto);
+    }
+
+    [Fact]
+    public void Hto_without_properties_does_not_generate_poco()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Empty", Classes = ["Empty"])]
+            public class HypermediaEmptyHto : HypermediaObject
+            {
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+        result.GeneratedTrees.Should().NotContain(t => t.FilePath.Contains("Properties.g.cs"));
+    }
+
+    [Fact]
+    public void MixedAttributes_poco_forwards_third_party_attributes()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithMixedAttributes);
+        var poco = GetGeneratedPoco(result, "HypermediaProductHto");
+
+        // [JsonPropertyName] should be forwarded (full attribute class name with Attribute suffix)
+        poco.Should().Contain("JsonPropertyNameAttribute(\"display_name\")");
+
+        // [JsonConverter] should be forwarded
+        poco.Should().Contain("JsonConverterAttribute(typeof(global::TestHtos.MyCustomConverter))");
+    }
+
+    [Fact]
+    public void MixedAttributes_poco_excludes_restyard_attributes()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithMixedAttributes);
+        var poco = GetGeneratedPoco(result, "HypermediaProductHto");
+
+        // RESTyard attributes should NOT appear
+        poco.Should().NotContain("HypermediaProperty");
+        poco.Should().NotContain("FormatterIgnore");
+        poco.Should().NotContain("KeyAttribute");
+        poco.Should().NotContain("Relations");
+        poco.Should().NotContain("HypermediaAction");
+    }
+
+    [Fact]
+    public void MixedAttributes_poco_applies_HypermediaProperty_name_structurally()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithMixedAttributes);
+        var poco = GetGeneratedPoco(result, "HypermediaProductHto");
+
+        // [HypermediaProperty(Name = "DisplayName")] should rename the property
+        poco.Should().Contain("public string DisplayName { get; set; }");
+        // Original C# name "Name" should not appear as a property
+        poco.Should().NotMatchRegex(@"public string Name\b");
+    }
+
+    [Fact]
+    public void MixedAttributes_poco_excludes_FormatterIgnore_and_Key_properties()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithMixedAttributes);
+        var poco = GetGeneratedPoco(result, "HypermediaProductHto");
+
+        // [FormatterIgnoreHypermediaProperty] properties excluded
+        poco.Should().NotContain("InternalCode");
+
+        // Links and actions excluded
+        poco.Should().NotContain("Self");
+        poco.Should().NotContain("Mark");
+    }
+
+    [Fact]
+    public void MixedAttributes_poco_includes_Key_property_without_Key_attribute()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithMixedAttributes);
+        var poco = GetGeneratedPoco(result, "HypermediaProductHto");
+
+        // [Key] properties are data properties that also serve as route keys.
+        // They appear in Siren output and the POCO, but the [Key] attribute itself
+        // is RESTyard-specific and should not be forwarded.
+        poco.Should().Contain("public int Id { get; set; }");
+        poco.Should().NotContain("KeyAttribute");
+        poco.Should().NotContain("RouteResolver");
+    }
+
+    [Fact]
+    public void MixedAttributes_poco_copies_xml_doc_comments()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithMixedAttributes);
+        var poco = GetGeneratedPoco(result, "HypermediaProductHto");
+
+        poco.Should().Contain("/// <summary>The product display name.</summary>");
+        poco.Should().Contain("/// <summary>The product price in USD.</summary>");
+    }
+
+    [Fact]
+    public void MixedAttributes_poco_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithMixedAttributes);
+    }
+
+    [Fact]
+    public void FullHto_generates_poco_for_each_hto_with_properties()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.FullHto);
+
+        result.GeneratedTrees.Should().Contain(t => t.FilePath.Contains("HypermediaCustomerHtoProperties.g.cs"));
+        result.GeneratedTrees.Should().Contain(t => t.FilePath.Contains("HypermediaAddressHtoProperties.g.cs"));
+    }
+
+    [Fact]
+    public void FullHto_poco_excludes_links_actions_embedded()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.FullHto);
+        var poco = GetGeneratedPoco(result, "HypermediaCustomerHto");
+
+        poco.Should().Contain("public string Name { get; set; }");
+        poco.Should().Contain("public int Age { get; set; }");
+        poco.Should().NotContain("Self");
+        poco.Should().NotContain("BestFriend");
+        poco.Should().NotContain("MarkAsFavorite");
+        poco.Should().NotContain("BuyCar");
+        poco.Should().NotContain("Address");
+    }
+
     private static string GetGeneratedSource(
         GeneratorDriverRunResult result,
         string htoClassName)
@@ -977,6 +1124,17 @@ public class HtoSchemaGeneratorTests
             .SingleOrDefault(t => t.FilePath.Contains($"{htoClassName}SirenMapper"));
 
         tree.Should().NotBeNull($"expected generated source for {htoClassName}");
+        return tree!.GetText().ToString();
+    }
+
+    private static string GetGeneratedPoco(
+        GeneratorDriverRunResult result,
+        string htoClassName)
+    {
+        var tree = result.GeneratedTrees
+            .SingleOrDefault(t => t.FilePath.Contains($"{htoClassName}Properties.g.cs"));
+
+        tree.Should().NotBeNull($"expected generated POCO for {htoClassName}");
         return tree!.GetText().ToString();
     }
 }

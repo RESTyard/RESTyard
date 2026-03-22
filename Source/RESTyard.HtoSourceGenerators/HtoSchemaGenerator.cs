@@ -52,11 +52,28 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     private const string IEmbeddedEntityBaseFullName =
         "RESTyard.AspNetCore.Hypermedia.IEmbeddedEntity";
 
+    private const string KeyAttributeFullName =
+        "RESTyard.AspNetCore.WebApi.RouteResolver.KeyAttribute";
+
     private const string TitleAttributeFullName =
         "Json.Schema.Generation.TitleAttribute";
 
     private const string DescriptionAttributeFullName =
         "Json.Schema.Generation.DescriptionAttribute";
+
+    /// <summary>
+    /// RESTyard-specific attributes that should NOT be forwarded to the generated properties POCO.
+    /// These are consumed by the source generator and applied structurally.
+    /// </summary>
+    private static readonly HashSet<string> RestyardAttributeFullNames = new()
+    {
+        HypermediaObjectAttributeFullName,
+        FormatterIgnoreAttributeFullName,
+        RelationsAttributeFullName,
+        HypermediaActionAttributeFullName,
+        HypermediaPropertyAttributeFullName,
+        KeyAttributeFullName,
+    };
 
     private const string HypermediaActionGenericFullName =
         "RESTyard.AspNetCore.Hypermedia.Actions.HypermediaAction<TParameter>";
@@ -111,6 +128,13 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             spc.AddSource(
                 $"{metadata.ClassName}SirenMapper.g.cs",
                 GenerateSchemaSource(metadata));
+
+            if (metadata.Properties.Length > 0)
+            {
+                spc.AddSource(
+                    $"{metadata.ClassName}Properties.g.cs",
+                    GeneratePropertiesPoco(metadata));
+            }
         });
     }
 
@@ -208,7 +232,9 @@ public class HtoSchemaGenerator : IIncrementalGenerator
 
                 var name = GetPropertySerializationName(member);
                 var typeFullName = member.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-                properties.Add(new PropertyMetadata(name, typeFullName));
+                var forwardedAttributes = GetForwardedAttributes(member);
+                var xmlDocComment = GetXmlDocComment(member);
+                properties.Add(new PropertyMetadata(name, typeFullName, forwardedAttributes, xmlDocComment));
             }
 
             current = current.BaseType;
@@ -1145,6 +1171,218 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         {
             return null;
         }
+    }
+
+    /// <summary>
+    /// Collects non-RESTyard attributes from a property symbol, serialized as source code strings.
+    /// </summary>
+    private static EquatableArray<string> GetForwardedAttributes(IPropertySymbol property)
+    {
+        var result = new List<string>();
+
+        foreach (var attr in property.GetAttributes())
+        {
+            var attrClass = attr.AttributeClass;
+            if (attrClass == null)
+            {
+                continue;
+            }
+
+            var fullName = attrClass.ToDisplayString();
+            if (RestyardAttributeFullNames.Contains(fullName))
+            {
+                continue;
+            }
+
+            var serialized = SerializeAttribute(attr);
+            if (serialized != null)
+            {
+                result.Add(serialized);
+            }
+        }
+
+        return new EquatableArray<string>(result.ToImmutableArray());
+    }
+
+    /// <summary>
+    /// Serializes an <see cref="AttributeData"/> to a source code string (e.g., <c>[JsonConverter(typeof(MyConverter))]</c>).
+    /// </summary>
+    private static string? SerializeAttribute(AttributeData attr)
+    {
+        var attrClass = attr.AttributeClass;
+        if (attrClass == null)
+        {
+            return null;
+        }
+
+        var sb = new StringBuilder();
+        sb.Append('[');
+        sb.Append(attrClass.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+
+        var hasArgs = attr.ConstructorArguments.Length > 0 || attr.NamedArguments.Length > 0;
+        if (hasArgs)
+        {
+            sb.Append('(');
+            var first = true;
+
+            foreach (var arg in attr.ConstructorArguments)
+            {
+                if (!first) sb.Append(", ");
+                first = false;
+                sb.Append(FormatTypedConstant(arg));
+            }
+
+            foreach (var named in attr.NamedArguments)
+            {
+                if (!first) sb.Append(", ");
+                first = false;
+                sb.Append(named.Key).Append(" = ").Append(FormatTypedConstant(named.Value));
+            }
+
+            sb.Append(')');
+        }
+
+        sb.Append(']');
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Formats a <see cref="TypedConstant"/> as a C# source code literal.
+    /// </summary>
+    private static string FormatTypedConstant(TypedConstant constant)
+    {
+        if (constant.Kind == TypedConstantKind.Error)
+        {
+            return "default";
+        }
+
+        if (constant.Kind == TypedConstantKind.Array)
+        {
+            var elements = string.Join(", ", constant.Values.Select(FormatTypedConstant));
+            return $"new[] {{ {elements} }}";
+        }
+
+        if (constant.Kind == TypedConstantKind.Type && constant.Value is INamedTypeSymbol typeSymbol)
+        {
+            return $"typeof({typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})";
+        }
+
+        if (constant.Kind == TypedConstantKind.Enum)
+        {
+            var enumType = constant.Type;
+            if (enumType != null)
+            {
+                return $"({enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){constant.Value}";
+            }
+        }
+
+        if (constant.Value is string s)
+        {
+            return $"\"{EscapeString(s)}\"";
+        }
+
+        if (constant.Value is bool b)
+        {
+            return b ? "true" : "false";
+        }
+
+        if (constant.Value == null)
+        {
+            return "null";
+        }
+
+        return constant.Value.ToString();
+    }
+
+    /// <summary>
+    /// Gets the raw XML doc comment from a symbol's declaring syntax,
+    /// formatted as lines of <c>/// </c> comments ready to emit in generated source.
+    /// Returns null when no XML doc comment is present.
+    /// </summary>
+    private static string? GetXmlDocComment(ISymbol symbol)
+    {
+        var xml = symbol.GetDocumentationCommentXml();
+        if (string.IsNullOrEmpty(xml))
+        {
+            return null;
+        }
+
+        // The XML returned by GetDocumentationCommentXml() wraps content in <member>...</member>.
+        // Extract the inner elements and format as /// comments.
+        try
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(xml);
+            var memberNode = doc.SelectSingleNode("//member");
+            if (memberNode == null || !memberNode.HasChildNodes)
+            {
+                return null;
+            }
+
+            var sb = new StringBuilder();
+            foreach (XmlNode child in memberNode.ChildNodes)
+            {
+                if (child.NodeType == XmlNodeType.Element)
+                {
+                    var outerXml = child.OuterXml.Trim();
+                    sb.Append("/// ").AppendLine(outerXml);
+                }
+            }
+
+            var result = sb.ToString().TrimEnd();
+            return string.IsNullOrEmpty(result) ? null : result;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Emits a properties POCO class for the given HTO metadata.
+    /// The POCO contains only data properties with non-RESTyard attributes forwarded
+    /// and XML doc comments copied verbatim.
+    /// </summary>
+    internal static string GeneratePropertiesPoco(HtoMetadata metadata)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("// <auto-generated/>");
+        sb.AppendLine("#nullable enable");
+        sb.AppendLine();
+
+        if (!string.IsNullOrEmpty(metadata.Namespace))
+        {
+            sb.Append("namespace ").Append(metadata.Namespace).AppendLine(";");
+            sb.AppendLine();
+        }
+
+        sb.Append("public class ").Append(metadata.ClassName).AppendLine("Properties");
+        sb.AppendLine("{");
+
+        foreach (var prop in metadata.Properties)
+        {
+            if (prop.XmlDocComment != null)
+            {
+                // Emit each line of the XML doc comment with proper indentation
+                foreach (var line in prop.XmlDocComment.Split('\n'))
+                {
+                    var trimmed = line.TrimEnd('\r');
+                    sb.Append("    ").AppendLine(trimmed);
+                }
+            }
+
+            foreach (var attr in prop.ForwardedAttributes)
+            {
+                sb.Append("    ").AppendLine(attr);
+            }
+
+            sb.Append("    public ").Append(prop.TypeFullName).Append(' ').Append(prop.Name)
+                .AppendLine(" { get; set; } = default!;");
+        }
+
+        sb.AppendLine("}");
+
+        return sb.ToString();
     }
 
     private static string EscapeString(string value)

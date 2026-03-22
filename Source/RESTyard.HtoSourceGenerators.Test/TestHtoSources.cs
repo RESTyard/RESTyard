@@ -398,6 +398,56 @@ internal static class TestHtoSources
         """;
 
     /// <summary>
+    /// HTO with 3rd-party attributes, RESTyard attributes, and XML doc comments
+    /// for testing properties POCO generation.
+    /// </summary>
+    internal const string HtoWithMixedAttributes = $$"""
+        {{Usings}}
+        using System.Text.Json.Serialization;
+        using RESTyard.AspNetCore.WebApi.RouteResolver;
+
+        namespace TestHtos;
+
+        public class MyCustomConverter : JsonConverter<string>
+        {
+            public override string? Read(ref System.Text.Json.Utf8JsonReader reader, Type typeToConvert, System.Text.Json.JsonSerializerOptions options) => reader.GetString();
+            public override void Write(System.Text.Json.Utf8JsonWriter writer, string value, System.Text.Json.JsonSerializerOptions options) => writer.WriteStringValue(value);
+        }
+
+        [HypermediaObject(Title = "Product", Classes = ["Product"])]
+        public class HypermediaProductHto : HypermediaObject
+        {
+            /// <summary>The product display name.</summary>
+            [JsonPropertyName("display_name")]
+            [HypermediaProperty(Name = "DisplayName")]
+            public string Name { get; set; } = string.Empty;
+
+            [JsonConverter(typeof(MyCustomConverter))]
+            public string SerialNumber { get; set; } = string.Empty;
+
+            [FormatterIgnoreHypermediaProperty]
+            public string InternalCode { get; set; } = string.Empty;
+
+            [Key]
+            public int Id { get; set; }
+
+            /// <summary>The product price in USD.</summary>
+            public decimal Price { get; set; }
+
+            [Relations(["self"])]
+            public ILink<HypermediaProductHto> Self { get; set; } = default!;
+
+            [HypermediaAction]
+            public MarkAction? Mark { get; set; }
+        }
+
+        public class MarkAction : HypermediaAction
+        {
+            public MarkAction() : base(() => true) { }
+        }
+        """;
+
+    /// <summary>
     /// HTO combining properties, links, actions, and embedded entities.
     /// </summary>
     internal const string FullHto = $$"""
