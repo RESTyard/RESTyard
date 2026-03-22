@@ -274,7 +274,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - **Examples**: annotated JSON snippets showing a real schema (e.g., from CarShack) with callouts explaining each section
 - **CLI usage**: how to generate schema artifacts with `--generate-schema`, format selection
 
-#### Step 2.10: Document the source generator for server developers (Docs/HypermediaSchema/)
+#### Step 2.10: ✅ Document the source generator for server developers (Docs/HypermediaSchema/)
 - seperate document
 - Getting started guide: how the source generator is enabled (bundled in NuGet after 2.10), what it generates (`GetSchema()`, schema registry, assembly attribute)
 - Explain `[HypermediaSchemaName]` for custom entity names, when and why to use it (multi-assembly collisions, shorter names for docs/diagrams)
@@ -290,7 +290,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
         Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   ```
 - This enables consumers who reference only `RESTyard.AspNetCore` to get both the analyzers and the source generator automatically
-- clean up carshack project reference to HtoSourceGenerators
+- clean up carshack project reference to HtoSourceGenerators and update docs "SourceGenerator.md"
 - Defer to after the source generator is feature-complete (link analysis, action analysis, etc.)
 
 ### Phase 3: Schema Endpointi 
