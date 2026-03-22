@@ -31,4 +31,8 @@
     <ProjectReference Include="..\RESTyard.Schema\RESTyard.Schema.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="schema-output\" />
+  </ItemGroup>
+
 </Project>

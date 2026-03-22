@@ -23,6 +23,10 @@
         "environmentVariables": {
             "ASPNETCORE_ENVIRONMENT": "Development"
         }
+    },
+    "Generate Schema": {
+        "commandName": "Project",
+        "commandLineArgs": "--generate-schema --schema-output ./schema-output"
     }
   }
 }
