@@ -961,7 +961,7 @@ public class HtoSchemaGeneratorTests
         var registry = GetGeneratedRegistry(result);
 
         registry.Should().Contain("HypermediaSchemaRegistry_TestAssembly");
-        registry.Should().Contain("[assembly: global::RESTyard.AspNetCore.Hypermedia.Attributes.HypermediaSchemaRegistryAttribute(typeof(HypermediaSchemaRegistry_TestAssembly))]");
+        registry.Should().Contain("[assembly: global::RESTyard.Schema.Model.HypermediaSchemaRegistryAttribute(typeof(HypermediaSchemaRegistry_TestAssembly))]");
     }
 
     [Fact]

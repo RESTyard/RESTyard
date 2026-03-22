@@ -1,6 +1,6 @@
 using System;
 
-namespace RESTyard.AspNetCore.Hypermedia.Attributes;
+namespace RESTyard.Schema.Model;
 
 /// <summary>
 /// Assembly-level attribute emitted by the RESTyard source generator, pointing to the

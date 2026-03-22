@@ -221,7 +221,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - The registry method calls each HTO's `GetSchema()` — passing `IJsonSchemaFactory` where needed, parameterless where not
 - Verify tests: snapshot the generated registry for a multi-HTO source, verify attribute is emitted
 
-#### Step 2.9.2: `HypermediaSchemaOptions` and DI integration
+#### Step 2.9.2: 🔄 `HypermediaSchemaOptions` and DI integration
 - Define `HypermediaSchemaOptions` class in `RESTyard.AspNetCore`: `Title`, `Description`, `ApiVersion`, `EntryPointName`, `ExternalDocsUrl` — all nullable with sensible defaults (assembly name for title, assembly version for ApiVersion, auto-detect entry point from entity with Siren class `"EntryPoint"`)
 - Define `AddHypermediaSchema(Action<HypermediaSchemaOptions>?)` as a **separate** extension method on `IServiceCollection`, decoupled from `AddHypermediaExtensions`
 - `AddHypermediaSchema()` auto-discovers per-assembly registries by scanning all loaded assemblies (`AppDomain.CurrentDomain.GetAssemblies()`) for `[HypermediaSchemaRegistryAttribute]` — does NOT read from `HypermediaExtensionsOptions`

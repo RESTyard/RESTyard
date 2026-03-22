@@ -1583,7 +1583,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         sb.AppendLine();
 
         // Assembly attribute for runtime discovery
-        sb.Append("[assembly: global::RESTyard.AspNetCore.Hypermedia.Attributes.HypermediaSchemaRegistryAttribute(typeof(")
+        sb.Append("[assembly: global::RESTyard.Schema.Model.HypermediaSchemaRegistryAttribute(typeof(")
             .Append(registryClassName).AppendLine("))]");
         sb.AppendLine();
 

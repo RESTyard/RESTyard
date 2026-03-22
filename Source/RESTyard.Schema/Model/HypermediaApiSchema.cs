@@ -61,4 +61,26 @@ public class HypermediaApiSchema
     /// </summary>
     [JsonPropertyName("definitions")]
     public IDictionary<string, JsonDocument> Definitions { get; set; } = new Dictionary<string, JsonDocument>();
+
+    /// <summary>
+    /// Deserializes a <see cref="HypermediaApiSchema"/> from a JSON string.
+    /// </summary>
+    /// <param name="json">The JSON string representing the schema.</param>
+    /// <returns>The deserialized schema.</returns>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
+    public static HypermediaApiSchema FromJson(string json)
+    {
+        return JsonSerializer.Deserialize<HypermediaApiSchema>(json)
+               ?? throw new JsonException("Failed to deserialize HypermediaApiSchema: result was null.");
+    }
+
+    /// <summary>
+    /// Serializes this schema to a JSON string.
+    /// </summary>
+    /// <param name="indented">Whether to format the JSON with indentation. Default is <c>true</c>.</param>
+    /// <returns>The JSON string representation of the schema.</returns>
+    public string ToJson(bool indented = true)
+    {
+        return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = indented });
+    }
 }

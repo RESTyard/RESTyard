@@ -65,7 +65,7 @@ internal static class SchemaTypeNames
 
     // Registry
     internal const string HypermediaSchemaRegistryAttributeFullName =
-        "RESTyard.AspNetCore.Hypermedia.Attributes.HypermediaSchemaRegistryAttribute";
+        "RESTyard.Schema.Model.HypermediaSchemaRegistryAttribute";
     internal const string HypermediaSchemaRegistryPrefix = "HypermediaSchemaRegistry_";
 
     // Json.Schema (JsonSchema.Net)

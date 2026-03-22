@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Last completed: **Step 2.9.1** (Schema registry generation). Next: **Step 2.9.2** (HypermediaSchemaOptions and DI integration).
+> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Currently: **Step 2.9.2** (HypermediaSchemaOptions and DI integration). Last completed: **Step 2.9.1** (Schema registry generation).
 
 ## Table of Contents
 
