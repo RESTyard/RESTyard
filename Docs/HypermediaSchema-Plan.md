@@ -263,7 +263,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Acceptance: CarShack `Program.cs` has `AddHypermediaSchema()` + one CLI line, schema JSON contains configured title/description
 
 #### Step 2.9.5: Document the HypermediaApiSchema for users
-- Write user-facing documentation for the schema model in RESTyard-Docs
+- Write user-facing documentation for the schema model in Docs/HypermediaSchema/
 - **Schema overview**: what the schema describes (type-level metadata, not runtime URLs), how it complements Siren responses
 - **Top-level `HypermediaApiSchema`**: explain each field — `SchemaVersion` (format versioning), `ApiVersion` (user's API version), `EntryPointName` (navigation start), `Definitions` (shared JSON Schema types referenced via `$ref`)
 - **`EntityTypeSchema`**: `Name` (identifier for cross-references, derived from class name or `[HypermediaSchemaName]`), `Classes` (Siren wire-format matching), `PropertiesSchema` (JSON Schema as `JsonDocument` — type, required, descriptions), relationship to the Siren `properties` bag
@@ -274,7 +274,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - **Examples**: annotated JSON snippets showing a real schema (e.g., from CarShack) with callouts explaining each section
 - **CLI usage**: how to generate schema artifacts with `--generate-schema`, format selection
 
-#### Step 2.10: Document the source generator for server developers (RESTyard-Docs)
+#### Step 2.10: Document the source generator for server developers (Docs/HypermediaSchema/)
 - Getting started guide: how the source generator is enabled (bundled in NuGet after 2.10), what it generates (`GetSchema()`, schema registry, assembly attribute)
 - Explain `[HypermediaSchemaName]` for custom entity names, when and why to use it (multi-assembly collisions, shorter names for docs/diagrams)
 - What `GetSchema()` produces and how it uses `IJsonSchemaFactory` at runtime
@@ -460,7 +460,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 #### Step 8.3: Deprecate reflection-based formatter
 - Mark `SirenHypermediaFormatter` and `SirenConverter` as `[Obsolete]`
-- Document migration path in RESTyard-Docs
+- Document migration path in Docs/HypermediaSchema/
 
 ### Phase 9: Revisit Open Questions
 
@@ -483,7 +483,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 **Goal:** User-facing documentation for all schema and source generation features.
 
-#### Step 10.1: Update RESTyard-Docs
+#### Step 10.1: Update Docs/HypermediaSchema/
 - Document the schema endpoint, model, and Mermaid mapper
 - Document the CLI generation mode (`GenerateSchemaIfRequested`) and all CLI args
 - Document `MermaidMapperOptions` (`IncludeProperties`, `IncludeActions`) and `MarkdownMapperOptions` (`IncludeTableOfContents`, `IncludeDiagram`) — API usage and corresponding CLI args (`--mermaid-include-properties`, `--mermaid-include-actions`, `--markdown-include-toc`, `--markdown-include-diagram`)
