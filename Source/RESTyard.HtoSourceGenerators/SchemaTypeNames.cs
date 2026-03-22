@@ -63,6 +63,11 @@ internal static class SchemaTypeNames
     internal const string JsonSchemaFactoryNamespace = "RESTyard.Schema.SchemaGeneration";
     internal const string IJsonSchemaFactory = "IJsonSchemaFactory";
 
+    // Registry
+    internal const string HypermediaSchemaRegistryAttributeFullName =
+        "RESTyard.AspNetCore.Hypermedia.Attributes.HypermediaSchemaRegistryAttribute";
+    internal const string HypermediaSchemaRegistryPrefix = "HypermediaSchemaRegistry_";
+
     // Json.Schema (JsonSchema.Net)
     internal const string JsonSchemaNamespace = "Json.Schema";
     internal const string JsonSchema = "JsonSchema";

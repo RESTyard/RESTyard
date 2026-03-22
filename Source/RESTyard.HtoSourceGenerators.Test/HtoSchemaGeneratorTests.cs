@@ -46,7 +46,8 @@ public class HtoSchemaGeneratorTests
             "HypermediaAddressHtoProperties.g.cs",
             "HypermediaAddressHtoSirenMapper.g.cs",
             "HypermediaCustomerHtoProperties.g.cs",
-            "HypermediaCustomerHtoSirenMapper.g.cs");
+            "HypermediaCustomerHtoSirenMapper.g.cs",
+            "HypermediaSchemaRegistry.g.cs");
 
         GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.FullHto);
     }
@@ -951,6 +952,94 @@ public class HtoSchemaGeneratorTests
         source.Should().Contain("Description = \"Represents a customer in the system.\"");
     }
 
+    // --- Step 2.9.1: Schema registry generation ---
+
+    [Fact]
+    public void FullHto_generates_registry_with_assembly_attribute()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.FullHto);
+        var registry = GetGeneratedRegistry(result);
+
+        registry.Should().Contain("HypermediaSchemaRegistry_TestAssembly");
+        registry.Should().Contain("[assembly: global::RESTyard.AspNetCore.Hypermedia.Attributes.HypermediaSchemaRegistryAttribute(typeof(HypermediaSchemaRegistry_TestAssembly))]");
+    }
+
+    [Fact]
+    public void FullHto_registry_calls_GetSchema_for_each_hto()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.FullHto);
+        var registry = GetGeneratedRegistry(result);
+
+        // Customer has properties → needs schemaFactory
+        registry.Should().Contain("HypermediaCustomerHtoSirenMapper.GetSchema(schemaFactory)");
+        // Address has properties → needs schemaFactory
+        registry.Should().Contain("HypermediaAddressHtoSirenMapper.GetSchema(schemaFactory)");
+    }
+
+    [Fact]
+    public void Registry_uses_parameterless_GetSchema_for_hto_without_properties()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Empty", Classes = ["Empty"])]
+            public class HypermediaEmptyHto : HypermediaObject
+            {
+            }
+
+            [HypermediaObject(Title = "Other", Classes = ["Other"])]
+            public class HypermediaOtherHto : HypermediaObject
+            {
+                public string Name { get; set; } = string.Empty;
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+        var registry = GetGeneratedRegistry(result);
+
+        // Empty has no properties → parameterless
+        registry.Should().Contain("HypermediaEmptyHtoSirenMapper.GetSchema()");
+        // Other has properties → with factory
+        registry.Should().Contain("HypermediaOtherHtoSirenMapper.GetSchema(schemaFactory)");
+    }
+
+    [Fact]
+    public void FullHto_registry_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.FullHto);
+    }
+
+    [Fact]
+    public void SimpleHto_registry_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.SimpleHto);
+    }
+
+    [Fact]
+    public void Source_without_HypermediaAssembly_has_no_registry()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                public string Name { get; set; } = string.Empty;
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+        result.GeneratedTrees.Should().NotContain(t => t.FilePath.Contains("Registry"));
+    }
+
     // --- Step 2.9: [HypermediaAssembly] opt-in gating ---
 
     [Fact]
@@ -1250,6 +1339,15 @@ public class HtoSchemaGeneratorTests
             .SingleOrDefault(t => t.FilePath.Contains($"{htoClassName}Properties.g.cs"));
 
         tree.Should().NotBeNull($"expected generated POCO for {htoClassName}");
+        return tree!.GetText().ToString();
+    }
+
+    private static string GetGeneratedRegistry(GeneratorDriverRunResult result)
+    {
+        var tree = result.GeneratedTrees
+            .SingleOrDefault(t => t.FilePath.Contains("HypermediaSchemaRegistry.g.cs"));
+
+        tree.Should().NotBeNull("expected generated schema registry");
         return tree!.GetText().ToString();
     }
 }

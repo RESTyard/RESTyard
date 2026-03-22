@@ -214,7 +214,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   - `HypermediaAssemblyDiscovery.GetAssemblies()` as alternative to manual assembly lists
   - The `Schema = false` safety hatch for disabling generation without removing discovery
 
-#### Step 2.9.1: Schema registry generation
+#### Step 2.9.1: ✅ Schema registry generation
 - Emit per-assembly `HypermediaSchemaRegistry_<AssemblyName>` class with static `GetSchemas(IJsonSchemaFactory)` collecting all `GetSchema()` results
 - Emit `[assembly: HypermediaSchemaRegistryAttribute(typeof(Registry))]` attribute for discovery
 - Define `HypermediaSchemaRegistryAttribute` in `RESTyard.AspNetCore` (so it's available at runtime for scanning)
