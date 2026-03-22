@@ -231,15 +231,26 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - `AddHypermediaSchema()` logs a warning if zero registries are found — catches "forgot the attribute" and "attribute present but `Schema = false`" cases
 - Test: `AddHypermediaSchema()` with no registries logs warning
 
-#### Step 2.9.3: CLI schema generation (`GenerateSchemaIfRequested`)
-- Add `GenerateSchemaIfRequested(this IHost host, string[] args, HypermediaSchemaOptions? options = null)` extension method in `RESTyard.AspNetCore` — extends `IHost` (not `WebApplication`) so it works with generic host and non-web scenarios. When `options` is passed explicitly, it rebuilds the schema with the overridden options instead of using the DI singleton (xmldoc documents this).
-- Parse CLI args: `--generate-schema` (trigger), `--schema-output <path>` (default: `./generated-schema`), `--schema-format <formats>` (default: all)
-- Resolve `HypermediaApiSchema` singleton from DI (already aggregated during `AddHypermediaSchema()`); if explicit `options` passed, rebuild with overridden options
-- Generate requested output files using `RESTyard.Schema` mappers (JSON serialization, `ToApiMap()`, `ToClassDiagram()`, `ToDocumentation()`)
-- Return `true` if `--generate-schema` was present, `false` otherwise
+#### Step 2.9.3: CLI schema generation
+- **Core logic in `RESTyard.Schema`:** Add `HypermediaSchemaGenerator` static class with:
+  - `Generate(HypermediaApiSchema schema, string outputPath, SchemaOutputFormats formats, SchemaGeneratorOptions? options)` — writes requested output files using `RESTyard.Schema` mappers (JSON via `ToJson()`, `ToApiMap()`, `ToClassDiagram()`, `ToDocumentation()`)
+  - `GenerateIfRequested(HypermediaApiSchema schema, string[] args)` → `bool` — parses CLI args, calls `Generate()`, returns `true` if `--generate-schema` was present
+  - `SchemaOutputFormats` flags enum: `Json`, `MermaidMap`, `MermaidClass`, `Markdown`, `All`
+  - `SchemaGeneratorOptions` for mapper pass-through: `MermaidIncludeProperties`, `MermaidIncludeActions`, `MarkdownIncludeToc`, `MarkdownIncludeDiagram`
+- **Convenience extension in `RESTyard.AspNetCore`:** Add `GenerateSchemaIfRequested(this IHost host, string[] args)` → `bool` that resolves `HypermediaApiSchema` from DI and delegates to `HypermediaSchemaGenerator.GenerateIfRequested()`
+- CLI args: `--generate-schema` (trigger), `--schema-output <path>` (default: `./generated-schema`), `--schema-format <formats>` (default: all), `--mermaid-include-properties`, `--mermaid-include-actions`, `--markdown-include-toc`, `--markdown-include-diagram`
 - Schema format selection: `--schema-format json` produces only `schema.json`, `--schema-format mermaid-map,markdown` produces only those two
-- Mapper options pass-through: `--mermaid-include-properties`, `--mermaid-include-actions`, `--markdown-include-toc`, `--markdown-include-diagram`
-- Simple unit tests only (no CarShack): test with a manually registered `HypermediaApiSchema` singleton — verify arg parsing, file output, format selection, return value. End-to-end CLI testing deferred to Step 2.9.4.
+- Simple unit tests in `RESTyard.Schema.Test`: test `HypermediaSchemaGenerator` with a hand-built schema — verify arg parsing, file output, format selection, return value. No CarShack — end-to-end testing deferred to Step 2.9.4.
+- Usage patterns (for future user documentation):
+  ```csharp
+  // ASP.NET Core (convenience):
+  if (app.GenerateSchemaIfRequested(args)) return;
+  app.Run();
+
+  // Tooling (no ASP.NET Core):
+  var schema = HypermediaSchemaBuilder.Build(factory, options);
+  HypermediaSchemaGenerator.Generate(schema, "./output", SchemaOutputFormats.All);
+  ```
 
 #### Step 2.9.4: CarShack integration and end-to-end verification
 - Add `[assembly: HypermediaAssembly]` to CarShack

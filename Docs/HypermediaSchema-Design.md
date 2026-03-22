@@ -1143,9 +1143,12 @@ Developers and CI pipelines need a way to generate schema JSON, Mermaid diagrams
 
 ### Approach: Extension Method on `IHost`
 
-The server application generates schema artifacts after building the DI container but before `app.Run()`. This reuses the full DI container, source-generated schema registries, `IJsonSchemaFactory` configuration, and all user extensions — no separate tool needs to reconstruct the schema from scratch.
+The schema generation is split into two layers:
 
-The user adds one line to `Program.cs`:
+1. **Core logic in `RESTyard.Schema`** — `HypermediaSchemaGenerator` is a static class that takes a `HypermediaApiSchema`, output path, formats, and mapper options. No DI, no hosting — pure file generation. This is what tooling (CI scripts, custom generators) calls directly.
+2. **Convenience extension in `RESTyard.AspNetCore`** — `GenerateSchemaIfRequested(this IHost host, string[] args)` resolves the schema from DI and delegates to the core generator. This is what server applications use.
+
+**ASP.NET Core usage** (one line in `Program.cs`):
 
 ```csharp
 var app = builder.Build();
@@ -1167,26 +1170,19 @@ host.Run();
 
 It checks for `--generate-schema` in `args`. If present, it generates the requested artifacts, writes them to disk, and returns `true` (the caller exits). If absent, it returns `false` and the host starts normally.
 
-The method accepts an optional `HypermediaSchemaOptions` parameter that overrides the DI-registered options — useful for generating variants (e.g., different title for internal vs. external docs):
+**Tooling usage** (no ASP.NET Core, no hosting):
 
 ```csharp
-// Override schema metadata for this generation
-if (app.GenerateSchemaIfRequested(args, new HypermediaSchemaOptions
+var factory = new JsonSchemaFactory();
+var schema = HypermediaSchemaBuilder.Build(factory, new HypermediaSchemaOptions
 {
-    Title = "Internal API Reference",
-    Description = "Full schema including admin endpoints"
-}))
-    return;
+    Title = "Customer API",
+    ApiVersion = "1.0.0",
+});
+HypermediaSchemaGenerator.Generate(schema, "./output", SchemaOutputFormats.All);
 ```
 
-For programmatic use (tests, custom tooling), the core building logic is also available as a standalone helper:
-
-```csharp
-var schema = HypermediaSchemaBuilder.Build(serviceProvider);
-var schema = HypermediaSchemaBuilder.Build(serviceProvider, customOptions);
-```
-
-**Design decision:** Chose an explicit extension method on `IHost` over `IHostedService` (hidden magic, harder to debug) and over a separate CLI tool (can't access runtime DI configuration, misses user-registered `IJsonSchemaFactory` extensions). `IHost` rather than `WebApplication` because the schema generation needs only `IServiceProvider` — nothing web-specific. The extension method is simple, visible in `Program.cs`, and guarantees full fidelity with the runtime schema.
+**Design decision:** The core generation logic lives in `RESTyard.Schema` (no hosting dependency) so that CLI tools, CI pipelines, and non-ASP.NET Core applications can generate schema artifacts without referencing `RESTyard.AspNetCore`. The `IHost` extension in `RESTyard.AspNetCore` is a thin convenience wrapper. Chose an explicit extension method on `IHost` over `IHostedService` (hidden magic, harder to debug) and over a separate CLI tool (can't access runtime DI configuration, misses user-registered `IJsonSchemaFactory` extensions).
 
 ### How It Works
 
@@ -1196,14 +1192,17 @@ var schema = HypermediaSchemaBuilder.Build(serviceProvider, customOptions);
 2. Call each registry's `GetSchemas(IJsonSchemaFactory)` to collect all `EntityTypeSchema` instances
 3. Aggregate into a singleton `HypermediaApiSchema`, populating top-level fields from `HypermediaSchemaOptions` (with defaults for unset fields)
 
-**CLI generation** (during `GenerateSchemaIfRequested`):
+**CLI generation** (core: `HypermediaSchemaGenerator` in `RESTyard.Schema`):
 
-1. Parse `args` for `--generate-schema`; if absent, return `false`
-2. Resolve the `HypermediaApiSchema` singleton from DI
-3. If explicit `HypermediaSchemaOptions` parameter was passed, rebuild the schema with overridden options
-4. Parse remaining args (`--schema-output`, `--schema-format`)
-5. Generate requested output files using the mappers from `RESTyard.Schema`
-6. Return `true`
+1. `GenerateIfRequested(schema, args)`: parse `args` for `--generate-schema`; if absent, return `false`
+2. Parse remaining args (`--schema-output`, `--schema-format`, mapper options)
+3. Call `Generate(schema, outputPath, formats, options)` — writes files using mappers
+4. Return `true`
+
+**CLI generation** (convenience: `IHost.GenerateSchemaIfRequested` in `RESTyard.AspNetCore`):
+
+1. Resolve `HypermediaApiSchema` singleton from DI
+2. Delegate to `HypermediaSchemaGenerator.GenerateIfRequested(schema, args)`
 
 ### Registry Discovery
 
