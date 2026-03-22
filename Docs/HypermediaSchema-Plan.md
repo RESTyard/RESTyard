@@ -197,14 +197,22 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Verify tests: action parameter type with `[Obsolete]` property, entity HTO with `[Obsolete]` property — both produce `deprecated: true` in the JSON Schema
 - **Documentation required:** The built-in attribute handlers (`[Obsolete]` → `deprecated`, `[DisplayName]` → `title`, `[Description]` → `description`) MUST be documented for users — these are non-obvious behaviors that affect the generated JSON Schema
 
-#### Step 2.9: `[EnableHypermediaSourceGeneration]` attribute and opt-in gating
-- Define `EnableHypermediaSourceGenerationAttribute` in `RESTyard.AspNetCore.Hypermedia.Attributes` — `[AttributeUsage(AttributeTargets.Assembly)]` with `bool Siren` (default `false`), extensible with future format properties (e.g., `Hal`)
-- Update the source generator to check for `[assembly: EnableHypermediaSourceGeneration]` at the start of `Initialize()` — if absent, emit nothing
-- When present, always emit schema generation: `GetSchema()`, Properties POCO, schema registry
+#### Step 2.9: `[HypermediaAssembly]` attribute, opt-in gating, and assembly discovery
+- Define `HypermediaAssemblyAttribute` in `RESTyard.AspNetCore.Hypermedia.Attributes` — `[AttributeUsage(AttributeTargets.Assembly)]` with `bool Schema` (default `true`) and `bool Siren` (default `false`)
+- Add `HypermediaAssemblyDiscovery.GetAssemblies()` static helper in `RESTyard.AspNetCore` — scans `AppDomain.CurrentDomain.GetAssemblies()` for `[HypermediaAssembly]`, returns `Assembly[]`. Must have thorough XML doc: purpose, how it discovers assemblies, the loaded-assembly caveat, relationship to `[HypermediaAssembly]`, usage example with `ControllerAndHypermediaAssemblies`
+- Update the source generator to check for `[assembly: HypermediaAssembly]` — if absent, emit nothing
+- When `Schema = true` (default), emit `GetSchema()`, Properties POCO, schema registry
+- When `Schema = false`, emit nothing (safety hatch) — but assembly is still discoverable via `HypermediaAssemblyDiscovery`
+- When `Siren = true` with `Schema = false`, emit diagnostic warning and force `Schema = true` (Siren needs Properties POCO)
 - Read `Siren` property — store for Phase 5 (ToSiren emission); for now, just check and skip
-- Verify tests: source without attribute → no generated output; source with attribute → schema output as before; source with `Siren = true` → compiles (ToSiren not yet implemented)
-- Add `[assembly: EnableHypermediaSourceGeneration]` to CarShack and verify it still compiles and tests pass
-- **Documentation required:** The `[assembly: EnableHypermediaSourceGeneration]` attribute as the compile-time opt-in trigger MUST be prominently documented — without it, the generator silently does nothing, which will confuse users who expect it to work after adding the NuGet reference
+- Verify tests: source without attribute → no generated output; source with attribute → schema output as before; source with `Schema = false` → no generated output; source with `Siren = true, Schema = false` → diagnostic warning + schema generated
+- Add `[assembly: HypermediaAssembly]` to CarShack and verify it still compiles and tests pass
+- **Documentation required:** The `[assembly: HypermediaAssembly]` attribute MUST be prominently documented:
+  - Purpose: marks assemblies for RESTyard discovery and source generation
+  - Without it: generator silently does nothing, assembly not auto-discovered
+  - `Schema`/`Siren` properties and their defaults
+  - `HypermediaAssemblyDiscovery.GetAssemblies()` as alternative to manual assembly lists
+  - The `Schema = false` safety hatch for disabling generation without removing discovery
 
 #### Step 2.9.1: Schema registry generation
 - Emit per-assembly `HypermediaSchemaRegistry_<AssemblyName>` class with static `GetSchemas(IJsonSchemaFactory)` collecting all `GetSchema()` results
@@ -266,7 +274,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 ### Phase 3: Schema Endpoint
 
-**Goal:** Serve the schema at runtime via `/hypermedia-schema`. DI integration (singleton `HypermediaApiSchema`) is already done in Step 2.9.1.
+**Goal:** Serve the schema at runtime via `/hypermedia-schema`. DI integration (singleton `HypermediaApiSchema`) is already done in Step 2.9.2.
 
 #### Step 3.1: Schema endpoint
 - `MapHypermediaSchema()` endpoint (default route: `/hypermedia-schema`, configurable in HypermediaSchemaOptions )

@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Last completed: **Step 2.8.1** (ObsoleteAttributeHandler for JSON Schema). Next: **Step 2.9** (Schema registry generation).
+> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Last completed: **Step 2.8.1** (ObsoleteAttributeHandler for JSON Schema). Next: **Step 2.9** (HypermediaAssembly attribute and opt-in gating).
 
 ## Table of Contents
 
@@ -366,19 +366,50 @@ public class HypermediaCustomerHtoSirenProperties
 }
 ```
 
-### Compile-Time Opt-In: `[EnableHypermediaSourceGeneration]`
+### `[assembly: HypermediaAssembly]` — Unified Marker Attribute
 
-Source generation is opt-in per assembly via an assembly-level attribute:
+Assemblies that participate in RESTyard are marked with a single assembly-level attribute that serves three purposes:
+
+1. **Assembly discovery** — `HypermediaAssemblyDiscovery.GetAssemblies()` scans loaded assemblies for this attribute, replacing manual `ControllerAndHypermediaAssemblies` lists
+2. **Source generation gate** — the source generator only emits code for assemblies with this attribute
+3. **Feature configuration** — boolean properties control which source generation features are active
 
 ```csharp
-// in any .cs file in the HTO assembly
-[assembly: EnableHypermediaSourceGeneration]                     // schema generation (always)
-[assembly: EnableHypermediaSourceGeneration(Siren = true)]       // schema + ToSiren() mappers
-// future:
-// [assembly: EnableHypermediaSourceGeneration(Hal = true)]      // schema + ToHal() mappers
+[assembly: HypermediaAssembly]                                    // discovered + schema generation
+[assembly: HypermediaAssembly(Siren = true)]                      // + ToSiren() mappers
+[assembly: HypermediaAssembly(Schema = false)]                    // discovered only, no generation (safety hatch)
+[assembly: HypermediaAssembly(Siren = true, Schema = false)]      // warning: Schema forced to true (Siren requires it)
 ```
 
-The attribute is defined in `RESTyard.AspNetCore.Hypermedia.Attributes`. The attribute presence gates all generation — without it, nothing is emitted. Schema generation (Properties POCO, `GetSchema()`, registry) is always emitted when the attribute is present. Format-specific mappers (`ToSiren()`, future `ToHal()`) are opt-in via named boolean properties (all default `false`). This design supports future hypermedia formats without changing the attribute shape — each format adds a new property. The source generator checks for this attribute in its compilation — if absent, it emits nothing. This ensures existing projects that reference `RESTyard.AspNetCore` are not affected by the generator.
+```csharp
+[AttributeUsage(AttributeTargets.Assembly)]
+public class HypermediaAssemblyAttribute : Attribute
+{
+    public bool Schema { get; set; } = true;     // generate GetSchema(), Properties POCO, registry
+    public bool Siren { get; set; } = false;     // generate ToSiren() mappers (Phase 5)
+}
+```
+
+The attribute is defined in `RESTyard.AspNetCore.Hypermedia.Attributes`.
+
+**Rules:**
+- **No attribute** → assembly not discovered, no source generation
+- **Attribute present, defaults** → assembly discovered + schema generation enabled
+- **`Schema = false`** → assembly discovered (for route resolution) but no source generation — useful as a safety hatch if the generator has a bug
+- **`Siren = true`** → `Schema` implicitly forced to `true` (ToSiren needs the Properties POCO); if user explicitly sets `Schema = false` with `Siren = true`, the generator emits a diagnostic warning and treats `Schema` as `true`
+
+**`HypermediaAssemblyDiscovery.GetAssemblies()`** — static helper that scans `AppDomain.CurrentDomain.GetAssemblies()` for `[HypermediaAssembly]` and returns them as an array. Provides a convention-based alternative to the manual assembly list:
+
+```csharp
+builder.Services.AddHypermediaExtensions(o =>
+{
+    // Convention-based: auto-discover from [HypermediaAssembly] attributes
+    o.ControllerAndHypermediaAssemblies = HypermediaAssemblyDiscovery.GetAssemblies();
+
+    // Or manual (still supported):
+    // o.ControllerAndHypermediaAssemblies = [typeof(EntryPointController).Assembly];
+});
+```
 
 ### Generated Schema Registry
 
@@ -405,7 +436,9 @@ Schema features are activated at runtime via a **separate** DI method, decoupled
 // Core RESTyard (existing — route resolution, formatters)
 builder.Services.AddHypermediaExtensions(o =>
 {
-    o.ControllerAndHypermediaAssemblies = [typeof(EntryPointController).Assembly];
+    // Convention-based (recommended): auto-discover from [HypermediaAssembly] attributes
+    o.ControllerAndHypermediaAssemblies = HypermediaAssemblyDiscovery.GetAssemblies();
+    // Or manual: o.ControllerAndHypermediaAssemblies = [typeof(EntryPointController).Assembly];
 });
 
 // Schema feature (independent — schema endpoint, CLI generation)
@@ -424,7 +457,7 @@ builder.Services.AddHypermediaSchema(o =>
 
 `AddHypermediaSchema()` does **not** read from `HypermediaExtensionsOptions` — it discovers registries independently by scanning all loaded assemblies for `[HypermediaSchemaRegistryAttribute]`. This avoids coupling the schema feature to the core options type.
 
-**Runtime warning:** If `AddHypermediaSchema()` finds zero registries in loaded assemblies, it logs a warning: *"No HypermediaSchemaRegistry found in loaded assemblies. Ensure `[assembly: EnableHypermediaSourceGeneration]` is present in assemblies containing HTOs and that `Schema` is not set to `false`."* This catches both "forgot the attribute" and "attribute present but `Schema = false`" cases.
+**Runtime warning:** If `AddHypermediaSchema()` finds zero registries in loaded assemblies, it logs a warning: *"No HypermediaSchemaRegistry found in loaded assemblies. Ensure `[assembly: HypermediaAssembly]` is present in assemblies containing HTOs and that `Schema` is not set to `false`."* This catches both "forgot the attribute" and "attribute present but `Schema = false`" cases.
 
 ```csharp
 public class HypermediaSchemaOptions
@@ -845,7 +878,7 @@ The existing contract-first XML schema (`Hypermedia.xsd` / `Hypermedia.cs`) cont
   }
   ```
   This produces: `EntityTypeSchema.Description = "Represents an active customer account in the system."`, `LinkDescription.Description = "The customer's complete order history."`, `ActionDescription.Description = "Creates a new order for this customer."`. This is particularly valuable for the Generic MCP Server design (see `GenericMcp-Design.md`) where descriptions become MCP tool descriptions that help LLMs understand what each action/link does.
-- **Opt-in source generation via `[assembly: EnableHypermediaSourceGeneration]`**: The source generator only emits code when the assembly contains `[assembly: EnableHypermediaSourceGeneration]`. Without this attribute, referencing `RESTyard.AspNetCore` (which bundles the generator) has no effect — no generated code, no new types, no risk of name collisions with existing code. The attribute presence is the single gate for all source generation. Schema generation (Properties POCO, `GetSchema()`, registry) is always emitted. Format-specific mappers are opt-in via boolean properties — `Siren` (default `false`) for `ToSiren()` emission, with future properties for other formats (e.g., `Hal`). This avoids generating format-specific code the user doesn't need, while ensuring the shared schema infrastructure is always available. The attribute is defined in `RESTyard.AspNetCore.Hypermedia.Attributes`.
+- **Unified `[assembly: HypermediaAssembly]` attribute**: A single assembly-level attribute serves three roles: assembly discovery (replacing manual assembly lists), source generation gate, and feature configuration. Without this attribute, referencing `RESTyard.AspNetCore` (which bundles the generator) has no effect — no generated code, no new types, no risk of name collisions with existing code. Schema generation (`Schema = true`, the default) emits Properties POCO, `GetSchema()`, and the registry. Format-specific mappers (`Siren = true`, default `false`) are opt-in. `Schema = false` disables generation while keeping the assembly discoverable — a safety hatch for generator bugs. `HypermediaAssemblyDiscovery.GetAssemblies()` scans loaded assemblies for this attribute, offering a convention-based alternative to `ControllerAndHypermediaAssemblies`.
 - **Decoupled DI registration — `AddHypermediaSchema()` separate from `AddHypermediaExtensions()`**: Schema features are activated at runtime via `AddHypermediaSchema()`, a separate extension method from the core `AddHypermediaExtensions()`. This avoids coupling `HypermediaExtensionsOptions` to schema concerns. `AddHypermediaSchema()` discovers per-assembly registries independently by scanning all loaded assemblies for `[HypermediaSchemaRegistryAttribute]` — it does not read `ControllerAndHypermediaAssemblies`. This means schema configuration has its own options type (`HypermediaSchemaOptions`), its own DI registrations, and no dependency on core options being registered first. The same pattern applies to the future `AddHypermediaSirenMapper()` (Phase 5). Each feature is independently addable: core → `AddHypermediaExtensions()`, schema → `AddHypermediaSchema()`, Siren mappers → `AddHypermediaSirenMapper()`.
 - **No HTTP method in schema**: `ActionDescription` intentionally omits the HTTP method. Clients discover it at runtime from the Siren action's `method` field. Client generators emit generic "execute action" calls — the runtime Siren response dictates the transport details. This keeps the schema focused on type-level metadata, not transport concerns.
 - **Definition name collisions**: `Definitions` dictionary keys use simple class names (e.g., `"Address"`). When two types share the same simple name but differ by namespace (e.g., `Billing.Address` and `Shipping.Address`), the generator disambiguates by prefixing with the namespace segment: `"Billing_Address"`, `"Shipping_Address"`. Only the colliding names are qualified — non-colliding names stay short. The generator detects collisions across all types discovered in the compilation.
