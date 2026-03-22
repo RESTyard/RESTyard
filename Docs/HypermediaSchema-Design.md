@@ -664,29 +664,61 @@ Controller returns IHypermediaObject
     -> HTTP response
 ```
 
-### New Flow (source-generated, no formatter)
+### New Flow: Two Approaches
+
+There are two ways to use the generated `ToSiren()` mappers, addressing different needs:
+
+#### Approach 1: Direct return from controller (recommended for new APIs)
 
 ```
-Controller calls hto.ToSiren(resolver, options)
-    -> returns SirenEntity<TProperties> (plain POCO with generated properties type)
-    -> standard ASP.NET Core JSON serialization (respects all attributes on generated properties POCO)
+Controller calls this.ToSiren(hto)
+    -> extension method resolves IHypermediaRouteResolver from DI
+    -> calls hto.ToSiren(resolver) internally
+    -> returns SirenEntity<TProperties> wrapped in OkObjectResult
+    -> standard ASP.NET Core JSON serialization
     -> HTTP response
 ```
-
-Controllers call `ToSiren()` directly — no output formatter needed:
 
 ```csharp
 [HttpGet("{id}")]
 [HypermediaObjectEndpoint<HypermediaCustomerHto>(typeof(CustomerRouteKeyProducer))]
-public IActionResult Get(int id, [FromServices] IHypermediaRouteResolver resolver)
+public IActionResult Get(int id)
 {
     var customer = _customerService.Get(id);
     var hto = new HypermediaCustomerHto(customer);
-    return Ok(hto.ToSiren(resolver));
+    return this.ToSiren(hto);  // extension method on ControllerBase
 }
 ```
 
-The `SirenEntity<TProperties>` is a plain POCO — serialized as regular JSON by ASP.NET Core. The `TProperties` is a generated properties class per HTO (see [Generated Output per HTO](#generated-output-per-hto)) that carries all forwarded attributes from the HTO's properties. This ensures user-defined serializer attributes (`[JsonConverter]`, `[JsonPropertyName]`, third-party attributes, etc.) work correctly without RESTyard needing to interpret them. This removes `SirenHypermediaFormatter`, `SirenConverter`, and all custom output formatter infrastructure.
+**Advantages:** Explicit return type enables correct OpenAPI schema generation — Swagger sees `SirenEntity<TProperties>`, not the HTO class. Full control over JSON serialization. Standard ASP.NET Core pattern with no magic middleware. Note: for RESTyard-native consumers, the `HypermediaApiSchema` (from the schema endpoint) is actually richer than OpenAPI — it describes the full hypermedia graph, not just data shapes. But OpenAPI compatibility matters when the API is consumed by mixed tooling (non-RESTyard clients, API gateways, documentation generators).
+
+#### Approach 2: Generated output formatter (migration path for existing APIs)
+
+```
+Controller returns IHypermediaObject (unchanged)
+    -> GeneratedSirenFormatter (output formatter, replaces SirenHypermediaFormatter)
+        -> calls hto.ToSiren(resolver) via generated mapper (no reflection)
+        -> JSON serialization
+    -> HTTP response
+```
+
+```csharp
+// No controller changes — existing code works as-is
+[HttpGet("{id}")]
+[HypermediaObjectEndpoint<HypermediaCustomerHto>(typeof(CustomerRouteKeyProducer))]
+public IActionResult Get(int id)
+{
+    var customer = _customerService.Get(id);
+    var hto = new HypermediaCustomerHto(customer);
+    return Ok(hto);  // formatter handles ToSiren() automatically
+}
+```
+
+**Advantages:** Drop-in replacement for existing APIs — no controller changes needed. Transparent performance improvement (generated mappers instead of reflection). Supports incremental migration: assemblies with `[HypermediaAssembly(Siren = true)]` use the generated formatter; assemblies without fall back to the existing `SirenConverter`. **Trade-off:** Same OpenAPI limitation as the current formatter — Swagger sees the HTO type, not the Siren output shape.
+
+**Recommended migration path:** Existing API → add `[HypermediaAssembly(Siren = true)]` + `AddHypermediaSirenMapper()` → formatter handles `ToSiren()` automatically → optionally migrate controllers to `this.ToSiren(hto)` one by one → remove formatter when fully migrated.
+
+The `SirenEntity<TProperties>` is a plain POCO — serialized as regular JSON by ASP.NET Core. The `TProperties` is a generated properties class per HTO (see [Generated Output per HTO](#generated-output-per-hto)) that carries all forwarded attributes from the HTO's properties. This ensures user-defined serializer attributes (`[JsonConverter]`, `[JsonPropertyName]`, third-party attributes, etc.) work correctly without RESTyard needing to interpret them.
 
 **JSON serialization note:** Siren uses `class` as a property name, which is a C# keyword. The Siren POCOs must use `[JsonPropertyName("class")]` on the `Class` properties (or configure a naming policy that lowercases property names). Ensure the serializer is configured with `PropertyNamingPolicy = JsonNamingPolicy.CamelCase` or explicit `[JsonPropertyName]` attributes on all properties.
 

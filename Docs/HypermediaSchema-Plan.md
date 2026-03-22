@@ -286,6 +286,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - `MapHypermediaSchema()` endpoint (default route: `/hypermedia-schema`, configurable in HypermediaSchemaOptions )
 - Returns `HypermediaApiSchema` as JSON (`application/vnd.restyard.schema+json`)
 - Integration test: CarShack → `WebApplicationFactory` → `GET /hypermedia-schema` → verify JSON structure
+- Document Schema endpoint usage for server developers 
 
 ### Phase 4: Source Generator — Siren POCOs
 
@@ -331,33 +332,64 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Wire through DI or explicit parameter
 - Verify tests
 
-### Phase 6 (Optional): Migration and Parity
+#### Step 5.6: Controller extension method `ToSiren(hto)`
+- Add `ControllerBaseExtensions.ToSiren(this ControllerBase, IHypermediaObject hto)` returning `SirenEntity<TProperties>` wrapped in `OkObjectResult`
+- Resolves `IHypermediaRouteResolver` from `HttpContext.RequestServices` — no need to inject resolver into controllers
+- Usage: `return this.ToSiren(myHto);` instead of `return Ok(myHto.ToSiren(resolver))`
+- This is the **recommended pattern for new APIs** — explicit return type enables correct OpenAPI schema generation (Swagger sees `SirenEntity<T>`, not the HTO class)
+- Note: RESTyard's own `HypermediaApiSchema` is actually richer than OpenAPI for hypermedia APIs (describes the full hypermedia graph), but OpenAPI compatibility matters for mixed tooling ecosystems
+- Verify tests: extension method returns correct type, resolves resolver from DI
+
+### Phase 6: Generated Siren Output Formatter
+
+**Goal:** Provide a drop-in replacement output formatter that uses the generated `ToSiren()` internally, for existing APIs that want the performance benefit without rewriting controllers.
+
+#### Step 6.1: `GeneratedSirenFormatter` implementation
+- Implement `GeneratedSirenFormatter` as an alternative to `SirenHypermediaFormatter` that uses `ToSiren()` instead of reflection-based `SirenConverter`
+- Must be configurable: register via `AddHypermediaSirenMapper()` DI method (separate from `AddHypermediaExtensions()`, consistent with `AddHypermediaSchema()`)
+- When registered, replaces the existing `SirenHypermediaFormatter` for HTOs that have generated `ToSiren()` methods; falls back to `SirenConverter` for HTOs without generated mappers (allows incremental migration)
+- Discover available `ToSiren()` mappers at startup — similar to registry pattern from schema generation
+
+#### Step 6.2: Formatter configuration and registration
+- `AddHypermediaSirenMapper()` registers the `GeneratedSirenFormatter` and replaces or wraps the existing output formatter
+- Configuration: opt-in per assembly via `[HypermediaAssembly(Siren = true)]` (already designed)
+- Must work alongside existing `SirenHypermediaFormatter` for assemblies without `Siren = true`
+- Respect `ControllerAndHypermediaAssemblies` for formatter scope
+
+#### Step 6.3: Documentation — alternative formatter and migration path
+- Document the two approaches for using `ToSiren()`:
+  - **Option 1 (recommended for new APIs):** Direct return via `this.ToSiren(hto)` controller extension — explicit, OpenAPI-compatible, full serialization control
+  - **Option 2 (migration path for existing APIs):** `GeneratedSirenFormatter` — drop-in replacement, no controller changes, transparent performance improvement
+- Document migration path: existing API → add `[HypermediaAssembly(Siren = true)]` + `AddHypermediaSirenMapper()` → formatter handles `ToSiren()` automatically → optionally migrate controllers to `this.ToSiren(hto)` one by one → remove formatter when fully migrated
+- Document trade-offs: Option 2 has same OpenAPI limitation as current formatter (Swagger sees HTO type, not Siren shape); Option 1 fixes this
+
+### Phase 7 (Optional): Migration and Parity
 
 **Goal:** Ensure generated output matches the existing reflection-based formatter. This phase is optional — the schema and `ToSiren()` are independently useful without migrating away from the existing formatter.
 
-#### Step 6.1: Parity tests
+#### Step 7.1: Parity tests
 - For every HTO in CarShack: compare `SirenConverter` JSON output vs `ToSiren()` JSON output
 - Fix any discrepancies in the generator
 
-#### Step 6.2: Opt-in migration in CarShack
+#### Step 7.2: Opt-in migration in CarShack
 - Migrate CarShack controllers one by one to use `hto.ToSiren(resolver)`
 - Keep existing formatter active for non-migrated controllers
 - Integration tests pass for both paths
 
-#### Step 6.3: Deprecate reflection-based formatter
+#### Step 7.3: Deprecate reflection-based formatter
 - Mark `SirenHypermediaFormatter` and `SirenConverter` as `[Obsolete]`
 - Document migration path in RESTyard-Docs
 
-### Phase 7: Revisit Open Questions
+### Phase 8: Revisit Open Questions
 
 **Goal:** With a working implementation in hand, revisit the open questions from the spec and decide which to address.
 
-#### Step 7.1: Review open questions
+#### Step 8.1: Review open questions
 - Read through the Open Questions section in `HypermediaSchema-Design.md`
 - For each question, decide: resolve now, defer, or close as won't-do
 - Update the spec accordingly — move resolved items to Design Decisions, remove closed items
 
-#### Step 7.2: Evaluate deferred features
+#### Step 8.2: Evaluate deferred features
 - **Full `$ref` resolution in all mappers** — resolve `$ref` to definition names (e.g., `Address` instead of `object`) in the Mermaid class diagram, Mermaid entity graph, and Markdown documentation mapper. When implementing, revisit whether the Markdown mapper should add a dedicated Definitions section with cross-links from property/parameter tables.
 - **Parameter validation routes** — is there a concrete use case from CarShack or real projects?
 - **Example values** — would CarShack benefit from examples in the schema?
@@ -365,18 +397,18 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - **Mermaid customization** — filtering by reachability from entry point
 - For each: implement if justified, otherwise document the decision to defer in the spec
 
-### Phase 8: Documentation and CLI Tooling
+### Phase 9: Documentation and CLI Tooling
 
 **Goal:** Provide a CLI mechanism for developers and CI pipelines to generate schema JSON, Mermaid diagrams, and Markdown documentation — with access group filtering — without manually running the server.
 
-#### Step 8.1: Investigate generate-and-exit mechanism
+#### Step 10.1: Investigate generate-and-exit mechanism
 - Spike the approaches described in the design doc (command-line argument on server app, `IHostedService`, separate CLI tool, MSBuild task)
 - Must be a lib functionality that can be added to a server
 - Evaluate: how cleanly can the full DI container and schema registries be accessed without actually listening for HTTP requests?
 - Decide on the approach and document the decision in the design doc
 - Acceptance criteria: a CarShack invocation that produces `schema.json` and exits
 
-#### Step 8.2: Implement generate-and-exit mode
+#### Step 10.2: Implement generate-and-exit mode
 - Implement the chosen approach with support for:
   - `--generate-schema` flag to trigger generation mode
   - `--schema-output <path>` for output directory
@@ -384,19 +416,19 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   - Mapper options pass-through (`--mermaid-include-properties`, `--mermaid-include-actions`, `--markdown-include-toc`, `--markdown-include-diagram`)
 - Test with CarShack: verify all four output formats are produced correctly
 
-#### Step 8.3: Access group filtering in CLI
+#### Step 9.3: Access group filtering in CLI
 - Add `--access-groups <groups>` (include mode) and `--exclude-access-groups <groups>` (exclude mode) parameters
 - Reuse `HypermediaSchemaFilter.ForAccessGroups` / `ExcludeAccessGroups` from Phase 9
 - Validate mutual exclusivity (error if both specified)
 - Test with CarShack: generate filtered schema/diagrams for specific access group combinations
 
-#### Step 8.4: Update RESTyard-Docs
+#### Step 9.4: Update RESTyard-Docs
 - Document the schema endpoint, model, and Mermaid mapper
 - Document the CLI generation mode and access group filtering
 - Document `MermaidMapperOptions` (`IncludeProperties`, `IncludeActions`) and `MarkdownMapperOptions` (`IncludeTableOfContents`, `IncludeDiagram`) — API usage and corresponding CLI args (`--mermaid-include-properties`, `--mermaid-include-actions`, `--markdown-include-toc`, `--markdown-include-diagram`)
 - Add migration guide for existing users
 
-#### Step 8.5: Document `ToSiren()` migration path (Phase 6)
+#### Step 9.5: Document `ToSiren()` migration path (Phase 7)
 - Document how to migrate from the reflection-based `SirenHypermediaFormatter` to the source-generated `ToSiren()` extension methods
 - Cover: per-controller opt-in, how to call `hto.ToSiren(resolver)` in controllers, how to verify parity with the existing formatter
 - Document `SirenMapperOptions` (`AutoSelfLink`) and how to configure via DI or explicit parameter
@@ -404,20 +436,20 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - List known behavioral differences (if any discovered during Phase 6 parity testing)
 - Provide a checklist for migrating a full project: enable generator → migrate controllers one by one → run parity tests → deprecate formatter
 
-### Phase 9 (Optional): Access Groups
+### Phase 10 (Optional): Access Groups
 
 > **Optional.** See the "Future Idea: Access Groups" section in `HypermediaSchema-Design.md` for the full design. Only pursue after the core schema and source generator are stable and a concrete use case demands it.
 
 **Goal:** Allow the schema to describe which actions, links, and embedded entities require which access groups, and let clients request a filtered schema.
 
-#### Step 9.1: `[HypermediaAccessGroup]` attribute and generator support
+#### Step 10.1: `[HypermediaAccessGroup]` attribute and generator support
 - Define `[HypermediaAccessGroup("groupName")]` attribute in `RESTyard.AspNetCore`
 - Extend the source generator to read `[HypermediaAccessGroup]` from actions, links, and embedded entity properties
 - Emit `RequiredAccessGroups` on `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription`
 - Collect all discovered access groups into `HypermediaApiSchema.DeclaredAccessGroups`
 - Verify tests: HTO with grouped and ungrouped elements, `DeclaredAccessGroups` completeness
 
-#### Step 9.2: Filtered schema endpoint — include mode
+#### Step 10.2: Filtered schema endpoint — include mode
 - Implement `HypermediaSchemaFilter.ForAccessGroups(schema, grantedAccessGroups)`
   - Remove elements whose `RequiredAccessGroups` are not satisfied by the granted set
   - Remove unreachable entity types
@@ -425,7 +457,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Extend `/hypermedia-schema` endpoint to accept `?accessGroups=read,write` query parameter
 - Integration test: CarShack with access groups, verify filtered output for different group combinations
 
-#### Step 9.2b: Filtered schema endpoint — exclude mode
+#### Step 10.2b: Filtered schema endpoint — exclude mode
 - Implement `HypermediaSchemaFilter.ExcludeAccessGroups(schema, excludedAccessGroups)`
   - Remove elements whose `RequiredAccessGroups` intersect with the excluded set
   - Remove unreachable entity types
