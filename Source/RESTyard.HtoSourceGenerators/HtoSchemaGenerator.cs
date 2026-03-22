@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -50,6 +51,12 @@ public class HtoSchemaGenerator : IIncrementalGenerator
 
     private const string IEmbeddedEntityBaseFullName =
         "RESTyard.AspNetCore.Hypermedia.IEmbeddedEntity";
+
+    private const string TitleAttributeFullName =
+        "Json.Schema.Generation.TitleAttribute";
+
+    private const string DescriptionAttributeFullName =
+        "Json.Schema.Generation.DescriptionAttribute";
 
     private const string HypermediaActionGenericFullName =
         "RESTyard.AspNetCore.Hypermedia.Actions.HypermediaAction<TParameter>";
@@ -127,6 +134,24 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             title = null;
         }
 
+        // Title fallback: [Title] attribute > XML doc <summary>
+        if (title == null)
+        {
+            title = GetAttributeStringArgument(symbol, TitleAttributeFullName);
+        }
+
+        if (title == null)
+        {
+            title = GetXmlDocElement(symbol, "summary");
+        }
+
+        // Description: [Description] attribute > XML doc <remarks>
+        var description = GetAttributeStringArgument(symbol, DescriptionAttributeFullName);
+        if (description == null)
+        {
+            description = GetXmlDocElement(symbol, "remarks");
+        }
+
         var classes = GetNamedArgumentStringArray(attribute, "Classes");
         var properties = ExtractProperties(symbol);
         var links = ExtractLinks(symbol);
@@ -144,6 +169,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             symbol.Name,
             DeriveSchemaName(symbol.Name),
             title,
+            description,
             new EquatableArray<string>(classes),
             properties,
             links,
@@ -231,10 +257,20 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 var targetClasses = GetTargetClasses(targetType);
                 var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
 
+                // Title: [Title] attribute > XML doc <summary>
+                var linkTitle = GetAttributeStringArgument(member, TitleAttributeFullName)
+                                ?? GetXmlDocElement(member, "summary");
+
+                // Description: [Description] attribute > XML doc <remarks>
+                var linkDescription = GetAttributeStringArgument(member, DescriptionAttributeFullName)
+                                      ?? GetXmlDocElement(member, "remarks");
+
                 links.Add(new LinkMetadata(
                     new EquatableArray<string>(relations),
                     targetSchemaName,
                     new EquatableArray<string>(targetClasses),
+                    linkTitle,
+                    linkDescription,
                     isMandatory));
             }
 
@@ -279,12 +315,21 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 }
 
                 var name = GetNamedArgumentString(actionAttr, "Name") ?? member.Name;
-                var title = GetNamedArgumentString(actionAttr, "Title");
+
+                // Title: [HypermediaAction(Title)] > [Title] attribute > XML doc <summary>
+                var actionTitle = GetNamedArgumentString(actionAttr, "Title")
+                                  ?? GetAttributeStringArgument(member, TitleAttributeFullName)
+                                  ?? GetXmlDocElement(member, "summary");
+
+                // Description: [Description] attribute > XML doc <remarks>
+                var actionDescription = GetAttributeStringArgument(member, DescriptionAttributeFullName)
+                                        ?? GetXmlDocElement(member, "remarks");
+
                 var parameterTypeFullName = GetActionParameterType(member.Type);
                 var isFileUpload = IsFileUploadAction(member.Type);
                 var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
 
-                actions.Add(new ActionMetadata(name, title, parameterTypeFullName, isFileUpload, isMandatory));
+                actions.Add(new ActionMetadata(name, actionTitle, actionDescription, parameterTypeFullName, isFileUpload, isMandatory));
             }
 
             current = current.BaseType;
@@ -340,11 +385,21 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 var targetClasses = GetTargetClasses(targetType);
                 var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
 
+                // Title: [Title] attribute > XML doc <summary>
+                var embeddedTitle = GetAttributeStringArgument(member, TitleAttributeFullName)
+                                    ?? GetXmlDocElement(member, "summary");
+
+                // Description: [Description] attribute > XML doc <remarks>
+                var embeddedDescription = GetAttributeStringArgument(member, DescriptionAttributeFullName)
+                                          ?? GetXmlDocElement(member, "remarks");
+
                 embeddedEntities.Add(new EmbeddedEntityMetadata(
                     new EquatableArray<string>(relations),
                     targetSchemaName,
                     new EquatableArray<string>(targetClasses),
                     isCollection,
+                    embeddedTitle,
+                    embeddedDescription,
                     isMandatory));
             }
 
@@ -853,6 +908,12 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 .Append(" = \"").Append(EscapeString(metadata.Title)).AppendLine("\",");
         }
 
+        if (metadata.Description != null)
+        {
+            sb.Append("            ").Append(SchemaTypeNames.EntityTypeSchema_Description)
+                .Append(" = \"").Append(EscapeString(metadata.Description)).AppendLine("\",");
+        }
+
         var classLiterals = string.Join(", ", metadata.Classes.Select(c => $"\"{EscapeString(c)}\""));
         sb.Append("            ").Append(SchemaTypeNames.EntityTypeSchema_Classes)
             .Append(" = new[] { ").Append(classLiterals).AppendLine(" },");
@@ -924,6 +985,18 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 .Append(" = \"").Append(EscapeString(link.TargetSchemaName)).AppendLine("\",");
             sb.Append("                    ").Append(SchemaTypeNames.LinkDescription_TargetClasses)
                 .Append(" = new[] { ").Append(classLiterals).AppendLine(" },");
+            if (link.Title != null)
+            {
+                sb.Append("                    ").Append(SchemaTypeNames.LinkDescription_Title)
+                    .Append(" = \"").Append(EscapeString(link.Title)).AppendLine("\",");
+            }
+
+            if (link.Description != null)
+            {
+                sb.Append("                    ").Append(SchemaTypeNames.LinkDescription_Description)
+                    .Append(" = \"").Append(EscapeString(link.Description)).AppendLine("\",");
+            }
+
             sb.Append("                    ").Append(SchemaTypeNames.LinkDescription_IsMandatory)
                 .Append(" = ").Append(link.IsMandatory ? "true" : "false").AppendLine(",");
             sb.AppendLine("                },");
@@ -949,6 +1022,12 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             {
                 sb.Append("                    ").Append(SchemaTypeNames.ActionDescription_Title)
                     .Append(" = \"").Append(EscapeString(action.Title)).AppendLine("\",");
+            }
+
+            if (action.Description != null)
+            {
+                sb.Append("                    ").Append(SchemaTypeNames.ActionDescription_Description)
+                    .Append(" = \"").Append(EscapeString(action.Description)).AppendLine("\",");
             }
 
             if (action.IsFileUpload)
@@ -995,12 +1074,77 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 .Append(" = new[] { ").Append(classLiterals).AppendLine(" },");
             sb.Append("                    ").Append(SchemaTypeNames.EmbeddedEntityDescription_IsCollection)
                 .Append(" = ").Append(embedded.IsCollection ? "true" : "false").AppendLine(",");
+
+            if (embedded.Title != null)
+            {
+                sb.Append("                    ").Append(SchemaTypeNames.EmbeddedEntityDescription_Title)
+                    .Append(" = \"").Append(EscapeString(embedded.Title)).AppendLine("\",");
+            }
+
+            if (embedded.Description != null)
+            {
+                sb.Append("                    ").Append(SchemaTypeNames.EmbeddedEntityDescription_Description)
+                    .Append(" = \"").Append(EscapeString(embedded.Description)).AppendLine("\",");
+            }
+
             sb.Append("                    ").Append(SchemaTypeNames.EmbeddedEntityDescription_IsMandatory)
                 .Append(" = ").Append(embedded.IsMandatory ? "true" : "false").AppendLine(",");
             sb.AppendLine("                },");
         }
 
         sb.AppendLine("            },");
+    }
+
+    /// <summary>
+    /// Reads the first constructor string argument from an attribute (e.g., <c>[Title("value")]</c>).
+    /// Returns null if the attribute is not present or has no string argument.
+    /// </summary>
+    private static string? GetAttributeStringArgument(ISymbol symbol, string attributeFullName)
+    {
+        var attr = symbol.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == attributeFullName);
+
+        if (attr == null || attr.ConstructorArguments.Length == 0)
+        {
+            return null;
+        }
+
+        var value = attr.ConstructorArguments[0].Value as string;
+        return string.IsNullOrEmpty(value) ? null : value;
+    }
+
+    /// <summary>
+    /// Extracts the text content of the specified XML documentation element
+    /// (e.g., "summary", "remarks") from a symbol's XML doc comment.
+    /// Returns null if the element is not present or empty.
+    /// </summary>
+    private static string? GetXmlDocElement(ISymbol symbol, string elementName)
+    {
+        var xml = symbol.GetDocumentationCommentXml();
+        if (string.IsNullOrEmpty(xml))
+        {
+            return null;
+        }
+
+        try
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(xml);
+            var node = doc.SelectSingleNode($"//{elementName}");
+            if (node == null)
+            {
+                return null;
+            }
+
+            var text = node.InnerText.Trim();
+            // Normalize internal whitespace (multi-line XML docs)
+            text = System.Text.RegularExpressions.Regex.Replace(text, @"\s+", " ");
+            return string.IsNullOrEmpty(text) ? null : text;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private static string EscapeString(string value)

@@ -29,6 +29,16 @@ internal readonly struct EmbeddedEntityMetadata : IEquatable<EmbeddedEntityMetad
     public bool IsCollection { get; }
 
     /// <summary>
+    /// Title from <c>[Title]</c> attribute or XML doc <c>&lt;summary&gt;</c>.
+    /// </summary>
+    public string? Title { get; }
+
+    /// <summary>
+    /// Description from <c>[Description]</c> attribute or XML doc <c>&lt;summary&gt;</c> (fallback).
+    /// </summary>
+    public string? Description { get; }
+
+    /// <summary>
     /// Whether the embedded entity property is non-nullable (mandatory).
     /// </summary>
     public bool IsMandatory { get; }
@@ -38,12 +48,16 @@ internal readonly struct EmbeddedEntityMetadata : IEquatable<EmbeddedEntityMetad
         string targetSchemaName,
         EquatableArray<string> targetClasses,
         bool isCollection,
+        string? title,
+        string? description,
         bool isMandatory)
     {
         Relations = relations;
         TargetSchemaName = targetSchemaName;
         TargetClasses = targetClasses;
         IsCollection = isCollection;
+        Title = title;
+        Description = description;
         IsMandatory = isMandatory;
     }
 
@@ -52,6 +66,8 @@ internal readonly struct EmbeddedEntityMetadata : IEquatable<EmbeddedEntityMetad
            && TargetSchemaName == other.TargetSchemaName
            && TargetClasses.Equals(other.TargetClasses)
            && IsCollection == other.IsCollection
+           && Title == other.Title
+           && Description == other.Description
            && IsMandatory == other.IsMandatory;
 
     public override bool Equals(object? obj)
@@ -66,6 +82,8 @@ internal readonly struct EmbeddedEntityMetadata : IEquatable<EmbeddedEntityMetad
             hash = hash * 31 + TargetSchemaName.GetHashCode();
             hash = hash * 31 + TargetClasses.GetHashCode();
             hash = hash * 31 + IsCollection.GetHashCode();
+            hash = hash * 31 + (Title?.GetHashCode() ?? 0);
+            hash = hash * 31 + (Description?.GetHashCode() ?? 0);
             hash = hash * 31 + IsMandatory.GetHashCode();
             return hash;
         }

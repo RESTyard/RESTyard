@@ -5,9 +5,10 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.Json;
+using Json.Schema;
+using Json.Schema.Generation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Json.Schema;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.Schema;
 using RESTyard.Schema.Model;
@@ -30,6 +31,7 @@ internal static class GeneratorTestHelper
         MetadataReference.CreateFromFile(typeof(IJsonSchemaFactory).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(JsonDocument).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(EnumMemberAttribute).Assembly.Location),
+        MetadataReference.CreateFromFile(typeof(TitleAttribute).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(System.Uri).Assembly.Location),
         MetadataReference.CreateFromFile(Path.Combine(AssemblyDirectory, "netstandard.dll")),
     ];
@@ -104,7 +106,8 @@ internal static class GeneratorTestHelper
     private static (Compilation OutputCompilation, GeneratorDriverRunResult DriverResult) RunGeneratorCore(
         string[] sources)
     {
-        var syntaxTrees = sources.Select(s => CSharpSyntaxTree.ParseText(s)).ToArray();
+        var parseOptions = new CSharpParseOptions(documentationMode: DocumentationMode.Diagnose);
+        var syntaxTrees = sources.Select(s => CSharpSyntaxTree.ParseText(s, parseOptions)).ToArray();
 
         var compilation = CSharpCompilation.Create(
             assemblyName: "TestAssembly",

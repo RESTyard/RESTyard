@@ -13,9 +13,14 @@ internal readonly struct ActionMetadata : IEquatable<ActionMetadata>
     public string Name { get; }
 
     /// <summary>
-    /// Action title from <c>[HypermediaAction(Title)]</c>.
+    /// Action title from <c>[HypermediaAction(Title)]</c>, <c>[Title]</c> attribute, or XML doc <c>&lt;summary&gt;</c>.
     /// </summary>
     public string? Title { get; }
+
+    /// <summary>
+    /// Description from <c>[Description]</c> attribute or XML doc <c>&lt;remarks&gt;</c>.
+    /// </summary>
+    public string? Description { get; }
 
     /// <summary>
     /// Fully qualified CLR type name of the parameter type, or null if parameterless.
@@ -36,12 +41,14 @@ internal readonly struct ActionMetadata : IEquatable<ActionMetadata>
     public ActionMetadata(
         string name,
         string? title,
+        string? description,
         string? parameterTypeFullName,
         bool isFileUpload,
         bool isMandatory)
     {
         Name = name;
         Title = title;
+        Description = description;
         ParameterTypeFullName = parameterTypeFullName;
         IsFileUpload = isFileUpload;
         IsMandatory = isMandatory;
@@ -50,6 +57,7 @@ internal readonly struct ActionMetadata : IEquatable<ActionMetadata>
     public bool Equals(ActionMetadata other)
         => Name == other.Name
            && Title == other.Title
+           && Description == other.Description
            && ParameterTypeFullName == other.ParameterTypeFullName
            && IsFileUpload == other.IsFileUpload
            && IsMandatory == other.IsMandatory;
@@ -64,6 +72,7 @@ internal readonly struct ActionMetadata : IEquatable<ActionMetadata>
             var hash = 17;
             hash = hash * 31 + Name.GetHashCode();
             hash = hash * 31 + (Title?.GetHashCode() ?? 0);
+            hash = hash * 31 + (Description?.GetHashCode() ?? 0);
             hash = hash * 31 + (ParameterTypeFullName?.GetHashCode() ?? 0);
             hash = hash * 31 + IsFileUpload.GetHashCode();
             hash = hash * 31 + IsMandatory.GetHashCode();

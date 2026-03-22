@@ -13,6 +13,7 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
     public string ClassName { get; }
     public string SchemaName { get; }
     public string? Title { get; }
+    public string? Description { get; }
     public EquatableArray<string> Classes { get; }
     public EquatableArray<PropertyMetadata> Properties { get; }
     public EquatableArray<LinkMetadata> Links { get; }
@@ -36,6 +37,7 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
         string className,
         string schemaName,
         string? title,
+        string? description,
         EquatableArray<string> classes,
         EquatableArray<PropertyMetadata> properties,
         EquatableArray<LinkMetadata> links,
@@ -48,6 +50,7 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
         ClassName = className;
         SchemaName = schemaName;
         Title = title;
+        Description = description;
         Classes = classes;
         Properties = properties;
         Links = links;
@@ -69,6 +72,7 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
            && ClassName == other.ClassName
            && SchemaName == other.SchemaName
            && Title == other.Title
+           && Description == other.Description
            && Classes.Equals(other.Classes)
            && Properties.Equals(other.Properties)
            && Links.Equals(other.Links)
@@ -89,6 +93,7 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
             hash = hash * 31 + ClassName.GetHashCode();
             hash = hash * 31 + SchemaName.GetHashCode();
             hash = hash * 31 + (Title?.GetHashCode() ?? 0);
+            hash = hash * 31 + (Description?.GetHashCode() ?? 0);
             hash = hash * 31 + Classes.GetHashCode();
             hash = hash * 31 + Properties.GetHashCode();
             hash = hash * 31 + Links.GetHashCode();

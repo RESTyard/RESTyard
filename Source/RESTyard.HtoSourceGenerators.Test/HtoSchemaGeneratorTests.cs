@@ -828,6 +828,147 @@ public class HtoSchemaGeneratorTests
         embedded.IsMandatory.Should().BeFalse();
     }
 
+    // --- Step 2.7: Title and description harvesting ---
+
+    [Fact]
+    public void HtoWithTitleDescriptionAttributes_entity_has_title_and_description()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithTitleDescriptionAttributes);
+
+        schema.Title.Should().Be("Customer Entity");
+        schema.Description.Should().Be("Represents a customer in the system.");
+    }
+
+    [Fact]
+    public void HtoWithTitleDescriptionAttributes_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithTitleDescriptionAttributes);
+    }
+
+    [Fact]
+    public void HtoWithTitleDescriptionAttributes_link_has_title_and_description()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithTitleDescriptionAttributes);
+
+        var link = schema.Links.Single(l => l.Relations.Contains("bestFriend"));
+        link.Title.Should().Be("Best Friend Link");
+        link.Description.Should().Be("Link to the customer's best friend.");
+    }
+
+    [Fact]
+    public void HtoWithTitleDescriptionAttributes_action_has_title_and_description()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithTitleDescriptionAttributes);
+
+        var action = schema.Actions.Single(a => a.Name == "MarkAsFavorite");
+        action.Title.Should().Be("Mark As Favorite");
+        action.Description.Should().Be("Marks this customer as a favorite.");
+    }
+
+    [Fact]
+    public void HtoWithTitleDescriptionAttributes_embedded_has_title_and_description()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithTitleDescriptionAttributes);
+
+        var embedded = schema.EmbeddedEntities.Single(e => e.Relations.Contains("address"));
+        embedded.Title.Should().Be("Home Address");
+        embedded.Description.Should().Be("The customer's home address.");
+    }
+
+    [Fact]
+    public void HtoWithXmlDocs_entity_has_title_and_description()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithXmlDocs);
+
+        schema.Title.Should().Be("A customer with profile and order history.");
+        schema.Description.Should().Be("Represents an active customer account in the system.");
+    }
+
+    [Fact]
+    public void HtoWithXmlDocs_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithXmlDocs);
+    }
+
+    [Fact]
+    public void HtoWithXmlDocs_link_has_title_and_description()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithXmlDocs);
+
+        var link = schema.Links.Single(l => l.Relations.Contains("bestFriend"));
+        link.Title.Should().Be("Link to the customer's best friend.");
+        link.Description.Should().Be("Only present when a best friend is set.");
+    }
+
+    [Fact]
+    public void HtoWithXmlDocs_action_has_title_and_description()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithXmlDocs);
+
+        var action = schema.Actions.Single(a => a.Name == "MarkAsFavorite");
+        action.Title.Should().Be("Marks this customer as a favorite.");
+        action.Description.Should().Be("Can only be executed by admins.");
+    }
+
+    [Fact]
+    public void HtoWithXmlDocs_embedded_has_title_and_description()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithXmlDocs);
+
+        var embedded = schema.EmbeddedEntities.Single(e => e.Relations.Contains("address"));
+        embedded.Title.Should().Be("The customer's home address.");
+        embedded.Description.Should().Be("Primary residential address.");
+    }
+
+    [Fact]
+    public void HtoWithAttributeOverridingXmlDocs_attribute_wins()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithAttributeOverridingXmlDocs);
+
+        schema.Title.Should().Be("Attribute Title");
+        schema.Description.Should().Be("Attribute Description");
+    }
+
+    [Fact]
+    public void HtoWithAttributeOverridingXmlDocs_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithAttributeOverridingXmlDocs);
+    }
+
+    [Fact]
+    public void HtoWithHypermediaObjectTitle_overrides_TitleAttribute()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithHypermediaObjectTitleOverridingTitleAttribute);
+
+        schema.Title.Should().Be("HypermediaObject Title");
+    }
+
+    [Fact]
+    public void HtoWithHypermediaObjectTitle_overrides_TitleAttribute_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithHypermediaObjectTitleOverridingTitleAttribute);
+    }
+
+    [Fact]
+    public void HtoWithTitleDescriptionAttributes_generates_title_description_in_source()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithTitleDescriptionAttributes);
+        var source = GetGeneratedSource(result, "HypermediaCustomerHto");
+
+        source.Should().Contain("Title = \"Customer Entity\"");
+        source.Should().Contain("Description = \"Represents a customer in the system.\"");
+    }
+
     private static string GetGeneratedSource(
         GeneratorDriverRunResult result,
         string htoClassName)

@@ -161,12 +161,23 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Populate `EmbeddedEntityDescription` (relations, target name/classes, isCollection, isMandatory)
 - Verify tests: single embedded, collection, different target, empty, exclusion from properties schema
 
-#### Step 2.7: Title and description harvesting
+#### Step 2.7: 🔄 Title and description harvesting
 - Primary source: `[Title("...")]` and `[Description("...")]` from `JsonSchema.Net.Generation` (already in the dependency tree, used on `IHypermediaActionParameter` types)
 - Fallback: XML doc `<summary>` → title, `<remarks>` → description
 - Attributes take precedence over XML docs when both are present
 - Apply to entity types, properties, actions, links
 - Verify tests: HTO with attributes, with XML docs, with both (attribute wins)
+
+#### Step 2.7.1: Replace `SchemaHelper` with generated properties POCO for schema generation
+- Emit a properties POCO class per HTO (e.g., `HypermediaCustomerHtoProperties`) containing only data properties — same filtering rules as Step 5.1 (exclude `[FormatterIgnoreHypermediaProperty]`, links, actions, keys, embedded entities)
+- Apply `[HypermediaProperty(Name = "x")]` structurally: use `x` as the C# property name on the POCO
+- Forward all non-RESTyard attributes from the HTO property verbatim (serializer attributes, `[Title]`, `[Description]`, 3rd-party)
+- Copy XML doc comments from HTO properties to the generated POCO properties verbatim (do NOT convert to `[Title]`/`[Description]` attributes — avoids pulling `JsonSchema.Net.Generation` dependency into the source generator)
+- Replace the per-property `schemaFactory.Generate(typeof(string))` + `SchemaHelper.BuildPropertiesSchema()` pattern with a single `schemaFactory.Generate(typeof(HypermediaCustomerHtoProperties))` call
+- Remove `SchemaHelper.BuildPropertiesSchema` (or mark unused) — no longer needed for entity property schema generation
+- This POCO is intended to be **reused in Phase 5** (Step 5.1) for `ToSiren()` emission — same type serves both schema generation and Siren property mapping
+- Update existing tests: generated source assertions, `RunGeneratorAndGetSchema` assertions for property schemas
+- Verify: generated POCO compiles, schema output matches previous output for existing test cases, attributes are forwarded
 
 #### Step 2.8: Deprecation support
 - Read `[Obsolete("message")]` → `IsDeprecated`, `DeprecationMessage`

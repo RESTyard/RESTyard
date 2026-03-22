@@ -24,6 +24,16 @@ internal readonly struct LinkMetadata : IEquatable<LinkMetadata>
     public EquatableArray<string> TargetClasses { get; }
 
     /// <summary>
+    /// Title from <c>[Title]</c> attribute or XML doc <c>&lt;summary&gt;</c>.
+    /// </summary>
+    public string? Title { get; }
+
+    /// <summary>
+    /// Description from <c>[Description]</c> attribute or XML doc <c>&lt;summary&gt;</c> (fallback).
+    /// </summary>
+    public string? Description { get; }
+
+    /// <summary>
     /// Whether the link property is non-nullable (mandatory).
     /// </summary>
     public bool IsMandatory { get; }
@@ -32,11 +42,15 @@ internal readonly struct LinkMetadata : IEquatable<LinkMetadata>
         EquatableArray<string> relations,
         string targetSchemaName,
         EquatableArray<string> targetClasses,
+        string? title,
+        string? description,
         bool isMandatory)
     {
         Relations = relations;
         TargetSchemaName = targetSchemaName;
         TargetClasses = targetClasses;
+        Title = title;
+        Description = description;
         IsMandatory = isMandatory;
     }
 
@@ -44,6 +58,8 @@ internal readonly struct LinkMetadata : IEquatable<LinkMetadata>
         => Relations.Equals(other.Relations)
            && TargetSchemaName == other.TargetSchemaName
            && TargetClasses.Equals(other.TargetClasses)
+           && Title == other.Title
+           && Description == other.Description
            && IsMandatory == other.IsMandatory;
 
     public override bool Equals(object? obj)
@@ -57,6 +73,8 @@ internal readonly struct LinkMetadata : IEquatable<LinkMetadata>
             hash = hash * 31 + Relations.GetHashCode();
             hash = hash * 31 + TargetSchemaName.GetHashCode();
             hash = hash * 31 + TargetClasses.GetHashCode();
+            hash = hash * 31 + (Title?.GetHashCode() ?? 0);
+            hash = hash * 31 + (Description?.GetHashCode() ?? 0);
             hash = hash * 31 + IsMandatory.GetHashCode();
             return hash;
         }

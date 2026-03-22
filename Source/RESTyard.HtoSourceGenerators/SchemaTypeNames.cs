@@ -15,6 +15,7 @@ internal static class SchemaTypeNames
     internal const string EntityTypeSchema = "EntityTypeSchema";
     internal const string EntityTypeSchema_Name = "Name";
     internal const string EntityTypeSchema_Title = "Title";
+    internal const string EntityTypeSchema_Description = "Description";
     internal const string EntityTypeSchema_Classes = "Classes";
     internal const string EntityTypeSchema_PropertiesSchema = "PropertiesSchema";
     internal const string EntityTypeSchema_Links = "Links";
@@ -24,12 +25,15 @@ internal static class SchemaTypeNames
     internal const string LinkDescription_Relations = "Relations";
     internal const string LinkDescription_TargetName = "TargetName";
     internal const string LinkDescription_TargetClasses = "TargetClasses";
+    internal const string LinkDescription_Title = "Title";
+    internal const string LinkDescription_Description = "Description";
     internal const string LinkDescription_IsMandatory = "IsMandatory";
 
     // ActionDescription
     internal const string ActionDescription = "ActionDescription";
     internal const string ActionDescription_Name = "Name";
     internal const string ActionDescription_Title = "Title";
+    internal const string ActionDescription_Description = "Description";
     internal const string ActionDescription_ContentType = "ContentType";
     internal const string ActionDescription_ParameterSchema = "ParameterSchema";
     internal const string ActionDescription_IsMandatory = "IsMandatory";
@@ -43,6 +47,8 @@ internal static class SchemaTypeNames
     internal const string EmbeddedEntityDescription_TargetClasses = "TargetClasses";
     internal const string EmbeddedEntityDescription_IsCollection = "IsCollection";
     internal const string EmbeddedEntityDescription_IsMandatory = "IsMandatory";
+    internal const string EmbeddedEntityDescription_Title = "Title";
+    internal const string EmbeddedEntityDescription_Description = "Description";
     internal const string EntityTypeSchema_EmbeddedEntities = "EmbeddedEntities";
 
     // RESTyard.Schema
