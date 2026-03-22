@@ -26,7 +26,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RESTyard.AspNetCore.Analyzers\RESTyard.AspNetCore.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\RESTyard.HtoSourceGenerators\RESTyard.HtoSourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\RESTyard.AspNetCore\RESTyard.AspNetCore.csproj" />
+    <ProjectReference Include="..\RESTyard.Schema\RESTyard.Schema.csproj" />
   </ItemGroup>
 
 </Project>

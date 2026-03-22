@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Last completed: **Step 2.9.3** (CLI schema generation). Next: **Step 2.9.4** (CarShack integration and end-to-end verification).
+> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Currently: **Step 2.9.4** (CarShack integration and end-to-end verification). Last completed: **Step 2.9.3** (CLI schema generation).
 
 ## Table of Contents
 
@@ -1248,6 +1248,7 @@ When `--schema-artifacts` is omitted, all four formats are generated. When speci
 ```
 --mermaid-include-properties   Include properties in Mermaid HTO diagram (default: true)
 --mermaid-include-actions      Include actions in Mermaid HTO diagram (default: true)
+--mermaid-wrap-markdown        Wrap Mermaid output in Markdown with title and fenced code block (default: true)
 --markdown-include-toc         Include table of contents in Markdown (default: true)
 --markdown-include-diagram     Include Mermaid diagram in Markdown (default: true)
 ```

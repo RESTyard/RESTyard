@@ -4,7 +4,11 @@ using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
+using RESTyard.Schema;
+
+[assembly: HypermediaAssembly]
 
 namespace CarShack
 {
@@ -22,6 +26,12 @@ namespace CarShack
                 o.ControllerAndHypermediaAssemblies = [typeof(EntryPointController).Assembly];
             });
 
+            builder.Services.AddHypermediaSchema(o =>
+            {
+                o.Title = "CarShack API";
+                o.Description = "RESTyard demo API for managing cars and customers";
+            });
+
             builder.Services.AddCors();
 
             builder.Services
@@ -31,6 +41,11 @@ namespace CarShack
                 .AddSingleton<ICustomerRepository, CustomerRepository>();
 
             var app = builder.Build();
+
+            if (app.GenerateSchemaIfRequested(args))
+            {
+                return;
+            }
 
             app.UseCors(builder =>
             {

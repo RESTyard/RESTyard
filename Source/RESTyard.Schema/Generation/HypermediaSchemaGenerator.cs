@@ -65,7 +65,11 @@ public static class HypermediaSchemaGenerator
 
         if (formats.HasFlag(SchemaOutputFormats.MermaidApiMap))
         {
-            File.WriteAllText(Path.Combine(outputPath, "api-map.md"), schema.ToApiMap());
+            var mermaid = schema.ToApiMap();
+            var content = options.MermaidWrapMarkdown
+                ? WrapMermaidInMarkdown("# API Map", mermaid)
+                : mermaid;
+            File.WriteAllText(Path.Combine(outputPath, "api-map.md"), content);
         }
 
         if (formats.HasFlag(SchemaOutputFormats.MermaidHtos))
@@ -75,7 +79,11 @@ public static class HypermediaSchemaGenerator
                 IncludeProperties = options.MermaidIncludeProperties,
                 IncludeActions = options.MermaidIncludeActions,
             };
-            File.WriteAllText(Path.Combine(outputPath, "htos.md"), schema.ToClassDiagram(mermaidOptions));
+            var mermaid = schema.ToClassDiagram(mermaidOptions);
+            var content = options.MermaidWrapMarkdown
+                ? WrapMermaidInMarkdown("# HTOs", mermaid)
+                : mermaid;
+            File.WriteAllText(Path.Combine(outputPath, "htos.md"), content);
         }
 
         if (formats.HasFlag(SchemaOutputFormats.MarkdownApiDocumentation))
@@ -149,6 +157,12 @@ public static class HypermediaSchemaGenerator
             options.MarkdownIncludeDiagram = ParseBool(mdDiagram, true);
         }
 
+        var wrapMd = GetArgValue(args, "--mermaid-wrap-markdown");
+        if (wrapMd != null)
+        {
+            options.MermaidWrapMarkdown = ParseBool(wrapMd, true);
+        }
+
         return options;
     }
 
@@ -163,6 +177,11 @@ public static class HypermediaSchemaGenerator
         }
 
         return null;
+    }
+
+    private static string WrapMermaidInMarkdown(string title, string mermaid)
+    {
+        return $"{title}\n\n```mermaid\n{mermaid}\n```\n";
     }
 
     private static bool ParseBool(string value, bool defaultValue)

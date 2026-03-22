@@ -252,7 +252,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   HypermediaSchemaGenerator.Generate(schema, "./output", SchemaOutputFormats.All);
   ```
 
-#### Step 2.9.4: CarShack integration and end-to-end verification
+#### Step 2.9.4: 🔄 CarShack integration and end-to-end verification
 - Add `[assembly: HypermediaAssembly]` to CarShack
 - Add `AddHypermediaSchema()` to CarShack `Program.cs`
 - Add `GenerateSchemaIfRequested()` to CarShack `Program.cs`
@@ -289,6 +289,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
         Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   ```
 - This enables consumers who reference only `RESTyard.AspNetCore` to get both the analyzers and the source generator automatically
+- clean up carshack project reference to HtoSourceGenerators
 - Defer to after the source generator is feature-complete (link analysis, action analysis, etc.)
 
 ### Phase 3: Schema Endpointi 

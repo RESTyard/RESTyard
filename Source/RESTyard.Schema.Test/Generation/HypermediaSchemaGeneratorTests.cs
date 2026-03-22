@@ -169,5 +169,34 @@ public class HypermediaSchemaGeneratorTests : IDisposable
         options.MermaidIncludeActions.Should().BeTrue();
         options.MarkdownIncludeToc.Should().BeTrue();
         options.MarkdownIncludeDiagram.Should().BeTrue();
+        options.MermaidWrapMarkdown.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Mermaid_files_are_wrapped_in_markdown_by_default()
+    {
+        HypermediaSchemaGenerator.Generate(
+            _schema, _outputPath, SchemaOutputFormats.MermaidApiMap | SchemaOutputFormats.MermaidHtos);
+
+        var apiMap = File.ReadAllText(Path.Combine(_outputPath, "api-map.md"));
+        apiMap.Should().StartWith("# API Map");
+        apiMap.Should().Contain("```mermaid");
+        apiMap.Should().Contain("```");
+
+        var htos = File.ReadAllText(Path.Combine(_outputPath, "htos.md"));
+        htos.Should().StartWith("# HTOs");
+        htos.Should().Contain("```mermaid");
+    }
+
+    [Fact]
+    public void Mermaid_files_are_raw_when_wrap_disabled()
+    {
+        var options = new SchemaGeneratorOptions { MermaidWrapMarkdown = false };
+        HypermediaSchemaGenerator.Generate(
+            _schema, _outputPath, SchemaOutputFormats.MermaidApiMap, options);
+
+        var apiMap = File.ReadAllText(Path.Combine(_outputPath, "api-map.md"));
+        apiMap.Should().NotContain("# API Map");
+        apiMap.Should().NotContain("```mermaid");
     }
 }

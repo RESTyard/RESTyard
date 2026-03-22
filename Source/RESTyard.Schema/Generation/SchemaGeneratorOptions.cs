@@ -32,4 +32,13 @@ public class SchemaGeneratorOptions
     /// Applies to the <c>markdown-api-documentation</c> artifact.
     /// </summary>
     public bool MarkdownIncludeDiagram { get; set; } = true;
+
+    /// <summary>
+    /// Wrap Mermaid output in a Markdown document with a title and fenced code block,
+    /// making the <c>.md</c> files directly renderable in GitHub, GitLab, etc.
+    /// Default: true. When false, raw Mermaid syntax is emitted.
+    /// CLI: <c>--mermaid-wrap-markdown false</c>
+    /// Applies to <c>mermaid-api-map</c> and <c>mermaid-htos</c> artifacts.
+    /// </summary>
+    public bool MermaidWrapMarkdown { get; set; } = true;
 }

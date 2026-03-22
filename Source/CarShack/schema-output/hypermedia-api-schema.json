@@ -1,0 +1,2816 @@
+{
+  "schemaVersion": "1.0.0",
+  "apiVersion": "1.0.0\u002B8001f9605e9a41090098697681a3b36f43b9b6fb",
+  "title": "CarShack API",
+  "description": "RESTyard demo API for managing cars and customers",
+  "entryPointName": "Entrypoint",
+  "entityTypes": [
+    {
+      "name": "Truck",
+      "classes": [
+        "Truck"
+      ],
+      "title": "A truck",
+      "propertiesSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "Brand": {
+            "type": "string"
+          },
+          "Id": {
+            "type": "integer"
+          }
+        }
+      },
+      "links": [],
+      "actions": [],
+      "embeddedEntities": [],
+      "isDeprecated": false
+    },
+    {
+      "name": "Entrypoint",
+      "classes": [
+        "Entrypoint"
+      ],
+      "title": "Entry to the Rest API",
+      "propertiesSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "MyType": {
+            "$ref": "#/$defs/type"
+          }
+        },
+        "$defs": {
+          "type": {
+            "type": "object",
+            "properties": {
+              "Name": {
+                "type": "string",
+                "readOnly": true
+              },
+              "CustomAttributes": {
+                "$ref": "#/$defs/arrayOfCustomAttributeData",
+                "readOnly": true
+              },
+              "IsCollectible": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "MetadataToken": {
+                "type": "integer",
+                "readOnly": true
+              },
+              "IsInterface": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "MemberType": {
+                "$ref": "#/$defs/memberTypes",
+                "readOnly": true
+              },
+              "Namespace": {
+                "type": "string",
+                "readOnly": true
+              },
+              "AssemblyQualifiedName": {
+                "type": "string",
+                "readOnly": true
+              },
+              "FullName": {
+                "type": "string",
+                "readOnly": true
+              },
+              "Assembly": {
+                "$ref": "#/$defs/assembly",
+                "readOnly": true
+              },
+              "Module": {
+                "$ref": "#/$defs/module",
+                "readOnly": true
+              },
+              "IsNested": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "DeclaringType": {
+                "$ref": "#/$defs/type",
+                "readOnly": true
+              },
+              "DeclaringMethod": {
+                "$ref": "#/$defs/methodBase",
+                "readOnly": true
+              },
+              "ReflectedType": {
+                "$ref": "#/$defs/type",
+                "readOnly": true
+              },
+              "UnderlyingSystemType": {
+                "$ref": "#/$defs/type",
+                "readOnly": true
+              },
+              "IsTypeDefinition": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsArray": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsByRef": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsPointer": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsConstructedGenericType": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsGenericParameter": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsGenericTypeParameter": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsGenericMethodParameter": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsGenericType": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsGenericTypeDefinition": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsSZArray": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsVariableBoundArray": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsByRefLike": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsFunctionPointer": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsUnmanagedFunctionPointer": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "HasElementType": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "GenericTypeArguments": {
+                "$ref": "#/$defs/arrayOfType",
+                "readOnly": true
+              },
+              "GenericParameterPosition": {
+                "type": "integer",
+                "readOnly": true
+              },
+              "GenericParameterAttributes": {
+                "$ref": "#/$defs/genericParameterAttributes",
+                "readOnly": true
+              },
+              "Attributes": {
+                "$ref": "#/$defs/typeAttributes",
+                "readOnly": true
+              },
+              "IsAbstract": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsImport": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsSealed": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsSpecialName": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsClass": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsNestedAssembly": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsNestedFamANDAssem": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsNestedFamily": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsNestedFamORAssem": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsNestedPrivate": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsNestedPublic": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsNotPublic": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsPublic": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsAutoLayout": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsExplicitLayout": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsLayoutSequential": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsAnsiClass": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsAutoClass": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsUnicodeClass": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsCOMObject": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsContextful": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsEnum": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsMarshalByRef": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsPrimitive": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsValueType": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsSignatureType": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsSecurityCritical": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsSecuritySafeCritical": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsSecurityTransparent": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "StructLayoutAttribute": {
+                "$ref": "#/$defs/structLayoutAttribute",
+                "readOnly": true
+              },
+              "TypeInitializer": {
+                "$ref": "#/$defs/constructorInfo",
+                "readOnly": true
+              },
+              "TypeHandle": {
+                "$ref": "#/$defs/runtimeTypeHandle",
+                "readOnly": true
+              },
+              "GUID": {
+                "$ref": "#/$defs/guid",
+                "readOnly": true
+              },
+              "BaseType": {
+                "$ref": "#/$defs/type",
+                "readOnly": true
+              },
+              "IsSerializable": {
+                "deprecated": true,
+                "type": "boolean",
+                "readOnly": true
+              },
+              "ContainsGenericParameters": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsVisible": {
+                "type": "boolean",
+                "readOnly": true
+              }
+            }
+          },
+          "arrayOfCustomAttributeData": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "AttributeType": {
+                  "$ref": "#/$defs/type",
+                  "readOnly": true
+                },
+                "Constructor": {
+                  "$ref": "#/$defs/constructorInfo",
+                  "readOnly": true
+                },
+                "ConstructorArguments": {
+                  "readOnly": true,
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/customAttributeTypedArgument"
+                  }
+                },
+                "NamedArguments": {
+                  "readOnly": true,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "MemberInfo": {
+                        "$ref": "#/$defs/memberInfo",
+                        "readOnly": true
+                      },
+                      "TypedValue": {
+                        "$ref": "#/$defs/customAttributeTypedArgument",
+                        "readOnly": true
+                      },
+                      "MemberName": {
+                        "type": "string",
+                        "readOnly": true
+                      },
+                      "IsField": {
+                        "type": "boolean",
+                        "readOnly": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "constructorInfo": {
+            "type": "object",
+            "properties": {
+              "Name": {
+                "type": "string",
+                "readOnly": true
+              },
+              "DeclaringType": {
+                "$ref": "#/$defs/type",
+                "readOnly": true
+              },
+              "ReflectedType": {
+                "$ref": "#/$defs/type",
+                "readOnly": true
+              },
+              "Module": {
+                "$ref": "#/$defs/module",
+                "readOnly": true
+              },
+              "CustomAttributes": {
+                "$ref": "#/$defs/arrayOfCustomAttributeData",
+                "readOnly": true
+              },
+              "IsCollectible": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "MetadataToken": {
+                "type": "integer",
+                "readOnly": true
+              },
+              "Attributes": {
+                "$ref": "#/$defs/methodAttributes",
+                "readOnly": true
+              },
+              "MethodImplementationFlags": {
+                "$ref": "#/$defs/methodImplAttributes",
+                "readOnly": true
+              },
+              "CallingConvention": {
+                "$ref": "#/$defs/callingConventions",
+                "readOnly": true
+              },
+              "IsAbstract": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsConstructor": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsFinal": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsHideBySig": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsSpecialName": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsStatic": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsVirtual": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsAssembly": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsFamily": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsFamilyAndAssembly": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsFamilyOrAssembly": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsPrivate": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsPublic": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsConstructedGenericMethod": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsGenericMethod": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsGenericMethodDefinition": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "ContainsGenericParameters": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "MethodHandle": {
+                "$ref": "#/$defs/runtimeMethodHandle",
+                "readOnly": true
+              },
+              "IsSecurityCritical": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsSecuritySafeCritical": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsSecurityTransparent": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "MemberType": {
+                "$ref": "#/$defs/memberTypes",
+                "readOnly": true
+              }
+            }
+          },
+          "module": {
+            "type": "object",
+            "properties": {
+              "Assembly": {
+                "$ref": "#/$defs/assembly",
+                "readOnly": true
+              },
+              "FullyQualifiedName": {
+                "type": "string",
+                "readOnly": true
+              },
+              "Name": {
+                "type": "string",
+                "readOnly": true
+              },
+              "MDStreamVersion": {
+                "type": "integer",
+                "readOnly": true
+              },
+              "ModuleVersionId": {
+                "$ref": "#/$defs/guid",
+                "readOnly": true
+              },
+              "ScopeName": {
+                "type": "string",
+                "readOnly": true
+              },
+              "ModuleHandle": {
+                "readOnly": true,
+                "type": "object",
+                "properties": {
+                  "MDStreamVersion": {
+                    "type": "integer",
+                    "readOnly": true
+                  }
+                }
+              },
+              "CustomAttributes": {
+                "$ref": "#/$defs/arrayOfCustomAttributeData",
+                "readOnly": true
+              },
+              "MetadataToken": {
+                "type": "integer",
+                "readOnly": true
+              }
+            }
+          },
+          "assembly": {
+            "type": "object",
+            "properties": {
+              "DefinedTypes": {
+                "$ref": "#/$defs/arrayOfTypeInfo",
+                "readOnly": true
+              },
+              "ExportedTypes": {
+                "$ref": "#/$defs/arrayOfType",
+                "readOnly": true
+              },
+              "CodeBase": {
+                "deprecated": true,
+                "type": "string",
+                "readOnly": true
+              },
+              "EntryPoint": {
+                "$ref": "#/$defs/methodInfo",
+                "readOnly": true
+              },
+              "FullName": {
+                "type": "string",
+                "readOnly": true
+              },
+              "ImageRuntimeVersion": {
+                "type": "string",
+                "readOnly": true
+              },
+              "IsDynamic": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "Location": {
+                "type": "string",
+                "readOnly": true
+              },
+              "ReflectionOnly": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsCollectible": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsFullyTrusted": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "CustomAttributes": {
+                "$ref": "#/$defs/arrayOfCustomAttributeData",
+                "readOnly": true
+              },
+              "EscapedCodeBase": {
+                "deprecated": true,
+                "type": "string",
+                "readOnly": true
+              },
+              "ManifestModule": {
+                "$ref": "#/$defs/module",
+                "readOnly": true
+              },
+              "Modules": {
+                "readOnly": true,
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/module"
+                }
+              },
+              "GlobalAssemblyCache": {
+                "deprecated": true,
+                "type": "boolean",
+                "readOnly": true
+              },
+              "HostContext": {
+                "type": "integer",
+                "readOnly": true
+              },
+              "SecurityRuleSet": {
+                "readOnly": true,
+                "enum": [
+                  "None",
+                  "Level1",
+                  "Level2"
+                ]
+              }
+            }
+          },
+          "arrayOfTypeInfo": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "Name": {
+                  "type": "string",
+                  "readOnly": true
+                },
+                "CustomAttributes": {
+                  "$ref": "#/$defs/arrayOfCustomAttributeData",
+                  "readOnly": true
+                },
+                "IsCollectible": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "MetadataToken": {
+                  "type": "integer",
+                  "readOnly": true
+                },
+                "IsInterface": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "MemberType": {
+                  "$ref": "#/$defs/memberTypes",
+                  "readOnly": true
+                },
+                "Namespace": {
+                  "type": "string",
+                  "readOnly": true
+                },
+                "AssemblyQualifiedName": {
+                  "type": "string",
+                  "readOnly": true
+                },
+                "FullName": {
+                  "type": "string",
+                  "readOnly": true
+                },
+                "Assembly": {
+                  "$ref": "#/$defs/assembly",
+                  "readOnly": true
+                },
+                "Module": {
+                  "$ref": "#/$defs/module",
+                  "readOnly": true
+                },
+                "IsNested": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "DeclaringType": {
+                  "$ref": "#/$defs/type",
+                  "readOnly": true
+                },
+                "DeclaringMethod": {
+                  "$ref": "#/$defs/methodBase",
+                  "readOnly": true
+                },
+                "ReflectedType": {
+                  "$ref": "#/$defs/type",
+                  "readOnly": true
+                },
+                "UnderlyingSystemType": {
+                  "$ref": "#/$defs/type",
+                  "readOnly": true
+                },
+                "IsTypeDefinition": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsArray": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsByRef": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsPointer": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsConstructedGenericType": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsGenericParameter": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsGenericTypeParameter": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsGenericMethodParameter": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsGenericType": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsGenericTypeDefinition": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsSZArray": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsVariableBoundArray": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsByRefLike": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsFunctionPointer": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsUnmanagedFunctionPointer": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "HasElementType": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "GenericTypeArguments": {
+                  "$ref": "#/$defs/arrayOfType",
+                  "readOnly": true
+                },
+                "GenericParameterPosition": {
+                  "type": "integer",
+                  "readOnly": true
+                },
+                "GenericParameterAttributes": {
+                  "$ref": "#/$defs/genericParameterAttributes",
+                  "readOnly": true
+                },
+                "Attributes": {
+                  "$ref": "#/$defs/typeAttributes",
+                  "readOnly": true
+                },
+                "IsAbstract": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsImport": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsSealed": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsSpecialName": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsClass": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsNestedAssembly": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsNestedFamANDAssem": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsNestedFamily": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsNestedFamORAssem": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsNestedPrivate": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsNestedPublic": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsNotPublic": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsPublic": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsAutoLayout": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsExplicitLayout": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsLayoutSequential": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsAnsiClass": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsAutoClass": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsUnicodeClass": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsCOMObject": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsContextful": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsEnum": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsMarshalByRef": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsPrimitive": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsValueType": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsSignatureType": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsSecurityCritical": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsSecuritySafeCritical": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsSecurityTransparent": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "StructLayoutAttribute": {
+                  "$ref": "#/$defs/structLayoutAttribute",
+                  "readOnly": true
+                },
+                "TypeInitializer": {
+                  "$ref": "#/$defs/constructorInfo",
+                  "readOnly": true
+                },
+                "TypeHandle": {
+                  "$ref": "#/$defs/runtimeTypeHandle",
+                  "readOnly": true
+                },
+                "GUID": {
+                  "$ref": "#/$defs/guid",
+                  "readOnly": true
+                },
+                "BaseType": {
+                  "$ref": "#/$defs/type",
+                  "readOnly": true
+                },
+                "IsSerializable": {
+                  "deprecated": true,
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "ContainsGenericParameters": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "IsVisible": {
+                  "type": "boolean",
+                  "readOnly": true
+                },
+                "GenericTypeParameters": {
+                  "$ref": "#/$defs/arrayOfType",
+                  "readOnly": true
+                },
+                "DeclaredConstructors": {
+                  "readOnly": true,
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/constructorInfo"
+                  }
+                },
+                "DeclaredEvents": {
+                  "readOnly": true,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Name": {
+                        "type": "string",
+                        "readOnly": true
+                      },
+                      "DeclaringType": {
+                        "$ref": "#/$defs/type",
+                        "readOnly": true
+                      },
+                      "ReflectedType": {
+                        "$ref": "#/$defs/type",
+                        "readOnly": true
+                      },
+                      "Module": {
+                        "$ref": "#/$defs/module",
+                        "readOnly": true
+                      },
+                      "CustomAttributes": {
+                        "$ref": "#/$defs/arrayOfCustomAttributeData",
+                        "readOnly": true
+                      },
+                      "IsCollectible": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "MetadataToken": {
+                        "type": "integer",
+                        "readOnly": true
+                      },
+                      "MemberType": {
+                        "$ref": "#/$defs/memberTypes",
+                        "readOnly": true
+                      },
+                      "Attributes": {
+                        "readOnly": true,
+                        "enum": [
+                          "None",
+                          "SpecialName",
+                          "ReservedMask",
+                          "ReservedMask"
+                        ]
+                      },
+                      "IsSpecialName": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "AddMethod": {
+                        "$ref": "#/$defs/methodInfo",
+                        "readOnly": true
+                      },
+                      "RemoveMethod": {
+                        "$ref": "#/$defs/methodInfo",
+                        "readOnly": true
+                      },
+                      "RaiseMethod": {
+                        "$ref": "#/$defs/methodInfo",
+                        "readOnly": true
+                      },
+                      "IsMulticast": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "EventHandlerType": {
+                        "$ref": "#/$defs/type",
+                        "readOnly": true
+                      }
+                    }
+                  }
+                },
+                "DeclaredFields": {
+                  "readOnly": true,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Name": {
+                        "type": "string",
+                        "readOnly": true
+                      },
+                      "DeclaringType": {
+                        "$ref": "#/$defs/type",
+                        "readOnly": true
+                      },
+                      "ReflectedType": {
+                        "$ref": "#/$defs/type",
+                        "readOnly": true
+                      },
+                      "Module": {
+                        "$ref": "#/$defs/module",
+                        "readOnly": true
+                      },
+                      "CustomAttributes": {
+                        "$ref": "#/$defs/arrayOfCustomAttributeData",
+                        "readOnly": true
+                      },
+                      "IsCollectible": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "MetadataToken": {
+                        "type": "integer",
+                        "readOnly": true
+                      },
+                      "MemberType": {
+                        "$ref": "#/$defs/memberTypes",
+                        "readOnly": true
+                      },
+                      "Attributes": {
+                        "readOnly": true,
+                        "enum": [
+                          "PrivateScope",
+                          "Private",
+                          "FamANDAssem",
+                          "Assembly",
+                          "Family",
+                          "FamORAssem",
+                          "Public",
+                          "FieldAccessMask",
+                          "Static",
+                          "InitOnly",
+                          "Literal",
+                          "NotSerialized",
+                          "HasFieldRVA",
+                          "SpecialName",
+                          "RTSpecialName",
+                          "HasFieldMarshal",
+                          "PinvokeImpl",
+                          "HasDefault",
+                          "ReservedMask"
+                        ]
+                      },
+                      "FieldType": {
+                        "$ref": "#/$defs/type",
+                        "readOnly": true
+                      },
+                      "IsInitOnly": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "IsLiteral": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "IsNotSerialized": {
+                        "deprecated": true,
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "IsPinvokeImpl": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "IsSpecialName": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "IsStatic": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "IsAssembly": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "IsFamily": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "IsFamilyAndAssembly": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "IsFamilyOrAssembly": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "IsPrivate": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "IsPublic": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "IsSecurityCritical": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "IsSecuritySafeCritical": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "IsSecurityTransparent": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "FieldHandle": {
+                        "readOnly": true,
+                        "type": "object",
+                        "properties": {
+                          "Value": {
+                            "$ref": "#/$defs/intPtr",
+                            "readOnly": true
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "DeclaredMembers": {
+                  "readOnly": true,
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/memberInfo"
+                  }
+                },
+                "DeclaredMethods": {
+                  "readOnly": true,
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/methodInfo"
+                  }
+                },
+                "DeclaredNestedTypes": {
+                  "$ref": "#/$defs/arrayOfTypeInfo",
+                  "readOnly": true
+                },
+                "DeclaredProperties": {
+                  "readOnly": true,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Name": {
+                        "type": "string",
+                        "readOnly": true
+                      },
+                      "DeclaringType": {
+                        "$ref": "#/$defs/type",
+                        "readOnly": true
+                      },
+                      "ReflectedType": {
+                        "$ref": "#/$defs/type",
+                        "readOnly": true
+                      },
+                      "Module": {
+                        "$ref": "#/$defs/module",
+                        "readOnly": true
+                      },
+                      "CustomAttributes": {
+                        "$ref": "#/$defs/arrayOfCustomAttributeData",
+                        "readOnly": true
+                      },
+                      "IsCollectible": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "MetadataToken": {
+                        "type": "integer",
+                        "readOnly": true
+                      },
+                      "MemberType": {
+                        "$ref": "#/$defs/memberTypes",
+                        "readOnly": true
+                      },
+                      "PropertyType": {
+                        "$ref": "#/$defs/type",
+                        "readOnly": true
+                      },
+                      "Attributes": {
+                        "readOnly": true,
+                        "enum": [
+                          "None",
+                          "SpecialName",
+                          "RTSpecialName",
+                          "HasDefault",
+                          "Reserved2",
+                          "Reserved3",
+                          "Reserved4",
+                          "ReservedMask"
+                        ]
+                      },
+                      "IsSpecialName": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "CanRead": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "CanWrite": {
+                        "type": "boolean",
+                        "readOnly": true
+                      },
+                      "GetMethod": {
+                        "$ref": "#/$defs/methodInfo",
+                        "readOnly": true
+                      },
+                      "SetMethod": {
+                        "$ref": "#/$defs/methodInfo",
+                        "readOnly": true
+                      }
+                    }
+                  }
+                },
+                "ImplementedInterfaces": {
+                  "$ref": "#/$defs/arrayOfType",
+                  "readOnly": true
+                }
+              }
+            }
+          },
+          "memberTypes": {
+            "enum": [
+              "Constructor",
+              "Event",
+              "Field",
+              "Method",
+              "Property",
+              "TypeInfo",
+              "Custom",
+              "NestedType",
+              "All"
+            ]
+          },
+          "methodBase": {
+            "type": "object",
+            "properties": {
+              "MemberType": {
+                "$ref": "#/$defs/memberTypes",
+                "readOnly": true
+              },
+              "Name": {
+                "type": "string",
+                "readOnly": true
+              },
+              "DeclaringType": {
+                "$ref": "#/$defs/type",
+                "readOnly": true
+              },
+              "ReflectedType": {
+                "$ref": "#/$defs/type",
+                "readOnly": true
+              },
+              "Module": {
+                "$ref": "#/$defs/module",
+                "readOnly": true
+              },
+              "CustomAttributes": {
+                "$ref": "#/$defs/arrayOfCustomAttributeData",
+                "readOnly": true
+              },
+              "IsCollectible": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "MetadataToken": {
+                "type": "integer",
+                "readOnly": true
+              },
+              "Attributes": {
+                "$ref": "#/$defs/methodAttributes",
+                "readOnly": true
+              },
+              "MethodImplementationFlags": {
+                "$ref": "#/$defs/methodImplAttributes",
+                "readOnly": true
+              },
+              "CallingConvention": {
+                "$ref": "#/$defs/callingConventions",
+                "readOnly": true
+              },
+              "IsAbstract": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsConstructor": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsFinal": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsHideBySig": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsSpecialName": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsStatic": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsVirtual": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsAssembly": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsFamily": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsFamilyAndAssembly": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsFamilyOrAssembly": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsPrivate": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsPublic": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsConstructedGenericMethod": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsGenericMethod": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsGenericMethodDefinition": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "ContainsGenericParameters": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "MethodHandle": {
+                "$ref": "#/$defs/runtimeMethodHandle",
+                "readOnly": true
+              },
+              "IsSecurityCritical": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsSecuritySafeCritical": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsSecurityTransparent": {
+                "type": "boolean",
+                "readOnly": true
+              }
+            }
+          },
+          "methodAttributes": {
+            "enum": [
+              "PrivateScope",
+              "PrivateScope",
+              "Private",
+              "FamANDAssem",
+              "Assembly",
+              "Family",
+              "FamORAssem",
+              "Public",
+              "MemberAccessMask",
+              "UnmanagedExport",
+              "Static",
+              "Final",
+              "Virtual",
+              "HideBySig",
+              "VtableLayoutMask",
+              "VtableLayoutMask",
+              "CheckAccessOnOverride",
+              "Abstract",
+              "SpecialName",
+              "RTSpecialName",
+              "PinvokeImpl",
+              "HasSecurity",
+              "RequireSecObject",
+              "ReservedMask"
+            ]
+          },
+          "methodImplAttributes": {
+            "enum": [
+              "IL",
+              "IL",
+              "Native",
+              "OPTIL",
+              "CodeTypeMask",
+              "CodeTypeMask",
+              "ManagedMask",
+              "ManagedMask",
+              "NoInlining",
+              "ForwardRef",
+              "Synchronized",
+              "NoOptimization",
+              "PreserveSig",
+              "AggressiveInlining",
+              "AggressiveOptimization",
+              "InternalCall",
+              "MaxMethodImplVal"
+            ]
+          },
+          "callingConventions": {
+            "enum": [
+              "Standard",
+              "VarArgs",
+              "Any",
+              "HasThis",
+              "ExplicitThis"
+            ]
+          },
+          "runtimeMethodHandle": {
+            "type": "object",
+            "properties": {
+              "Value": {
+                "$ref": "#/$defs/intPtr",
+                "readOnly": true
+              }
+            }
+          },
+          "intPtr": {
+            "type": "object"
+          },
+          "arrayOfType": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/type"
+            }
+          },
+          "genericParameterAttributes": {
+            "enum": [
+              "None",
+              "Covariant",
+              "Contravariant",
+              "VarianceMask",
+              "ReferenceTypeConstraint",
+              "NotNullableValueTypeConstraint",
+              "DefaultConstructorConstraint",
+              "SpecialConstraintMask"
+            ]
+          },
+          "typeAttributes": {
+            "enum": [
+              "NotPublic",
+              "NotPublic",
+              "NotPublic",
+              "NotPublic",
+              "Public",
+              "NestedPublic",
+              "NestedPrivate",
+              "NestedFamily",
+              "NestedAssembly",
+              "NestedFamANDAssem",
+              "NestedFamORAssem",
+              "NestedFamORAssem",
+              "SequentialLayout",
+              "ExplicitLayout",
+              "LayoutMask",
+              "ClassSemanticsMask",
+              "ClassSemanticsMask",
+              "Abstract",
+              "Sealed",
+              "SpecialName",
+              "RTSpecialName",
+              "Import",
+              "Serializable",
+              "WindowsRuntime",
+              "UnicodeClass",
+              "AutoClass",
+              "CustomFormatClass",
+              "CustomFormatClass",
+              "HasSecurity",
+              "ReservedMask",
+              "BeforeFieldInit",
+              "CustomFormatMask"
+            ]
+          },
+          "structLayoutAttribute": {
+            "type": "object",
+            "properties": {
+              "TypeId": {
+                "$ref": "#/$defs/object",
+                "readOnly": true
+              },
+              "Pack": {
+                "type": "integer"
+              },
+              "Size": {
+                "type": "integer"
+              },
+              "CharSet": {
+                "enum": [
+                  "None",
+                  "Ansi",
+                  "Unicode",
+                  "Auto"
+                ]
+              },
+              "Value": {
+                "readOnly": true,
+                "enum": [
+                  "Sequential",
+                  "Explicit",
+                  "Auto"
+                ]
+              }
+            }
+          },
+          "object": true,
+          "runtimeTypeHandle": {
+            "type": "object",
+            "properties": {
+              "Value": {
+                "$ref": "#/$defs/intPtr",
+                "readOnly": true
+              }
+            }
+          },
+          "guid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "methodInfo": {
+            "type": "object",
+            "properties": {
+              "Name": {
+                "type": "string",
+                "readOnly": true
+              },
+              "DeclaringType": {
+                "$ref": "#/$defs/type",
+                "readOnly": true
+              },
+              "ReflectedType": {
+                "$ref": "#/$defs/type",
+                "readOnly": true
+              },
+              "Module": {
+                "$ref": "#/$defs/module",
+                "readOnly": true
+              },
+              "CustomAttributes": {
+                "$ref": "#/$defs/arrayOfCustomAttributeData",
+                "readOnly": true
+              },
+              "IsCollectible": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "MetadataToken": {
+                "type": "integer",
+                "readOnly": true
+              },
+              "Attributes": {
+                "$ref": "#/$defs/methodAttributes",
+                "readOnly": true
+              },
+              "MethodImplementationFlags": {
+                "$ref": "#/$defs/methodImplAttributes",
+                "readOnly": true
+              },
+              "CallingConvention": {
+                "$ref": "#/$defs/callingConventions",
+                "readOnly": true
+              },
+              "IsAbstract": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsConstructor": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsFinal": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsHideBySig": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsSpecialName": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsStatic": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsVirtual": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsAssembly": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsFamily": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsFamilyAndAssembly": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsFamilyOrAssembly": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsPrivate": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsPublic": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsConstructedGenericMethod": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsGenericMethod": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsGenericMethodDefinition": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "ContainsGenericParameters": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "MethodHandle": {
+                "$ref": "#/$defs/runtimeMethodHandle",
+                "readOnly": true
+              },
+              "IsSecurityCritical": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsSecuritySafeCritical": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "IsSecurityTransparent": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "MemberType": {
+                "$ref": "#/$defs/memberTypes",
+                "readOnly": true
+              },
+              "ReturnParameter": {
+                "readOnly": true,
+                "type": "object",
+                "properties": {
+                  "Attributes": {
+                    "readOnly": true,
+                    "enum": [
+                      "None",
+                      "In",
+                      "Out",
+                      "Lcid",
+                      "Retval",
+                      "Optional",
+                      "HasDefault",
+                      "HasFieldMarshal",
+                      "Reserved3",
+                      "Reserved4",
+                      "ReservedMask"
+                    ]
+                  },
+                  "Member": {
+                    "$ref": "#/$defs/memberInfo",
+                    "readOnly": true
+                  },
+                  "Name": {
+                    "type": "string",
+                    "readOnly": true
+                  },
+                  "ParameterType": {
+                    "$ref": "#/$defs/type",
+                    "readOnly": true
+                  },
+                  "Position": {
+                    "type": "integer",
+                    "readOnly": true
+                  },
+                  "IsIn": {
+                    "type": "boolean",
+                    "readOnly": true
+                  },
+                  "IsLcid": {
+                    "type": "boolean",
+                    "readOnly": true
+                  },
+                  "IsOptional": {
+                    "type": "boolean",
+                    "readOnly": true
+                  },
+                  "IsOut": {
+                    "type": "boolean",
+                    "readOnly": true
+                  },
+                  "IsRetval": {
+                    "type": "boolean",
+                    "readOnly": true
+                  },
+                  "DefaultValue": {
+                    "$ref": "#/$defs/object",
+                    "readOnly": true
+                  },
+                  "RawDefaultValue": {
+                    "$ref": "#/$defs/object",
+                    "readOnly": true
+                  },
+                  "HasDefaultValue": {
+                    "type": "boolean",
+                    "readOnly": true
+                  },
+                  "CustomAttributes": {
+                    "$ref": "#/$defs/arrayOfCustomAttributeData",
+                    "readOnly": true
+                  },
+                  "MetadataToken": {
+                    "type": "integer",
+                    "readOnly": true
+                  }
+                }
+              },
+              "ReturnType": {
+                "$ref": "#/$defs/type",
+                "readOnly": true
+              },
+              "ReturnTypeCustomAttributes": {
+                "readOnly": true,
+                "type": "object"
+              }
+            }
+          },
+          "memberInfo": {
+            "type": "object",
+            "properties": {
+              "MemberType": {
+                "$ref": "#/$defs/memberTypes",
+                "readOnly": true
+              },
+              "Name": {
+                "type": "string",
+                "readOnly": true
+              },
+              "DeclaringType": {
+                "$ref": "#/$defs/type",
+                "readOnly": true
+              },
+              "ReflectedType": {
+                "$ref": "#/$defs/type",
+                "readOnly": true
+              },
+              "Module": {
+                "$ref": "#/$defs/module",
+                "readOnly": true
+              },
+              "CustomAttributes": {
+                "$ref": "#/$defs/arrayOfCustomAttributeData",
+                "readOnly": true
+              },
+              "IsCollectible": {
+                "type": "boolean",
+                "readOnly": true
+              },
+              "MetadataToken": {
+                "type": "integer",
+                "readOnly": true
+              }
+            }
+          },
+          "customAttributeTypedArgument": {
+            "type": "object",
+            "properties": {
+              "ArgumentType": {
+                "$ref": "#/$defs/type",
+                "readOnly": true
+              },
+              "Value": {
+                "$ref": "#/$defs/object",
+                "readOnly": true
+              }
+            }
+          }
+        }
+      },
+      "links": [
+        {
+          "relations": [
+            "CustomersRoot"
+          ],
+          "targetName": "CustomersRoot",
+          "targetClasses": [
+            "CustomersRoot"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        },
+        {
+          "relations": [
+            "CarsRoot"
+          ],
+          "targetName": "CarsRoot",
+          "targetClasses": [
+            "CarsRoot"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        },
+        {
+          "relations": [
+            "self"
+          ],
+          "targetName": "Entrypoint",
+          "targetClasses": [
+            "Entrypoint"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        }
+      ],
+      "actions": [],
+      "embeddedEntities": [],
+      "isDeprecated": false
+    },
+    {
+      "name": "CarsRoot",
+      "classes": [
+        "CarsRoot"
+      ],
+      "title": "The Cars API",
+      "links": [
+        {
+          "relations": [
+            "NiceCar"
+          ],
+          "targetName": "DerivedCar",
+          "targetClasses": [
+            "DerivedCar"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        },
+        {
+          "relations": [
+            "SuperCar"
+          ],
+          "targetName": "Car",
+          "targetClasses": [
+            "Car"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        },
+        {
+          "relations": [
+            "self"
+          ],
+          "targetName": "CarsRoot",
+          "targetClasses": [
+            "CarsRoot"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        }
+      ],
+      "actions": [
+        {
+          "name": "UploadCarImage",
+          "title": "Upload image for car",
+          "contentType": "multipart/form-data",
+          "parameterSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "Text": {
+                "type": "string"
+              },
+              "Flag": {
+                "type": "boolean"
+              }
+            }
+          },
+          "isMandatory": true,
+          "isFileUpload": true,
+          "isDeprecated": false
+        },
+        {
+          "name": "UploadInsuranceScan",
+          "title": "Upload scan of insurance for the car",
+          "contentType": "multipart/form-data",
+          "isMandatory": true,
+          "isFileUpload": true,
+          "isDeprecated": false
+        }
+      ],
+      "embeddedEntities": [],
+      "isDeprecated": false
+    },
+    {
+      "name": "Car",
+      "classes": [
+        "Car"
+      ],
+      "title": "A Car",
+      "propertiesSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "Id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "Brand": {
+            "type": "string"
+          },
+          "PriceDevelopment": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "PopularCountries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/country"
+            }
+          },
+          "MostPopularIn": {
+            "$ref": "#/$defs/country"
+          },
+          "LastInspection": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          }
+        },
+        "$defs": {
+          "country": {
+            "type": "object",
+            "properties": {
+              "Name": {
+                "type": "string"
+              },
+              "EstimatedPopulation": {
+                "type": "integer"
+              },
+              "LanguageCode": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "links": [
+        {
+          "relations": [
+            "self"
+          ],
+          "targetName": "Car",
+          "targetClasses": [
+            "Car"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        }
+      ],
+      "actions": [
+        {
+          "name": "UpdateInspection",
+          "title": "",
+          "parameterSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "NewInspection": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          },
+          "isMandatory": true,
+          "isFileUpload": false,
+          "isDeprecated": false
+        }
+      ],
+      "embeddedEntities": [],
+      "isDeprecated": false
+    },
+    {
+      "name": "CarImage",
+      "classes": [
+        "CarImage"
+      ],
+      "title": "Image for a car",
+      "links": [
+        {
+          "relations": [
+            "self"
+          ],
+          "targetName": "CarImage",
+          "targetClasses": [
+            "CarImage"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        }
+      ],
+      "actions": [],
+      "embeddedEntities": [],
+      "isDeprecated": false
+    },
+    {
+      "name": "CarInsurance",
+      "classes": [
+        "CarInsurance"
+      ],
+      "title": "Insurance scan for a car",
+      "links": [
+        {
+          "relations": [
+            "self"
+          ],
+          "targetName": "CarInsurance",
+          "targetClasses": [
+            "CarInsurance"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        }
+      ],
+      "actions": [],
+      "embeddedEntities": [],
+      "isDeprecated": false
+    },
+    {
+      "name": "DerivedCar",
+      "classes": [
+        "DerivedCar"
+      ],
+      "title": "Derived Car",
+      "propertiesSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "DerivedProperty": {
+            "type": "string"
+          },
+          "Id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "Brand": {
+            "type": "string"
+          },
+          "PriceDevelopment": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "PopularCountries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/country"
+            }
+          },
+          "MostPopularIn": {
+            "$ref": "#/$defs/country"
+          },
+          "LastInspection": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          }
+        },
+        "$defs": {
+          "country": {
+            "type": "object",
+            "properties": {
+              "Name": {
+                "type": "string"
+              },
+              "EstimatedPopulation": {
+                "type": "integer"
+              },
+              "LanguageCode": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "links": [
+        {
+          "relations": [
+            "DerivedLink"
+          ],
+          "targetName": "Customer",
+          "targetClasses": [
+            "Customer"
+          ],
+          "isMandatory": false,
+          "isDeprecated": false
+        },
+        {
+          "relations": [
+            "self"
+          ],
+          "targetName": "DerivedCar",
+          "targetClasses": [
+            "DerivedCar"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        }
+      ],
+      "actions": [
+        {
+          "name": "DerivedOperation",
+          "title": "Derived Operation",
+          "isMandatory": true,
+          "isFileUpload": false,
+          "isDeprecated": false
+        },
+        {
+          "name": "UpdateInspection",
+          "title": "",
+          "parameterSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "NewInspection": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          },
+          "isMandatory": true,
+          "isFileUpload": false,
+          "isDeprecated": false
+        }
+      ],
+      "embeddedEntities": [
+        {
+          "relations": [
+            "item"
+          ],
+          "targetName": "Customer",
+          "targetClasses": [
+            "Customer"
+          ],
+          "isCollection": true,
+          "isMandatory": true,
+          "isDeprecated": false
+        }
+      ],
+      "isDeprecated": false
+    },
+    {
+      "name": "NextLevelDerivedCar",
+      "classes": [
+        "NextLevelDerivedCar"
+      ],
+      "title": "Derives from Derived Car",
+      "propertiesSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "NextLevelDerivedProperty": {
+            "type": "string"
+          },
+          "DerivedProperty": {
+            "type": "string"
+          },
+          "Id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "Brand": {
+            "type": "string"
+          },
+          "PriceDevelopment": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "PopularCountries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/country"
+            }
+          },
+          "MostPopularIn": {
+            "$ref": "#/$defs/country"
+          },
+          "LastInspection": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          }
+        },
+        "$defs": {
+          "country": {
+            "type": "object",
+            "properties": {
+              "Name": {
+                "type": "string"
+              },
+              "EstimatedPopulation": {
+                "type": "integer"
+              },
+              "LanguageCode": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "links": [
+        {
+          "relations": [
+            "self"
+          ],
+          "targetName": "NextLevelDerivedCar",
+          "targetClasses": [
+            "NextLevelDerivedCar"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        },
+        {
+          "relations": [
+            "DerivedLink"
+          ],
+          "targetName": "Customer",
+          "targetClasses": [
+            "Customer"
+          ],
+          "isMandatory": false,
+          "isDeprecated": false
+        }
+      ],
+      "actions": [
+        {
+          "name": "DerivedOperation",
+          "title": "Derived Operation",
+          "isMandatory": true,
+          "isFileUpload": false,
+          "isDeprecated": false
+        },
+        {
+          "name": "UpdateInspection",
+          "title": "",
+          "parameterSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "NewInspection": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          },
+          "isMandatory": true,
+          "isFileUpload": false,
+          "isDeprecated": false
+        }
+      ],
+      "embeddedEntities": [
+        {
+          "relations": [
+            "item"
+          ],
+          "targetName": "Customer",
+          "targetClasses": [
+            "Customer"
+          ],
+          "isCollection": true,
+          "isMandatory": true,
+          "isDeprecated": false
+        }
+      ],
+      "isDeprecated": false
+    },
+    {
+      "name": "CustomersRoot",
+      "classes": [
+        "CustomersRoot"
+      ],
+      "title": "The Customers API",
+      "links": [
+        {
+          "relations": [
+            "all"
+          ],
+          "targetName": "CustomerQueryResult",
+          "targetClasses": [
+            "CustomersQueryResult"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        },
+        {
+          "relations": [
+            "BestCustomer"
+          ],
+          "targetName": "Customer",
+          "targetClasses": [
+            "Customer"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        },
+        {
+          "relations": [
+            "self"
+          ],
+          "targetName": "CustomersRoot",
+          "targetClasses": [
+            "CustomersRoot"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        }
+      ],
+      "actions": [
+        {
+          "name": "CreateCustomer",
+          "title": "Request creation of a new Customer.",
+          "parameterSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "Name": {
+                "type": "string"
+              }
+            }
+          },
+          "isMandatory": true,
+          "isFileUpload": false,
+          "isDeprecated": false
+        },
+        {
+          "name": "CreateQuery",
+          "title": "Query the Customers collection.",
+          "parameterSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "Pagination": {
+                "type": "object",
+                "properties": {
+                  "PageSize": {
+                    "type": "integer"
+                  },
+                  "PageOffset": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "SortBy": {
+                "type": "object",
+                "properties": {
+                  "PropertyName": {
+                    "enum": [
+                      "Age",
+                      "Name",
+                      null
+                    ]
+                  },
+                  "SortType": {
+                    "enum": [
+                      "None",
+                      "Ascending",
+                      "Descending"
+                    ]
+                  }
+                }
+              },
+              "Filter": {
+                "type": "object",
+                "properties": {
+                  "MinAge": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "isMandatory": true,
+          "isFileUpload": false,
+          "isDeprecated": false
+        }
+      ],
+      "embeddedEntities": [],
+      "isDeprecated": false
+    },
+    {
+      "name": "CustomerPurchase",
+      "classes": [
+        "CustomerPurchase"
+      ],
+      "propertiesSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "Amount": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "CardNumber": {
+            "type": "string"
+          },
+          "CardType": {
+            "type": "string"
+          }
+        }
+      },
+      "links": [],
+      "actions": [],
+      "embeddedEntities": [],
+      "isDeprecated": false
+    },
+    {
+      "name": "CustomerPurchaseHistory",
+      "classes": [
+        "CustomerPurchaseHistory"
+      ],
+      "links": [
+        {
+          "relations": [
+            "self"
+          ],
+          "targetName": "CustomerPurchaseHistory",
+          "targetClasses": [
+            "CustomerPurchaseHistory"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        }
+      ],
+      "actions": [],
+      "embeddedEntities": [
+        {
+          "relations": [
+            "Purchases"
+          ],
+          "targetName": "CustomerPurchase",
+          "targetClasses": [
+            "CustomerPurchase"
+          ],
+          "isCollection": true,
+          "isMandatory": true,
+          "isDeprecated": false
+        }
+      ],
+      "isDeprecated": false
+    },
+    {
+      "name": "Customer",
+      "classes": [
+        "Customer"
+      ],
+      "propertiesSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "Age": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "FullName": {
+            "type": "string"
+          },
+          "Address": {
+            "type": "object",
+            "properties": {
+              "Street": {
+                "type": "string"
+              },
+              "Number": {
+                "type": "string"
+              },
+              "City": {
+                "type": "string"
+              },
+              "ZipCode": {
+                "type": "string"
+              }
+            }
+          },
+          "IsFavorite": {
+            "type": "boolean"
+          }
+        }
+      },
+      "links": [
+        {
+          "relations": [
+            "PurchaseHistory"
+          ],
+          "targetName": "CustomerPurchaseHistory",
+          "targetClasses": [
+            "CustomerPurchaseHistory"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        },
+        {
+          "relations": [
+            "self"
+          ],
+          "targetName": "Customer",
+          "targetClasses": [
+            "Customer"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        }
+      ],
+      "actions": [
+        {
+          "name": "CustomerMove",
+          "title": "A Customer moved to a new location.",
+          "parameterSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "Address": {
+                "type": "object",
+                "properties": {
+                  "Street": {
+                    "type": "string"
+                  },
+                  "Number": {
+                    "type": "string"
+                  },
+                  "City": {
+                    "type": "string"
+                  },
+                  "ZipCode": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "isMandatory": true,
+          "isFileUpload": false,
+          "isDeprecated": false
+        },
+        {
+          "name": "CustomerRemove",
+          "title": "Remove a Customer.",
+          "isMandatory": true,
+          "isFileUpload": false,
+          "isDeprecated": false
+        },
+        {
+          "name": "MarkAsFavorite",
+          "title": "Marks a Customer as a favorite buyer.",
+          "parameterSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "Customer": {
+                "type": "string",
+                "format": "uri"
+              }
+            }
+          },
+          "isMandatory": true,
+          "isFileUpload": false,
+          "isDeprecated": false
+        },
+        {
+          "name": "BuyCar",
+          "title": "Buy a car.",
+          "parameterSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "Brand": {
+                "type": "string"
+              },
+              "CarId": {
+                "type": "integer"
+              },
+              "Price": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "HiddenProperty": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          },
+          "isMandatory": true,
+          "isFileUpload": false,
+          "isDeprecated": false
+        }
+      ],
+      "embeddedEntities": [],
+      "isDeprecated": false
+    },
+    {
+      "name": "CustomerQueryResult",
+      "classes": [
+        "CustomersQueryResult"
+      ],
+      "title": "Query result on Customer",
+      "propertiesSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "TotalEntities": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "CurrentEntitiesCount": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      },
+      "links": [
+        {
+          "relations": [
+            "Next"
+          ],
+          "targetName": "CustomerQueryResult",
+          "targetClasses": [
+            "CustomersQueryResult"
+          ],
+          "isMandatory": false,
+          "isDeprecated": false
+        },
+        {
+          "relations": [
+            "Previous"
+          ],
+          "targetName": "CustomerQueryResult",
+          "targetClasses": [
+            "CustomersQueryResult"
+          ],
+          "isMandatory": false,
+          "isDeprecated": false
+        },
+        {
+          "relations": [
+            "Last"
+          ],
+          "targetName": "CustomerQueryResult",
+          "targetClasses": [
+            "CustomersQueryResult"
+          ],
+          "isMandatory": false,
+          "isDeprecated": false
+        },
+        {
+          "relations": [
+            "All"
+          ],
+          "targetName": "CustomerQueryResult",
+          "targetClasses": [
+            "CustomersQueryResult"
+          ],
+          "isMandatory": false,
+          "isDeprecated": false
+        },
+        {
+          "relations": [
+            "self"
+          ],
+          "targetName": "CustomerQueryResult",
+          "targetClasses": [
+            "CustomersQueryResult"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        }
+      ],
+      "actions": [],
+      "embeddedEntities": [
+        {
+          "relations": [
+            "Customers"
+          ],
+          "targetName": "Customer",
+          "targetClasses": [
+            "Customer"
+          ],
+          "isCollection": true,
+          "isMandatory": true,
+          "isDeprecated": false
+        }
+      ],
+      "isDeprecated": false
+    }
+  ],
+  "definitions": {}
+}

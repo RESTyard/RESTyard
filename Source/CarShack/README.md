@@ -21,6 +21,27 @@ Note that a real client should **only** know the route to the EntryPoint and nav
 
 5. `startup.cs:ConfigureServices()`: Shows how to add the Hypermedia Extensions to the project
 
+## Schema Generation
+
+CarShack supports generating API schema artifacts via CLI:
+
+```bash
+# Generate all artifacts (JSON schema, Mermaid diagrams, Markdown documentation)
+dotnet run --project Source/CarShack/CarShack.csproj -- --generate-schema --schema-output ./schema-output
+
+# Generate only the JSON schema
+dotnet run --project Source/CarShack/CarShack.csproj -- --generate-schema --schema-artifacts json-hypermedia-api-schema --schema-output ./schema-output
+
+# Generate with raw Mermaid (no Markdown wrapping)
+dotnet run --project Source/CarShack/CarShack.csproj -- --generate-schema --schema-output ./schema-output
+```
+
+This produces:
+- `hypermedia-api-schema.json` — Full API schema as JSON
+- `api-map.md` — Mermaid entity relationship graph (wrapped in Markdown by default)
+- `htos.md` — Mermaid HTO class diagram (wrapped in Markdown by default)
+- `api-documentation.md` — Markdown API documentation
+
 ## Example Routes
 These routes are also contained in the Postman collection ready for import.
 
