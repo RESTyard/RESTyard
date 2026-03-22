@@ -184,6 +184,13 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Apply to entity types, actions, links, embedded entities
 - Verify tests
 
+#### Step 2.8.1: `[Obsolete]` → JSON Schema `deprecated` via `IAttributeHandler`
+- Add `ObsoleteAttributeHandler : IAttributeHandler<ObsoleteAttribute>` to `JsonSchemaFactory.cs` (same pattern as existing `DisplayNameAttributeHandler` and `DescriptionAttributeHandler`)
+- Handler emits `deprecated: true` into the JSON Schema for any type or property annotated with `[Obsolete]`
+- Register the handler in `JsonSchemaFactory` constructor via `AttributeHandler.AddHandler()`
+- This covers both action parameter properties and entity properties (after Step 2.7.1, `[Obsolete]` on HTO properties is forwarded to the generated POCO and picked up by the handler automatically)
+- Verify tests: action parameter type with `[Obsolete]` property, entity HTO with `[Obsolete]` property — both produce `deprecated: true` in the JSON Schema
+
 #### Step 2.9: Schema registry generation
 - Emit per-assembly `HypermediaSchemaRegistry_<AssemblyName>` class with static `GetSchemas(IJsonSchemaFactory)` collecting all `GetSchema()` results
 - Emit `[assembly: HypermediaSchemaRegistryAttribute(typeof(Registry))]` attribute for discovery
