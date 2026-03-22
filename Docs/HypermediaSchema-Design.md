@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Currently: **Step 2.7** (Title and description harvesting). Last completed: **Step 2.6** (Embedded entity analysis).
+> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Last completed: **Step 2.7** (Title and description harvesting). Next: **Step 2.7.1** (Properties POCO for schema generation).
 
 ## Table of Contents
 
