@@ -7,7 +7,6 @@ classDiagram
         +integer Id
     }
     class Entrypoint {
-        +type MyType
     }
     class CarsRoot {
         +UploadCarImage(params)

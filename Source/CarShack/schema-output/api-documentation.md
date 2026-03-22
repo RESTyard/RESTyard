@@ -69,14 +69,6 @@ Entry to the Rest API
 
 - `Entrypoint`
 
-<a id="entrypoint-properties"></a>
-
-### Properties
-
-| Property | Type | Required | Description |
-|---|---|---|---|
-| MyType | [type](#definition-type) | no |  |
-
 <a id="entrypoint-links"></a>
 
 ### Links

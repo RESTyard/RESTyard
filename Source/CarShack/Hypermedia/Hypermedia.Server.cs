@@ -90,10 +90,6 @@ public partial class HypermediaEntrypointHto
 {
    // public ExternalActionNoParametersTestOp ExternalActionNoParametersNoParametersTest { get; init; } = new ExternalActionNoParametersTestOp(new Uri("http://www.example1.com"), HttpMethod.POST);
    // public ExternalActionWitParameterTestOp ExternalActionWitParameterTestOp { get; init; }= new ExternalActionWitParameterTestOp(new Uri("http://www.example2.com"), HttpMethod.DELETE);
-    
-    //public List<object> Foo { get; set; } = new List<object>();
-
-    public Type MyType { get; set; } = typeof(HypermediaEntrypointHto);
 }
 
 public partial class HypermediaCustomerHto
