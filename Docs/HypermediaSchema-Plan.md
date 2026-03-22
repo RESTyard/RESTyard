@@ -275,6 +275,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - **CLI usage**: how to generate schema artifacts with `--generate-schema`, format selection
 
 #### Step 2.10: Document the source generator for server developers (Docs/HypermediaSchema/)
+- seperate document
 - Getting started guide: how the source generator is enabled (bundled in NuGet after 2.10), what it generates (`GetSchema()`, schema registry, assembly attribute)
 - Explain `[HypermediaSchemaName]` for custom entity names, when and why to use it (multi-assembly collisions, shorter names for docs/diagrams)
 - What `GetSchema()` produces and how it uses `IJsonSchemaFactory` at runtime
