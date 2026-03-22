@@ -44,6 +44,26 @@ builder.Services.AddHypermediaSchema(o =>
 });
 ```
 
+## How It Works
+
+At **compile time**, the source generator reads your HTO classes (attributes, XML doc comments) and emits schema methods, properties POCOs, and a per-assembly registry. At **runtime**, the registry is discovered automatically, and the schema is aggregated into a singleton `HypermediaApiSchema` available via DI — consumed by the schema endpoint and CLI generation.
+
+```mermaid
+flowchart LR
+    subgraph Compile Time
+        HTO["HTO Source Code\n+ Attributes\n+ XML Docs"] --> Generator["Source Generator"]
+        Generator --> Schema["GetSchema()\nper HTO"]
+        Generator --> POCO["Properties POCO\nper HTO"]
+        Generator --> Registry["Schema Registry\nper Assembly"]
+    end
+    subgraph Runtime
+        Registry --> Builder["HypermediaSchemaBuilder"]
+        Builder --> ApiSchema["HypermediaApiSchema\nsingleton via DI"]
+        ApiSchema --> Endpoint["/hypermedia-schema\nendpoint"]
+        ApiSchema --> CLI["CLI Generation\nJSON, Mermaid, Markdown"]
+    end
+```
+
 ## What Gets Generated
 
 For each HTO class with `[HypermediaObject]`, the generator produces:
