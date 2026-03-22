@@ -15,11 +15,17 @@ internal static class TestHtoSources
         using RESTyard.AspNetCore.Hypermedia.Attributes;
         """;
 
+    private const string AssemblyAttribute = """
+
+        [assembly: HypermediaAssembly]
+        """;
+
     /// <summary>
     /// Minimal HTO with one string property.
     /// </summary>
     internal const string SimpleHto = $$"""
         {{Usings}}
+        {{AssemblyAttribute}}
 
         namespace TestHtos;
 
@@ -36,6 +42,7 @@ internal static class TestHtoSources
     /// </summary>
     internal const string HtoWithLinks = $$"""
         {{Usings}}
+        {{AssemblyAttribute}}
 
         namespace TestHtos;
 
@@ -57,6 +64,7 @@ internal static class TestHtoSources
     /// </summary>
     internal const string HtoWithActions = $$"""
         {{Usings}}
+        {{AssemblyAttribute}}
 
         namespace TestHtos;
 
@@ -93,6 +101,7 @@ internal static class TestHtoSources
     /// </summary>
     internal const string HtoWithEmbedded = $$"""
         {{Usings}}
+        {{AssemblyAttribute}}
 
         namespace TestHtos;
 
@@ -120,6 +129,7 @@ internal static class TestHtoSources
     /// </summary>
     internal const string HtoWithVariousPropertyTypes = $$"""
         {{Usings}}
+        {{AssemblyAttribute}}
 
         namespace TestHtos;
 
@@ -147,6 +157,7 @@ internal static class TestHtoSources
     /// </summary>
     internal const string HtoWithNullableProperties = $$"""
         {{Usings}}
+        {{AssemblyAttribute}}
 
         namespace TestHtos;
 
@@ -165,6 +176,7 @@ internal static class TestHtoSources
     internal const string HtoWithEnumProperties = $$"""
         {{Usings}}
         using System.Runtime.Serialization;
+        {{AssemblyAttribute}}
 
         namespace TestHtos;
 
@@ -198,6 +210,7 @@ internal static class TestHtoSources
     /// </summary>
     internal const string HtoWithCollections = $$"""
         {{Usings}}
+        {{AssemblyAttribute}}
 
         namespace TestHtos;
 
@@ -215,6 +228,7 @@ internal static class TestHtoSources
     /// </summary>
     internal const string HtoWithNestedObject = $$"""
         {{Usings}}
+        {{AssemblyAttribute}}
 
         namespace TestHtos;
 
@@ -237,6 +251,7 @@ internal static class TestHtoSources
     /// </summary>
     internal const string HtoWithPropertyAttributes = $$"""
         {{Usings}}
+        {{AssemblyAttribute}}
 
         namespace TestHtos;
 
@@ -258,6 +273,7 @@ internal static class TestHtoSources
     /// </summary>
     internal const string HtoWithFileUpload = $$"""
         {{Usings}}
+        {{AssemblyAttribute}}
 
         namespace TestHtos;
 
@@ -281,6 +297,7 @@ internal static class TestHtoSources
     /// </summary>
     internal const string HtoWithTitleDescriptionAttributes = $$"""
         {{Usings}}
+        {{AssemblyAttribute}}
 
         namespace TestHtos;
 
@@ -324,6 +341,7 @@ internal static class TestHtoSources
     /// </summary>
     internal const string HtoWithXmlDocs = $$"""
         {{Usings}}
+        {{AssemblyAttribute}}
 
         namespace TestHtos;
 
@@ -367,6 +385,7 @@ internal static class TestHtoSources
     /// </summary>
     internal const string HtoWithAttributeOverridingXmlDocs = $$"""
         {{Usings}}
+        {{AssemblyAttribute}}
 
         namespace TestHtos;
 
@@ -386,6 +405,7 @@ internal static class TestHtoSources
     /// </summary>
     internal const string HtoWithHypermediaObjectTitleOverridingTitleAttribute = $$"""
         {{Usings}}
+        {{AssemblyAttribute}}
 
         namespace TestHtos;
 
@@ -402,6 +422,7 @@ internal static class TestHtoSources
     /// </summary>
     internal const string HtoWithDeprecation = $$"""
         {{Usings}}
+        {{AssemblyAttribute}}
 
         namespace TestHtos;
 
@@ -444,6 +465,7 @@ internal static class TestHtoSources
         {{Usings}}
         using System.Text.Json.Serialization;
         using RESTyard.AspNetCore.WebApi.RouteResolver;
+        {{AssemblyAttribute}}
 
         namespace TestHtos;
 
@@ -491,6 +513,7 @@ internal static class TestHtoSources
     /// </summary>
     internal const string FullHto = $$"""
         {{Usings}}
+        {{AssemblyAttribute}}
 
         namespace TestHtos;
 

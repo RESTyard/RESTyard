@@ -58,6 +58,8 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
 
+            [assembly: HypermediaAssembly]
+
             namespace TestHtos;
 
             [HypermediaObject(Classes = ["Truck"])]
@@ -81,6 +83,8 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
 
+            [assembly: HypermediaAssembly]
+
             namespace TestHtos;
 
             [HypermediaObject(Title = "", Classes = ["Truck"])]
@@ -103,6 +107,8 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
 
+            [assembly: HypermediaAssembly]
+
             namespace TestHtos;
 
             [HypermediaObject(Title = "Cars Root", Classes = ["CarsRoot", "CollectionRoot"])]
@@ -123,6 +129,8 @@ public class HtoSchemaGeneratorTests
     {
         const string source = """
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
@@ -231,6 +239,8 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
@@ -347,6 +357,8 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
 
+            [assembly: HypermediaAssembly]
+
             namespace TestHtos;
 
             [HypermediaObject(Title = "Order", Classes = ["Order", "Document"])]
@@ -442,6 +454,8 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia.Actions;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
 
+            [assembly: HypermediaAssembly]
+
             namespace TestHtos;
 
             public class DoSomethingAction : HypermediaAction
@@ -504,6 +518,8 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Actions;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
@@ -581,6 +597,8 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
 
+            [assembly: HypermediaAssembly]
+
             namespace TestHtos;
 
             [HypermediaObject(Title = "Order", Classes = ["Order", "Document"])]
@@ -645,6 +663,8 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
 
+            [assembly: HypermediaAssembly]
+
             namespace TestHtos;
 
             [HypermediaObject(Title = "Address", Classes = ["Address"])]
@@ -679,6 +699,8 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
 
+            [assembly: HypermediaAssembly]
+
             namespace TestHtos;
 
             [HypermediaObject(Title = "Other", Classes = ["Other"])]
@@ -709,6 +731,8 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
@@ -741,6 +765,8 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
@@ -925,6 +951,78 @@ public class HtoSchemaGeneratorTests
         source.Should().Contain("Description = \"Represents a customer in the system.\"");
     }
 
+    // --- Step 2.9: [HypermediaAssembly] opt-in gating ---
+
+    [Fact]
+    public void Source_without_HypermediaAssembly_attribute_generates_nothing()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                public string Name { get; set; } = string.Empty;
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+        result.GeneratedTrees.Should().BeEmpty();
+        result.Diagnostics.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Source_with_Schema_false_generates_nothing()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly(Schema = false)]
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                public string Name { get; set; } = string.Empty;
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+        result.GeneratedTrees.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Source_with_Siren_true_and_Schema_false_emits_warning_and_generates_schema()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly(Siren = true, Schema = false)]
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                public string Name { get; set; } = string.Empty;
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        // Schema should be forced to true — output generated
+        result.GeneratedTrees.Should().NotBeEmpty();
+
+        // Warning emitted
+        result.Diagnostics.Should().Contain(d => d.Id == "RY0030");
+    }
+
     // --- Step 2.8: Deprecation support ---
 
     [Fact]
@@ -1011,6 +1109,8 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 

@@ -52,6 +52,9 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     private const string IEmbeddedEntityBaseFullName =
         "RESTyard.AspNetCore.Hypermedia.IEmbeddedEntity";
 
+    private const string HypermediaAssemblyAttributeFullName =
+        "RESTyard.AspNetCore.Hypermedia.Attributes.HypermediaAssemblyAttribute";
+
     private const string ObsoleteAttributeFullName =
         "System.ObsoleteAttribute";
 
@@ -81,6 +84,14 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     private const string HypermediaActionGenericFullName =
         "RESTyard.AspNetCore.Hypermedia.Actions.HypermediaAction<TParameter>";
 
+    private static readonly DiagnosticDescriptor SirenRequiresSchema = new(
+        id: "RY0030",
+        title: "Siren = true requires Schema generation",
+        messageFormat: "[HypermediaAssembly] has Siren = true but Schema = false — Schema has been forced to true because Siren mappers depend on the generated properties POCOs",
+        category: "RESTyard.Schema",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     private static readonly DiagnosticDescriptor EmbeddedEntityMissingRelations = new(
         id: "RY0020",
         title: "Embedded entity property missing [Relations] attribute",
@@ -100,6 +111,36 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     /// <inheritdoc />
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
+        // Extract [assembly: HypermediaAssembly] configuration from the compilation.
+        // Returns null if the attribute is absent (no generation), or the Schema/Siren settings.
+        var assemblyConfig = context.CompilationProvider.Select(static (compilation, _) =>
+        {
+            var attr = compilation.Assembly.GetAttributes()
+                .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == HypermediaAssemblyAttributeFullName);
+
+            if (attr == null)
+            {
+                return ((bool Schema, bool Siren)?)null;
+            }
+
+            var schema = true;
+            var siren = false;
+
+            foreach (var named in attr.NamedArguments)
+            {
+                if (named.Key == "Schema" && named.Value.Value is bool s)
+                {
+                    schema = s;
+                }
+                else if (named.Key == "Siren" && named.Value.Value is bool si)
+                {
+                    siren = si;
+                }
+            }
+
+            return (schema, siren);
+        });
+
         var htoTypes = context.SyntaxProvider
             .ForAttributeWithMetadataName(
                 HypermediaObjectAttributeFullName,
@@ -108,8 +149,37 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             .Where(static m => m.HasValue)
             .Select(static (m, _) => m!.Value);
 
-        context.RegisterSourceOutput(htoTypes, static (spc, metadata) =>
+        // Combine each HTO with the assembly configuration
+        var htosWithConfig = htoTypes.Combine(assemblyConfig);
+
+        context.RegisterSourceOutput(htosWithConfig, static (spc, pair) =>
         {
+            var (metadata, config) = pair;
+
+            // No [HypermediaAssembly] attribute — emit nothing
+            if (config == null)
+            {
+                return;
+            }
+
+            var schema = config.Value.Schema;
+            var siren = config.Value.Siren;
+
+            // Siren = true forces Schema = true
+            if (siren && !schema)
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(
+                    SirenRequiresSchema,
+                    Location.None));
+                schema = true;
+            }
+
+            // Schema = false — emit nothing (safety hatch)
+            if (!schema)
+            {
+                return;
+            }
+
             foreach (var propertyName in metadata.EmbeddedEntityPropertiesWithoutRelations)
             {
                 spc.ReportDiagnostic(Diagnostic.Create(
