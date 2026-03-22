@@ -197,7 +197,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Verify tests: action parameter type with `[Obsolete]` property, entity HTO with `[Obsolete]` property — both produce `deprecated: true` in the JSON Schema
 - **Documentation required:** The built-in attribute handlers (`[Obsolete]` → `deprecated`, `[DisplayName]` → `title`, `[Description]` → `description`) MUST be documented for users — these are non-obvious behaviors that affect the generated JSON Schema
 
-#### Step 2.9: 🔄 `[HypermediaAssembly]` attribute, opt-in gating, and assembly discovery
+#### Step 2.9: ✅ `[HypermediaAssembly]` attribute, opt-in gating, and assembly discovery
 - Define `HypermediaAssemblyAttribute` in `RESTyard.AspNetCore.Hypermedia.Attributes` — `[AttributeUsage(AttributeTargets.Assembly)]` with `bool Schema` (default `true`) and `bool Siren` (default `false`)
 - Add `HypermediaAssemblyDiscovery.GetAssemblies()` static helper in `RESTyard.AspNetCore` — scans `AppDomain.CurrentDomain.GetAssemblies()` for `[HypermediaAssembly]`, returns `Assembly[]`. Must have thorough XML doc: purpose, how it discovers assemblies, the loaded-assembly caveat, relationship to `[HypermediaAssembly]`, usage example with `ControllerAndHypermediaAssemblies`
 - Update the source generator to check for `[assembly: HypermediaAssembly]` — if absent, emit nothing

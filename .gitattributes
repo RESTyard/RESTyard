@@ -65,5 +65,6 @@
 
 # Verify
 *.verified.cs text eol=lf working-tree-encoding=UTF-8
+*.verified.md text eol=lf working-tree-encoding=UTF-8
 *.verified.ts text eol=lf working-tree-encoding=UTF-8
 *.verified.txt text eol=lf working-tree-encoding=UTF-8
