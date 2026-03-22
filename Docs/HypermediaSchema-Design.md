@@ -366,6 +366,20 @@ public class HypermediaCustomerHtoSirenProperties
 }
 ```
 
+### Compile-Time Opt-In: `[EnableHypermediaSourceGeneration]`
+
+Source generation is opt-in per assembly via an assembly-level attribute:
+
+```csharp
+// in any .cs file in the HTO assembly
+[assembly: EnableHypermediaSourceGeneration]                     // schema generation (always)
+[assembly: EnableHypermediaSourceGeneration(Siren = true)]       // schema + ToSiren() mappers
+// future:
+// [assembly: EnableHypermediaSourceGeneration(Hal = true)]      // schema + ToHal() mappers
+```
+
+The attribute is defined in `RESTyard.AspNetCore.Hypermedia.Attributes`. The attribute presence gates all generation — without it, nothing is emitted. Schema generation (Properties POCO, `GetSchema()`, registry) is always emitted when the attribute is present. Format-specific mappers (`ToSiren()`, future `ToHal()`) are opt-in via named boolean properties (all default `false`). This design supports future hypermedia formats without changing the attribute shape — each format adds a new property. The source generator checks for this attribute in its compilation — if absent, it emits nothing. This ensures existing projects that reference `RESTyard.AspNetCore` are not affected by the generator.
+
 ### Generated Schema Registry
 
 One registry per assembly. APIs spanning multiple assemblies get one registry each; they are aggregated at startup via DI.
@@ -383,24 +397,34 @@ public static class HypermediaSchemaRegistry_MyAssembly
 }
 ```
 
-At startup, all per-assembly registries are collected and composed into the full API schema. The schema metadata is configured through `HypermediaSchemaOptions`, which is part of the existing `AddHypermediaExtensions` setup:
+### Runtime Opt-In: `AddHypermediaSchema()`
+
+Schema features are activated at runtime via a **separate** DI method, decoupled from the core `AddHypermediaExtensions()`:
 
 ```csharp
+// Core RESTyard (existing — route resolution, formatters)
 builder.Services.AddHypermediaExtensions(o =>
 {
     o.ControllerAndHypermediaAssemblies = [typeof(EntryPointController).Assembly];
-
-    // Optional: configure schema metadata (all fields have sensible defaults)
-    o.SchemaOptions = new HypermediaSchemaOptions
-    {
-        Title = "Customer Management API",
-        Description = "RESTyard-powered hypermedia API for managing customers and orders",
-        ApiVersion = "1.2.0",
-        EntryPointName = "Entrypoint",
-        ExternalDocsUrl = "https://docs.example.com/api"
-    };
 });
+
+// Schema feature (independent — schema endpoint, CLI generation)
+builder.Services.AddHypermediaSchema(o =>
+{
+    o.Title = "Customer Management API";
+    o.Description = "RESTyard-powered hypermedia API for managing customers and orders";
+    o.ApiVersion = "1.2.0";
+    o.EntryPointName = "Entrypoint";
+    o.ExternalDocsUrl = "https://docs.example.com/api";
+});
+
+// ToSiren feature (future, Phase 5 — independent)
+// builder.Services.AddHypermediaSirenMapper();
 ```
+
+`AddHypermediaSchema()` does **not** read from `HypermediaExtensionsOptions` — it discovers registries independently by scanning all loaded assemblies for `[HypermediaSchemaRegistryAttribute]`. This avoids coupling the schema feature to the core options type.
+
+**Runtime warning:** If `AddHypermediaSchema()` finds zero registries in loaded assemblies, it logs a warning: *"No HypermediaSchemaRegistry found in loaded assemblies. Ensure `[assembly: EnableHypermediaSourceGeneration]` is present in assemblies containing HTOs and that `Schema` is not set to `false`."* This catches both "forgot the attribute" and "attribute present but `Schema = false`" cases.
 
 ```csharp
 public class HypermediaSchemaOptions
@@ -413,15 +437,15 @@ public class HypermediaSchemaOptions
 }
 ```
 
-**Defaults:** When `SchemaOptions` is not set or individual fields are null, sensible defaults are applied:
+**Defaults:** When individual fields are null, sensible defaults are applied:
 - `Title` → entry assembly name (e.g., `"CarShack"`)
 - `ApiVersion` → entry assembly informational version or `AssemblyVersion`
 - `EntryPointName` → auto-detected from entity types (first entity with Siren class `"EntryPoint"`, or null if none found)
 - `Description` and `ExternalDocsUrl` → null (omitted from JSON)
 
-`HypermediaSchemaOptions` is registered as a singleton via DI (as part of `HypermediaExtensionsOptions`). Both `GenerateSchemaIfRequested` and the schema endpoint (Phase 3) resolve it from DI. `GenerateSchemaIfRequested` also accepts an optional explicit `HypermediaSchemaOptions` parameter that overrides DI — useful for generating variants (e.g., different title for internal vs. external docs).
+`HypermediaSchemaOptions` is registered as a singleton via DI by `AddHypermediaSchema()`. Both `GenerateSchemaIfRequested` and the schema endpoint (Phase 3) resolve it from DI. `GenerateSchemaIfRequested` also accepts an optional explicit `HypermediaSchemaOptions` parameter that overrides DI — useful for generating variants (e.g., different title for internal vs. external docs).
 
-This produces a singleton `HypermediaApiSchema` available via DI, combining all per-assembly registries.
+This produces a singleton `HypermediaApiSchema` available via DI, combining all auto-discovered per-assembly registries.
 
 **Startup validation:** At startup, the aggregated schema should validate that all `TargetName` references in `LinkDescription`, `ActionDescription.ResultName`, and `EmbeddedEntityDescription` resolve to an existing `EntityTypeSchema.Name`. Dangling references (e.g., a link to `"Order"` when no `OrderHto` exists) indicate a missing or unregistered HTO and should log a warning. An option `AllowUnresolvedReferences = true` (default `false`) can be provided for development scenarios — when enabled, unresolved references generate placeholder `EntityTypeSchema` entries (with empty links/actions/properties) so the schema endpoint and Mermaid diagrams remain functional while the API is still being built.
 
@@ -821,6 +845,8 @@ The existing contract-first XML schema (`Hypermedia.xsd` / `Hypermedia.cs`) cont
   }
   ```
   This produces: `EntityTypeSchema.Description = "Represents an active customer account in the system."`, `LinkDescription.Description = "The customer's complete order history."`, `ActionDescription.Description = "Creates a new order for this customer."`. This is particularly valuable for the Generic MCP Server design (see `GenericMcp-Design.md`) where descriptions become MCP tool descriptions that help LLMs understand what each action/link does.
+- **Opt-in source generation via `[assembly: EnableHypermediaSourceGeneration]`**: The source generator only emits code when the assembly contains `[assembly: EnableHypermediaSourceGeneration]`. Without this attribute, referencing `RESTyard.AspNetCore` (which bundles the generator) has no effect — no generated code, no new types, no risk of name collisions with existing code. The attribute presence is the single gate for all source generation. Schema generation (Properties POCO, `GetSchema()`, registry) is always emitted. Format-specific mappers are opt-in via boolean properties — `Siren` (default `false`) for `ToSiren()` emission, with future properties for other formats (e.g., `Hal`). This avoids generating format-specific code the user doesn't need, while ensuring the shared schema infrastructure is always available. The attribute is defined in `RESTyard.AspNetCore.Hypermedia.Attributes`.
+- **Decoupled DI registration — `AddHypermediaSchema()` separate from `AddHypermediaExtensions()`**: Schema features are activated at runtime via `AddHypermediaSchema()`, a separate extension method from the core `AddHypermediaExtensions()`. This avoids coupling `HypermediaExtensionsOptions` to schema concerns. `AddHypermediaSchema()` discovers per-assembly registries independently by scanning all loaded assemblies for `[HypermediaSchemaRegistryAttribute]` — it does not read `ControllerAndHypermediaAssemblies`. This means schema configuration has its own options type (`HypermediaSchemaOptions`), its own DI registrations, and no dependency on core options being registered first. The same pattern applies to the future `AddHypermediaSirenMapper()` (Phase 5). Each feature is independently addable: core → `AddHypermediaExtensions()`, schema → `AddHypermediaSchema()`, Siren mappers → `AddHypermediaSirenMapper()`.
 - **No HTTP method in schema**: `ActionDescription` intentionally omits the HTTP method. Clients discover it at runtime from the Siren action's `method` field. Client generators emit generic "execute action" calls — the runtime Siren response dictates the transport details. This keeps the schema focused on type-level metadata, not transport concerns.
 - **Definition name collisions**: `Definitions` dictionary keys use simple class names (e.g., `"Address"`). When two types share the same simple name but differ by namespace (e.g., `Billing.Address` and `Shipping.Address`), the generator disambiguates by prefixing with the namespace segment: `"Billing_Address"`, `"Shipping_Address"`. Only the colliding names are qualified — non-colliding names stay short. The generator detects collisions across all types discovered in the compilation.
 - **Siren properties as generated POCO, not dictionary**: The Siren `properties` bag is represented as a generated strongly-typed class per HTO (`SirenEntity<TProperties>`) rather than `Dictionary<string, object?>`. This preserves user-defined attributes on HTO properties — serializer converters, naming, third-party attributes — because the generator forwards them to the generated POCO. A dictionary would lose per-property attributes since the serializer would only see `object?` values. The non-generic `SirenEntity` base is used for embedded entity collections where property types are heterogeneous; STJ in .NET 8 serializes `SirenEntity<T>` using the runtime type when referenced through the base.
@@ -1099,12 +1125,11 @@ var schema = HypermediaSchemaBuilder.Build(serviceProvider, customOptions);
 
 ### How It Works
 
-**DI setup** (during `AddHypermediaExtensions`):
+**DI setup** (during `AddHypermediaSchema()`):
 
-1. Scan `ControllerAndHypermediaAssemblies` for `[HypermediaSchemaRegistryAttribute]`
+1. Scan all loaded assemblies (`AppDomain.CurrentDomain.GetAssemblies()`) for `[HypermediaSchemaRegistryAttribute]`
 2. Call each registry's `GetSchemas(IJsonSchemaFactory)` to collect all `EntityTypeSchema` instances
-3. Log warning for assemblies with no registry attribute (source generator likely missing)
-4. Aggregate into a singleton `HypermediaApiSchema`, populating top-level fields from `HypermediaSchemaOptions` (with defaults for unset fields)
+3. Aggregate into a singleton `HypermediaApiSchema`, populating top-level fields from `HypermediaSchemaOptions` (with defaults for unset fields)
 
 **CLI generation** (during `GenerateSchemaIfRequested`):
 
@@ -1133,7 +1158,7 @@ public static class HypermediaSchemaRegistry_CarShack
 }
 ```
 
-`GenerateSchemaIfRequested` scans each assembly in `ControllerAndHypermediaAssemblies` for this attribute and invokes the registry. If an assembly has no `[HypermediaSchemaRegistry]` attribute, a warning is logged — this typically means the source generator is not referenced for that assembly.
+`AddHypermediaSchema()` and `GenerateSchemaIfRequested` scan all loaded assemblies for this attribute and invoke each discovered registry. Assembly discovery is automatic — no assembly list configuration needed for the schema feature.
 
 ### CLI Parameters
 

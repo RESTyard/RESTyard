@@ -195,35 +195,47 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Register the handler in `JsonSchemaFactory` constructor via `AttributeHandler.AddHandler()`
 - This covers both action parameter properties and entity properties (after Step 2.7.1, `[Obsolete]` on HTO properties is forwarded to the generated POCO and picked up by the handler automatically)
 - Verify tests: action parameter type with `[Obsolete]` property, entity HTO with `[Obsolete]` property — both produce `deprecated: true` in the JSON Schema
+- **Documentation required:** The built-in attribute handlers (`[Obsolete]` → `deprecated`, `[DisplayName]` → `title`, `[Description]` → `description`) MUST be documented for users — these are non-obvious behaviors that affect the generated JSON Schema
 
-#### Step 2.9: Schema registry generation
+#### Step 2.9: `[EnableHypermediaSourceGeneration]` attribute and opt-in gating
+- Define `EnableHypermediaSourceGenerationAttribute` in `RESTyard.AspNetCore.Hypermedia.Attributes` — `[AttributeUsage(AttributeTargets.Assembly)]` with `bool Siren` (default `false`), extensible with future format properties (e.g., `Hal`)
+- Update the source generator to check for `[assembly: EnableHypermediaSourceGeneration]` at the start of `Initialize()` — if absent, emit nothing
+- When present, always emit schema generation: `GetSchema()`, Properties POCO, schema registry
+- Read `Siren` property — store for Phase 5 (ToSiren emission); for now, just check and skip
+- Verify tests: source without attribute → no generated output; source with attribute → schema output as before; source with `Siren = true` → compiles (ToSiren not yet implemented)
+- Add `[assembly: EnableHypermediaSourceGeneration]` to CarShack and verify it still compiles and tests pass
+- **Documentation required:** The `[assembly: EnableHypermediaSourceGeneration]` attribute as the compile-time opt-in trigger MUST be prominently documented — without it, the generator silently does nothing, which will confuse users who expect it to work after adding the NuGet reference
+
+#### Step 2.9.1: Schema registry generation
 - Emit per-assembly `HypermediaSchemaRegistry_<AssemblyName>` class with static `GetSchemas(IJsonSchemaFactory)` collecting all `GetSchema()` results
 - Emit `[assembly: HypermediaSchemaRegistryAttribute(typeof(Registry))]` attribute for discovery
-- Define `HypermediaSchemaRegistryAttribute` in `RESTyard.AspNetCore` (so it's available at runtime for the CLI extension method to scan)
+- Define `HypermediaSchemaRegistryAttribute` in `RESTyard.AspNetCore` (so it's available at runtime for scanning)
 - The registry method calls each HTO's `GetSchema()` — passing `IJsonSchemaFactory` where needed, parameterless where not
 - Verify tests: snapshot the generated registry for a multi-HTO source, verify attribute is emitted
 - Verify with CarShack: registry lists all its entity types
 
-#### Step 2.9.1: `HypermediaSchemaOptions` and DI integration
+#### Step 2.9.2: `HypermediaSchemaOptions` and DI integration
 - Define `HypermediaSchemaOptions` class in `RESTyard.AspNetCore`: `Title`, `Description`, `ApiVersion`, `EntryPointName`, `ExternalDocsUrl` — all nullable with sensible defaults (assembly name for title, assembly version for ApiVersion, auto-detect entry point from entity with Siren class `"EntryPoint"`)
-- Add `SchemaOptions` property to `HypermediaExtensionsOptions` (type `HypermediaSchemaOptions`, default `new()`)
-- Register `HypermediaSchemaOptions` as singleton via DI (resolved from `HypermediaExtensionsOptions.SchemaOptions`)
-- In `AddHypermediaExtensions`, aggregate per-assembly registries (via `[HypermediaSchemaRegistryAttribute]`) and `HypermediaSchemaOptions` into a singleton `HypermediaApiSchema` available via DI — this is the single source of truth for the schema at runtime
+- Define `AddHypermediaSchema(Action<HypermediaSchemaOptions>?)` as a **separate** extension method on `IServiceCollection`, decoupled from `AddHypermediaExtensions`
+- `AddHypermediaSchema()` auto-discovers per-assembly registries by scanning all loaded assemblies (`AppDomain.CurrentDomain.GetAssemblies()`) for `[HypermediaSchemaRegistryAttribute]` — does NOT read from `HypermediaExtensionsOptions`
+- Aggregate discovered registries + `HypermediaSchemaOptions` into a singleton `HypermediaApiSchema` available via DI
 - Reference `RESTyard.Schema` from `RESTyard.AspNetCore` (already added as project reference)
 - Add `HypermediaSchemaBuilder.Build(IServiceProvider, HypermediaSchemaOptions? options = null)` as standalone helper for programmatic use (tests, custom tooling)
-- Test: resolve `HypermediaApiSchema` from CarShack DI, verify it contains all entity types with correct metadata from `SchemaOptions`
+- `AddHypermediaSchema()` logs a warning if zero registries are found — catches "forgot the attribute" and "attribute present but `Schema = false`" cases
+- Test: resolve `HypermediaApiSchema` from CarShack DI via `AddHypermediaSchema()`, verify it contains all entity types with correct metadata
+- Test: `AddHypermediaSchema()` with no registries logs warning
 
-#### Step 2.9.2: CLI schema generation (`GenerateSchemaIfRequested`)
+#### Step 2.9.3: CLI schema generation (`GenerateSchemaIfRequested`)
 - Add `GenerateSchemaIfRequested(this IHost host, string[] args, HypermediaSchemaOptions? options = null)` extension method in `RESTyard.AspNetCore` — extends `IHost` (not `WebApplication`) so it works with generic host and non-web scenarios. When `options` is passed explicitly, it rebuilds the schema with the overridden options instead of using the DI singleton (xmldoc documents this).
 - Parse CLI args: `--generate-schema` (trigger), `--schema-output <path>` (default: `./generated-schema`), `--schema-format <formats>` (default: all)
-- Resolve `HypermediaApiSchema` singleton from DI (already aggregated during `AddHypermediaExtensions`); if explicit `options` passed, rebuild with overridden options
+- Resolve `HypermediaApiSchema` singleton from DI (already aggregated during `AddHypermediaSchema()`); if explicit `options` passed, rebuild with overridden options
 - Generate requested output files using `RESTyard.Schema` mappers (JSON serialization, `ToApiMap()`, `ToClassDiagram()`, `ToDocumentation()`)
 - Return `true` if `--generate-schema` was present, `false` otherwise
-- Test with CarShack: configure `SchemaOptions` in `AddHypermediaExtensions`, run `dotnet run -- --generate-schema --schema-output ./test-output`, verify all four files produced with correct metadata, process exits with code 0
+- Test with CarShack: configure `AddHypermediaSchema()`, run `dotnet run -- --generate-schema --schema-output ./test-output`, verify all four files produced with correct metadata, process exits with code 0
 - Schema format selection: `--schema-format json` produces only `schema.json`, `--schema-format mermaid-map,markdown` produces only those two
-- Acceptance: CarShack `Program.cs` has one added line, schema JSON contains configured title/description
+- Acceptance: CarShack `Program.cs` has `AddHypermediaSchema()` + one CLI line, schema JSON contains configured title/description
 
-#### Step 2.9.3: Document the HypermediaApiSchema for users
+#### Step 2.9.4: Document the HypermediaApiSchema for users
 - Write user-facing documentation for the schema model in RESTyard-Docs
 - **Schema overview**: what the schema describes (type-level metadata, not runtime URLs), how it complements Siren responses
 - **Top-level `HypermediaApiSchema`**: explain each field — `SchemaVersion` (format versioning), `ApiVersion` (user's API version), `EntryPointName` (navigation start), `Definitions` (shared JSON Schema types referenced via `$ref`)
