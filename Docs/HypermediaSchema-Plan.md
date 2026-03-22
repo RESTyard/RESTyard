@@ -221,7 +221,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - The registry method calls each HTO's `GetSchema()` — passing `IJsonSchemaFactory` where needed, parameterless where not
 - Verify tests: snapshot the generated registry for a multi-HTO source, verify attribute is emitted
 
-#### Step 2.9.2: 🔄 `HypermediaSchemaOptions` and DI integration
+#### Step 2.9.2: ✅ `HypermediaSchemaOptions` and DI integration
 - Define `HypermediaSchemaOptions` class in `RESTyard.AspNetCore`: `Title`, `Description`, `ApiVersion`, `EntryPointName`, `ExternalDocsUrl` — all nullable with sensible defaults (assembly name for title, assembly version for ApiVersion, auto-detect entry point from entity with Siren class `"EntryPoint"`)
 - Define `AddHypermediaSchema(Action<HypermediaSchemaOptions>?)` as a **separate** extension method on `IServiceCollection`, decoupled from `AddHypermediaExtensions`
 - `AddHypermediaSchema()` auto-discovers per-assembly registries by scanning all loaded assemblies (`AppDomain.CurrentDomain.GetAssemblies()`) for `[HypermediaSchemaRegistryAttribute]` — does NOT read from `HypermediaExtensionsOptions`
@@ -238,6 +238,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Generate requested output files using `RESTyard.Schema` mappers (JSON serialization, `ToApiMap()`, `ToClassDiagram()`, `ToDocumentation()`)
 - Return `true` if `--generate-schema` was present, `false` otherwise
 - Schema format selection: `--schema-format json` produces only `schema.json`, `--schema-format mermaid-map,markdown` produces only those two
+- Mapper options pass-through: `--mermaid-include-properties`, `--mermaid-include-actions`, `--markdown-include-toc`, `--markdown-include-diagram`
 - Simple unit tests only (no CarShack): test with a manually registered `HypermediaApiSchema` singleton — verify arg parsing, file output, format selection, return value. End-to-end CLI testing deferred to Step 2.9.4.
 
 #### Step 2.9.4: CarShack integration and end-to-end verification
@@ -397,43 +398,23 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - **Mermaid customization** — filtering by reachability from entry point
 - For each: implement if justified, otherwise document the decision to defer in the spec
 
-### Phase 9: Documentation and CLI Tooling
+### Phase 9: Documentation
 
-**Goal:** Provide a CLI mechanism for developers and CI pipelines to generate schema JSON, Mermaid diagrams, and Markdown documentation — with access group filtering — without manually running the server.
+**Goal:** User-facing documentation for all schema and source generation features.
 
-#### Step 10.1: Investigate generate-and-exit mechanism
-- Spike the approaches described in the design doc (command-line argument on server app, `IHostedService`, separate CLI tool, MSBuild task)
-- Must be a lib functionality that can be added to a server
-- Evaluate: how cleanly can the full DI container and schema registries be accessed without actually listening for HTTP requests?
-- Decide on the approach and document the decision in the design doc
-- Acceptance criteria: a CarShack invocation that produces `schema.json` and exits
-
-#### Step 10.2: Implement generate-and-exit mode
-- Implement the chosen approach with support for:
-  - `--generate-schema` flag to trigger generation mode
-  - `--schema-output <path>` for output directory
-  - `--schema-format <formats>` to select which artifacts to produce (json, mermaid-map, mermaid-class, markdown)
-  - Mapper options pass-through (`--mermaid-include-properties`, `--mermaid-include-actions`, `--markdown-include-toc`, `--markdown-include-diagram`)
-- Test with CarShack: verify all four output formats are produced correctly
-
-#### Step 9.3: Access group filtering in CLI
-- Add `--access-groups <groups>` (include mode) and `--exclude-access-groups <groups>` (exclude mode) parameters
-- Reuse `HypermediaSchemaFilter.ForAccessGroups` / `ExcludeAccessGroups` from Phase 9
-- Validate mutual exclusivity (error if both specified)
-- Test with CarShack: generate filtered schema/diagrams for specific access group combinations
-
-#### Step 9.4: Update RESTyard-Docs
+#### Step 9.1: Update RESTyard-Docs
 - Document the schema endpoint, model, and Mermaid mapper
-- Document the CLI generation mode and access group filtering
+- Document the CLI generation mode (`GenerateSchemaIfRequested`) and all CLI args
 - Document `MermaidMapperOptions` (`IncludeProperties`, `IncludeActions`) and `MarkdownMapperOptions` (`IncludeTableOfContents`, `IncludeDiagram`) — API usage and corresponding CLI args (`--mermaid-include-properties`, `--mermaid-include-actions`, `--markdown-include-toc`, `--markdown-include-diagram`)
+- Document access group filtering (if implemented in Phase 10)
 - Add migration guide for existing users
 
-#### Step 9.5: Document `ToSiren()` migration path (Phase 7)
+#### Step 9.2: Document `ToSiren()` migration path (Phase 7)
 - Document how to migrate from the reflection-based `SirenHypermediaFormatter` to the source-generated `ToSiren()` extension methods
 - Cover: per-controller opt-in, how to call `hto.ToSiren(resolver)` in controllers, how to verify parity with the existing formatter
 - Document `SirenMapperOptions` (`AutoSelfLink`) and how to configure via DI or explicit parameter
 - Explain the generated Siren POCOs (`SirenEntity<TProperties>`) and how attribute forwarding works (serializer attributes, `[HypermediaProperty(Name)]` applied structurally)
-- List known behavioral differences (if any discovered during Phase 6 parity testing)
+- List known behavioral differences (if any discovered during Phase 7 parity testing)
 - Provide a checklist for migrating a full project: enable generator → migrate controllers one by one → run parity tests → deprecate formatter
 
 ### Phase 10 (Optional): Access Groups
@@ -465,26 +446,26 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Extend `/hypermedia-schema` endpoint to accept `?excludeAccessGroups=admin` query parameter
 - Integration test: CarShack excluding specific access groups, verify elements are removed correctly
 
-#### Step 9.3: `ISchemaAccessGroupSanitizer` hook
+#### Step 10.3: `ISchemaAccessGroupSanitizer` hook
 - Define `ISchemaAccessGroupSanitizer` interface in `RESTyard.AspNetCore`: `SanitizeRequestedGroups(IReadOnlySet<string> requestedGroups, HttpContext httpContext)` → returns the groups the user is allowed to query
 - Default behavior when no implementation registered: pass through unchanged (schema is public)
 - Wire into the `/hypermedia-schema` endpoint: sanitize before calling `HypermediaSchemaFilter`
 - Unit test: sanitizer removes groups, verify filtered output reflects sanitized set
 - Integration test: register a role-based sanitizer in CarShack, verify non-admin can't query admin-only groups
 
-#### Step 9.4: CarShack demo
+#### Step 10.4: CarShack demo
 - Add `[HypermediaAccessGroup]` to selected CarShack actions and links
 - Register a sample `ISchemaAccessGroupSanitizer` that restricts `admin` group to admin users
 - Verify the full and filtered schema endpoints work end to end
 
-#### Step 9.5: Access group filtering in CLI
+#### Step 10.5: Access group filtering in CLI
 - Add `--access-groups <groups>` (include mode) and `--exclude-access-groups <groups>` (exclude mode) to `GenerateSchemaIfRequested`
 - Reuse `HypermediaSchemaFilter.ForAccessGroups` / `ExcludeAccessGroups` — apply filter before passing schema to mappers
 - Validate mutual exclusivity (error if both specified)
 - Note: CLI does not use `ISchemaAccessGroupSanitizer` (no HTTP context) — the caller is trusted
 - Test with CarShack: generate filtered schema/diagrams for specific access group combinations
 
-#### Step 9.6: Update documentation for access groups
+#### Step 10.6: Update documentation for access groups
 - Document the `[HypermediaAccessGroup]` attribute: usage, semantics (descriptive not enforcing), relation to `[Authorize]`
 - Document `RequiredAccessGroups` on `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription` — what null vs. populated means
 - Document `DeclaredAccessGroups` on `HypermediaApiSchema` — auto-collected, useful for typo detection
@@ -493,7 +474,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Document the CLI access group args: `--access-groups`, `--exclude-access-groups`, examples
 - Add examples: annotated JSON showing filtered vs. full schema, CarShack access group setup
 
-#### Step 9.7 (Future idea): Schema as RESTyard HTO with query action in SchemaRootHto
+#### Step 10.7 (Future idea): Schema as RESTyard HTO with query action in SchemaRootHto
 - **Not designed yet** — to be explored after basic filtering is stable
 - Serve the schema as `HypermediaSchemaHto` — a proper RESTyard hypermedia resource
 - Query action accepts `accessGroups` / `excludeAccessGroups` as parameters, returns filtered schema
