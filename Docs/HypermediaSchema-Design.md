@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Currently: **Step 2.7.1b** (Use properties POCO for schema generation). Last completed: **Step 2.7.1a** (Emit properties POCO class per HTO).
+> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Last completed: **Step 2.8** (Deprecation support). Next: **Step 2.8.1** (ObsoleteAttributeHandler for JSON Schema).
 
 ## Table of Contents
 

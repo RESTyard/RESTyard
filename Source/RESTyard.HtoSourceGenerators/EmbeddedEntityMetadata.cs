@@ -37,6 +37,8 @@ internal readonly struct EmbeddedEntityMetadata : IEquatable<EmbeddedEntityMetad
     /// Description from <c>[Description]</c> attribute or XML doc <c>&lt;summary&gt;</c> (fallback).
     /// </summary>
     public string? Description { get; }
+    public bool IsDeprecated { get; }
+    public string? DeprecationMessage { get; }
 
     /// <summary>
     /// Whether the embedded entity property is non-nullable (mandatory).
@@ -50,6 +52,8 @@ internal readonly struct EmbeddedEntityMetadata : IEquatable<EmbeddedEntityMetad
         bool isCollection,
         string? title,
         string? description,
+        bool isDeprecated,
+        string? deprecationMessage,
         bool isMandatory)
     {
         Relations = relations;
@@ -58,6 +62,8 @@ internal readonly struct EmbeddedEntityMetadata : IEquatable<EmbeddedEntityMetad
         IsCollection = isCollection;
         Title = title;
         Description = description;
+        IsDeprecated = isDeprecated;
+        DeprecationMessage = deprecationMessage;
         IsMandatory = isMandatory;
     }
 
@@ -68,6 +74,8 @@ internal readonly struct EmbeddedEntityMetadata : IEquatable<EmbeddedEntityMetad
            && IsCollection == other.IsCollection
            && Title == other.Title
            && Description == other.Description
+           && IsDeprecated == other.IsDeprecated
+           && DeprecationMessage == other.DeprecationMessage
            && IsMandatory == other.IsMandatory;
 
     public override bool Equals(object? obj)
@@ -84,6 +92,8 @@ internal readonly struct EmbeddedEntityMetadata : IEquatable<EmbeddedEntityMetad
             hash = hash * 31 + IsCollection.GetHashCode();
             hash = hash * 31 + (Title?.GetHashCode() ?? 0);
             hash = hash * 31 + (Description?.GetHashCode() ?? 0);
+            hash = hash * 31 + IsDeprecated.GetHashCode();
+            hash = hash * 31 + (DeprecationMessage?.GetHashCode() ?? 0);
             hash = hash * 31 + IsMandatory.GetHashCode();
             return hash;
         }

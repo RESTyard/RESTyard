@@ -178,13 +178,13 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - This POCO is intended to be **reused in Phase 5** (Step 5.1) for `ToSiren()` emission — same type serves both schema generation and Siren property mapping
 - Verify tests: generated POCO compiles, attribute forwarding correct (3rd-party forwarded, RESTyard-specific excluded), `[HypermediaProperty(Name)]` applied structurally, XML docs copied, `[FormatterIgnoreHypermediaProperty]` properties omitted
 
-#### Step 2.7.1b: 🔄 Use properties POCO for schema generation
+#### Step 2.7.1b: ✅ Use properties POCO for schema generation
 - Replace the per-property `schemaFactory.Generate(typeof(string))` + `SchemaHelper.BuildPropertiesSchema()` pattern with a single `schemaFactory.Generate(typeof(HypermediaCustomerHtoProperties))` call in generated `GetSchema()` methods
 - Remove `SchemaHelper.BuildPropertiesSchema` (no longer needed)
 - Update existing tests: generated source assertions for the new pattern, `RunGeneratorAndGetSchema` assertions for property schema parity
 - Verify: schema output matches previous output for all existing test cases
 
-#### Step 2.8: Deprecation support
+#### Step 2.8: ✅ Deprecation support
 - Read `[Obsolete("message")]` → `IsDeprecated`, `DeprecationMessage`
 - Apply to entity types, actions, links, embedded entities
 - Verify tests

@@ -398,6 +398,45 @@ internal static class TestHtoSources
         """;
 
     /// <summary>
+    /// HTO with [Obsolete] on entity, link, action, and embedded entity.
+    /// </summary>
+    internal const string HtoWithDeprecation = $$"""
+        {{Usings}}
+
+        namespace TestHtos;
+
+        [HypermediaObject(Title = "Address", Classes = ["Address"])]
+        public class HypermediaAddressHto : HypermediaObject
+        {
+            public string Street { get; set; } = string.Empty;
+        }
+
+        public class MarkAsFavoriteAction : HypermediaAction
+        {
+            public MarkAsFavoriteAction() : base(() => true) { }
+        }
+
+        [Obsolete("Use HypermediaCustomerV2Hto instead.")]
+        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+        public class HypermediaCustomerHto : HypermediaObject
+        {
+            public string Name { get; set; } = string.Empty;
+
+            [Obsolete("Use preferredFriend instead.")]
+            [Relations(["bestFriend"])]
+            public ILink<HypermediaCustomerHto>? BestFriend { get; set; }
+
+            [Obsolete]
+            [HypermediaAction]
+            public MarkAsFavoriteAction? MarkAsFavorite { get; set; }
+
+            [Obsolete("Use primaryAddress instead.")]
+            [Relations(["address"])]
+            public IEmbeddedEntity<HypermediaAddressHto>? Address { get; set; }
+        }
+        """;
+
+    /// <summary>
     /// HTO with 3rd-party attributes, RESTyard attributes, and XML doc comments
     /// for testing properties POCO generation.
     /// </summary>

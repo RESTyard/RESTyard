@@ -33,6 +33,9 @@ internal readonly struct LinkMetadata : IEquatable<LinkMetadata>
     /// </summary>
     public string? Description { get; }
 
+    public bool IsDeprecated { get; }
+    public string? DeprecationMessage { get; }
+
     /// <summary>
     /// Whether the link property is non-nullable (mandatory).
     /// </summary>
@@ -44,6 +47,8 @@ internal readonly struct LinkMetadata : IEquatable<LinkMetadata>
         EquatableArray<string> targetClasses,
         string? title,
         string? description,
+        bool isDeprecated,
+        string? deprecationMessage,
         bool isMandatory)
     {
         Relations = relations;
@@ -51,6 +56,8 @@ internal readonly struct LinkMetadata : IEquatable<LinkMetadata>
         TargetClasses = targetClasses;
         Title = title;
         Description = description;
+        IsDeprecated = isDeprecated;
+        DeprecationMessage = deprecationMessage;
         IsMandatory = isMandatory;
     }
 
@@ -60,6 +67,8 @@ internal readonly struct LinkMetadata : IEquatable<LinkMetadata>
            && TargetClasses.Equals(other.TargetClasses)
            && Title == other.Title
            && Description == other.Description
+           && IsDeprecated == other.IsDeprecated
+           && DeprecationMessage == other.DeprecationMessage
            && IsMandatory == other.IsMandatory;
 
     public override bool Equals(object? obj)
@@ -75,6 +84,8 @@ internal readonly struct LinkMetadata : IEquatable<LinkMetadata>
             hash = hash * 31 + TargetClasses.GetHashCode();
             hash = hash * 31 + (Title?.GetHashCode() ?? 0);
             hash = hash * 31 + (Description?.GetHashCode() ?? 0);
+            hash = hash * 31 + IsDeprecated.GetHashCode();
+            hash = hash * 31 + (DeprecationMessage?.GetHashCode() ?? 0);
             hash = hash * 31 + IsMandatory.GetHashCode();
             return hash;
         }

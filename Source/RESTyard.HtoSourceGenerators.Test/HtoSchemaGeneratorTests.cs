@@ -925,6 +925,67 @@ public class HtoSchemaGeneratorTests
         source.Should().Contain("Description = \"Represents a customer in the system.\"");
     }
 
+    // --- Step 2.8: Deprecation support ---
+
+    [Fact]
+    public void HtoWithDeprecation_entity_is_deprecated()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithDeprecation);
+
+        schema.IsDeprecated.Should().BeTrue();
+        schema.DeprecationMessage.Should().Be("Use HypermediaCustomerV2Hto instead.");
+    }
+
+    [Fact]
+    public void HtoWithDeprecation_link_is_deprecated()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithDeprecation);
+
+        var link = schema.Links.Single(l => l.Relations.Contains("bestFriend"));
+        link.IsDeprecated.Should().BeTrue();
+        link.DeprecationMessage.Should().Be("Use preferredFriend instead.");
+    }
+
+    [Fact]
+    public void HtoWithDeprecation_action_is_deprecated_without_message()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithDeprecation);
+
+        var action = schema.Actions.Single(a => a.Name == "MarkAsFavorite");
+        action.IsDeprecated.Should().BeTrue();
+        action.DeprecationMessage.Should().BeNull();
+    }
+
+    [Fact]
+    public void HtoWithDeprecation_embedded_entity_is_deprecated()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithDeprecation);
+
+        var embedded = schema.EmbeddedEntities.Single(e => e.Relations.Contains("address"));
+        embedded.IsDeprecated.Should().BeTrue();
+        embedded.DeprecationMessage.Should().Be("Use primaryAddress instead.");
+    }
+
+    [Fact]
+    public void HtoWithDeprecation_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithDeprecation);
+    }
+
+    [Fact]
+    public void SimpleHto_is_not_deprecated()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.SimpleHto);
+
+        schema.IsDeprecated.Should().BeFalse();
+        schema.DeprecationMessage.Should().BeNull();
+    }
+
     // --- Step 2.7.1a: Properties POCO generation ---
 
     [Fact]

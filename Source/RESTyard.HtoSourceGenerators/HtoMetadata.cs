@@ -14,6 +14,8 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
     public string SchemaName { get; }
     public string? Title { get; }
     public string? Description { get; }
+    public bool IsDeprecated { get; }
+    public string? DeprecationMessage { get; }
     public EquatableArray<string> Classes { get; }
     public EquatableArray<PropertyMetadata> Properties { get; }
     public EquatableArray<LinkMetadata> Links { get; }
@@ -38,6 +40,8 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
         string schemaName,
         string? title,
         string? description,
+        bool isDeprecated,
+        string? deprecationMessage,
         EquatableArray<string> classes,
         EquatableArray<PropertyMetadata> properties,
         EquatableArray<LinkMetadata> links,
@@ -51,6 +55,8 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
         SchemaName = schemaName;
         Title = title;
         Description = description;
+        IsDeprecated = isDeprecated;
+        DeprecationMessage = deprecationMessage;
         Classes = classes;
         Properties = properties;
         Links = links;
@@ -73,6 +79,8 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
            && SchemaName == other.SchemaName
            && Title == other.Title
            && Description == other.Description
+           && IsDeprecated == other.IsDeprecated
+           && DeprecationMessage == other.DeprecationMessage
            && Classes.Equals(other.Classes)
            && Properties.Equals(other.Properties)
            && Links.Equals(other.Links)
@@ -94,6 +102,8 @@ internal readonly struct HtoMetadata : IEquatable<HtoMetadata>
             hash = hash * 31 + SchemaName.GetHashCode();
             hash = hash * 31 + (Title?.GetHashCode() ?? 0);
             hash = hash * 31 + (Description?.GetHashCode() ?? 0);
+            hash = hash * 31 + IsDeprecated.GetHashCode();
+            hash = hash * 31 + (DeprecationMessage?.GetHashCode() ?? 0);
             hash = hash * 31 + Classes.GetHashCode();
             hash = hash * 31 + Properties.GetHashCode();
             hash = hash * 31 + Links.GetHashCode();

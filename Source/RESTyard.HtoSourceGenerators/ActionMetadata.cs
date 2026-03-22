@@ -36,6 +36,8 @@ internal readonly struct ActionMetadata : IEquatable<ActionMetadata>
     /// <summary>
     /// Whether the action property is non-nullable (mandatory).
     /// </summary>
+    public bool IsDeprecated { get; }
+    public string? DeprecationMessage { get; }
     public bool IsMandatory { get; }
 
     public ActionMetadata(
@@ -44,6 +46,8 @@ internal readonly struct ActionMetadata : IEquatable<ActionMetadata>
         string? description,
         string? parameterTypeFullName,
         bool isFileUpload,
+        bool isDeprecated,
+        string? deprecationMessage,
         bool isMandatory)
     {
         Name = name;
@@ -51,6 +55,8 @@ internal readonly struct ActionMetadata : IEquatable<ActionMetadata>
         Description = description;
         ParameterTypeFullName = parameterTypeFullName;
         IsFileUpload = isFileUpload;
+        IsDeprecated = isDeprecated;
+        DeprecationMessage = deprecationMessage;
         IsMandatory = isMandatory;
     }
 
@@ -60,6 +66,8 @@ internal readonly struct ActionMetadata : IEquatable<ActionMetadata>
            && Description == other.Description
            && ParameterTypeFullName == other.ParameterTypeFullName
            && IsFileUpload == other.IsFileUpload
+           && IsDeprecated == other.IsDeprecated
+           && DeprecationMessage == other.DeprecationMessage
            && IsMandatory == other.IsMandatory;
 
     public override bool Equals(object? obj)
@@ -73,6 +81,8 @@ internal readonly struct ActionMetadata : IEquatable<ActionMetadata>
             hash = hash * 31 + Name.GetHashCode();
             hash = hash * 31 + (Title?.GetHashCode() ?? 0);
             hash = hash * 31 + (Description?.GetHashCode() ?? 0);
+            hash = hash * 31 + IsDeprecated.GetHashCode();
+            hash = hash * 31 + (DeprecationMessage?.GetHashCode() ?? 0);
             hash = hash * 31 + (ParameterTypeFullName?.GetHashCode() ?? 0);
             hash = hash * 31 + IsFileUpload.GetHashCode();
             hash = hash * 31 + IsMandatory.GetHashCode();

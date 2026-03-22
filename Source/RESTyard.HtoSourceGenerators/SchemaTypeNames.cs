@@ -17,6 +17,8 @@ internal static class SchemaTypeNames
     internal const string EntityTypeSchema_Title = "Title";
     internal const string EntityTypeSchema_Description = "Description";
     internal const string EntityTypeSchema_Classes = "Classes";
+    internal const string EntityTypeSchema_IsDeprecated = "IsDeprecated";
+    internal const string EntityTypeSchema_DeprecationMessage = "DeprecationMessage";
     internal const string EntityTypeSchema_PropertiesSchema = "PropertiesSchema";
     internal const string EntityTypeSchema_Links = "Links";
 
@@ -28,6 +30,8 @@ internal static class SchemaTypeNames
     internal const string LinkDescription_Title = "Title";
     internal const string LinkDescription_Description = "Description";
     internal const string LinkDescription_IsMandatory = "IsMandatory";
+    internal const string LinkDescription_IsDeprecated = "IsDeprecated";
+    internal const string LinkDescription_DeprecationMessage = "DeprecationMessage";
 
     // ActionDescription
     internal const string ActionDescription = "ActionDescription";
@@ -38,6 +42,8 @@ internal static class SchemaTypeNames
     internal const string ActionDescription_ParameterSchema = "ParameterSchema";
     internal const string ActionDescription_IsMandatory = "IsMandatory";
     internal const string ActionDescription_IsFileUpload = "IsFileUpload";
+    internal const string ActionDescription_IsDeprecated = "IsDeprecated";
+    internal const string ActionDescription_DeprecationMessage = "DeprecationMessage";
     internal const string EntityTypeSchema_Actions = "Actions";
 
     // EmbeddedEntityDescription
@@ -49,6 +55,8 @@ internal static class SchemaTypeNames
     internal const string EmbeddedEntityDescription_IsMandatory = "IsMandatory";
     internal const string EmbeddedEntityDescription_Title = "Title";
     internal const string EmbeddedEntityDescription_Description = "Description";
+    internal const string EmbeddedEntityDescription_IsDeprecated = "IsDeprecated";
+    internal const string EmbeddedEntityDescription_DeprecationMessage = "DeprecationMessage";
     internal const string EntityTypeSchema_EmbeddedEntities = "EmbeddedEntities";
 
     // RESTyard.Schema

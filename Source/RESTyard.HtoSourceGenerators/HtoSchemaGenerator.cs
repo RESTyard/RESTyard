@@ -52,6 +52,9 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     private const string IEmbeddedEntityBaseFullName =
         "RESTyard.AspNetCore.Hypermedia.IEmbeddedEntity";
 
+    private const string ObsoleteAttributeFullName =
+        "System.ObsoleteAttribute";
+
     private const string KeyAttributeFullName =
         "RESTyard.AspNetCore.WebApi.RouteResolver.KeyAttribute";
 
@@ -176,6 +179,9 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             description = GetXmlDocElement(symbol, "remarks");
         }
 
+        // Deprecation: [Obsolete("message")]
+        var (isDeprecated, deprecationMessage) = GetDeprecation(symbol);
+
         var classes = GetNamedArgumentStringArray(attribute, "Classes");
         var properties = ExtractProperties(symbol);
         var links = ExtractLinks(symbol);
@@ -194,6 +200,8 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             DeriveSchemaName(symbol.Name),
             title,
             description,
+            isDeprecated,
+            deprecationMessage,
             new EquatableArray<string>(classes),
             properties,
             links,
@@ -291,12 +299,16 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 var linkDescription = GetAttributeStringArgument(member, DescriptionAttributeFullName)
                                       ?? GetXmlDocElement(member, "remarks");
 
+                var (linkIsDeprecated, linkDeprecationMessage) = GetDeprecation(member);
+
                 links.Add(new LinkMetadata(
                     new EquatableArray<string>(relations),
                     targetSchemaName,
                     new EquatableArray<string>(targetClasses),
                     linkTitle,
                     linkDescription,
+                    linkIsDeprecated,
+                    linkDeprecationMessage,
                     isMandatory));
             }
 
@@ -351,11 +363,13 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 var actionDescription = GetAttributeStringArgument(member, DescriptionAttributeFullName)
                                         ?? GetXmlDocElement(member, "remarks");
 
+                var (actionIsDeprecated, actionDeprecationMessage) = GetDeprecation(member);
+
                 var parameterTypeFullName = GetActionParameterType(member.Type);
                 var isFileUpload = IsFileUploadAction(member.Type);
                 var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
 
-                actions.Add(new ActionMetadata(name, actionTitle, actionDescription, parameterTypeFullName, isFileUpload, isMandatory));
+                actions.Add(new ActionMetadata(name, actionTitle, actionDescription, parameterTypeFullName, isFileUpload, actionIsDeprecated, actionDeprecationMessage, isMandatory));
             }
 
             current = current.BaseType;
@@ -419,6 +433,8 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 var embeddedDescription = GetAttributeStringArgument(member, DescriptionAttributeFullName)
                                           ?? GetXmlDocElement(member, "remarks");
 
+                var (embeddedIsDeprecated, embeddedDeprecationMessage) = GetDeprecation(member);
+
                 embeddedEntities.Add(new EmbeddedEntityMetadata(
                     new EquatableArray<string>(relations),
                     targetSchemaName,
@@ -426,6 +442,8 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                     isCollection,
                     embeddedTitle,
                     embeddedDescription,
+                    embeddedIsDeprecated,
+                    embeddedDeprecationMessage,
                     isMandatory));
             }
 
@@ -940,6 +958,17 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 .Append(" = \"").Append(EscapeString(metadata.Description)).AppendLine("\",");
         }
 
+        if (metadata.IsDeprecated)
+        {
+            sb.Append("            ").Append(SchemaTypeNames.EntityTypeSchema_IsDeprecated)
+                .AppendLine(" = true,");
+            if (metadata.DeprecationMessage != null)
+            {
+                sb.Append("            ").Append(SchemaTypeNames.EntityTypeSchema_DeprecationMessage)
+                    .Append(" = \"").Append(EscapeString(metadata.DeprecationMessage)).AppendLine("\",");
+            }
+        }
+
         var classLiterals = string.Join(", ", metadata.Classes.Select(c => $"\"{EscapeString(c)}\""));
         sb.Append("            ").Append(SchemaTypeNames.EntityTypeSchema_Classes)
             .Append(" = new[] { ").Append(classLiterals).AppendLine(" },");
@@ -1014,6 +1043,17 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                     .Append(" = \"").Append(EscapeString(link.Description)).AppendLine("\",");
             }
 
+            if (link.IsDeprecated)
+            {
+                sb.Append("                    ").Append(SchemaTypeNames.LinkDescription_IsDeprecated)
+                    .AppendLine(" = true,");
+                if (link.DeprecationMessage != null)
+                {
+                    sb.Append("                    ").Append(SchemaTypeNames.LinkDescription_DeprecationMessage)
+                        .Append(" = \"").Append(EscapeString(link.DeprecationMessage)).AppendLine("\",");
+                }
+            }
+
             sb.Append("                    ").Append(SchemaTypeNames.LinkDescription_IsMandatory)
                 .Append(" = ").Append(link.IsMandatory ? "true" : "false").AppendLine(",");
             sb.AppendLine("                },");
@@ -1062,6 +1102,17 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                     .Append(action.ParameterTypeFullName).AppendLine(")),");
             }
 
+            if (action.IsDeprecated)
+            {
+                sb.Append("                    ").Append(SchemaTypeNames.ActionDescription_IsDeprecated)
+                    .AppendLine(" = true,");
+                if (action.DeprecationMessage != null)
+                {
+                    sb.Append("                    ").Append(SchemaTypeNames.ActionDescription_DeprecationMessage)
+                        .Append(" = \"").Append(EscapeString(action.DeprecationMessage)).AppendLine("\",");
+                }
+            }
+
             sb.Append("                    ").Append(SchemaTypeNames.ActionDescription_IsMandatory)
                 .Append(" = ").Append(action.IsMandatory ? "true" : "false").AppendLine(",");
             sb.AppendLine("                },");
@@ -1104,12 +1155,47 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                     .Append(" = \"").Append(EscapeString(embedded.Description)).AppendLine("\",");
             }
 
+            if (embedded.IsDeprecated)
+            {
+                sb.Append("                    ").Append(SchemaTypeNames.EmbeddedEntityDescription_IsDeprecated)
+                    .AppendLine(" = true,");
+                if (embedded.DeprecationMessage != null)
+                {
+                    sb.Append("                    ").Append(SchemaTypeNames.EmbeddedEntityDescription_DeprecationMessage)
+                        .Append(" = \"").Append(EscapeString(embedded.DeprecationMessage)).AppendLine("\",");
+                }
+            }
+
             sb.Append("                    ").Append(SchemaTypeNames.EmbeddedEntityDescription_IsMandatory)
                 .Append(" = ").Append(embedded.IsMandatory ? "true" : "false").AppendLine(",");
             sb.AppendLine("                },");
         }
 
         sb.AppendLine("            },");
+    }
+
+    /// <summary>
+    /// Reads <c>[Obsolete("message")]</c> from a symbol.
+    /// Returns (true, message) if present, (false, null) otherwise.
+    /// </summary>
+    private static (bool IsDeprecated, string? DeprecationMessage) GetDeprecation(ISymbol symbol)
+    {
+        var attr = symbol.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == ObsoleteAttributeFullName);
+
+        if (attr == null)
+        {
+            return (false, null);
+        }
+
+        string? message = null;
+        if (attr.ConstructorArguments.Length > 0 && attr.ConstructorArguments[0].Value is string msg
+            && !string.IsNullOrEmpty(msg))
+        {
+            message = msg;
+        }
+
+        return (true, message);
     }
 
     /// <summary>
