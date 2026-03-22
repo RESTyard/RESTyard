@@ -35,6 +35,7 @@ namespace RESTyard.Schema.SchemaGeneration
 
             AttributeHandler.AddHandler(new DisplayNameAttributeHandler());
             AttributeHandler.AddHandler(new DescriptionAttributeHandler());
+            AttributeHandler.AddHandler(new ObsoleteAttributeHandler());
         }
 
         public JsonDocument Generate(Type type)
@@ -72,6 +73,12 @@ namespace RESTyard.Schema.SchemaGeneration
         {
             var att = (System.ComponentModel.DescriptionAttribute)attribute;
             context.Intents.Insert(0, new DescriptionIntent(att.Description));
+        }
+    }
+    internal sealed class ObsoleteAttributeHandler : IAttributeHandler<ObsoleteAttribute> {
+        public void AddConstraints(SchemaGenerationContextBase context, Attribute attribute)
+        {
+            context.Intents.Insert(0, new DeprecatedIntent(true));
         }
     }
 

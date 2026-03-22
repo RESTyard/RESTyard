@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Last completed: **Step 2.8** (Deprecation support). Next: **Step 2.8.1** (ObsoleteAttributeHandler for JSON Schema).
+> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Currently: **Step 2.8.1** (ObsoleteAttributeHandler for JSON Schema). Last completed: **Step 2.8** (Deprecation support).
 
 ## Table of Contents
 

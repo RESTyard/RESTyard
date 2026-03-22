@@ -189,7 +189,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Apply to entity types, actions, links, embedded entities
 - Verify tests
 
-#### Step 2.8.1: `[Obsolete]` → JSON Schema `deprecated` via `IAttributeHandler`
+#### Step 2.8.1: 🔄 `[Obsolete]` → JSON Schema `deprecated` via `IAttributeHandler`
 - Add `ObsoleteAttributeHandler : IAttributeHandler<ObsoleteAttribute>` to `JsonSchemaFactory.cs` (same pattern as existing `DisplayNameAttributeHandler` and `DescriptionAttributeHandler`)
 - Handler emits `deprecated: true` into the JSON Schema for any type or property annotated with `[Obsolete]`
 - Register the handler in `JsonSchemaFactory` constructor via `AttributeHandler.AddHandler()`
