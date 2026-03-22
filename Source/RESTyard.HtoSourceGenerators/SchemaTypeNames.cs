@@ -54,7 +54,6 @@ internal static class SchemaTypeNames
     // RESTyard.Schema
     internal const string JsonSchemaFactoryNamespace = "RESTyard.Schema";
     internal const string IJsonSchemaFactory = "IJsonSchemaFactory";
-    internal const string SchemaHelper = "SchemaHelper";
 
     // Json.Schema (JsonSchema.Net)
     internal const string JsonSchemaNamespace = "Json.Schema";

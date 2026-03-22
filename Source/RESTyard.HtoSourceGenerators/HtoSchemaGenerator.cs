@@ -920,7 +920,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
 
         if (metadata.Properties.Length > 0)
         {
-            EmitPropertiesSchemaBuilder(sb, metadata.Properties);
+            EmitPropertiesSchemaBuilder(sb, metadata);
         }
 
         sb.Append("        return new ").AppendLine(SchemaTypeNames.EntityTypeSchema);
@@ -973,22 +973,13 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     }
 
     /// <summary>
-    /// Emits code that builds a <c>JsonSchema</c> from property types using <c>IJsonSchemaFactory</c> at runtime.
+    /// Emits code that generates the properties schema via the generated POCO type.
     /// Generates a local variable <c>propertiesSchema</c>.
     /// </summary>
-    private static void EmitPropertiesSchemaBuilder(StringBuilder sb, EquatableArray<PropertyMetadata> properties)
+    private static void EmitPropertiesSchemaBuilder(StringBuilder sb, HtoMetadata metadata)
     {
-        // Build a JSON Schema object by generating each property's schema via the factory,
-        // then composing them into {"type":"object","properties":{...}}
-        sb.AppendLine("        var propertySchemas = new System.Collections.Generic.Dictionary<string, JsonDocument>();");
-
-        foreach (var prop in properties)
-        {
-            sb.Append("        propertySchemas[\"").Append(EscapeString(prop.Name)).Append("\"] = schemaFactory.Generate(typeof(")
-                .Append(prop.TypeFullName).AppendLine("));");
-        }
-
-        sb.AppendLine("        var propertiesSchema = SchemaHelper.BuildPropertiesSchema(propertySchemas);");
+        sb.Append("        var propertiesSchema = schemaFactory.Generate(typeof(")
+            .Append(metadata.ClassName).AppendLine("Properties));");
         sb.AppendLine();
     }
 

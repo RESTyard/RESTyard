@@ -168,7 +168,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Apply to entity types, properties, actions, links
 - Verify tests: HTO with attributes, with XML docs, with both (attribute wins)
 
-#### Step 2.7.1a: 🔄 Emit properties POCO class per HTO
+#### Step 2.7.1a: ✅ Emit properties POCO class per HTO
 - Emit a properties POCO class per HTO (e.g., `HypermediaCustomerHtoProperties`) containing only data properties — same filtering rules as Step 5.1 (exclude `[FormatterIgnoreHypermediaProperty]`, links, actions, keys, embedded entities)
 - Apply `[HypermediaProperty(Name = "x")]` structurally: use `x` as the C# property name on the POCO
 - Forward all non-RESTyard attributes from the HTO property verbatim (serializer attributes, `[Title]`, `[Description]`, 3rd-party)
@@ -178,7 +178,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - This POCO is intended to be **reused in Phase 5** (Step 5.1) for `ToSiren()` emission — same type serves both schema generation and Siren property mapping
 - Verify tests: generated POCO compiles, attribute forwarding correct (3rd-party forwarded, RESTyard-specific excluded), `[HypermediaProperty(Name)]` applied structurally, XML docs copied, `[FormatterIgnoreHypermediaProperty]` properties omitted
 
-#### Step 2.7.1b: Use properties POCO for schema generation
+#### Step 2.7.1b: 🔄 Use properties POCO for schema generation
 - Replace the per-property `schemaFactory.Generate(typeof(string))` + `SchemaHelper.BuildPropertiesSchema()` pattern with a single `schemaFactory.Generate(typeof(HypermediaCustomerHtoProperties))` call in generated `GetSchema()` methods
 - Remove `SchemaHelper.BuildPropertiesSchema` (no longer needed)
 - Update existing tests: generated source assertions for the new pattern, `RunGeneratorAndGetSchema` assertions for property schema parity

@@ -138,7 +138,7 @@ public class HtoSchemaGeneratorTests
     }
 
     [Fact]
-    public void SimpleHto_calls_factory_for_each_property_type()
+    public void SimpleHto_calls_factory_with_properties_poco()
     {
         var result = GeneratorTestHelper.RunGenerator(TestHtoSources.SimpleHto);
         var source = GetGeneratedSource(result, "HypermediaCustomerHto");
@@ -146,129 +146,83 @@ public class HtoSchemaGeneratorTests
         // Method takes IJsonSchemaFactory parameter
         source.Should().Contain("GetSchema(IJsonSchemaFactory schemaFactory)");
 
-        // Calls factory for each property type with correct property names
-        source.Should().Contain("propertySchemas[\"Name\"] = schemaFactory.Generate(typeof(");
-        source.Should().Contain("propertySchemas[\"Age\"] = schemaFactory.Generate(typeof(");
-
-        // Calls SchemaHelper to compose
-        source.Should().Contain("SchemaHelper.BuildPropertiesSchema(propertySchemas)");
+        // Calls factory with the generated properties POCO type
+        source.Should().Contain("schemaFactory.Generate(typeof(HypermediaCustomerHtoProperties))");
         source.Should().Contain("PropertiesSchema = propertiesSchema");
     }
 
     [Fact]
-    public void Hto_with_various_property_types_emits_correct_typeof_calls_and_compiles()
+    public void Hto_with_various_property_types_generates_poco_and_compiles()
     {
         var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithVariousPropertyTypes);
         var source = GetGeneratedSource(result, "HypermediaAllTypesHto");
 
-        // FullyQualifiedFormat uses keyword aliases for built-in types
-        source.Should().Contain("typeof(string)");
-        source.Should().Contain("typeof(bool)");
-        source.Should().Contain("typeof(int)");
-        source.Should().Contain("typeof(long)");
-        source.Should().Contain("typeof(double)");
-        source.Should().Contain("typeof(decimal)");
-        // Well-known types use global:: prefix
-        source.Should().Contain("typeof(global::System.DateTime)");
-        source.Should().Contain("typeof(global::System.DateTimeOffset)");
-        source.Should().Contain("typeof(global::System.DateOnly)");
-        source.Should().Contain("typeof(global::System.TimeOnly)");
-        source.Should().Contain("typeof(global::System.TimeSpan)");
-        source.Should().Contain("typeof(global::System.Uri)");
-        source.Should().Contain("typeof(global::System.Guid)");
+        // Uses the generated POCO for schema generation
+        source.Should().Contain("schemaFactory.Generate(typeof(HypermediaAllTypesHtoProperties))");
 
         GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithVariousPropertyTypes);
     }
 
     [Fact]
-    public void Nullable_properties_emit_nullable_typeof()
+    public void Nullable_properties_generate_poco_and_compile()
     {
         var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithNullableProperties);
         var source = GetGeneratedSource(result, "HypermediaNullableHto");
 
-        // Nullable value types should emit their nullable typeof
-        source.Should().Contain("propertySchemas[\"OptionalCount\"] = schemaFactory.Generate(typeof(");
-        source.Should().Contain("propertySchemas[\"OptionalFlag\"] = schemaFactory.Generate(typeof(");
-        source.Should().Contain("propertySchemas[\"OptionalDate\"] = schemaFactory.Generate(typeof(");
-
+        source.Should().Contain("schemaFactory.Generate(typeof(HypermediaNullableHtoProperties))");
         GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithNullableProperties);
     }
 
     [Fact]
-    public void Enum_properties_emit_typeof_and_compile()
+    public void Enum_properties_generate_poco_and_compile()
     {
-        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithEnumProperties);
-        var source = GetGeneratedSource(result, "HypermediaWithEnumHto");
-
-        source.Should().Contain("propertySchemas[\"CurrentStatus\"] = schemaFactory.Generate(typeof(");
-        source.Should().Contain("propertySchemas[\"CurrentPriority\"] = schemaFactory.Generate(typeof(");
-
         GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithEnumProperties);
     }
 
     [Fact]
-    public void Collection_and_array_properties_emit_typeof_and_compile()
+    public void Collection_and_array_properties_generate_poco_and_compile()
     {
-        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithCollections);
-        var source = GetGeneratedSource(result, "HypermediaWithCollectionsHto");
-
-        source.Should().Contain("propertySchemas[\"Tags\"] = schemaFactory.Generate(typeof(");
-        source.Should().Contain("propertySchemas[\"Scores\"] = schemaFactory.Generate(typeof(");
-        source.Should().Contain("propertySchemas[\"Flags\"] = schemaFactory.Generate(typeof(");
-
         GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithCollections);
     }
 
     [Fact]
-    public void Nested_object_property_emits_typeof_and_compiles()
+    public void Nested_object_property_generates_poco_and_compiles()
     {
-        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithNestedObject);
-        var source = GetGeneratedSource(result, "HypermediaWithNestedHto");
-
-        source.Should().Contain("propertySchemas[\"Name\"] = schemaFactory.Generate(typeof(");
-        source.Should().Contain("propertySchemas[\"HomeAddress\"] = schemaFactory.Generate(typeof(");
-
         GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithNestedObject);
     }
 
     [Fact]
-    public void HypermediaProperty_Name_renames_and_FormatterIgnore_excludes()
+    public void HypermediaProperty_Name_renames_and_FormatterIgnore_excludes_in_schema()
     {
         var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithPropertyAttributes);
         var source = GetGeneratedSource(result, "HypermediaWithAttributesHto");
 
-        // [HypermediaProperty(Name = "FullName")] should use custom name as the key
-        source.Should().Contain("propertySchemas[\"FullName\"]");
-        // Original C# property name "Name" should not appear as a schema key
-        source.Should().NotContain("propertySchemas[\"Name\"]");
+        // Uses POCO for schema generation
+        source.Should().Contain("schemaFactory.Generate(typeof(HypermediaWithAttributesHtoProperties))");
 
-        // [FormatterIgnoreHypermediaProperty] should exclude the property entirely
-        source.Should().NotContain("InternalId");
-
-        // Regular property remains
-        source.Should().Contain("propertySchemas[\"Age\"]");
+        // [FormatterIgnoreHypermediaProperty] should exclude the property from the POCO
+        var poco = GetGeneratedPoco(result, "HypermediaWithAttributesHto");
+        poco.Should().Contain("public string FullName { get; set; }");
+        poco.Should().NotContain("InternalId");
+        poco.Should().Contain("public int Age { get; set; }");
     }
 
     [Fact]
-    public void Links_and_actions_are_excluded_from_properties_schema()
+    public void Links_and_actions_are_excluded_from_properties_poco()
     {
         var result = GeneratorTestHelper.RunGenerator(TestHtoSources.FullHto);
-        var source = GetGeneratedSource(result, "HypermediaCustomerHto");
+        var poco = GetGeneratedPoco(result, "HypermediaCustomerHto");
 
         // Data properties should be present
-        source.Should().Contain("propertySchemas[\"Name\"]");
-        source.Should().Contain("propertySchemas[\"Age\"]");
+        poco.Should().Contain("public string Name { get; set; }");
+        poco.Should().Contain("public int Age { get; set; }");
 
-        // Links should not appear in propertySchemas (they go to Links array)
-        source.Should().NotContain("propertySchemas[\"Self\"]");
-        source.Should().NotContain("propertySchemas[\"BestFriend\"]");
-
-        // Actions should not appear in propertySchemas
-        source.Should().NotContain("propertySchemas[\"MarkAsFavorite\"]");
-        source.Should().NotContain("propertySchemas[\"BuyCar\"]");
-
-        // Embedded entities should not appear in propertySchemas
-        source.Should().NotContain("propertySchemas[\"Address\"]");
+        // Links, actions, embedded entities should not appear
+        poco.Should().NotContain("Self");
+        poco.Should().NotContain("BestFriend");
+        poco.Should().NotContain("MarkAsFavorite");
+        poco.Should().NotContain("BuyCar");
+        poco.Should().NotContain("Address");
     }
 
     [Fact]
