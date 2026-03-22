@@ -2,7 +2,7 @@
 
 RESTyard demo API for managing cars and customers
 
-**Version:** 1.0.0+8001f9605e9a41090098697681a3b36f43b9b6fb
+**Version:** 1.2.3
 
 **Entry Point:** [Entrypoint](#entrypoint)
 

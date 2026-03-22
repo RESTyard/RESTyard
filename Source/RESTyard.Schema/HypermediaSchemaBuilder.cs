@@ -119,9 +119,7 @@ public static class HypermediaSchemaBuilder
         var title = options?.Title
                     ?? entryAssembly?.GetName().Name;
 
-        var apiVersion = options?.ApiVersion
-                         ?? entryAssembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-                         ?? entryAssembly?.GetName().Version?.ToString();
+        var apiVersion = options?.ApiVersion;
 
         var entryPointName = options?.EntryPointName
                              ?? DetectEntryPoint(entityTypes);

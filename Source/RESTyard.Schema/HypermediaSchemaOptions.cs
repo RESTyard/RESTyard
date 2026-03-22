@@ -21,7 +21,7 @@ public class HypermediaSchemaOptions
 
     /// <summary>
     /// Version of the API described by this schema.
-    /// Default: entry assembly informational version or assembly version.
+    /// Default: null (omitted from schema). Set explicitly — not auto-detected.
     /// </summary>
     public string? ApiVersion { get; set; }
 

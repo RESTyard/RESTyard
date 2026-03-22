@@ -464,7 +464,7 @@ public class HypermediaSchemaOptions
 {
     public string? Title { get; set; }                  // Default: entry assembly name
     public string? Description { get; set; }            // Default: null
-    public string? ApiVersion { get; set; }             // Default: entry assembly version
+    public string? ApiVersion { get; set; }             // Default: null (must be set explicitly)
     public string? EntryPointName { get; set; }         // Default: auto-detected from [HypermediaObject] with "EntryPoint" class
     public string? ExternalDocsUrl { get; set; }        // Default: null
 }
@@ -472,7 +472,7 @@ public class HypermediaSchemaOptions
 
 **Defaults:** When individual fields are null, sensible defaults are applied:
 - `Title` → entry assembly name (e.g., `"CarShack"`)
-- `ApiVersion` → entry assembly informational version or `AssemblyVersion`
+- `ApiVersion` → null (omitted from JSON). Must be set explicitly — auto-detection from the entry assembly version was removed because HTOs may live in a different assembly, making the entry assembly version misleading.
 - `EntryPointName` → auto-detected from entity types (first entity with Siren class `"EntryPoint"`, or null if none found)
 - `Description` and `ExternalDocsUrl` → null (omitted from JSON)
 

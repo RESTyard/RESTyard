@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "apiVersion": "1.0.0\u002B8001f9605e9a41090098697681a3b36f43b9b6fb",
+  "apiVersion": "1.2.3",
   "title": "CarShack API",
   "description": "RESTyard demo API for managing cars and customers",
   "entryPointName": "Entrypoint",

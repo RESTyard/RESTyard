@@ -30,6 +30,7 @@ namespace CarShack
             {
                 o.Title = "CarShack API";
                 o.Description = "RESTyard demo API for managing cars and customers";
+                o.ApiVersion = "1.2.3";
             });
 
             builder.Services.AddCors();
