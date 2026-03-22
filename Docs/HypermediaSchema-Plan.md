@@ -276,17 +276,13 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 **Goal:** Generate `ToSiren()` extension methods replacing the reflection-based `SirenConverter`.
 
-#### Step 5.1: Generate properties POCOs and basic entity mapping
-- For each HTO, emit a properties POCO class (e.g., `HypermediaCustomerHtoSirenProperties`)
-  - Include only data properties (exclude `[FormatterIgnoreHypermediaProperty]`, links, actions, keys, embedded entities)
-  - Apply `[HypermediaProperty(Name = "x")]` structurally: use `x` as the C# property name on the POCO
-  - Forward all other attributes from the HTO property verbatim (serializer attributes, converters, third-party — generator copies without interpreting)
-  - Do NOT forward RESTyard-specific attributes: `[Key]`, `[Relations]`, `[HypermediaAction]`, `[HypermediaProperty]`, `[FormatterIgnoreHypermediaProperty]`
+#### Step 5.1: Basic entity mapping using existing properties POCO
+- **Properties POCO already exists** — generated in Step 2.7.1a (`HypermediaCustomerHtoProperties`), reused here. No new POCO generation needed.
 - Emit `ToSiren()` extension method per HTO returning `SirenEntity<TProperties>`
 - Map `[HypermediaObject]` → `SirenEntity.Class`, `Title`
-- Map properties → generated properties POCO instance
+- Map HTO data properties → generated properties POCO instance (assign `hto.PropertyName` → `poco.PropertyName` for each data property)
 - Self link via `IHypermediaRouteResolver`
-- Verify tests: snapshot output for a simple HTO, attribute forwarding, property name override via `[HypermediaProperty]`
+- Verify tests: snapshot output for a simple HTO, property mapping correctness
 
 #### Step 5.2: Link resolution
 - Resolve `ILink<T>` properties → `SirenLink` with URL from `IHypermediaRouteResolver`
