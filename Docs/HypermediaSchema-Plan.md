@@ -231,15 +231,15 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - `AddHypermediaSchema()` logs a warning if zero registries are found — catches "forgot the attribute" and "attribute present but `Schema = false`" cases
 - Test: `AddHypermediaSchema()` with no registries logs warning
 
-#### Step 2.9.3: CLI schema generation
+#### Step 2.9.3: ✅ CLI schema generation
 - **Core logic in `RESTyard.Schema`:** Add `HypermediaSchemaGenerator` static class with:
   - `Generate(HypermediaApiSchema schema, string outputPath, SchemaOutputFormats formats, SchemaGeneratorOptions? options)` — writes requested output files using `RESTyard.Schema` mappers (JSON via `ToJson()`, `ToApiMap()`, `ToClassDiagram()`, `ToDocumentation()`)
   - `GenerateIfRequested(HypermediaApiSchema schema, string[] args)` → `bool` — parses CLI args, calls `Generate()`, returns `true` if `--generate-schema` was present
   - `SchemaOutputFormats` flags enum: `Json`, `MermaidMap`, `MermaidClass`, `Markdown`, `All`
   - `SchemaGeneratorOptions` for mapper pass-through: `MermaidIncludeProperties`, `MermaidIncludeActions`, `MarkdownIncludeToc`, `MarkdownIncludeDiagram`
 - **Convenience extension in `RESTyard.AspNetCore`:** Add `GenerateSchemaIfRequested(this IHost host, string[] args)` → `bool` that resolves `HypermediaApiSchema` from DI and delegates to `HypermediaSchemaGenerator.GenerateIfRequested()`
-- CLI args: `--generate-schema` (trigger), `--schema-output <path>` (default: `./generated-schema`), `--schema-format <formats>` (default: all), `--mermaid-include-properties`, `--mermaid-include-actions`, `--markdown-include-toc`, `--markdown-include-diagram`
-- Schema format selection: `--schema-format json` produces only `schema.json`, `--schema-format mermaid-map,markdown` produces only those two
+- CLI args: `--generate-schema` (trigger), `--schema-output <path>` (default: `./generated-schema`), `--schema-artifacts <formats>` (default: all), `--mermaid-include-properties`, `--mermaid-include-actions`, `--markdown-include-toc`, `--markdown-include-diagram`
+- Schema format selection: `--schema-artifacts json` produces only `schema.json`, `--schema-artifacts mermaid-map,markdown` produces only those two
 - Simple unit tests in `RESTyard.Schema.Test`: test `HypermediaSchemaGenerator` with a hand-built schema — verify arg parsing, file output, format selection, return value. No CarShack — end-to-end testing deferred to Step 2.9.4.
 - Usage patterns (for future user documentation):
   ```csharp
@@ -256,6 +256,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Add `[assembly: HypermediaAssembly]` to CarShack
 - Add `AddHypermediaSchema()` to CarShack `Program.cs`
 - Add `GenerateSchemaIfRequested()` to CarShack `Program.cs`
+- Extend CarShack readme with examle CLI usage (generate all)
 - Verify: CarShack compiles with generated registry listing all its entity types
 - Verify: resolve `HypermediaApiSchema` from CarShack DI, confirm it contains all entity types with correct metadata from `SchemaOptions`
 - Verify: `dotnet run -- --generate-schema --schema-output ./test-output` produces all four output files (JSON, mermaid-map, mermaid-class, markdown), process exits with code 0

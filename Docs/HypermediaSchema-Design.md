@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Last completed: **Step 2.9.2** (HypermediaSchemaOptions and DI integration). Next: **Step 2.9.3** (CLI schema generation).
+> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Last completed: **Step 2.9.3** (CLI schema generation). Next: **Step 2.9.4** (CarShack integration and end-to-end verification).
 
 ## Table of Contents
 
@@ -1195,7 +1195,7 @@ HypermediaSchemaGenerator.Generate(schema, "./output", SchemaOutputFormats.All);
 **CLI generation** (core: `HypermediaSchemaGenerator` in `RESTyard.Schema`):
 
 1. `GenerateIfRequested(schema, args)`: parse `args` for `--generate-schema`; if absent, return `false`
-2. Parse remaining args (`--schema-output`, `--schema-format`, mapper options)
+2. Parse remaining args (`--schema-output`, `--schema-artifacts`, mapper options)
 3. Call `Generate(schema, outputPath, formats, options)` — writes files using mappers
 4. Return `true`
 
@@ -1229,59 +1229,62 @@ public static class HypermediaSchemaRegistry_CarShack
 ```
 --generate-schema              Trigger schema generation mode (exit after generating)
 --schema-output <path>         Output directory for generated files (default: ./generated-schema)
---schema-format <formats>      Comma-separated: json, mermaid-map, mermaid-class, markdown (default: all)
+--schema-artifacts <artifacts>    Comma-separated: json-hypermedia-api-schema, mermaid-api-map, mermaid-htos, markdown-api-documentation (default: all)
 ```
 
-**`--schema-format` values:**
+**`--schema-artifacts` values:**
 
-| Value | Output file | Description |
-|---|---|---|
-| `json` | `schema.json` | Full `HypermediaApiSchema` as JSON |
-| `mermaid-map` | `api-map.md` | Entity relationship graph (`graph LR`) |
-| `mermaid-class` | `class-diagram.md` | Class diagram with properties/actions |
-| `markdown` | `api-documentation.md` | Full Markdown API reference |
+| Value | Output file | Description                               |
+|---|---|-------------------------------------------|
+| `json-hypermedia-api-schema` | `hypermedia-api-schema.json` | Full `HypermediaApiSchema` as JSON        |
+| `mermaid-api-map` | `api-map.md` | API Map                                   |
+| `mermaid-htos` | `htos.md` | HTO class diagram with properties/actions |
+| `markdown-api-documentation` | `api-documentation.md` | Full Markdown API reference               |
 
-When `--schema-format` is omitted, all four formats are generated. When specified, only the listed formats are produced.
+When `--schema-artifacts` is omitted, all four formats are generated. When specified, only the listed formats are produced.
 
-**Deferred parameters** (Phase 8: mapper options, Phase 9: access groups):
+**Mapper options:**
 
 ```
---access-groups <groups>       Include filter: only elements visible to these access groups (Phase 9)
---exclude-access-groups <groups>  Exclude filter: remove elements requiring these access groups (Phase 9)
---mermaid-include-properties   Include properties in Mermaid class diagram (default: true) (Phase 8)
---mermaid-include-actions      Include actions in Mermaid class diagram (default: true) (Phase 8)
---markdown-include-toc         Include table of contents in Markdown (default: true) (Phase 8)
---markdown-include-diagram     Include Mermaid diagram in Markdown (default: true) (Phase 8)
+--mermaid-include-properties   Include properties in Mermaid HTO diagram (default: true)
+--mermaid-include-actions      Include actions in Mermaid HTO diagram (default: true)
+--markdown-include-toc         Include table of contents in Markdown (default: true)
+--markdown-include-diagram     Include Mermaid diagram in Markdown (default: true)
 ```
 
-Access group filtering in the CLI reuses the same `HypermediaSchemaFilter` from the filtered schema endpoint — the filter is applied before passing the schema to the mappers. `--access-groups` and `--exclude-access-groups` are mutually exclusive (error if both specified). See Phase 9 (Step 9.4) in the plan.
+**Deferred parameters** (Phase 4: access groups):
 
-Access group filtering reuses `HypermediaSchemaFilter` from the filtered schema endpoint. Mapper options pass through to the respective mappers. Both are deferred until the features they depend on are implemented.
+```
+--access-groups <groups>       Include filter: only elements visible to these access groups
+--exclude-access-groups <groups>  Exclude filter: remove elements requiring these access groups
+```
+
+Access group filtering in the CLI reuses the same `HypermediaSchemaFilter` from the filtered schema endpoint — the filter is applied before passing the schema to the mappers. `--access-groups` and `--exclude-access-groups` are mutually exclusive (error if both specified). See Phase 4 (Step 4.5) in the plan.
 
 ### Example CI Usage
 
 ```bash
-# Generate all documentation artifacts
+# Generate all artifacts
 dotnet run --project src/MyApi -- --generate-schema --schema-output ./docs
 
 # Generate only JSON schema
-dotnet run --project src/MyApi -- --generate-schema --schema-format json --schema-output ./docs
+dotnet run --project src/MyApi -- --generate-schema --schema-artifacts json-hypermedia-api-schema --schema-output ./docs
 
 # Generate JSON + Mermaid diagrams, no Markdown
-dotnet run --project src/MyApi -- --generate-schema --schema-format json,mermaid-map,mermaid-class --schema-output ./docs
+dotnet run --project src/MyApi -- --generate-schema --schema-artifacts json-hypermedia-api-schema,mermaid-api-map,mermaid-htos --schema-output ./docs
 
 # Generate only Markdown documentation
-dotnet run --project src/MyApi -- --generate-schema --schema-format markdown --schema-output ./docs
+dotnet run --project src/MyApi -- --generate-schema --schema-artifacts markdown-api-documentation --schema-output ./docs
 ```
 
 ### Output Files
 
 ```
 <output-dir>/
-  schema.json              # Full HypermediaApiSchema JSON
-  api-map.md               # Mermaid entity relationship diagram
-  class-diagram.md         # Mermaid class diagram
-  api-documentation.md     # Markdown API reference
+  hypermedia-api-schema.json  # Full HypermediaApiSchema JSON
+  api-map.md                 # Mermaid entity relationship diagram
+  htos.md                    # Mermaid HTO class diagram
+  api-documentation.md        # Markdown API reference
 ```
 
 ## Open Questions

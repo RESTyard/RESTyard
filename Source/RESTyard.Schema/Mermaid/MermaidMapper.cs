@@ -16,7 +16,7 @@ namespace RESTyard.Schema.Mermaid;
 public static class MermaidMapper
 {
     /// <summary>
-    /// Produces a Mermaid entity relationship graph (<c>graph LR</c>) showing
+    /// Produces a Mermaid API Map (<c>graph LR</c>) showing
     /// entity types as nodes and links/embedded entities as labeled edges.
     /// </summary>
     /// <param name="schema">The hypermedia API schema to visualize.</param>
