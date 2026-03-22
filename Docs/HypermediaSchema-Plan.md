@@ -279,7 +279,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - This enables consumers who reference only `RESTyard.AspNetCore` to get both the analyzers and the source generator automatically
 - Defer to after the source generator is feature-complete (link analysis, action analysis, etc.)
 
-### Phase 3: Schema Endpoint
+### Phase 3: Schema Endpointi 
 
 **Goal:** Serve the schema at runtime via `/hypermedia-schema`. DI integration (singleton `HypermediaApiSchema`) is already done in Step 2.9.2.
 
@@ -289,148 +289,20 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Integration test: CarShack → `WebApplicationFactory` → `GET /hypermedia-schema` → verify JSON structure
 - Document Schema endpoint usage for server developers 
 
-### Phase 4: Source Generator — Siren POCOs
+### Phase 4 (Optional): Access Groups
 
-**Goal:** Emit the Siren POCO types into the consuming project.
-
-#### Step 4.1: Emit Siren POCO types
-- Generator emits `SirenEntity` (non-generic base), `SirenEntity<TProperties>` (generic), `SirenLink`, `SirenAction`, `SirenField`, `SirenSubEntity`, `SirenEmbeddedEntity`, `SirenLinkedEntity` into the consuming project
-- `SirenEntity` has no `Properties` — only structural fields (Class, Title, Links, Actions, Entities)
-- `SirenEntity<TProperties> : SirenEntity` adds `TProperties? Properties`
-- `SirenEmbeddedEntity.Entity` is typed as `SirenEntity` (non-generic base)
-- Verify: CarShack can reference the emitted types, compile, and use them in a trivial test
-
-### Phase 5: Source Generator — ToSiren() Emission
-
-**Goal:** Generate `ToSiren()` extension methods replacing the reflection-based `SirenConverter`.
-
-#### Step 5.1: Basic entity mapping using existing properties POCO
-- **Properties POCO already exists** — generated in Step 2.7.1a (`HypermediaCustomerHtoProperties`), reused here. No new POCO generation needed.
-- Emit `ToSiren()` extension method per HTO returning `SirenEntity<TProperties>`
-- Map `[HypermediaObject]` → `SirenEntity.Class`, `Title`
-- Map HTO data properties → generated properties POCO instance (assign `hto.PropertyName` → `poco.PropertyName` for each data property)
-- Self link via `IHypermediaRouteResolver`
-- Verify tests: snapshot output for a simple HTO, property mapping correctness
-
-#### Step 5.2: Link resolution
-- Resolve `ILink<T>` properties → `SirenLink` with URL from `IHypermediaRouteResolver`
-- Handle nullable links (omit when null)
-- Verify tests
-
-#### Step 5.3: Action resolution
-- Resolve action properties → `SirenAction` with URL from `IHypermediaRouteResolver`
-- Null-safe check: `if (hto.Action?.CanExecute() == true)`
-- Map action parameters to `SirenField` entries with prefilled values
-- Verify tests: parameterless, with params, file upload, null/non-executable actions
-
-#### Step 5.4: Embedded entity resolution
-- Recursive `ToSiren()` calls for embedded entities
-- Handle single and collection embedded entities
-- Verify tests
-
-#### Step 5.5: SirenMapperOptions
-- `AutoSelfLink` toggle (default true)
-- Wire through DI or explicit parameter
-- Verify tests
-
-#### Step 5.6: Controller extension method `ToSiren(hto)`
-- Add `ControllerBaseExtensions.ToSiren(this ControllerBase, IHypermediaObject hto)` returning `SirenEntity<TProperties>` wrapped in `OkObjectResult`
-- Resolves `IHypermediaRouteResolver` from `HttpContext.RequestServices` — no need to inject resolver into controllers
-- Usage: `return this.ToSiren(myHto);` instead of `return Ok(myHto.ToSiren(resolver))`
-- This is the **recommended pattern for new APIs** — explicit return type enables correct OpenAPI schema generation (Swagger sees `SirenEntity<T>`, not the HTO class)
-- Note: RESTyard's own `HypermediaApiSchema` is actually richer than OpenAPI for hypermedia APIs (describes the full hypermedia graph), but OpenAPI compatibility matters for mixed tooling ecosystems
-- Verify tests: extension method returns correct type, resolves resolver from DI
-
-### Phase 6: Generated Siren Output Formatter
-
-**Goal:** Provide a drop-in replacement output formatter that uses the generated `ToSiren()` internally, for existing APIs that want the performance benefit without rewriting controllers.
-
-#### Step 6.1: `GeneratedSirenFormatter` implementation
-- Implement `GeneratedSirenFormatter` as an alternative to `SirenHypermediaFormatter` that uses `ToSiren()` instead of reflection-based `SirenConverter`
-- Must be configurable: register via `AddHypermediaSirenMapper()` DI method (separate from `AddHypermediaExtensions()`, consistent with `AddHypermediaSchema()`)
-- When registered, replaces the existing `SirenHypermediaFormatter` for HTOs that have generated `ToSiren()` methods; falls back to `SirenConverter` for HTOs without generated mappers (allows incremental migration)
-- Discover available `ToSiren()` mappers at startup — similar to registry pattern from schema generation
-
-#### Step 6.2: Formatter configuration and registration
-- `AddHypermediaSirenMapper()` registers the `GeneratedSirenFormatter` and replaces or wraps the existing output formatter
-- Configuration: opt-in per assembly via `[HypermediaAssembly(Siren = true)]` (already designed)
-- Must work alongside existing `SirenHypermediaFormatter` for assemblies without `Siren = true`
-- Respect `ControllerAndHypermediaAssemblies` for formatter scope
-
-#### Step 6.3: Documentation — alternative formatter and migration path
-- Document the two approaches for using `ToSiren()`:
-  - **Option 1 (recommended for new APIs):** Direct return via `this.ToSiren(hto)` controller extension — explicit, OpenAPI-compatible, full serialization control
-  - **Option 2 (migration path for existing APIs):** `GeneratedSirenFormatter` — drop-in replacement, no controller changes, transparent performance improvement
-- Document migration path: existing API → add `[HypermediaAssembly(Siren = true)]` + `AddHypermediaSirenMapper()` → formatter handles `ToSiren()` automatically → optionally migrate controllers to `this.ToSiren(hto)` one by one → remove formatter when fully migrated
-- Document trade-offs: Option 2 has same OpenAPI limitation as current formatter (Swagger sees HTO type, not Siren shape); Option 1 fixes this
-
-### Phase 7 (Optional): Migration and Parity
-
-**Goal:** Ensure generated output matches the existing reflection-based formatter. This phase is optional — the schema and `ToSiren()` are independently useful without migrating away from the existing formatter.
-
-#### Step 7.1: Parity tests
-- For every HTO in CarShack: compare `SirenConverter` JSON output vs `ToSiren()` JSON output
-- Fix any discrepancies in the generator
-
-#### Step 7.2: Opt-in migration in CarShack
-- Migrate CarShack controllers one by one to use `hto.ToSiren(resolver)`
-- Keep existing formatter active for non-migrated controllers
-- Integration tests pass for both paths
-
-#### Step 7.3: Deprecate reflection-based formatter
-- Mark `SirenHypermediaFormatter` and `SirenConverter` as `[Obsolete]`
-- Document migration path in RESTyard-Docs
-
-### Phase 8: Revisit Open Questions
-
-**Goal:** With a working implementation in hand, revisit the open questions from the spec and decide which to address.
-
-#### Step 8.1: Review open questions
-- Read through the Open Questions section in `HypermediaSchema-Design.md`
-- For each question, decide: resolve now, defer, or close as won't-do
-- Update the spec accordingly — move resolved items to Design Decisions, remove closed items
-
-#### Step 8.2: Evaluate deferred features
-- **Full `$ref` resolution in all mappers** — resolve `$ref` to definition names (e.g., `Address` instead of `object`) in the Mermaid class diagram, Mermaid entity graph, and Markdown documentation mapper. When implementing, revisit whether the Markdown mapper should add a dedicated Definitions section with cross-links from property/parameter tables.
-- **Parameter validation routes** — is there a concrete use case from CarShack or real projects?
-- **Example values** — would CarShack benefit from examples in the schema?
-- **Tag groups** — is there a grouping need beyond the entity graph?
-- **Mermaid customization** — filtering by reachability from entry point
-- For each: implement if justified, otherwise document the decision to defer in the spec
-
-### Phase 9: Documentation
-
-**Goal:** User-facing documentation for all schema and source generation features.
-
-#### Step 9.1: Update RESTyard-Docs
-- Document the schema endpoint, model, and Mermaid mapper
-- Document the CLI generation mode (`GenerateSchemaIfRequested`) and all CLI args
-- Document `MermaidMapperOptions` (`IncludeProperties`, `IncludeActions`) and `MarkdownMapperOptions` (`IncludeTableOfContents`, `IncludeDiagram`) — API usage and corresponding CLI args (`--mermaid-include-properties`, `--mermaid-include-actions`, `--markdown-include-toc`, `--markdown-include-diagram`)
-- Document access group filtering (if implemented in Phase 10)
-- Add migration guide for existing users
-
-#### Step 9.2: Document `ToSiren()` migration path (Phase 7)
-- Document how to migrate from the reflection-based `SirenHypermediaFormatter` to the source-generated `ToSiren()` extension methods
-- Cover: per-controller opt-in, how to call `hto.ToSiren(resolver)` in controllers, how to verify parity with the existing formatter
-- Document `SirenMapperOptions` (`AutoSelfLink`) and how to configure via DI or explicit parameter
-- Explain the generated Siren POCOs (`SirenEntity<TProperties>`) and how attribute forwarding works (serializer attributes, `[HypermediaProperty(Name)]` applied structurally)
-- List known behavioral differences (if any discovered during Phase 7 parity testing)
-- Provide a checklist for migrating a full project: enable generator → migrate controllers one by one → run parity tests → deprecate formatter
-
-### Phase 10 (Optional): Access Groups
-
-> **Optional.** See the "Future Idea: Access Groups" section in `HypermediaSchema-Design.md` for the full design. Only pursue after the core schema and source generator are stable and a concrete use case demands it.
+> **Optional.** See the "Future Idea: Access Groups" section in `HypermediaSchema-Design.md` for the full design. Placed here (before ToSiren) because it's a schema concern that naturally extends Phases 2–3.
 
 **Goal:** Allow the schema to describe which actions, links, and embedded entities require which access groups, and let clients request a filtered schema.
 
-#### Step 10.1: `[HypermediaAccessGroup]` attribute and generator support
+#### Step 4.1: `[HypermediaAccessGroup]` attribute and generator support
 - Define `[HypermediaAccessGroup("groupName")]` attribute in `RESTyard.AspNetCore`
 - Extend the source generator to read `[HypermediaAccessGroup]` from actions, links, and embedded entity properties
 - Emit `RequiredAccessGroups` on `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription`
 - Collect all discovered access groups into `HypermediaApiSchema.DeclaredAccessGroups`
 - Verify tests: HTO with grouped and ungrouped elements, `DeclaredAccessGroups` completeness
 
-#### Step 10.2: Filtered schema endpoint — include mode
+#### Step 4.2: Filtered schema endpoint — include mode
 - Implement `HypermediaSchemaFilter.ForAccessGroups(schema, grantedAccessGroups)`
   - Remove elements whose `RequiredAccessGroups` are not satisfied by the granted set
   - Remove unreachable entity types
@@ -438,7 +310,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Extend `/hypermedia-schema` endpoint to accept `?accessGroups=read,write` query parameter
 - Integration test: CarShack with access groups, verify filtered output for different group combinations
 
-#### Step 10.2b: Filtered schema endpoint — exclude mode
+#### Step 4.2b: Filtered schema endpoint — exclude mode
 - Implement `HypermediaSchemaFilter.ExcludeAccessGroups(schema, excludedAccessGroups)`
   - Remove elements whose `RequiredAccessGroups` intersect with the excluded set
   - Remove unreachable entity types
@@ -446,26 +318,26 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Extend `/hypermedia-schema` endpoint to accept `?excludeAccessGroups=admin` query parameter
 - Integration test: CarShack excluding specific access groups, verify elements are removed correctly
 
-#### Step 10.3: `ISchemaAccessGroupSanitizer` hook
+#### Step 4.3: `ISchemaAccessGroupSanitizer` hook
 - Define `ISchemaAccessGroupSanitizer` interface in `RESTyard.AspNetCore`: `SanitizeRequestedGroups(IReadOnlySet<string> requestedGroups, HttpContext httpContext)` → returns the groups the user is allowed to query
 - Default behavior when no implementation registered: pass through unchanged (schema is public)
 - Wire into the `/hypermedia-schema` endpoint: sanitize before calling `HypermediaSchemaFilter`
 - Unit test: sanitizer removes groups, verify filtered output reflects sanitized set
 - Integration test: register a role-based sanitizer in CarShack, verify non-admin can't query admin-only groups
 
-#### Step 10.4: CarShack demo
+#### Step 4.4: CarShack demo
 - Add `[HypermediaAccessGroup]` to selected CarShack actions and links
 - Register a sample `ISchemaAccessGroupSanitizer` that restricts `admin` group to admin users
 - Verify the full and filtered schema endpoints work end to end
 
-#### Step 10.5: Access group filtering in CLI
+#### Step 4.5: Access group filtering in CLI
 - Add `--access-groups <groups>` (include mode) and `--exclude-access-groups <groups>` (exclude mode) to `GenerateSchemaIfRequested`
 - Reuse `HypermediaSchemaFilter.ForAccessGroups` / `ExcludeAccessGroups` — apply filter before passing schema to mappers
 - Validate mutual exclusivity (error if both specified)
 - Note: CLI does not use `ISchemaAccessGroupSanitizer` (no HTTP context) — the caller is trusted
 - Test with CarShack: generate filtered schema/diagrams for specific access group combinations
 
-#### Step 10.6: Update documentation for access groups
+#### Step 4.6: Update documentation for access groups
 - Document the `[HypermediaAccessGroup]` attribute: usage, semantics (descriptive not enforcing), relation to `[Authorize]`
 - Document `RequiredAccessGroups` on `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription` — what null vs. populated means
 - Document `DeclaredAccessGroups` on `HypermediaApiSchema` — auto-collected, useful for typo detection
@@ -474,7 +346,145 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Document the CLI access group args: `--access-groups`, `--exclude-access-groups`, examples
 - Add examples: annotated JSON showing filtered vs. full schema, CarShack access group setup
 
-#### Step 10.7 (Future idea): Schema as RESTyard HTO with query action in SchemaRootHto
+#### Step 4.7 (Future idea): Schema as RESTyard HTO with query action in SchemaRootHto
+- **Not designed yet** — to be explored after basic filtering is stable
+- Serve the schema as `HypermediaSchemaHto` — a proper RESTyard hypermedia resource
+- Query action accepts `accessGroups` / `excludeAccessGroups` as parameters, returns filtered schema
+- `AvailableAccessGroups` property lists only the groups the current user can query (post-sanitization via `ISchemaAccessGroupSanitizer`)
+- Query action parameter is a string list — client selects from `AvailableAccessGroups`
+- Stays within RESTyard's hypermedia design: client discovers filtering via the HTO's actions
+- Trade-off: more complex (controller, route registration, Siren serialization) vs. the simple JSON endpoint
+- Both query parameters and `AvailableAccessGroups` are sanitized by `ISchemaAccessGroupSanitizer`
+- Schema is still a JSON download link (not rendered as Siren) — the HTO wraps the query/filtering, not the schema content
+- Consider making this a default endpoint (auto-registered like action parameter schema endpoints)
+
+### Phase 5: Source Generator — Siren POCOs
+
+**Goal:** Emit the Siren POCO types into the consuming project.
+
+#### Step 5.1: Emit Siren POCO types
+- Generator emits `SirenEntity` (non-generic base), `SirenEntity<TProperties>` (generic), `SirenLink`, `SirenAction`, `SirenField`, `SirenSubEntity`, `SirenEmbeddedEntity`, `SirenLinkedEntity` into the consuming project
+- `SirenEntity` has no `Properties` — only structural fields (Class, Title, Links, Actions, Entities)
+- `SirenEntity<TProperties> : SirenEntity` adds `TProperties? Properties`
+- `SirenEmbeddedEntity.Entity` is typed as `SirenEntity` (non-generic base)
+- Verify: CarShack can reference the emitted types, compile, and use them in a trivial test
+
+### Phase 6: Source Generator — ToSiren() Emission
+
+**Goal:** Generate `ToSiren()` extension methods replacing the reflection-based `SirenConverter`.
+
+#### Step 6.1: Basic entity mapping using existing properties POCO
+- **Properties POCO already exists** — generated in Step 2.7.1a (`HypermediaCustomerHtoProperties`), reused here. No new POCO generation needed.
+- Emit `ToSiren()` extension method per HTO returning `SirenEntity<TProperties>`
+- Map `[HypermediaObject]` → `SirenEntity.Class`, `Title`
+- Map HTO data properties → generated properties POCO instance (assign `hto.PropertyName` → `poco.PropertyName` for each data property)
+- Self link via `IHypermediaRouteResolver`
+- Verify tests: snapshot output for a simple HTO, property mapping correctness
+
+#### Step 6.2: Link resolution
+- Resolve `ILink<T>` properties → `SirenLink` with URL from `IHypermediaRouteResolver`
+- Handle nullable links (omit when null)
+- Verify tests
+
+#### Step 6.3: Action resolution
+- Resolve action properties → `SirenAction` with URL from `IHypermediaRouteResolver`
+- Null-safe check: `if (hto.Action?.CanExecute() == true)`
+- Map action parameters to `SirenField` entries with prefilled values
+- Verify tests: parameterless, with params, file upload, null/non-executable actions
+
+#### Step 6.4: Embedded entity resolution
+- Recursive `ToSiren()` calls for embedded entities
+- Handle single and collection embedded entities
+- Verify tests
+
+#### Step 6.5: SirenMapperOptions
+- `AutoSelfLink` toggle (default true)
+- Wire through DI or explicit parameter
+- Verify tests
+
+#### Step 6.6: Controller extension method `ToSiren(hto)`
+- Add `ControllerBaseExtensions.ToSiren(this ControllerBase, IHypermediaObject hto)` returning `SirenEntity<TProperties>` wrapped in `OkObjectResult`
+- Resolves `IHypermediaRouteResolver` from `HttpContext.RequestServices` — no need to inject resolver into controllers
+- Usage: `return this.ToSiren(myHto);` instead of `return Ok(myHto.ToSiren(resolver))`
+- This is the **recommended pattern for new APIs** — explicit return type enables correct OpenAPI schema generation (Swagger sees `SirenEntity<T>`, not the HTO class)
+- Note: RESTyard's own `HypermediaApiSchema` is actually richer than OpenAPI for hypermedia APIs (describes the full hypermedia graph), but OpenAPI compatibility matters for mixed tooling ecosystems
+- Verify tests: extension method returns correct type, resolves resolver from DI
+
+### Phase 7: Generated Siren Output Formatter
+
+**Goal:** Provide a drop-in replacement output formatter that uses the generated `ToSiren()` internally, for existing APIs that want the performance benefit without rewriting controllers.
+
+#### Step 7.1: `GeneratedSirenFormatter` implementation
+- Implement `GeneratedSirenFormatter` as an alternative to `SirenHypermediaFormatter` that uses `ToSiren()` instead of reflection-based `SirenConverter`
+- Must be configurable: register via `AddHypermediaSirenMapper()` DI method (separate from `AddHypermediaExtensions()`, consistent with `AddHypermediaSchema()`)
+- When registered, replaces the existing `SirenHypermediaFormatter` for HTOs that have generated `ToSiren()` methods; falls back to `SirenConverter` for HTOs without generated mappers (allows incremental migration)
+- Discover available `ToSiren()` mappers at startup — similar to registry pattern from schema generation
+
+#### Step 7.2: Formatter configuration and registration
+- `AddHypermediaSirenMapper()` registers the `GeneratedSirenFormatter` and replaces or wraps the existing output formatter
+- Configuration: opt-in per assembly via `[HypermediaAssembly(Siren = true)]` (already designed)
+- Must work alongside existing `SirenHypermediaFormatter` for assemblies without `Siren = true`
+- Respect `ControllerAndHypermediaAssemblies` for formatter scope
+
+#### Step 7.3: Documentation — alternative formatter and migration path
+- Document the two approaches for using `ToSiren()`:
+  - **Option 1 (recommended for new APIs):** Direct return via `this.ToSiren(hto)` controller extension — explicit, OpenAPI-compatible, full serialization control
+  - **Option 2 (migration path for existing APIs):** `GeneratedSirenFormatter` — drop-in replacement, no controller changes, transparent performance improvement
+- Document migration path: existing API → add `[HypermediaAssembly(Siren = true)]` + `AddHypermediaSirenMapper()` → formatter handles `ToSiren()` automatically → optionally migrate controllers to `this.ToSiren(hto)` one by one → remove formatter when fully migrated
+- Document trade-offs: Option 2 has same OpenAPI limitation as current formatter (Swagger sees HTO type, not Siren shape); Option 1 fixes this
+
+### Phase 8 (Optional): Migration and Parity
+
+**Goal:** Ensure generated output matches the existing reflection-based formatter. This phase is optional — the schema and `ToSiren()` are independently useful without migrating away from the existing formatter.
+
+#### Step 8.1: Parity tests
+- For every HTO in CarShack: compare `SirenConverter` JSON output vs `ToSiren()` JSON output
+- Fix any discrepancies in the generator
+
+#### Step 8.2: Opt-in migration in CarShack
+- Migrate CarShack controllers one by one to use `hto.ToSiren(resolver)`
+- Keep existing formatter active for non-migrated controllers
+- Integration tests pass for both paths
+
+#### Step 8.3: Deprecate reflection-based formatter
+- Mark `SirenHypermediaFormatter` and `SirenConverter` as `[Obsolete]`
+- Document migration path in RESTyard-Docs
+
+### Phase 9: Revisit Open Questions
+
+**Goal:** With a working implementation in hand, revisit the open questions from the spec and decide which to address.
+
+#### Step 9.1: Review open questions
+- Read through the Open Questions section in `HypermediaSchema-Design.md`
+- For each question, decide: resolve now, defer, or close as won't-do
+- Update the spec accordingly — move resolved items to Design Decisions, remove closed items
+
+#### Step 9.2: Evaluate deferred features
+- **Full `$ref` resolution in all mappers** — resolve `$ref` to definition names (e.g., `Address` instead of `object`) in the Mermaid class diagram, Mermaid entity graph, and Markdown documentation mapper. When implementing, revisit whether the Markdown mapper should add a dedicated Definitions section with cross-links from property/parameter tables.
+- **Parameter validation routes** — is there a concrete use case from CarShack or real projects?
+- **Example values** — would CarShack benefit from examples in the schema?
+- **Tag groups** — is there a grouping need beyond the entity graph?
+- **Mermaid customization** — filtering by reachability from entry point
+- For each: implement if justified, otherwise document the decision to defer in the spec
+
+### Phase 10: Documentation
+
+**Goal:** User-facing documentation for all schema and source generation features.
+
+#### Step 10.1: Update RESTyard-Docs
+- Document the schema endpoint, model, and Mermaid mapper
+- Document the CLI generation mode (`GenerateSchemaIfRequested`) and all CLI args
+- Document `MermaidMapperOptions` (`IncludeProperties`, `IncludeActions`) and `MarkdownMapperOptions` (`IncludeTableOfContents`, `IncludeDiagram`) — API usage and corresponding CLI args (`--mermaid-include-properties`, `--mermaid-include-actions`, `--markdown-include-toc`, `--markdown-include-diagram`)
+- Document access group filtering (if implemented in Phase 4)
+- Add migration guide for existing users
+
+#### Step 10.2: Document `ToSiren()` migration path (Phase 8)
+- Document how to migrate from the reflection-based `SirenHypermediaFormatter` to the source-generated `ToSiren()` extension methods
+- Cover: per-controller opt-in, how to call `hto.ToSiren(resolver)` in controllers, how to verify parity with the existing formatter
+- Document `SirenMapperOptions` (`AutoSelfLink`) and how to configure via DI or explicit parameter
+- Explain the generated Siren POCOs (`SirenEntity<TProperties>`) and how attribute forwarding works (serializer attributes, `[HypermediaProperty(Name)]` applied structurally)
+- List known behavioral differences (if any discovered during Phase 8 parity testing)
+- Provide a checklist for migrating a full project: enable generator → migrate controllers one by one → run parity tests → deprecate formatter
 - **Not designed yet** — to be explored after basic filtering is stable
 - Serve the schema as `HypermediaSchemaHto` — a proper RESTyard hypermedia resource
 - Query action accepts `accessGroups` / `excludeAccessGroups` as parameters, returns filtered schema
