@@ -252,7 +252,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   HypermediaSchemaGenerator.Generate(schema, "./output", SchemaOutputFormats.All);
   ```
 
-#### Step 2.9.4: 🔄 CarShack integration and end-to-end verification
+#### Step 2.9.4: ✅ CarShack integration and end-to-end verification
 - Add `[assembly: HypermediaAssembly]` to CarShack
 - Add `AddHypermediaSchema()` to CarShack `Program.cs`
 - Add `GenerateSchemaIfRequested()` to CarShack `Program.cs`
@@ -262,7 +262,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Verify: `dotnet run -- --generate-schema --schema-output ./test-output` produces all four output files (JSON, mermaid-map, mermaid-class, markdown), process exits with code 0
 - Acceptance: CarShack `Program.cs` has `AddHypermediaSchema()` + one CLI line, schema JSON contains configured title/description
 
-#### Step 2.9.5: Document the HypermediaApiSchema for users
+#### Step 2.9.5: ✅ Document the HypermediaApiSchema for users
 - Write user-facing documentation for the schema model in Docs/HypermediaSchema/
 - **Schema overview**: what the schema describes (type-level metadata, not runtime URLs), how it complements Siren responses
 - **Top-level `HypermediaApiSchema`**: explain each field — `SchemaVersion` (format versioning), `ApiVersion` (user's API version), `EntryPointName` (navigation start), `Definitions` (shared JSON Schema types referenced via `$ref`)

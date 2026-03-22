@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Last completed: **Step 2.9.4** (CarShack integration and end-to-end verification). Next: **Step 2.9.5** (Document the HypermediaApiSchema for users).
+> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Last completed: **Step 2.9.5** (Document the HypermediaApiSchema). Next: **Step 2.10** (Document the source generator for server developers).
 
 ## Table of Contents
 
