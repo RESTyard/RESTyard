@@ -23,7 +23,9 @@ Without this attribute, the source generator emits nothing — even if the NuGet
 
 ### 2. Reference the source generator
 
-The source generator ships as part of the `RESTyard.AspNetCore` NuGet package (bundled alongside the existing analyzers). If you're using a project reference during development:
+The source generator is **bundled in the `RESTyard.AspNetCore` NuGet package** alongside the existing analyzers. If you reference `RESTyard.AspNetCore` via NuGet, the source generator is included automatically — no additional package needed.
+
+For development with project references (e.g., in the RESTyard solution itself), add the generator as an analyzer reference:
 
 ```xml
 <ProjectReference Include="..\RESTyard.HtoSourceGenerators\RESTyard.HtoSourceGenerators.csproj"

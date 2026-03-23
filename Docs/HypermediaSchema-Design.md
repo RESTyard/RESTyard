@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Last completed: **Step 2.10** (Document the source generator). Next: **Step 2.11** (Bundle source generator into NuGet).
+> **Plan execution in progress.** Phase 2: Source Generator — Project Setup and Schema Generation. Last completed: **Step 2.11** (Bundle source generator into NuGet). Next: **Step 2.12** (Resolve complex property types in mappers) or **Phase 3** (Schema Endpoint).
 
 ## Table of Contents
 

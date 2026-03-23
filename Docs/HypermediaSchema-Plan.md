@@ -283,7 +283,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - How to use `GenerateSchemaIfRequested` in `Program.cs` — one-line setup, CLI args reference
 - How to use `HypermediaSchemaBuilder.Build(IServiceProvider)` for programmatic access
 
-#### Step 2.11: Bundle source generator into `RESTyard.AspNetCore` NuGet (deferred)
+#### Step 2.11: ✅ Bundle source generator into `RESTyard.AspNetCore` NuGet
 - Add the source generator DLL to the `RESTyard.AspNetCore` NuGet package alongside the existing analyzers:
   ```xml
   <None Include="..\RESTyard.HtoSourceGenerators\bin\$(Configuration)\netstandard2.0\RESTyard.HtoSourceGenerators.dll"

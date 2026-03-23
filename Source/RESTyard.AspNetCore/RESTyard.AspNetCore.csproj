@@ -65,5 +65,6 @@
   
   <ItemGroup>
     <None Include="..\RESTyard.AspNetCore.Analyzers\bin\$(Configuration)\netstandard2.0\RESTyard.AspNetCore.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="..\RESTyard.HtoSourceGenerators\bin\$(Configuration)\netstandard2.0\RESTyard.HtoSourceGenerators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 </Project>
