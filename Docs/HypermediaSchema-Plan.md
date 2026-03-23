@@ -293,7 +293,21 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - clean up carshack project reference to HtoSourceGenerators and update docs "SourceGenerator.md"
 - Defer to after the source generator is feature-complete (link analysis, action analysis, etc.)
 
-### Phase 3: Schema Endpointi 
+#### Step 2.12: Resolve complex property types in mappers
+- **Problem**: `JsonSchema.Net` inlines nested objects as `"type": "object"` with properties expanded inline — no `$ref`, no type name. The mappers see `"type": "object"` and display `object`. This affects both:
+  - **Entity properties**: e.g., `Customer.Address` shows as `object` instead of `Address`
+  - **Action parameters**: e.g., `CustomerMove.Address` shows as `object` instead of `NewAddress`
+- **Markdown documentation mapper**: show the type name in property/parameter tables, link to a Definitions section listing each complex type with its own property table. Cross-links both ways.
+- **Mermaid class diagram (`mermaid-htos`)**: replace `object` with the type name (e.g., `Address`). Do not expand inline — name is sufficient for diagrams.
+- **Mermaid API map (`mermaid-api-map`)**: no change needed (entity-level graph, doesn't show property types).
+- **Approach — spike needed**: `$ref` resolution infrastructure already exists in `JsonSchemaExtensions` (`GetRef()`, `SchemaToTypeString()`, `SchemaToLinkedTypeString()`) — if `$ref` is present, the mappers already resolve it correctly. The root cause is that `JsonSchema.Net` inlines nested objects instead of extracting to `$defs`.
+  - **(a) Root cause fix (preferred)**: Make `JsonSchemaFactory` (or an `ISchemaRefiner`) extract inline complex objects to `$defs` with `$ref`. Investigate whether `JsonSchema.Net.Generation` has built-in support for this, or if a post-processing refiner is needed. This solves the problem for both entity properties and action parameters with zero mapper changes — the existing `$ref` resolution handles the rest.
+  - (b) Fallback: Extend schema model with property type name metadata — source generator emits CLR type names alongside JSON Schema. Adds fields to `EntityTypeSchema` and `ActionDescription`.
+  - (c) Fallback: Custom `x-type-name` JSON Schema extension keyword — ugly to implement and retrieve in `JsonSchema.Net`'s strongly-typed model.
+  - Start with (a). Only fall back to (b) or (c) if `JsonSchema.Net` doesn't support `$defs` extraction.
+- Tests: snapshot tests for Markdown and Mermaid output with schemas containing nested object properties.
+
+### Phase 3: Schema Endpoint
 
 **Goal:** Serve the schema at runtime via `/hypermedia-schema`. DI integration (singleton `HypermediaApiSchema`) is already done in Step 2.9.2.
 
@@ -474,7 +488,6 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Update the spec accordingly — move resolved items to Design Decisions, remove closed items
 
 #### Step 9.2: Evaluate deferred features
-- **Full `$ref` resolution in all mappers** — resolve `$ref` to definition names (e.g., `Address` instead of `object`) in the Mermaid class diagram, Mermaid entity graph, and Markdown documentation mapper. When implementing, revisit whether the Markdown mapper should add a dedicated Definitions section with cross-links from property/parameter tables.
 - **Parameter validation routes** — is there a concrete use case from CarShack or real projects?
 - **Example values** — would CarShack benefit from examples in the schema?
 - **Tag groups** — is there a grouping need beyond the entity graph?
