@@ -278,7 +278,7 @@ Serve the schema at runtime via a minimal API endpoint:
 app.MapHypermediaSchema();
 ```
 
-This maps a `GET /hypermedia-schema` endpoint that returns the full `HypermediaApiSchema` as JSON with content type `application/vnd.restyard.schema+json`.
+This maps a `GET /hypermedia-schema` endpoint that returns the full `HypermediaApiSchema` as JSON with content type `application/vnd.restyard.hypermedia-schema+json`.
 
 **Custom route:**
 
@@ -293,6 +293,20 @@ app.MapHypermediaSchema().RequireAuthorization("AdminOnly");
 ```
 
 Make sure `AddHypermediaSchema()` was called during service registration to enable the schema feature.
+
+### Linking to the Schema from the Entry Point
+
+Add a discoverable link from your API's entry point HTO to the schema endpoint using the `ToSchema()` helper:
+
+```csharp
+public partial class HypermediaEntrypointHto
+{
+    [Relations(["schema"])]
+    public ExternalLink Schema { get; init; } = HypermediaSchema.Link();
+}
+```
+
+This creates an internal link resolved by the framework to `/hypermedia-schema` (or your custom route) with the correct media type `application/vnd.restyard.hypermedia-schema+json`. Clients can follow the `schema` relation from the entry point to discover the full API schema.
 
 ## Programmatic Access
 

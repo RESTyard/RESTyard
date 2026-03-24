@@ -13,6 +13,7 @@ using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Util.Enum;
 using RESTyard.AspNetCore.Util.Repository;
+using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace CarShack.Hypermedia;
@@ -88,8 +89,8 @@ public class Country
 
 public partial class HypermediaEntrypointHto
 {
-   // public ExternalActionNoParametersTestOp ExternalActionNoParametersNoParametersTest { get; init; } = new ExternalActionNoParametersTestOp(new Uri("http://www.example1.com"), HttpMethod.POST);
-   // public ExternalActionWitParameterTestOp ExternalActionWitParameterTestOp { get; init; }= new ExternalActionWitParameterTestOp(new Uri("http://www.example2.com"), HttpMethod.DELETE);
+   [Relations(["schema"])]
+   public ExternalLink Schema { get; init; } = HypermediaSchema.Link();
 }
 
 public partial class HypermediaCustomerHto

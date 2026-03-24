@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 3: Schema Endpoint. Currently: **Step 3.1** (Schema endpoint). Last completed: **Step 2.15.1** (Action result edges in diagrams).
+> **Plan execution in progress.** Phase 3 complete. Last completed: **Step 3.1** (Schema endpoint). Next: **Phase 4** (Access Groups) or **Phase 5** (Siren POCOs).
 
 ## Table of Contents
 
@@ -495,7 +495,7 @@ app.MapHypermediaSchema("/custom/schema/route");     // or configure a custom ro
 // Internally resolves HypermediaApiSchema from DI and serializes it
 ```
 
-Returns JSON. Content type: `application/vnd.restyard.schema+json`.
+Returns JSON. Content type: `application/vnd.restyard.hypermedia-schema+json`.
 
 The schema intentionally does not contain resolved URLs or route templates. Clients discover URLs at runtime by navigating the hypermedia API starting from the entry point — this is a core principle of hypermedia. The schema describes the *shape* of the API (entities, relations, actions, properties) not the *location* of resources.
 
@@ -885,7 +885,8 @@ The existing contract-first XML schema (`Hypermedia.xsd` / `Hypermedia.cs`) cont
 - **`JsonDocument` for schema representation, `JsonSchema.Net` internal to mappers**: `PropertiesSchema`, `ParameterSchema`, and `Definitions` values use `System.Text.Json.JsonDocument` on the public model types — not `JsonSchema` from `JsonSchema.Net`. This keeps the schema model library-agnostic: consumers that deserialize the `/hypermedia-schema` endpoint only need `System.Text.Json`, not `JsonSchema.Net`. The Mermaid and Markdown mappers convert `JsonDocument` to `JsonSchema` internally (via `JsonSchemaExtensions.ToJsonSchema()`) to use strongly-typed keyword access (`PropertiesKeyword`, `TypeKeyword`, etc.) for extracting property names, types, and descriptions. `JsonSchema.Net` remains a dependency of `RESTyard.Schema` (for the mappers and `IJsonSchemaFactory` implementation) but does not leak onto the public API surface. `IJsonSchemaFactory` returns `JsonDocument`, and `JsonSchemaFactory` uses `JsonSchema.Net.Generation` internally behind this abstraction.
 - **Schema versioning**: The schema format has its own semver (`SchemaVersion`), independent of the RESTyard package version. This allows the spec format to evolve at its own pace — a RESTyard update that doesn't change the schema shape doesn't bump the schema version, and vice versa.
 - **External links/actions**: `ExternalLink` and `HypermediaExternalAction` have fixed URLs not resolved via route resolver. This is not a schema concern — the schema describes entity types and their relationships, not runtime URLs. External links are just links from the client's perspective; the client does not distinguish between internal and external.
-- **Schema endpoint media type**: `application/vnd.restyard.schema+json`.
+- **Schema endpoint media type**: `application/vnd.restyard.hypermedia-schema+json`. Defined as `SchemaMediaTypes.HypermediaApiSchema` in `RESTyard.Schema`.
+- **Schema link helper**: `HypermediaSchema.Link()` creates an `ExternalLink` pointing to the schema endpoint with the correct media type. Uses `InternalReference` with the named route `"HypermediaSchema"` — the framework resolves the URL via `IUrlHelper`. This avoids hardcoding the schema endpoint path in HTOs. Recommended usage: add `[Relations(["schema"])]` on the entry point HTO so clients can discover the schema via hypermedia navigation.
 - **Incremental generator**: Use `IIncrementalGenerator` (the modern Roslyn API, better IDE performance).
 - **HTO inheritance**: Flatten to concrete types. Siren has no inheritance concept, and flattening is simpler for client generators. Each concrete HTO becomes one `EntityTypeSchema`.
 - **Deprecation**: The source generator reads C#'s built-in `[Obsolete("message")]` attribute. The message maps to `DeprecationMessage`, presence maps to `IsDeprecated = true`. This covers entity types, actions, links, and embedded entities at the schema model level. For **property-level deprecation** (individual properties on entity types and action parameters), `JsonSchemaFactory` registers an `IAttributeHandler<ObsoleteAttribute>` that emits the JSON Schema `deprecated: true` keyword. This means `[Obsolete]` on action parameter members flows through `schemaFactory.Generate(typeof(T))` automatically, and after Step 2.7.1, `[Obsolete]` on HTO properties is forwarded to the generated POCO and picked up by the same handler. Users should be aware that `[Obsolete]` on properties produces `deprecated` in the JSON Schema — this should be documented alongside the existing `[DisplayName]` → `title` and `[Description]` → `description` attribute handling in user documentation.

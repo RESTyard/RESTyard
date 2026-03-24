@@ -26,7 +26,7 @@ public class SchemaEndpointTests : IAsyncLifetime
         var response = await client.GetAsync("/hypermedia-schema");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        response.Content.Headers.ContentType?.MediaType.Should().Be("application/vnd.restyard.schema+json");
+        response.Content.Headers.ContentType?.MediaType.Should().Be(RESTyard.Schema.SchemaMediaTypes.HypermediaApiSchema);
     }
 
     [Fact]

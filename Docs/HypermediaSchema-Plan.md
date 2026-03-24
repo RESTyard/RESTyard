@@ -361,10 +361,10 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 **Goal:** Serve the schema at runtime via `/hypermedia-schema`. DI integration (singleton `HypermediaApiSchema`) is already done in Step 2.9.2.
 
-#### Step 3.1: 🔄 Schema endpoint
+#### Step 3.1: ✅ Schema endpoint
 - `MapHypermediaSchema(Action<HypermediaSchemaEndpointOptions>? configure = null)` extension method on `IEndpointRouteBuilder` (works with both `WebApplication` and `IApplicationBuilder`)
 - `HypermediaSchemaEndpointOptions`: `Route` (default `"/hypermedia-schema"`), extensible for future options (auth policy etc.)
-- Returns `HypermediaApiSchema` as JSON (`application/vnd.restyard.schema+json`)
+- Returns `HypermediaApiSchema` as JSON (`application/vnd.restyard.hypermedia-schema+json`)
 - Usage: `app.MapHypermediaSchema();` or `app.MapHypermediaSchema(o => o.Route = "/api/schema");`
 - Integration test: CarShack → `WebApplicationFactory` → `GET /hypermedia-schema` → verify JSON structure and content type
 - Add to CarShack `Program.cs`

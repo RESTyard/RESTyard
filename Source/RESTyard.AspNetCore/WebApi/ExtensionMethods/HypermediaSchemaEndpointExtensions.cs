@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.Schema;
 using RESTyard.Schema.Model;
 
@@ -14,6 +16,12 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods;
 /// </summary>
 public static class HypermediaSchemaEndpointExtensions
 {
+    /// <summary>
+    /// The route name for the schema endpoint. Use with <see cref="InternalReference"/>
+    /// to create links to the schema from HTOs.
+    /// </summary>
+    public const string RouteName = "HypermediaSchema";
+
     private const string SchemaMediaType = SchemaMediaTypes.HypermediaApiSchema;
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
@@ -51,6 +59,7 @@ public static class HypermediaSchemaEndpointExtensions
 
             context.Response.ContentType = SchemaMediaType;
             return context.Response.WriteAsync(json);
-        });
+        }).WithName(RouteName);
     }
+
 }

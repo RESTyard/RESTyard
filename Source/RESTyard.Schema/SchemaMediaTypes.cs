@@ -6,7 +6,7 @@ namespace RESTyard.Schema;
 public static class SchemaMediaTypes
 {
     /// <summary>
-    /// Media type for the hypermedia API schema endpoint: <c>application/vnd.restyard.schema+json</c>.
+    /// Media type for the hypermedia API schema endpoint: <c>application/vnd.restyard.hypermedia-schema+json</c>.
     /// </summary>
-    public const string HypermediaApiSchema = "application/vnd.restyard.schema+json";
+    public const string HypermediaApiSchema = "application/vnd.restyard.hypermedia-schema+json";
 }
