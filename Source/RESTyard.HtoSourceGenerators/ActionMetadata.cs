@@ -17,4 +17,8 @@ internal readonly record struct ActionMetadata(
     bool IsDeprecated,
     string? DeprecationMessage,
     /// <summary>Whether the action property is non-nullable (mandatory).</summary>
-    bool IsMandatory);
+    bool IsMandatory,
+    /// <summary>Schema name of the result entity type (from <c>ResultType</c> on the controller endpoint). Null if no result.</summary>
+    string? ResultSchemaName,
+    /// <summary>Siren classes of the result entity type. Null if no result.</summary>
+    EquatableArray<string>? ResultClasses);

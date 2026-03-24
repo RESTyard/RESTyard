@@ -58,6 +58,9 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     private const string ObsoleteAttributeFullName =
         "System.ObsoleteAttribute";
 
+    private const string HypermediaActionEndpointAttributePrefix =
+        "RESTyard.AspNetCore.WebApi.AttributedRoutes.HypermediaActionEndpointAttribute<";
+
     private const string KeyAttributeFullName =
         "RESTyard.AspNetCore.WebApi.RouteResolver.KeyAttribute";
 
@@ -90,6 +93,22 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         messageFormat: "[HypermediaAssembly] has Siren = true but Schema = false — Schema has been forced to true because Siren mappers depend on the generated properties POCOs",
         category: "RESTyard.Schema",
         defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor MissingResultTypeWith201 = new(
+        id: "RY0031",
+        title: "Action endpoint returns 201 but has no ResultType",
+        messageFormat: "Action endpoint '{0}.{1}' on '{2}' has a 201 response annotation but no ResultType — consider adding ResultType to declare the result entity for schema generation.",
+        category: "RESTyard.Schema",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor ResultTypeNotHypermediaObject = new(
+        id: "RY0032",
+        title: "ResultType is not a HypermediaObject",
+        messageFormat: "ResultType '{0}' on action endpoint for '{1}.{2}' is not decorated with [HypermediaObject] — schema cannot describe the result entity. If this action returns a non-hypermedia resource, consider removing ResultType or suppress this warning.",
+        category: "RESTyard.Schema",
+        defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
     private static readonly DiagnosticDescriptor EmbeddedEntityMissingRelations = new(
@@ -149,12 +168,35 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             .Where(static m => m.HasValue)
             .Select(static (m, _) => m!.Value);
 
-        // Combine each HTO with the assembly configuration
-        var htosWithConfig = htoTypes.Combine(assemblyConfig);
+        // Extract action result mappings from controller [HypermediaActionEndpoint] attributes with ResultType
+        var actionResultMappings = context.CompilationProvider.Select(static (compilation, _) =>
+            ExtractActionResultMappings(compilation));
 
-        context.RegisterSourceOutput(htosWithConfig, static (spc, pair) =>
+        // Combine each HTO with the assembly configuration and action result mappings
+        var htosWithConfig = htoTypes.Combine(assemblyConfig).Combine(actionResultMappings);
+
+        context.RegisterSourceOutput(htosWithConfig, static (spc, combined) =>
         {
-            var (metadata, config) = pair;
+            var ((metadata, config), resultData) = combined;
+            var resultMappings = resultData.Mappings;
+
+            // Emit warnings for ResultType not being a HypermediaObject
+            foreach (var (resultTypeName, htoClassName, actionPropName) in resultData.NotHtoWarnings)
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(
+                    ResultTypeNotHypermediaObject,
+                    Location.None,
+                    resultTypeName, htoClassName, actionPropName));
+            }
+
+            // Emit warnings for 201 response without ResultType
+            foreach (var (controllerName, methodName, actionPropName) in resultData.Missing201Warnings)
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(
+                    MissingResultTypeWith201,
+                    Location.None,
+                    controllerName, methodName, actionPropName));
+            }
 
             // No [HypermediaAssembly] attribute — emit nothing
             if (config == null)
@@ -179,6 +221,9 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             {
                 return;
             }
+
+            // Enrich actions with ResultType from controller endpoint attributes
+            metadata = EnrichActionsWithResultMappings(metadata, resultMappings);
 
             foreach (var propertyName in metadata.EmbeddedEntityPropertiesWithoutRelations)
             {
@@ -214,11 +259,11 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         var assemblyName = context.CompilationProvider.Select(
             static (compilation, _) => SanitizeAssemblyName(compilation.AssemblyName ?? "Unknown"));
 
-        var allHtosWithConfig = htoTypes.Collect().Combine(assemblyConfig).Combine(assemblyName);
+        var allHtosWithConfig = htoTypes.Collect().Combine(assemblyConfig).Combine(assemblyName).Combine(actionResultMappings);
 
         context.RegisterSourceOutput(allHtosWithConfig, static (spc, combined) =>
         {
-            var ((allHtos, config), assemblyNameSafe) = combined;
+            var (((allHtos, config), assemblyNameSafe), resultData) = combined;
 
             // No [HypermediaAssembly] or Schema = false — no registry
             if (config == null)
@@ -241,6 +286,14 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             spc.AddSource(
                 $"HypermediaSchemaRegistry.g.cs",
                 GenerateRegistrySource(allHtos, assemblyNameSafe));
+
+            // Emit action result registry for multi-assembly support
+            if (!resultData.Mappings.IsEmpty)
+            {
+                spc.AddSource(
+                    $"HypermediaActionResultRegistry.g.cs",
+                    GenerateActionResultRegistrySource(resultData.Mappings, assemblyNameSafe));
+            }
         });
     }
 
@@ -472,7 +525,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 var isFileUpload = IsFileUploadAction(member.Type);
                 var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
 
-                actions.Add(new ActionMetadata(name, actionTitle, actionDescription, parameterTypeFullName, isFileUpload, actionIsDeprecated, actionDeprecationMessage, isMandatory));
+                actions.Add(new ActionMetadata(name, actionTitle, actionDescription, parameterTypeFullName, isFileUpload, actionIsDeprecated, actionDeprecationMessage, isMandatory, null, null));
             }
 
             current = current.BaseType;
@@ -1216,6 +1269,19 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 }
             }
 
+            if (action.ResultSchemaName != null)
+            {
+                sb.Append("                    ").Append(SchemaTypeNames.ActionDescription_ResultName)
+                    .Append(" = \"").Append(EscapeString(action.ResultSchemaName)).AppendLine("\",");
+
+                if (action.ResultClasses is { Length: > 0 } rc)
+                {
+                    var classLiterals = string.Join(", ", rc.Select(c => $"\"{EscapeString(c)}\""));
+                    sb.Append("                    ").Append(SchemaTypeNames.ActionDescription_ResultClasses)
+                        .Append(" = new[] { ").Append(classLiterals).AppendLine(" },");
+                }
+            }
+
             sb.Append("                    ").Append(SchemaTypeNames.ActionDescription_IsMandatory)
                 .Append(" = ").Append(action.IsMandatory ? "true" : "false").AppendLine(",");
             sb.AppendLine("                },");
@@ -1623,6 +1689,232 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     /// Sanitizes an assembly name for use as a C# identifier suffix.
     /// Replaces non-alphanumeric characters with underscores.
     /// </summary>
+    /// <summary>
+    /// Scans all types in the compilation for methods with [HypermediaActionEndpoint] that have ResultType set.
+    /// Returns a dictionary keyed by (HtoClassName, ActionPropertyName) → (ResultSchemaName, ResultClasses).
+    /// </summary>
+    private static (
+        ImmutableDictionary<(string HtoClassName, string ActionPropertyName), (string ResultSchemaName, ImmutableArray<string> ResultClasses)> Mappings,
+        ImmutableArray<(string ResultTypeName, string HtoClassName, string ActionPropertyName)> NotHtoWarnings,
+        ImmutableArray<(string ControllerName, string MethodName, string ActionPropertyName)> Missing201Warnings)
+        ExtractActionResultMappings(Compilation compilation)
+    {
+        var builder = ImmutableDictionary.CreateBuilder<(string, string), (string, ImmutableArray<string>)>();
+        var notHtoWarnings = ImmutableArray.CreateBuilder<(string, string, string)>();
+        var missing201Warnings = ImmutableArray.CreateBuilder<(string, string, string)>();
+
+        foreach (var type in GetAllTypes(compilation))
+        {
+            foreach (var member in type.GetMembers().OfType<IMethodSymbol>())
+            {
+                foreach (var attr in member.GetAttributes())
+                {
+                    var attrClass = attr.AttributeClass;
+                    if (attrClass == null || !attrClass.IsGenericType)
+                        continue;
+
+                    var originalDef = attrClass.OriginalDefinition.ToDisplayString();
+                    if (!originalDef.StartsWith(HypermediaActionEndpointAttributePrefix))
+                        continue;
+
+                    // Get the HTO type argument
+                    var htoType = attrClass.TypeArguments[0] as INamedTypeSymbol;
+                    if (htoType == null)
+                        continue;
+
+                    // Get the action property name (first constructor arg)
+                    if (attr.ConstructorArguments.Length == 0 || attr.ConstructorArguments[0].Value is not string actionPropName)
+                        continue;
+
+                    // Get ResultType (named argument)
+                    var resultTypeArg = attr.NamedArguments.FirstOrDefault(a => a.Key == "ResultType");
+                    var hasResultType = resultTypeArg.Key == "ResultType" && resultTypeArg.Value.Value is INamedTypeSymbol;
+
+                    var htoClassName = htoType.Name;
+
+                    if (hasResultType)
+                    {
+                        var resultType = (INamedTypeSymbol)resultTypeArg.Value.Value!;
+
+                        // Check if ResultType has [HypermediaObject]
+                        var hasHypermediaObject = resultType.GetAttributes()
+                            .Any(a => a.AttributeClass?.ToDisplayString() == HypermediaObjectAttributeFullName);
+
+                        if (!hasHypermediaObject)
+                        {
+                            notHtoWarnings.Add((resultType.ToDisplayString(), htoClassName, actionPropName));
+                        }
+                        else
+                        {
+                            var resultSchemaName = DeriveSchemaName(resultType.Name);
+                            var resultClasses = GetTargetClasses(resultType);
+                            builder[(htoClassName, actionPropName)] = (resultSchemaName, resultClasses);
+                        }
+                    }
+                    else
+                    {
+                        // No ResultType — check if method has 201-related attributes
+                        if (Has201ResponseAttribute(member))
+                        {
+                            missing201Warnings.Add((type.Name, member.Name, actionPropName));
+                        }
+                    }
+                }
+            }
+        }
+
+        return (builder.ToImmutable(), notHtoWarnings.ToImmutable(), missing201Warnings.ToImmutable());
+    }
+
+    /// <summary>
+    /// Checks if a method has a 201-related response attribute (ProducesResponseType, SwaggerResponse, etc.)
+    /// by checking attribute name and constructor argument for value 201.
+    /// </summary>
+    private static bool Has201ResponseAttribute(IMethodSymbol method)
+    {
+        foreach (var attr in method.GetAttributes())
+        {
+            var name = attr.AttributeClass?.Name;
+            if (name == null) continue;
+
+            // Match ProducesResponseType, ProducesResponseTypeAttribute, SwaggerResponse, SwaggerResponseAttribute, etc.
+            if (!name.Contains("ProducesResponseType") && !name.Contains("SwaggerResponse"))
+                continue;
+
+            // Check constructor arguments for integer value 201
+            foreach (var arg in attr.ConstructorArguments)
+            {
+                if (arg.Value is int intVal && intVal == 201)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static IEnumerable<INamedTypeSymbol> GetAllTypes(Compilation compilation)
+    {
+        var stack = new Stack<INamespaceSymbol>();
+        stack.Push(compilation.GlobalNamespace);
+
+        while (stack.Count > 0)
+        {
+            var ns = stack.Pop();
+            foreach (var type in ns.GetTypeMembers())
+            {
+                yield return type;
+            }
+
+            foreach (var childNs in ns.GetNamespaceMembers())
+            {
+                stack.Push(childNs);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Enriches HTO action metadata with ResultType information from controller endpoint attributes.
+    /// </summary>
+    private static HtoMetadata EnrichActionsWithResultMappings(
+        HtoMetadata metadata,
+        ImmutableDictionary<(string HtoClassName, string ActionPropertyName), (string ResultSchemaName, ImmutableArray<string> ResultClasses)> resultMappings)
+    {
+        if (resultMappings.IsEmpty)
+            return metadata;
+
+        var enrichedActions = new List<ActionMetadata>();
+        var changed = false;
+
+        foreach (var action in metadata.Actions)
+        {
+            // Try to find a result mapping for this action.
+            // The action's Name may differ from the property name (via [HypermediaAction(Name)]),
+            // so we try both the action Name and look through all mappings for this HTO.
+            if (TryFindResultMapping(metadata.ClassName, action.Name, resultMappings, out var resultSchemaName, out var resultClasses))
+            {
+                enrichedActions.Add(action with { ResultSchemaName = resultSchemaName, ResultClasses = new EquatableArray<string>(resultClasses) });
+                changed = true;
+            }
+            else
+            {
+                enrichedActions.Add(action);
+            }
+        }
+
+        return changed
+            ? metadata with { Actions = new EquatableArray<ActionMetadata>(enrichedActions.ToImmutableArray()) }
+            : metadata;
+    }
+
+    private static bool TryFindResultMapping(
+        string htoClassName, string actionName,
+        ImmutableDictionary<(string HtoClassName, string ActionPropertyName), (string ResultSchemaName, ImmutableArray<string> ResultClasses)> mappings,
+        out string resultSchemaName, out ImmutableArray<string> resultClasses)
+    {
+        // The mapping key uses the property name on the HTO, which is the action's C# property name.
+        // The action's Name might be overridden via [HypermediaAction(Name)], so also check by Name.
+        foreach (var kvp in mappings)
+        {
+            if (kvp.Key.HtoClassName == htoClassName && kvp.Key.ActionPropertyName == actionName)
+            {
+                resultSchemaName = kvp.Value.ResultSchemaName;
+                resultClasses = kvp.Value.ResultClasses;
+                return true;
+            }
+        }
+
+        resultSchemaName = "";
+        resultClasses = ImmutableArray<string>.Empty;
+        return false;
+    }
+
+    /// <summary>
+    /// Generates an action result registry for multi-assembly support.
+    /// Emits a static class with action-to-result mappings that <c>HypermediaSchemaBuilder</c>
+    /// can discover and merge into the schema.
+    /// </summary>
+    internal static string GenerateActionResultRegistrySource(
+        ImmutableDictionary<(string HtoClassName, string ActionPropertyName), (string ResultSchemaName, ImmutableArray<string> ResultClasses)> mappings,
+        string assemblyNameSafe)
+    {
+        var registryClassName = "HypermediaActionResultRegistry_" + assemblyNameSafe;
+
+        var sb = new StringBuilder();
+        sb.AppendLine("// <auto-generated/>");
+        sb.AppendLine("#nullable enable");
+        sb.AppendLine();
+        sb.Append("using ").Append(SchemaTypeNames.SchemaModelNamespace).AppendLine(";");
+        sb.AppendLine();
+
+        sb.Append("public static class ").AppendLine(registryClassName);
+        sb.AppendLine("{");
+        sb.AppendLine("    public static System.Collections.Generic.IReadOnlyList<ActionResultMapping> GetMappings()");
+        sb.AppendLine("    {");
+        sb.Append("        return new ActionResultMapping[]");
+        sb.AppendLine();
+        sb.AppendLine("        {");
+
+        foreach (var kvp in mappings)
+        {
+            var classLiterals = string.Join(", ", kvp.Value.ResultClasses.Select(c => $"\"{EscapeString(c)}\""));
+            sb.Append("            new ActionResultMapping { EntityName = \"")
+                .Append(EscapeString(kvp.Key.HtoClassName))
+                .Append("\", ActionName = \"")
+                .Append(EscapeString(kvp.Key.ActionPropertyName))
+                .Append("\", ResultName = \"")
+                .Append(EscapeString(kvp.Value.ResultSchemaName))
+                .Append("\", ResultClasses = new[] { ")
+                .Append(classLiterals)
+                .AppendLine(" } },");
+        }
+
+        sb.AppendLine("        };");
+        sb.AppendLine("    }");
+        sb.AppendLine("}");
+
+        return sb.ToString();
+    }
+
     internal static string SanitizeAssemblyName(string assemblyName)
     {
         var sb = new StringBuilder(assemblyName.Length);

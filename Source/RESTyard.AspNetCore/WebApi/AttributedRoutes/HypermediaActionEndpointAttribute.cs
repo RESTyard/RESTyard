@@ -33,4 +33,12 @@ public class HypermediaActionEndpointAttribute<THto> : HypermediaEndpointAttribu
     public string? AcceptedMediaType { get; }
     public Type? ActionType { get; }
     public override string EndpointName { get; }
+
+    /// <summary>
+    /// Indicates that this action endpoint produces a <c>Location</c> header pointing to
+    /// an entity of the specified HTO type. Used by schema generation to populate
+    /// <c>ActionDescription.ResultName</c> and <c>ResultClasses</c>.
+    /// When null (default), no result type is recorded.
+    /// </summary>
+    public Type? ResultType { get; set; }
 }

@@ -224,6 +224,8 @@ This populates `ActionDescription.ResultName` in the schema, enabling:
 
 **If `ResultType` is not set**, the schema is still valid but incomplete — client generators and documentation tools won't know that the action produces a specific entity. They cannot generate typed result handling code or render result links.
 
+**If `ResultType` is set to a non-HTO type** (a class without `[HypermediaObject]`), the generator emits warning `RY0032`. The schema cannot describe non-hypermedia result types — `ResultName`/`ResultClasses` will not be populated. If the action intentionally returns a non-hypermedia resource (e.g., a file download URL), suppress the warning or remove `ResultType`.
+
 ## Verifying Generation Works
 
 After adding `[assembly: HypermediaAssembly]` and building:
@@ -248,5 +250,6 @@ After adding `[assembly: HypermediaAssembly]` and building:
 | `RY0020` error | `IEmbeddedEntity<T>` property missing `[Relations]` | Add `[Relations(["rel"])]` to the property |
 | `RY0021` error | `ILink<T>` property missing `[Relations]` | Add `[Relations(["rel"])]` to the property |
 | `RY0030` warning | `Siren = true` with `Schema = false` | `Schema` is forced to `true` (Siren needs the Properties POCO) |
+| `RY0032` warning | `ResultType` is not a `[HypermediaObject]` | Schema can't describe non-HTO results. Suppress if intentional, or remove `ResultType`. |
 | Properties POCO has wrong name | `[HypermediaProperty(Name)]` not applied | Verify the attribute is on the HTO property |
 | Attribute not forwarded to POCO | It's a RESTyard attribute | `[Key]`, `[Relations]`, `[HypermediaAction]`, `[HypermediaProperty]`, `[FormatterIgnoreHypermediaProperty]` are consumed by the generator, not forwarded |

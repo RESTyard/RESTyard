@@ -9,7 +9,9 @@ using Json.Schema;
 using Json.Schema.Generation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.AspNetCore.Mvc;
 using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
 using RESTyard.Schema.SchemaGeneration;
 using RESTyard.Schema.Model;
 
@@ -33,6 +35,8 @@ internal static class GeneratorTestHelper
         MetadataReference.CreateFromFile(typeof(EnumMemberAttribute).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(TitleAttribute).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(System.Uri).Assembly.Location),
+        MetadataReference.CreateFromFile(typeof(ControllerBase).Assembly.Location),
+        MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Mvc.IActionResult).Assembly.Location),
         MetadataReference.CreateFromFile(Path.Combine(AssemblyDirectory, "netstandard.dll")),
     ];
 

@@ -44,6 +44,8 @@ internal static class SchemaTypeNames
     internal const string ActionDescription_IsFileUpload = "IsFileUpload";
     internal const string ActionDescription_IsDeprecated = "IsDeprecated";
     internal const string ActionDescription_DeprecationMessage = "DeprecationMessage";
+    internal const string ActionDescription_ResultName = "ResultName";
+    internal const string ActionDescription_ResultClasses = "ResultClasses";
     internal const string EntityTypeSchema_Actions = "Actions";
 
     // EmbeddedEntityDescription

@@ -318,7 +318,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   - `HypermediaApiSchema.ToMergedJsonSchema()` — produce a single merged JSON Schema document containing all entity types and all shared definitions in one `$defs`. Off-the-shelf JSON Schema code generators (NJsonSchema, etc.) can consume this directly and naturally deduplicate shared types without needing the two-pass approach. Less intrusive for tool authors who don't want to implement custom schema traversal.
 - Tests: snapshot tests for Markdown and Mermaid output with schemas containing nested object properties.
 
-#### Step 2.13: Populate `ActionDescription.ResultName` via `ResultType` on `HypermediaActionEndpoint`
+#### Step 2.13: ✅ Populate `ActionDescription.ResultName` via `ResultType` on `HypermediaActionEndpoint`
 - Extend `HypermediaActionEndpointAttribute` with an optional `Type? ResultType` property. XML doc must explain: "Indicates that this action endpoint produces a Location header pointing to an entity of the specified HTO type. Used by schema generation to populate `ActionDescription.ResultName`/`ResultClasses`."
 - The source generator already scans controllers for `[HypermediaActionEndpoint]` — additionally read `ResultType` when present
 - When `ResultType` is set: resolve the target HTO's schema name and Siren classes, populate `ActionDescription.ResultName` and `ResultClasses`
