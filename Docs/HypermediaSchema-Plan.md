@@ -361,11 +361,14 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 **Goal:** Serve the schema at runtime via `/hypermedia-schema`. DI integration (singleton `HypermediaApiSchema`) is already done in Step 2.9.2.
 
-#### Step 3.1: Schema endpoint
-- `MapHypermediaSchema()` endpoint (default route: `/hypermedia-schema`, configurable in HypermediaSchemaOptions )
+#### Step 3.1: 🔄 Schema endpoint
+- `MapHypermediaSchema(Action<HypermediaSchemaEndpointOptions>? configure = null)` extension method on `IEndpointRouteBuilder` (works with both `WebApplication` and `IApplicationBuilder`)
+- `HypermediaSchemaEndpointOptions`: `Route` (default `"/hypermedia-schema"`), extensible for future options (auth policy etc.)
 - Returns `HypermediaApiSchema` as JSON (`application/vnd.restyard.schema+json`)
-- Integration test: CarShack → `WebApplicationFactory` → `GET /hypermedia-schema` → verify JSON structure
-- Document Schema endpoint usage for server developers 
+- Usage: `app.MapHypermediaSchema();` or `app.MapHypermediaSchema(o => o.Route = "/api/schema");`
+- Integration test: CarShack → `WebApplicationFactory` → `GET /hypermedia-schema` → verify JSON structure and content type
+- Add to CarShack `Program.cs`
+- Document Schema endpoint usage in user docs
 
 ### Phase 4 (Optional): Access Groups
 
@@ -545,6 +548,17 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   - Remove `InheritsFrom` helper method
   - The test `Legacy_HttpMethodHypermediaAction_type_exists` in `HtoSchemaGeneratorTests` will fail when the legacy type is removed — this is intentional as a reminder to clean up the generator code
 - Verify with CarShack: regenerate controllers with new template, confirm `ResultType` appears, all tests pass
+
+#### Step 8.5: Migrate `ActionParameterTypes` endpoint to minimal API
+- The current `ActionParameterTypesController` is an MVC controller registered automatically via `AddHypermediaExtensions`. It serves JSON Schema for action parameter types. Users cannot add authorization policies to it (only global MVC filters apply).
+- Migrate to a minimal API endpoint similar to `MapHypermediaSchema()` — e.g., `MapActionParameterTypes()` returning `IEndpointConventionBuilder` so users can chain `.RequireAuthorization()`.
+- **Configuration bridge:** Currently `HypermediaExtensionsOptions` controls whether the endpoint is registered. Maintain this: if the user calls `MapActionParameterTypes()` explicitly, the old MVC controller is not registered. If they don't call it, the existing MVC controller behavior is preserved for backwards compatibility. Consider a flag like `HypermediaExtensionsOptions.AutoRegisterParameterTypeEndpoint = true` (default, current behavior) that can be set to `false` when the user opts into the minimal API version.
+- **Breaking change potential:** Users relying on global MVC filters (e.g., `options.Filters.Add(new AuthorizeFilter())`) for auth on the parameter types endpoint will find that the minimal API version doesn't inherit those filters. Document this clearly with migration examples.
+- **Documentation required:**
+  - Migration guide: old (automatic MVC) → new (explicit minimal API with `.RequireAuthorization()`)
+  - Explain why: consistent with `MapHypermediaSchema()`, enables per-endpoint auth policies
+  - Show both patterns: keep auto-registration (no change needed) vs. opt into minimal API
+- Verify with CarShack: migrate, confirm parameter type endpoints still work, integration tests pass
 
 ### Phase 9: Revisit Open Questions
 

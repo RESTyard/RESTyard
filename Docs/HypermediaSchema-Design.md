@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 2 complete. Last completed: **Step 2.15.1** (Action result edges in diagrams). Next: **Phase 3** (Schema Endpoint).
+> **Plan execution in progress.** Phase 3: Schema Endpoint. Currently: **Step 3.1** (Schema endpoint). Last completed: **Step 2.15.1** (Action result edges in diagrams).
 
 ## Table of Contents
 

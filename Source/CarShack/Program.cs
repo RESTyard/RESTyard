@@ -57,6 +57,7 @@ namespace CarShack
                     .WithExposedHeaders("Location");
             });
             app.MapControllers();
+            app.MapHypermediaSchema();
 
             await app.RunAsync();
         }

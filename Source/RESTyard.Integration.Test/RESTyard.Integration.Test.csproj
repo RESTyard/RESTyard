@@ -31,6 +31,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\CarShack\CarShack.csproj" />
+      <ProjectReference Include="..\RESTyard.Schema\RESTyard.Schema.csproj" />
       <ProjectReference Include="..\RESTyard.AspNetCore\RESTyard.AspNetCore.csproj" />
       <ProjectReference Include="..\RESTyard.Client.Extensions\SystemNetHttp\SystemNetHttp.csproj" />
       <ProjectReference Include="..\RESTyard.Client.Extensions\SystemTextJson\SystemTextJson.csproj" />

@@ -270,6 +270,30 @@ dotnet run --project MyApi -- --generate-schema --schema-output ./docs --mermaid
 | `--markdown-include-toc` | `true` | Include table of contents |
 | `--markdown-include-diagram` | `true` | Include Mermaid diagram in Markdown |
 
+## Schema Endpoint
+
+Serve the schema at runtime via a minimal API endpoint:
+
+```csharp
+app.MapHypermediaSchema();
+```
+
+This maps a `GET /hypermedia-schema` endpoint that returns the full `HypermediaApiSchema` as JSON with content type `application/vnd.restyard.schema+json`.
+
+**Custom route:**
+
+```csharp
+app.MapHypermediaSchema(o => o.Route = "/api/schema");
+```
+
+**Authorization:** Since `MapHypermediaSchema()` returns an `IEndpointConventionBuilder`, you can chain standard minimal API policies:
+
+```csharp
+app.MapHypermediaSchema().RequireAuthorization("AdminOnly");
+```
+
+Make sure `AddHypermediaSchema()` was called during service registration to enable the schema feature.
+
 ## Programmatic Access
 
 ### ASP.NET Core
