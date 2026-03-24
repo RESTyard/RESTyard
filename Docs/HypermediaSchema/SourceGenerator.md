@@ -226,6 +226,14 @@ This populates `ActionDescription.ResultName` in the schema, enabling:
 
 **If `ResultType` is set to a non-HTO type** (a class without `[HypermediaObject]`), the generator emits warning `RY0032`. The schema cannot describe non-hypermedia result types — `ResultName`/`ResultClasses` will not be populated. If the action intentionally returns a non-hypermedia resource (e.g., a file download URL), suppress the warning or remove `ResultType`.
 
+**Legacy attributes:** `ResultType` also works on the legacy `[Http*HypermediaAction]` attributes (e.g., `[HttpPostHypermediaAction]`). If your project uses the contract-first generator, you can add `ResultType` to the generated controller attributes manually:
+
+```csharp
+[HttpPostHypermediaAction("<stub>", typeof(HypermediaCustomersRootHto.CreateQueryOp),
+    ResultType = typeof(HypermediaCustomerQueryResultHto))]
+public Task<IActionResult> CreateQueryAsync(...) { ... }
+```
+
 ## Verifying Generation Works
 
 After adding `[assembly: HypermediaAssembly]` and building:

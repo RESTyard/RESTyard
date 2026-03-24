@@ -334,10 +334,20 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - **Multi-assembly support:** When HTOs and controllers are in different assemblies, the source generator processing the HTO assembly won't see `ResultType` (which lives on controller attributes in the other assembly). Solution: the generator in the controller assembly emits a separate `HypermediaActionResultRegistry_<Assembly>` containing `ActionResultMapping(EntityName, ActionName, ResultName, ResultClasses)` entries. `HypermediaSchemaBuilder.ComposeSchema()` merges these mappings into the existing `ActionDescription` entries after collecting all schema registries — same post-processing pattern as `Definitions` deduplication. The schema model (`EntityTypeSchema`, `ActionDescription`) is not changed — `ResultName`/`ResultClasses` are populated at compose time, not at generation time. `ActionResultMapping` is a simple record in `RESTyard.Schema.Model`.
 - Verify tests: action with `ResultType` populates `ResultName`, Markdown shows "Returns" link, result entity shows incoming "Referenced by", multi-assembly scenario merges correctly
 
-#### Step 2.13.1: Update contract-first generator (`RESTyard.Generator`) to emit `ResultType`
-- The contract-first XML schema (`Hypermedia.xsd` / `Hypermedia.xml`) already describes action result types — the information is available
-- Update the server controller template (`server/csharp-controller/v4`) to emit `ResultType = typeof(...)` on generated `[HypermediaActionEndpoint]` attributes when the XML schema specifies an action result
-- Verify with CarShack: regenerate controllers, confirm `ResultType` appears on applicable action endpoints
+#### Step 2.14: ✅ Legacy attribute support for `ResultType`
+- Added `ResultType` property to legacy `HttpMethodHypermediaAction` base class (same signature as on `HypermediaActionEndpointAttribute<T>`)
+- Source generator scans legacy attributes via `InheritsFrom` check — extracts `ResultType` from `[Http*HypermediaAction(..., ResultType = typeof(...))]` in addition to `[HypermediaActionEndpoint<T>(..., ResultType = typeof(...))]`
+- Added `Legacy_HttpMethodHypermediaAction_type_exists` guard test — fails when the legacy type is removed, reminding to clean up the generator's legacy scan code
+- Legacy cleanup comment added to generator constant `HttpMethodHypermediaActionBaseFullName`
+- This enables existing projects using the contract-first generator (which emits legacy attributes) to manually add `ResultType` on their controller endpoints
+
+#### Step 2.15: Add `ResultType` to hand-written CarShack controllers
+- CarShack has both generated controllers (from contract-first generator, using legacy attributes) and hand-written controllers (using `[HypermediaActionEndpoint<T>]` or legacy attributes)
+- Add `ResultType = typeof(...)` to applicable hand-written controller action endpoints where the action produces a Location header
+- Regenerate CarShack schema and verify: `ResultName`/`ResultClasses` appear in the schema JSON, Markdown docs show "Returns" links, result entities show incoming "Referenced by"
+- This serves as a demonstration/test of the `ResultType` feature for both attribute styles
+
+#### Step 2.13.1: Deferred → Phase 8, Step 8.4
 
 ### Phase 3: Schema Endpoint
 
@@ -510,6 +520,22 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 #### Step 8.3: Deprecate reflection-based formatter
 - Mark `SirenHypermediaFormatter` and `SirenConverter` as `[Obsolete]`
 - Document migration path in Docs/HypermediaSchema/
+
+#### Step 8.4: Update contract-first generator to emit `ResultType` and migrate to `[HypermediaActionEndpoint<T>]`
+- **Deferred from Step 2.13.1** — the contract-first generator currently emits legacy `[Http*HypermediaAction]` attributes, not `[HypermediaActionEndpoint<T>]`. Updating `ResultType` on the legacy attributes was done as part of Step 2.13, but the template should be migrated to the new attribute pattern as part of the overall migration.
+- Update the server controller template (`server/csharp-controller/v4` or new `v5`) to emit `[HypermediaActionEndpoint<THto>]` instead of `[Http*HypermediaAction]`
+- Emit `ResultType = typeof(...)` on the new attribute when `operation.resultDocument` is set in the XML schema
+- **Implementation insights from Step 2.13.1:**
+  - The XML schema's `OperationType.resultDocument` contains the result document name — access via `operation.resultDocument` in Scriban (not `operation.result_document` — Scriban uses the exact C# property name on .NET objects)
+  - The `isNotEmpty` helper from `_common.sbn` works for checking if resultDocument is set
+  - CarShack has 6 operations with `resultDocument` (UploadCarImage, UploadInsuranceScan, UpdateInspection, CreateCustomer, CreateQuery, BuyCar)
+  - The legacy `HttpMethodHypermediaAction` base class now has `ResultType` property — source generator scans it via `InheritsFrom` helper
+- **Legacy cleanup:** When this step is done, remove legacy support from the source generator:
+  - Remove `HttpMethodHypermediaActionBaseFullName` constant
+  - Remove `InheritsFrom` scan in `ExtractActionResultMappings`
+  - Remove `InheritsFrom` helper method
+  - The test `Legacy_HttpMethodHypermediaAction_type_exists` in `HtoSchemaGeneratorTests` will fail when the legacy type is removed — this is intentional as a reminder to clean up the generator code
+- Verify with CarShack: regenerate controllers with new template, confirm `ResultType` appears, all tests pass
 
 ### Phase 9: Revisit Open Questions
 

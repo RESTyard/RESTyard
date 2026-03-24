@@ -61,6 +61,12 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     private const string HypermediaActionEndpointAttributePrefix =
         "RESTyard.AspNetCore.WebApi.AttributedRoutes.HypermediaActionEndpointAttribute<";
 
+    // Legacy attribute support — remove this block when HttpMethodHypermediaAction is removed.
+    // If you remove the legacy attribute, also remove the InheritsFrom scan in ExtractActionResultMappings
+    // and the Has201ResponseAttribute check for legacy patterns.
+    private const string HttpMethodHypermediaActionBaseFullName =
+        "RESTyard.AspNetCore.WebApi.AttributedRoutes.HttpMethodHypermediaAction";
+
     private const string KeyAttributeFullName =
         "RESTyard.AspNetCore.WebApi.RouteResolver.KeyAttribute";
 
@@ -1763,7 +1769,69 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             }
         }
 
+        // Also scan legacy HttpMethodHypermediaAction attributes for ResultType
+        foreach (var type in GetAllTypes(compilation))
+        {
+            foreach (var member in type.GetMembers().OfType<IMethodSymbol>())
+            {
+                foreach (var attr in member.GetAttributes())
+                {
+                    var attrClass = attr.AttributeClass;
+                    if (attrClass == null)
+                        continue;
+
+                    // Check if this attribute inherits from HttpMethodHypermediaAction
+                    if (!InheritsFrom(attrClass, HttpMethodHypermediaActionBaseFullName))
+                        continue;
+
+                    // Get ResultType (named argument)
+                    var resultTypeArg = attr.NamedArguments.FirstOrDefault(a => a.Key == "ResultType");
+                    if (resultTypeArg.Key != "ResultType" || resultTypeArg.Value.Value is not INamedTypeSymbol resultType)
+                        continue;
+
+                    // Get the action type from the second constructor argument: typeof(HtoName.ActionOp)
+                    if (attr.ConstructorArguments.Length < 2 || attr.ConstructorArguments[1].Value is not INamedTypeSymbol actionOpType)
+                        continue;
+
+                    var declaringType = actionOpType.ContainingType;
+                    if (declaringType == null)
+                        continue;
+
+                    var htoClassName = declaringType.Name;
+                    var actionName = actionOpType.Name.EndsWith("Op")
+                        ? actionOpType.Name.Substring(0, actionOpType.Name.Length - 2)
+                        : actionOpType.Name;
+
+                    var hasHypermediaObject = resultType.GetAttributes()
+                        .Any(a => a.AttributeClass?.ToDisplayString() == HypermediaObjectAttributeFullName);
+
+                    if (!hasHypermediaObject)
+                    {
+                        notHtoWarnings.Add((resultType.ToDisplayString(), htoClassName, actionName));
+                    }
+                    else
+                    {
+                        var resultSchemaName = DeriveSchemaName(resultType.Name);
+                        var resultClasses = GetTargetClasses(resultType);
+                        builder[(htoClassName, actionName)] = (resultSchemaName, resultClasses);
+                    }
+                }
+            }
+        }
+
         return (builder.ToImmutable(), notHtoWarnings.ToImmutable(), missing201Warnings.ToImmutable());
+    }
+
+    private static bool InheritsFrom(INamedTypeSymbol type, string baseFullName)
+    {
+        var current = type.BaseType;
+        while (current != null)
+        {
+            if (current.ToDisplayString() == baseFullName)
+                return true;
+            current = current.BaseType;
+        }
+        return false;
     }
 
     /// <summary>

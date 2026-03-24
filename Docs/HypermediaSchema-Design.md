@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 2 complete. Last completed: **Step 2.13** (Populate ActionDescription.ResultName). Next: **Step 2.13.1** (Contract-first generator update) or **Phase 3** (Schema Endpoint).
+> **Plan execution in progress.** Phase 2. Last completed: **Step 2.14** (Legacy attribute support for ResultType). Next: **Step 2.15** (CarShack ResultType) or **Phase 3** (Schema Endpoint).
 
 ## Table of Contents
 
@@ -930,6 +930,8 @@ The existing contract-first XML schema (`Hypermedia.xsd` / `Hypermedia.cs`) cont
   - *Detecting `SwaggerResponseHeader` for 201 status*: Weak — indicates a Location header exists but not what entity it points to. An `RY` warning should be emitted when a 201 response annotation is found without `ResultType` set, hinting that the user may want to add it.
 
   The controller attribute approach is consistent with RESTyard's existing pattern — all action-to-controller binding (`[HypermediaActionEndpoint]`, `[HypermediaObjectEndpoint]`) is on the controller side. The result type is declared where the Location header is actually produced.
+
+  **Legacy attribute support:** `ResultType` is also available on the legacy `HttpMethodHypermediaAction` base class (used by `[HttpPostHypermediaAction]`, `[HttpPatchHypermediaAction]`, etc.). The source generator scans both the new `[HypermediaActionEndpoint<T>]` and the legacy `[Http*HypermediaAction]` for `ResultType`. This allows existing projects using the contract-first generator (which emits legacy attributes) to add `ResultType` manually. Legacy support will be removed when the controller template is migrated to `[HypermediaActionEndpoint<T>]` (Phase 8, Step 8.4).
 
   **Multi-assembly:** When HTOs and controllers are in different assemblies, the source generator processing the HTO assembly won't see `ResultType` (it lives on controller attributes in the other assembly). The generator in the controller assembly emits a separate `HypermediaActionResultRegistry` containing `ActionResultMapping(EntityName, ActionName, ResultName, ResultClasses)` entries. `HypermediaSchemaBuilder.ComposeSchema()` merges these into the existing `ActionDescription` entries at compose time. The schema model is not changed — `ResultName`/`ResultClasses` are populated during post-processing, not during generation. Controller-only assemblies must also have `[assembly: HypermediaAssembly]` for the generator to run.
 

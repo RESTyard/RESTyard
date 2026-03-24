@@ -60,9 +60,17 @@ namespace RESTyard.AspNetCore.WebApi.AttributedRoutes
         
         
         /// <summary>
-        /// The media type which is acceptable for this action. 
+        /// The media type which is acceptable for this action.
         /// </summary>
         public string? AcceptedMediaType { get; set; } = null;
+
+        /// <summary>
+        /// Indicates that this action endpoint produces a <c>Location</c> header pointing to
+        /// an entity of the specified HTO type. Used by schema generation to populate
+        /// <c>ActionDescription.ResultName</c> and <c>ResultClasses</c>.
+        /// When null (default), no result type is recorded.
+        /// </summary>
+        public Type? ResultType { get; set; }
 
         string IEndpointNameMetadata.EndpointName => this.Name!;
 

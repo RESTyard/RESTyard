@@ -1106,6 +1106,17 @@ public class HtoSchemaGeneratorTests
         }
     }
 
+    // --- Legacy attribute existence check ---
+    // If this test fails, the legacy HttpMethodHypermediaAction was removed.
+    // Remove the legacy scan in HtoSchemaGenerator.ExtractActionResultMappings and
+    // the InheritsFrom check, and delete this test.
+    [Fact]
+    public void Legacy_HttpMethodHypermediaAction_type_exists()
+    {
+        typeof(RESTyard.AspNetCore.WebApi.AttributedRoutes.HttpMethodHypermediaAction)
+            .Should().NotBeNull();
+    }
+
     // --- Step 2.9.1: Schema registry generation ---
 
     [Fact]
