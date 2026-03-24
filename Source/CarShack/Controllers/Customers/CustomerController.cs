@@ -121,7 +121,7 @@ public class CustomerController : Controller
     }
 
     [HttpPost("{key:int}/BuysCar"),
-     HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.BuyCar))]
+     HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.BuyCar), ResultType = typeof(HypermediaCarHto))]
     public async Task<ActionResult> BuyCar(int key, BuyCarParameters parameter)
     {
         if (parameter == null)

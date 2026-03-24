@@ -115,6 +115,8 @@ The Customers API
 
 Request creation of a new Customer.
 
+**Returns:** [Customer](#customer)
+
 **Parameters:**
 
 | Parameter | Type | Required | Description |
@@ -126,6 +128,8 @@ Request creation of a new Customer.
 #### CreateQuery
 
 Query the Customers collection.
+
+**Returns:** [CustomerQueryResult](#customerqueryresult)
 
 **Parameters:**
 
@@ -167,6 +171,8 @@ The Cars API
 
 Upload image for car
 
+**Returns:** [CarImage](#carimage)
+
 **File upload** (`multipart/form-data`)
 
 **Parameters:**
@@ -181,6 +187,8 @@ Upload image for car
 #### UploadInsuranceScan
 
 Upload scan of insurance for the car
+
+**Returns:** [CarInsurance](#carinsurance)
 
 **File upload** (`multipart/form-data`)
 
@@ -230,6 +238,7 @@ Query result on Customer
 **Referenced by:**
 
 - [CustomersRoot](#customersroot-links) (link: all)
+- [CustomersRoot → CreateQuery](#customersroot-createquery) (action result)
 - [CustomerQueryResult](#customerqueryresult-links) (link: Next)
 - [CustomerQueryResult](#customerqueryresult-links) (link: Previous)
 - [CustomerQueryResult](#customerqueryresult-links) (link: Last)
@@ -299,6 +308,8 @@ Marks a Customer as a favorite buyer.
 
 Buy a car.
 
+**Returns:** [Car](#car)
+
 **Parameters:**
 
 | Parameter | Type | Required | Description |
@@ -315,6 +326,7 @@ Buy a car.
 - [NextLevelDerivedCar](#nextlevelderivedcar-links) (link: DerivedLink)
 - [NextLevelDerivedCar](#nextlevelderivedcar-embedded) (embedded: item)
 - [CustomersRoot](#customersroot-links) (link: BestCustomer)
+- [CustomersRoot → CreateCustomer](#customersroot-createcustomer) (action result)
 - [CustomerQueryResult](#customerqueryresult-embedded) (embedded: Customers)
 
 ## DerivedCar
@@ -421,6 +433,8 @@ A Car
 
 
 
+**Returns:** [Car](#car)
+
 **Parameters:**
 
 | Parameter | Type | Required | Description |
@@ -430,6 +444,8 @@ A Car
 **Referenced by:**
 
 - [CarsRoot](#carsroot-links) (link: SuperCar)
+- [Car → UpdateInspection](#car-updateinspection) (action result)
+- [Customer → BuyCar](#customer-buycar) (action result)
 
 ## CustomerPurchaseHistory
 
@@ -514,6 +530,10 @@ Image for a car
 |---|---|---|
 | self | [CarImage](#carimage) |  |
 
+**Referenced by:**
+
+- [CarsRoot → UploadCarImage](#carsroot-uploadcarimage) (action result)
+
 ## CarInsurance
 
 #### Title
@@ -531,6 +551,10 @@ Insurance scan for a car
 | Relation | Target | Description |
 |---|---|---|
 | self | [CarInsurance](#carinsurance) |  |
+
+**Referenced by:**
+
+- [CarsRoot → UploadInsuranceScan](#carsroot-uploadinsurancescan) (action result)
 
 ## NextLevelDerivedCar
 

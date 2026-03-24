@@ -133,6 +133,10 @@
             },
             "$id": "type:CarShack.Hypermedia.UploadCarImageParameters"
           },
+          "resultName": "CarImage",
+          "resultClasses": [
+            "CarImage"
+          ],
           "isMandatory": true,
           "isFileUpload": true,
           "isDeprecated": false
@@ -141,6 +145,10 @@
           "name": "UploadInsuranceScan",
           "title": "Upload scan of insurance for the car",
           "contentType": "multipart/form-data",
+          "resultName": "CarInsurance",
+          "resultClasses": [
+            "CarInsurance"
+          ],
           "isMandatory": true,
           "isFileUpload": true,
           "isDeprecated": false
@@ -240,6 +248,10 @@
             },
             "$id": "type:CarShack.Hypermedia.UpdateCarInspection"
           },
+          "resultName": "Car",
+          "resultClasses": [
+            "Car"
+          ],
           "isMandatory": true,
           "isFileUpload": false,
           "isDeprecated": false
@@ -618,6 +630,10 @@
             },
             "$id": "type:CarShack.Hypermedia.CreateCustomerParameters"
           },
+          "resultName": "Customer",
+          "resultClasses": [
+            "Customer"
+          ],
           "isMandatory": true,
           "isFileUpload": false,
           "isDeprecated": false
@@ -690,6 +706,10 @@
               }
             }
           },
+          "resultName": "CustomerQueryResult",
+          "resultClasses": [
+            "CustomersQueryResult"
+          ],
           "isMandatory": true,
           "isFileUpload": false,
           "isDeprecated": false
@@ -926,6 +946,10 @@
             },
             "$id": "type:CarShack.Hypermedia.BuyCarParameters"
           },
+          "resultName": "Car",
+          "resultClasses": [
+            "Car"
+          ],
           "isMandatory": true,
           "isFileUpload": false,
           "isDeprecated": false

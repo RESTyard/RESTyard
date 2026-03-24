@@ -341,11 +341,19 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Legacy cleanup comment added to generator constant `HttpMethodHypermediaActionBaseFullName`
 - This enables existing projects using the contract-first generator (which emits legacy attributes) to manually add `ResultType` on their controller endpoints
 
-#### Step 2.15: Add `ResultType` to hand-written CarShack controllers
-- CarShack has both generated controllers (from contract-first generator, using legacy attributes) and hand-written controllers (using `[HypermediaActionEndpoint<T>]` or legacy attributes)
-- Add `ResultType = typeof(...)` to applicable hand-written controller action endpoints where the action produces a Location header
-- Regenerate CarShack schema and verify: `ResultName`/`ResultClasses` appear in the schema JSON, Markdown docs show "Returns" links, result entities show incoming "Referenced by"
-- This serves as a demonstration/test of the `ResultType` feature for both attribute styles
+#### Step 2.15: ✅ Add `ResultType` to hand-written CarShack controllers
+- Added `ResultType = typeof(...)` to 5 hand-written controller action endpoints: UploadCarImage → CarImageHto, UploadInsuranceScan → CarInsuranceHto, UpdateInspection → HypermediaCarHto, BuyCar → HypermediaCarHto, CreateQuery → HypermediaCustomerQueryResultHto, CreateCustomer → HypermediaCustomerHto
+- Verified: schema JSON has `resultName` on 5 actions, Markdown docs show "Returns" links, all end-to-end
+- Added `EmitCompilerGeneratedFiles` to CarShack csproj for debugging generated source
+
+#### Step 2.15.1: Explore action result edges in API map
+- Currently the Mermaid API map only shows link and embedded entity edges between entity types
+- Actions with `ResultName` (producing a Location header to another entity) represent a navigation path that is not visualized
+- Explore adding dashed or differently-styled edges for action results (e.g., `CustomersRoot -. "CreateQuery" .-> CustomerQueryResult`)
+- Consider: does this add clarity or clutter? For APIs with many actions returning results, the map could get busy
+- If useful, implement in `MermaidMapper.ToApiMap()` — add edges for `ActionDescription.ResultName` where non-null
+- Evaluate with CarShack output
+- In `mermaid-htos` class diagram: actions with `ResultName` should show the return type (e.g., `CreateQuery() → CustomerQueryResult` instead of just `CreateQuery()`)
 
 #### Step 2.13.1: Deferred → Phase 8, Step 8.4
 
@@ -377,7 +385,8 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   - Remove elements whose `RequiredAccessGroups` are not satisfied by the granted set
   - Remove unreachable entity types
   - Strip `DeclaredAccessGroups` from filtered output
-- Extend `/hypermedia-schema` endpoint to accept `?accessGroups=read,write` query parameter
+- Extend `/hypermedia-schema` endpoint to accept `?accessGroups=read,write` query parameter. should be possible to buidl a link to this with usual RESTyard LinkTo() helper.
+- Verify tests:
 - Integration test: CarShack with access groups, verify filtered output for different group combinations
 
 #### Step 4.2b: Filtered schema endpoint — exclude mode

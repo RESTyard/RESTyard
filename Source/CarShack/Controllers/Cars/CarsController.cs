@@ -98,7 +98,7 @@ namespace CarShack.Controllers.Cars
             return new FileContentResult(content, MediaTypeNames.Application.Pdf);
         }
 
-        [HttpPost("UploadImage"), HypermediaActionEndpoint<HypermediaCarsRootHto>(nameof(HypermediaCarsRootHto.UploadCarImage), DefaultMediaTypes.MultipartFormData)]
+        [HttpPost("UploadImage"), HypermediaActionEndpoint<HypermediaCarsRootHto>(nameof(HypermediaCarsRootHto.UploadCarImage), DefaultMediaTypes.MultipartFormData, ResultType = typeof(CarImageHto))]
         public async Task<IActionResult> UploadCarImage(
             [HypermediaUploadParameterFromForm]
             HypermediaFileUploadActionParameter<UploadCarImageParameters> parameters)
@@ -130,7 +130,7 @@ namespace CarShack.Controllers.Cars
             return this.Created(Link.To(new CarImageHto(Path.GetFileName(path))));
         }
 
-        [HttpPost("UploadInsurance"), HypermediaActionEndpoint<HypermediaCarsRootHto>(nameof(HypermediaCarsRootHto.UploadInsuranceScan), DefaultMediaTypes.MultipartFormData)]
+        [HttpPost("UploadInsurance"), HypermediaActionEndpoint<HypermediaCarsRootHto>(nameof(HypermediaCarsRootHto.UploadInsuranceScan), DefaultMediaTypes.MultipartFormData, ResultType = typeof(CarInsuranceHto))]
         public async Task<IActionResult> UploadInsurance(
             [HypermediaUploadParameterFromForm] HypermediaFileUploadActionParameter parameters)
         {
@@ -148,7 +148,7 @@ namespace CarShack.Controllers.Cars
         }
 
         [HttpPatch("{brand}/{id:int}/UpdateInspection")]
-        [HypermediaActionEndpoint<HypermediaCarHto>(nameof(HypermediaCarHto.UpdateInspection))]
+        [HypermediaActionEndpoint<HypermediaCarHto>(nameof(HypermediaCarHto.UpdateInspection), ResultType = typeof(HypermediaCarHto))]
         public async Task<IActionResult> UpdateInspection(int id, string brand, UpdateCarInspection parameter)
         {
             return this.Created(Link.ByKey(new HypermediaCarHto.Key(id, brand)));
