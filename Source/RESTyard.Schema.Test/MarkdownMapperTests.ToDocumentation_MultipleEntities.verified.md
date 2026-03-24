@@ -84,19 +84,25 @@ Lists all customers with the ability to create new ones.
 |---|---|---|
 | self | [CustomersRoot](#customersroot) |  |
 
-<a id="customersroot-actions"></a>
-
 ### Actions
 
-| Action | Description | Links to |
-|---|---|---|
-| CreateCustomer | Registers a new customer in the system. | [Customer](#customer) |
+<a id="customersroot-createcustomer"></a>
 
-  | Parameter | Type | Required | Description |
-  |---|---|---|---|
-  | name | string | yes | Full name |
-  | email | string | yes | Email address |
-  | referralCode | string | no | Optional referral code for discounts |
+#### CreateCustomer
+
+Create a new customer
+
+Registers a new customer in the system.
+
+**Returns:** [Customer](#customer)
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| name | string | yes | Full name |
+| email | string | yes | Email address |
+| referralCode | string | no | Optional referral code for discounts |
 
 <a id="customersroot-embedded"></a>
 
@@ -181,24 +187,37 @@ Represents an individual customer with their profile and available actions.
 | self | [Customer](#customer) |  |
 | orders *(optional)* | [CarsRoot](#carsroot) | Cars purchased by this customer |
 
-<a id="customer-actions"></a>
-
 ### Actions
 
-| Action | Description | Links to |
-|---|---|---|
-| MarkAsFavorite *(optional)* | Marks this customer as a favorite for quick access. |  |
-| BuyCar *(optional)* | Initiates a car purchase for this customer. | [Car](#car) |
+<a id="customer-markasfavorite"></a>
 
-  | Parameter | Type | Required | Description |
-  |---|---|---|---|
-  | carId | integer | yes | The car to purchase |
-  | financingOption | string | no | Payment plan. Values: `cash`, `lease`, `finance`. Default: `cash` |
+#### MarkAsFavorite *(optional)*
+
+Mark as favorite
+
+Marks this customer as a favorite for quick access.
+
+<a id="customer-buycar"></a>
+
+#### BuyCar *(optional)*
+
+Purchase a car
+
+Initiates a car purchase for this customer.
+
+**Returns:** [Car](#car)
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| carId | integer | yes | The car to purchase |
+| financingOption | string | no | Payment plan. Values: `cash`, `lease`, `finance`. Default: `cash` |
 
 **Referenced by:**
 
 - [CustomersRoot](#customersroot-embedded) (embedded: item)
-- [CustomersRoot](#customersroot-actions) (action: CreateCustomer)
+- [CustomersRoot → CreateCustomer](#customersroot-createcustomer) (action result)
 
 ## Car
 
@@ -237,16 +256,20 @@ Represents an individual car available for purchase.
 
 **Referenced by:**
 
-- [Customer](#customer-actions) (action: BuyCar)
+- [Customer → BuyCar](#customer-buycar) (action result)
 - [CarsRoot](#carsroot-embedded) (embedded: item)
 
 ## Definitions
+
+<a id="definition-address"></a>
 
 ### Definition: Address
 
 A postal address.
 
-**Used by:** [Customer](#customer)
+**Referenced by:**
+
+- [Customer](#customer)
 
 | Property | Type | Required | Description |
 |---|---|---|---|

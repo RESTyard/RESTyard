@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using RESTyard.Schema.Model;
 using RESTyard.Schema.SchemaGeneration;
@@ -129,6 +130,8 @@ public static class HypermediaSchemaBuilder
             logger?.LogDebug("No entry point entity type detected. Set HypermediaSchemaOptions.EntryPointName explicitly.");
         }
 
+        var definitions = ExtractDefinitions(entityTypes, logger);
+
         return new HypermediaApiSchema
         {
             SchemaVersion = SchemaVersion,
@@ -138,7 +141,82 @@ public static class HypermediaSchemaBuilder
             EntryPointName = entryPointName ?? string.Empty,
             ExternalDocsUrl = options?.ExternalDocsUrl,
             EntityTypes = entityTypes,
+            Definitions = definitions,
         };
+    }
+
+    /// <summary>
+    /// Scans all entity PropertiesSchema and action ParameterSchema for local $defs entries
+    /// and extracts them into a deduplicated Definitions dictionary.
+    /// Same name + same content → merge. Same name + different content → disambiguate with warning.
+    /// </summary>
+    private static Dictionary<string, JsonDocument> ExtractDefinitions(
+        List<EntityTypeSchema> entityTypes, ILogger? logger)
+    {
+        var definitions = new Dictionary<string, JsonDocument>();
+
+        foreach (var entity in entityTypes)
+        {
+            CollectDefsFromSchema(entity.PropertiesSchema, entity.Name, definitions, logger);
+            foreach (var action in entity.Actions)
+            {
+                CollectDefsFromSchema(action.ParameterSchema, $"{entity.Name}.{action.Name}", definitions, logger);
+            }
+        }
+
+        return definitions;
+    }
+
+    private static void CollectDefsFromSchema(
+        JsonDocument? schema, string sourceName,
+        Dictionary<string, JsonDocument> definitions, ILogger? logger)
+    {
+        if (schema == null) return;
+
+        var jsonSchema = schema.ToJsonSchema();
+        var defs = jsonSchema.GetDefs();
+        if (defs == null) return;
+
+        foreach (var kvp in defs)
+        {
+            // Use the $defs key as the Definitions key — this matches the $ref paths
+            // used by mappers. The clean display name is derived at rendering time from $id.
+            var name = kvp.Key;
+            var defJson = JsonSerializer.SerializeToDocument(kvp.Value);
+
+            if (definitions.TryGetValue(name, out var existing))
+            {
+                // Same name — check if same content
+                var existingJson = existing.RootElement.GetRawText();
+                var newJson = defJson.RootElement.GetRawText();
+                if (existingJson != newJson)
+                {
+                    logger?.LogWarning(
+                        "Definition '{Name}' found with different schemas in '{Source}' — " +
+                        "keeping first occurrence. Consider using fully qualified type names to disambiguate.",
+                        name, sourceName);
+                }
+                // Same content or collision — keep first occurrence
+            }
+            else
+            {
+                definitions[name] = defJson;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Extracts the CLR type name from a definition schema's $id URI (e.g., "type:MyApp.Address" → "MyApp.Address").
+    /// Returns null if no $id is present.
+    /// </summary>
+    private static string? ExtractTypeNameFromId(Json.Schema.JsonSchema defSchema)
+    {
+        var id = defSchema.Keywords?.OfType<Json.Schema.IdKeyword>().FirstOrDefault()?.Id;
+        if (id == null) return null;
+
+        var idString = id.OriginalString;
+        const string prefix = "type:";
+        return idString.StartsWith(prefix) ? idString.Substring(prefix.Length) : idString;
     }
 
     private static string? DetectEntryPoint(List<EntityTypeSchema> entityTypes)

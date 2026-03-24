@@ -199,7 +199,30 @@ builder.Services.AddHypermediaExtensions(o =>
 });
 ```
 
-This scans all loaded assemblies for `[HypermediaAssembly]`. Both HTO assemblies and controller assemblies should have the attribute.
+This scans all loaded assemblies for `[HypermediaAssembly]`. Both HTO assemblies **and** controller assemblies should have the attribute — even if a controller assembly contains no HTOs. This is required for:
+- Assembly discovery via `HypermediaAssemblyDiscovery.GetAssemblies()`
+- Source generator to scan controller attributes (e.g., `ResultType` on `[HypermediaActionEndpoint]`)
+- Multi-assembly scenarios where HTOs and controllers are in separate projects
+
+### Action Result Types
+
+When an action endpoint produces a `Location` header pointing to another entity (e.g., a query action returning a result entity), declare the result type on the action endpoint:
+
+```csharp
+[HypermediaActionEndpoint<HypermediaCustomersRootHto>("CreateQuery",
+    ResultType = typeof(HypermediaCustomerQueryResultHto))]
+public IActionResult CreateQuery([FromBody] CustomerQuery query)
+{
+    // ... returns Created with Location header pointing to CustomerQueryResult
+}
+```
+
+This populates `ActionDescription.ResultName` in the schema, enabling:
+- "Returns: [CustomerQueryResult](#customerqueryresult)" in generated Markdown documentation
+- Incoming "Referenced by" links on the target entity
+- Action-result edges in API diagrams
+
+**If `ResultType` is not set**, the schema is still valid but incomplete — client generators and documentation tools won't know that the action produces a specific entity. They cannot generate typed result handling code or render result links.
 
 ## Verifying Generation Works
 

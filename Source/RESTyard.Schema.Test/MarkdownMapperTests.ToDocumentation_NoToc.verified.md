@@ -93,18 +93,21 @@ graph LR
 |---|---|---|
 | self *(optional)* | [Customer](#customer) |  |
 
-<a id="customer-actions"></a>
-
 ### Actions
 
-| Action | Description | Links to |
-|---|---|---|
-| MarkAsFavorite *(optional)* |  |  |
-| BuyCar *(optional)* |  |  |
+<a id="customer-markasfavorite"></a>
 
-  | Parameter | Type | Required | Description |
-  |---|---|---|---|
-  | carId | string | no |  |
+#### MarkAsFavorite *(optional)*
+
+<a id="customer-buycar"></a>
+
+#### BuyCar *(optional)*
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| carId | string | no |  |
 
 **Referenced by:**
 

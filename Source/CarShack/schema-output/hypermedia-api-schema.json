@@ -21,7 +21,8 @@
           "Id": {
             "type": "integer"
           }
-        }
+        },
+        "$id": "type:CarShack.Hypermedia.Cars.HypermediaTruckProperties"
       },
       "links": [],
       "actions": [],
@@ -129,7 +130,8 @@
               "Flag": {
                 "type": "boolean"
               }
-            }
+            },
+            "$id": "type:CarShack.Hypermedia.UploadCarImageParameters"
           },
           "isMandatory": true,
           "isFileUpload": true,
@@ -175,11 +177,13 @@
           "PopularCountries": {
             "type": "array",
             "items": {
-              "$ref": "#/$defs/country"
+              "$ref": "#/$defs/country",
+              "$id": "type:CarShack.Hypermedia.Country"
             }
           },
           "MostPopularIn": {
-            "$ref": "#/$defs/country"
+            "$ref": "#/$defs/country",
+            "$id": "type:CarShack.Hypermedia.Country"
           },
           "LastInspection": {
             "type": [
@@ -189,6 +193,7 @@
             "format": "date"
           }
         },
+        "$id": "type:CarShack.Hypermedia.HypermediaCarHtoProperties",
         "$defs": {
           "country": {
             "type": "object",
@@ -202,7 +207,8 @@
               "LanguageCode": {
                 "type": "string"
               }
-            }
+            },
+            "$id": "type:CarShack.Hypermedia.Country"
           }
         }
       },
@@ -231,7 +237,8 @@
                 "type": "string",
                 "format": "date"
               }
-            }
+            },
+            "$id": "type:CarShack.Hypermedia.UpdateCarInspection"
           },
           "isMandatory": true,
           "isFileUpload": false,
@@ -318,11 +325,13 @@
           "PopularCountries": {
             "type": "array",
             "items": {
-              "$ref": "#/$defs/country"
+              "$ref": "#/$defs/country",
+              "$id": "type:CarShack.Hypermedia.Country"
             }
           },
           "MostPopularIn": {
-            "$ref": "#/$defs/country"
+            "$ref": "#/$defs/country",
+            "$id": "type:CarShack.Hypermedia.Country"
           },
           "LastInspection": {
             "type": [
@@ -332,6 +341,7 @@
             "format": "date"
           }
         },
+        "$id": "type:CarShack.Hypermedia.DerivedCarHtoProperties",
         "$defs": {
           "country": {
             "type": "object",
@@ -345,7 +355,8 @@
               "LanguageCode": {
                 "type": "string"
               }
-            }
+            },
+            "$id": "type:CarShack.Hypermedia.Country"
           }
         }
       },
@@ -392,7 +403,8 @@
                 "type": "string",
                 "format": "date"
               }
-            }
+            },
+            "$id": "type:CarShack.Hypermedia.UpdateCarInspection"
           },
           "isMandatory": true,
           "isFileUpload": false,
@@ -449,11 +461,13 @@
           "PopularCountries": {
             "type": "array",
             "items": {
-              "$ref": "#/$defs/country"
+              "$ref": "#/$defs/country",
+              "$id": "type:CarShack.Hypermedia.Country"
             }
           },
           "MostPopularIn": {
-            "$ref": "#/$defs/country"
+            "$ref": "#/$defs/country",
+            "$id": "type:CarShack.Hypermedia.Country"
           },
           "LastInspection": {
             "type": [
@@ -463,6 +477,7 @@
             "format": "date"
           }
         },
+        "$id": "type:CarShack.Hypermedia.NextLevelDerivedCarHtoProperties",
         "$defs": {
           "country": {
             "type": "object",
@@ -476,7 +491,8 @@
               "LanguageCode": {
                 "type": "string"
               }
-            }
+            },
+            "$id": "type:CarShack.Hypermedia.Country"
           }
         }
       },
@@ -523,7 +539,8 @@
                 "type": "string",
                 "format": "date"
               }
-            }
+            },
+            "$id": "type:CarShack.Hypermedia.UpdateCarInspection"
           },
           "isMandatory": true,
           "isFileUpload": false,
@@ -598,7 +615,8 @@
               "Name": {
                 "type": "string"
               }
-            }
+            },
+            "$id": "type:CarShack.Hypermedia.CreateCustomerParameters"
           },
           "isMandatory": true,
           "isFileUpload": false,
@@ -612,6 +630,21 @@
             "type": "object",
             "properties": {
               "Pagination": {
+                "$ref": "#/$defs/pagination",
+                "$id": "type:RESTyard.AspNetCore.Util.Repository.Pagination"
+              },
+              "SortBy": {
+                "$ref": "#/$defs/sortParameterOfCustomerSortProperties",
+                "$id": "type:RESTyard.AspNetCore.Util.Repository.SortParameter\u00601[[CarShack.Hypermedia.CustomerSortProperties, CarShack, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+              },
+              "Filter": {
+                "$ref": "#/$defs/customerFilter",
+                "$id": "type:CarShack.Hypermedia.CustomerFilter"
+              }
+            },
+            "$id": "type:CarShack.Hypermedia.CustomerQuery",
+            "$defs": {
+              "pagination": {
                 "type": "object",
                 "properties": {
                   "PageSize": {
@@ -620,9 +653,10 @@
                   "PageOffset": {
                     "type": "integer"
                   }
-                }
+                },
+                "$id": "type:RESTyard.AspNetCore.Util.Repository.Pagination"
               },
-              "SortBy": {
+              "sortParameterOfCustomerSortProperties": {
                 "type": "object",
                 "properties": {
                   "PropertyName": {
@@ -639,9 +673,10 @@
                       "Descending"
                     ]
                   }
-                }
+                },
+                "$id": "type:RESTyard.AspNetCore.Util.Repository.SortParameter\u00601[[CarShack.Hypermedia.CustomerSortProperties, CarShack, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
               },
-              "Filter": {
+              "customerFilter": {
                 "type": "object",
                 "properties": {
                   "MinAge": {
@@ -650,7 +685,8 @@
                       "null"
                     ]
                   }
-                }
+                },
+                "$id": "type:CarShack.Hypermedia.CustomerFilter"
               }
             }
           },
@@ -683,7 +719,8 @@
           "CardType": {
             "type": "string"
           }
-        }
+        },
+        "$id": "type:CarShack.Hypermedia.CustomerPurchaseHtoProperties"
       },
       "links": [],
       "actions": [],
@@ -744,6 +781,16 @@
             "type": "string"
           },
           "Address": {
+            "$ref": "#/$defs/addressTo",
+            "$id": "type:CarShack.Hypermedia.AddressTo"
+          },
+          "IsFavorite": {
+            "type": "boolean"
+          }
+        },
+        "$id": "type:CarShack.Hypermedia.HypermediaCustomerHtoProperties",
+        "$defs": {
+          "addressTo": {
             "type": "object",
             "properties": {
               "Street": {
@@ -758,10 +805,8 @@
               "ZipCode": {
                 "type": "string"
               }
-            }
-          },
-          "IsFavorite": {
-            "type": "boolean"
+            },
+            "$id": "type:CarShack.Hypermedia.AddressTo"
           }
         }
       },
@@ -798,6 +843,13 @@
             "type": "object",
             "properties": {
               "Address": {
+                "$ref": "#/$defs/addressTo",
+                "$id": "type:CarShack.Hypermedia.AddressTo"
+              }
+            },
+            "$id": "type:CarShack.Hypermedia.NewAddress",
+            "$defs": {
+              "addressTo": {
                 "type": "object",
                 "properties": {
                   "Street": {
@@ -812,7 +864,8 @@
                   "ZipCode": {
                     "type": "string"
                   }
-                }
+                },
+                "$id": "type:CarShack.Hypermedia.AddressTo"
               }
             }
           },
@@ -838,7 +891,8 @@
                 "type": "string",
                 "format": "uri"
               }
-            }
+            },
+            "$id": "type:CarShack.Hypermedia.MarkAsFavoriteParameters"
           },
           "isMandatory": true,
           "isFileUpload": false,
@@ -869,7 +923,8 @@
                   "null"
                 ]
               }
-            }
+            },
+            "$id": "type:CarShack.Hypermedia.BuyCarParameters"
           },
           "isMandatory": true,
           "isFileUpload": false,
@@ -901,7 +956,8 @@
               "null"
             ]
           }
-        }
+        },
+        "$id": "type:CarShack.Hypermedia.HypermediaCustomerQueryResultHtoProperties"
       },
       "links": [
         {
@@ -978,5 +1034,83 @@
       "isDeprecated": false
     }
   ],
-  "definitions": {}
+  "definitions": {
+    "country": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "EstimatedPopulation": {
+          "type": "integer"
+        },
+        "LanguageCode": {
+          "type": "string"
+        }
+      },
+      "$id": "type:CarShack.Hypermedia.Country"
+    },
+    "pagination": {
+      "type": "object",
+      "properties": {
+        "PageSize": {
+          "type": "integer"
+        },
+        "PageOffset": {
+          "type": "integer"
+        }
+      },
+      "$id": "type:RESTyard.AspNetCore.Util.Repository.Pagination"
+    },
+    "sortParameterOfCustomerSortProperties": {
+      "type": "object",
+      "properties": {
+        "PropertyName": {
+          "enum": [
+            "Age",
+            "Name",
+            null
+          ]
+        },
+        "SortType": {
+          "enum": [
+            "None",
+            "Ascending",
+            "Descending"
+          ]
+        }
+      },
+      "$id": "type:RESTyard.AspNetCore.Util.Repository.SortParameter\u00601[[CarShack.Hypermedia.CustomerSortProperties, CarShack, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+    },
+    "customerFilter": {
+      "type": "object",
+      "properties": {
+        "MinAge": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "$id": "type:CarShack.Hypermedia.CustomerFilter"
+    },
+    "addressTo": {
+      "type": "object",
+      "properties": {
+        "Street": {
+          "type": "string"
+        },
+        "Number": {
+          "type": "string"
+        },
+        "City": {
+          "type": "string"
+        },
+        "ZipCode": {
+          "type": "string"
+        }
+      },
+      "$id": "type:CarShack.Hypermedia.AddressTo"
+    }
+  }
 }

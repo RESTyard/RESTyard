@@ -16,8 +16,8 @@ classDiagram
         +integer Id
         +string Brand
         +number[] PriceDevelopment
-        +country[] PopularCountries
-        +country MostPopularIn
+        +Country[] PopularCountries
+        +Country MostPopularIn
         +string LastInspection
         +UpdateInspection(params)
     }
@@ -30,8 +30,8 @@ classDiagram
         +integer Id
         +string Brand
         +number[] PriceDevelopment
-        +country[] PopularCountries
-        +country MostPopularIn
+        +Country[] PopularCountries
+        +Country MostPopularIn
         +string LastInspection
         +DerivedOperation()
         +UpdateInspection(params)
@@ -42,8 +42,8 @@ classDiagram
         +integer Id
         +string Brand
         +number[] PriceDevelopment
-        +country[] PopularCountries
-        +country MostPopularIn
+        +Country[] PopularCountries
+        +Country MostPopularIn
         +string LastInspection
         +DerivedOperation()
         +UpdateInspection(params)
@@ -62,7 +62,7 @@ classDiagram
     class Customer {
         +integer Age
         +string FullName
-        +object Address
+        +AddressTo Address
         +boolean IsFavorite
         +CustomerMove(params)
         +CustomerRemove()

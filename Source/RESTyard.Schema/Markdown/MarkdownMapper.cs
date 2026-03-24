@@ -112,7 +112,10 @@ public static class MarkdownMapper
             sb.AppendLine();
             foreach (var def in definitions)
             {
-                sb.AppendLine($"- [{def.Key}](#definition-{def.Key.ToLowerInvariant()})");
+                var defSchema = def.Value.ToJsonSchema();
+                var displayName = GetDisplayNameFromSchema(defSchema) ?? CleanTypeName(def.Key);
+                var anchor = ToAnchor(def.Key);
+                sb.AppendLine($"- [{displayName}](#definition-{anchor})");
             }
         }
     }
@@ -177,7 +180,7 @@ public static class MarkdownMapper
 
         AppendPropertiesTable(sb, entity);
         AppendLinksTable(sb, entity);
-        AppendActionsTable(sb, entity);
+        AppendActions(sb, entity);
         AppendEmbeddedEntitiesTable(sb, entity);
         AppendReferencedBy(sb, entity, incomingLinks);
     }
@@ -203,7 +206,7 @@ public static class MarkdownMapper
 
         foreach (var prop in props)
         {
-            var typeName = JsonSchemaExtensions.SchemaToLinkedTypeString(prop.Value);
+            var typeName = JsonSchemaExtensions.SchemaToLinkedTypeString(prop.Value, propSchema);
             var required = requiredFields.Contains(prop.Key) ? "yes" : "no";
             var description = BuildPropertyDescription(prop.Value);
             sb.AppendLine($"| {prop.Key} | {typeName} | {required} | {description} |");
@@ -233,27 +236,47 @@ public static class MarkdownMapper
         }
     }
 
-    private static void AppendActionsTable(StringBuilder sb, EntityTypeSchema entity)
+    private static void AppendActions(StringBuilder sb, EntityTypeSchema entity)
     {
         if (entity.Actions.Count == 0)
             return;
 
         sb.AppendLine();
-        sb.AppendLine($"<a id=\"{ToAnchor(entity.Name)}-actions\"></a>");
-        sb.AppendLine();
         sb.AppendLine("### Actions");
-        sb.AppendLine();
-        sb.AppendLine("| Action | Description | Links to |");
-        sb.AppendLine("|---|---|---|");
 
         foreach (var action in entity.Actions)
         {
+            var actionAnchor = $"{ToAnchor(entity.Name)}-{ToAnchor(action.Name)}";
+            sb.AppendLine();
+            sb.AppendLine($"<a id=\"{actionAnchor}\"></a>");
+            sb.AppendLine();
+
             var nameDisplay = FormatActionName(action);
-            var description = action.Description ?? "";
-            var returns = action.ResultName != null
-                ? $"[{action.ResultName}](#{ToAnchor(action.ResultName)})"
-                : "";
-            sb.AppendLine($"| {nameDisplay} | {description} | {returns} |");
+            sb.AppendLine($"#### {nameDisplay}");
+
+            if (action.Title != null)
+            {
+                sb.AppendLine();
+                sb.AppendLine(action.Title);
+            }
+
+            if (action.Description != null)
+            {
+                sb.AppendLine();
+                sb.AppendLine(action.Description);
+            }
+
+            if (action.ResultName != null)
+            {
+                sb.AppendLine();
+                sb.AppendLine($"**Returns:** [{action.ResultName}](#{ToAnchor(action.ResultName)})");
+            }
+
+            if (action.IsFileUpload)
+            {
+                sb.AppendLine();
+                sb.AppendLine("**File upload** (`multipart/form-data`)");
+            }
 
             AppendActionParametersTable(sb, action);
         }
@@ -281,15 +304,17 @@ public static class MarkdownMapper
         var requiredFields = new HashSet<string>(paramSchema.GetRequired() ?? Array.Empty<string>());
 
         sb.AppendLine();
-        sb.AppendLine("  | Parameter | Type | Required | Description |");
-        sb.AppendLine("  |---|---|---|---|");
+        sb.AppendLine("**Parameters:**");
+        sb.AppendLine();
+        sb.AppendLine("| Parameter | Type | Required | Description |");
+        sb.AppendLine("|---|---|---|---|");
 
         foreach (var prop in props)
         {
-            var typeName = JsonSchemaExtensions.SchemaToLinkedTypeString(prop.Value);
+            var typeName = JsonSchemaExtensions.SchemaToLinkedTypeString(prop.Value, paramSchema);
             var required = requiredFields.Contains(prop.Key) ? "yes" : "no";
             var description = BuildPropertyDescription(prop.Value);
-            sb.AppendLine($"  | {prop.Key} | {typeName} | {required} | {description} |");
+            sb.AppendLine($"| {prop.Key} | {typeName} | {required} | {description} |");
         }
     }
 
@@ -371,7 +396,7 @@ public static class MarkdownMapper
                 if (action.ResultName != null)
                 {
                     AddUsage(incoming, action.ResultName,
-                        $"[{entity.Name}](#{ToAnchor(entity.Name)}-actions) (action: {action.Name})");
+                        $"[{entity.Name} → {action.Name}](#{ToAnchor(entity.Name)}-{ToAnchor(action.Name)}) (action result)");
                 }
             }
         }
@@ -414,7 +439,7 @@ public static class MarkdownMapper
                 {
                     var defName = ExtractRefDefinitionName(prop.Value);
                     if (defName != null)
-                        AddUsage(usages, defName, $"[{entity.Name}](#{ToAnchor(entity.Name)})");
+                        AddUsage(usages, defName.ToLowerInvariant(), $"[{entity.Name}](#{ToAnchor(entity.Name)})");
                 }
             }
 
@@ -428,7 +453,7 @@ public static class MarkdownMapper
                     {
                         var defName = ExtractRefDefinitionName(prop.Value);
                         if (defName != null)
-                            AddUsage(usages, defName, $"[{entity.Name} → {action.Name}](#{ToAnchor(entity.Name)})");
+                            AddUsage(usages, defName.ToLowerInvariant(), $"[{entity.Name} → {action.Name}](#{ToAnchor(entity.Name)}-{ToAnchor(action.Name)})");
                     }
                 }
             }
@@ -476,10 +501,16 @@ public static class MarkdownMapper
 
         foreach (var def in definitions)
         {
-            sb.AppendLine();
-            sb.AppendLine($"### Definition: {def.Key}");
-
+            var rawKey = def.Key; // $defs key (e.g., "addressTo", "country")
             var defSchema = def.Value.ToJsonSchema();
+            var displayName = GetDisplayNameFromSchema(defSchema) ?? CleanTypeName(rawKey);
+            var anchor = ToAnchor(rawKey);
+
+            sb.AppendLine();
+            sb.AppendLine($"<a id=\"definition-{anchor}\"></a>");
+            sb.AppendLine();
+            sb.AppendLine($"### Definition: {displayName}");
+
             var description = defSchema.GetDescription();
             if (description != null)
             {
@@ -487,10 +518,16 @@ public static class MarkdownMapper
                 sb.AppendLine(description);
             }
 
-            if (usages.TryGetValue(def.Key, out var refs) && refs.Count > 0)
+            // Usages are keyed by the lowercase $defs key
+            if (usages.TryGetValue(anchor, out var refs) && refs.Count > 0)
             {
                 sb.AppendLine();
-                sb.AppendLine($"**Used by:** {string.Join(", ", refs)}");
+                sb.AppendLine("**Referenced by:**");
+                sb.AppendLine();
+                foreach (var r in refs)
+                {
+                    sb.AppendLine($"- {r}");
+                }
             }
 
             var props = defSchema.GetProperties();
@@ -504,7 +541,7 @@ public static class MarkdownMapper
 
                 foreach (var prop in props)
                 {
-                    var typeName = JsonSchemaExtensions.SchemaToLinkedTypeString(prop.Value);
+                    var typeName = JsonSchemaExtensions.SchemaToLinkedTypeString(prop.Value, defSchema);
                     var required = requiredFields.Contains(prop.Key) ? "yes" : "no";
                     var propDescription = BuildPropertyDescription(prop.Value);
                     sb.AppendLine($"| {prop.Key} | {typeName} | {required} | {propDescription} |");
@@ -583,8 +620,74 @@ public static class MarkdownMapper
         return result;
     }
 
+    /// <summary>
+    /// Extracts a clean display name from a definition schema's $id URI (e.g., "type:MyApp.Address" → "Address").
+    /// Returns null if no $id is present.
+    /// </summary>
+    private static string? GetDisplayNameFromSchema(Json.Schema.JsonSchema schema)
+    {
+        var id = schema.Keywords?.OfType<Json.Schema.IdKeyword>().FirstOrDefault()?.Id;
+        if (id == null) return null;
+
+        var idString = id.OriginalString;
+        const string prefix = "type:";
+        var fullName = idString.StartsWith(prefix) ? idString.Substring(prefix.Length) : idString;
+        return CleanTypeName(fullName);
+    }
+
     private static string ToAnchor(string name)
     {
-        return name.ToLowerInvariant();
+        // Remove characters invalid in HTML anchor IDs
+        return name.ToLowerInvariant()
+            .Replace("<", "")
+            .Replace(">", "")
+            .Replace(",", "")
+            .Replace(" ", "-");
+    }
+
+    /// <summary>
+    /// Cleans a CLR type name for display. Strips namespace, simplifies generic types
+    /// (e.g., "SortParameter`1[[...]]" → "SortParameter&lt;CustomerSortProperties&gt;").
+    /// </summary>
+    internal static string CleanTypeName(string fullTypeName)
+    {
+        // Strip assembly-qualified generic args: `1[[Namespace.Type, Assembly, ...]] → <Type>
+        var name = fullTypeName;
+
+        // Handle generic types: SortParameter`1[[CarShack.Hypermedia.CustomerSortProperties, CarShack, ...]]
+        var backtickIndex = name.IndexOf('`');
+        if (backtickIndex >= 0)
+        {
+            var baseName = name.Substring(0, backtickIndex);
+            // Extract type args from [[...]]
+            var argsStart = name.IndexOf("[[", backtickIndex, StringComparison.Ordinal);
+            if (argsStart >= 0)
+            {
+                var argNames = new List<string>();
+                var remaining = name.Substring(argsStart);
+                // Split on ],[  to get individual type args
+                var args = remaining.Split(new[] { "],[" }, StringSplitOptions.None);
+                foreach (var arg in args)
+                {
+                    // Clean up brackets and extract just the type name
+                    var cleaned = arg.Trim('[', ']');
+                    // Take only the type name (before first comma = assembly separator)
+                    var commaIdx = cleaned.IndexOf(',');
+                    var typePart = commaIdx >= 0 ? cleaned.Substring(0, commaIdx) : cleaned;
+                    // Take just the simple name (after last dot)
+                    var lastDot = typePart.LastIndexOf('.');
+                    var simpleName = lastDot >= 0 ? typePart.Substring(lastDot + 1) : typePart;
+                    argNames.Add(simpleName);
+                }
+                // Take simple name of base type too
+                var baseLastDot = baseName.LastIndexOf('.');
+                var simpleBase = baseLastDot >= 0 ? baseName.Substring(baseLastDot + 1) : baseName;
+                return $"{simpleBase}<{string.Join(", ", argNames)}>";
+            }
+        }
+
+        // Non-generic: just take the simple name after last dot
+        var dotIndex = name.LastIndexOf('.');
+        return dotIndex >= 0 ? name.Substring(dotIndex + 1) : name;
     }
 }

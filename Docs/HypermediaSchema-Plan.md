@@ -293,7 +293,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - clean up carshack project reference to HtoSourceGenerators and update docs "SourceGenerator.md"
 - Defer to after the source generator is feature-complete (link analysis, action analysis, etc.)
 
-#### Step 2.12: Resolve complex property types in mappers
+#### Step 2.12: ✅ Resolve complex property types in mappers
 - **Problem**: `JsonSchema.Net` inlines nested objects as `"type": "object"` with properties expanded inline — no `$ref`, no type name. The mappers see `"type": "object"` and display `object`. This affects both:
   - **Entity properties**: e.g., `Customer.Address` shows as `object` instead of `Address`
   - **Action parameters**: e.g., `CustomerMove.Address` shows as `object` instead of `NewAddress`
@@ -309,7 +309,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   - **Deduplication to `HypermediaApiSchema.Definitions`**: After all per-entity schemas are collected (in `HypermediaSchemaBuilder.ComposeSchema()`), scan all `PropertiesSchema` and `ParameterSchema` `$defs` entries. Extract unique definitions to the top-level `Definitions` dictionary. Handle duplicates: same name + same content → deduplicate; same name + different content → disambiguate using the full type name. The local `$defs` remain intact (schemas stay self-contained). **Edge case error messages**: log clear warnings for name collisions (e.g., "Definition 'Address' found with different schemas in entities 'Customer' and 'Order' — disambiguated as 'MyApp.Models.Address' and 'MyApp.Billing.Address'"), missing `$defs` references, and any other deduplication anomalies. These should be actionable — tell the user what happened and what to do.
   - **Evaluate complexity vs. value**: Adding `$defs` extraction may make the individual JSON Schemas harder to read (lots of `$ref` indirection). Weigh whether the improved mapper output and tooling support justifies the added schema complexity. May not be worth it for simple APIs — consider making it opt-in.
   - **Fallback for (a)**: If the `ISchemaRefiner`/`IdIntent` approach is fragile (undocumented `JsonSchema.Net` behavior, breaks on library updates) or too magical (silently changes schema structure), fall back to a `JsonDocument` post-processor that we fully control: after `schemaFactory.Generate()` returns, parse the `JsonDocument`, find inline `"type": "object"` schemas, extract them to `$defs`, and rewrite properties to `$ref`. More code but zero dependency on `JsonSchema.Net` internals.
-  - Start with (a). Only fall back to (b), (c), or the post-processor if the refiner approach doesn't work cleanly.
+  - ✅ **Implemented approach (a)**: `ComplexTypeDefinitionRefiner` (`ISchemaRefiner`) with `IdIntent(urn:restyard:type:{FullName})` forces complex types to `$defs`. Self-contained schemas (Option A) + `Definitions` catalog populated via deduplication in `ComposeSchema()`. Mappers automatically resolve `$ref` — zero mapper changes needed. Thread-safe attribute handler registration added. Helper functions and `ToMergedJsonSchema()` deferred to when tooling needs them.
 - **Helper functions for tooling**: Provide utilities to make consuming the schema easier for tool authors:
   - `HypermediaApiSchema.GetDefinition(string name)` — look up a shared type by name from the `Definitions` catalog
   - `EntityTypeSchema.GetReferencedDefinitions()` — list all definition names referenced via `$ref` in the entity's `PropertiesSchema`
@@ -317,6 +317,27 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   - `SchemaHelpers.ResolveProperty(JsonDocument schema, string propertyName)` — given a properties schema and a property name, return the fully resolved property schema (follow `$ref` to local `$defs` if present, otherwise return as-is)
   - `HypermediaApiSchema.ToMergedJsonSchema()` — produce a single merged JSON Schema document containing all entity types and all shared definitions in one `$defs`. Off-the-shelf JSON Schema code generators (NJsonSchema, etc.) can consume this directly and naturally deduplicate shared types without needing the two-pass approach. Less intrusive for tool authors who don't want to implement custom schema traversal.
 - Tests: snapshot tests for Markdown and Mermaid output with schemas containing nested object properties.
+
+#### Step 2.13: Populate `ActionDescription.ResultName` via `ResultType` on `HypermediaActionEndpoint`
+- Extend `HypermediaActionEndpointAttribute` with an optional `Type? ResultType` property. XML doc must explain: "Indicates that this action endpoint produces a Location header pointing to an entity of the specified HTO type. Used by schema generation to populate `ActionDescription.ResultName`/`ResultClasses`."
+- The source generator already scans controllers for `[HypermediaActionEndpoint]` — additionally read `ResultType` when present
+- When `ResultType` is set: resolve the target HTO's schema name and Siren classes, populate `ActionDescription.ResultName` and `ResultClasses`
+- When `ResultType` is null (default): no change — `ResultName`/`ResultClasses` remain null
+- Emit `RY0031` diagnostic warning when a 201-related attribute is found on a controller method that has `[HypermediaActionEndpoint]` without `ResultType` set — hint that the user may want to declare the result type. Detect by attribute name string matching (no dependency on Swagger/ASP.NET Core packages):
+  - `[ProducesResponseType(201)]` / `[ProducesResponseType(typeof(...), 201)]` — ASP.NET Core
+  - `[SwaggerResponse(201)]` — Swashbuckle
+  - `[SwaggerResponseHeader(201, ...)]` — Swashbuckle
+  - Check constructor arguments for integer value `201` (the `TypedConstant` gives the resolved value regardless of whether the user wrote `201` or `StatusCodes.Status201Created`)
+  - Standard diagnostic suppression mechanisms apply — users can silence via `#pragma warning disable RY0031`, `.editorconfig` (`dotnet_diagnostic.RY0031.severity = none`), or `<NoWarn>RY0031</NoWarn>` in `.csproj`. No custom silencing needed.
+- This enables: "Returns: [CustomerQueryResult](#customerqueryresult)" in Markdown documentation, incoming "Referenced by" links on result entities, and the API map showing action-result edges
+- **Documentation required**: Explain `ResultType` in user docs (SourceGenerator.md) — what it does, when to use it, example usage with `CreateQuery`
+- **Multi-assembly support:** When HTOs and controllers are in different assemblies, the source generator processing the HTO assembly won't see `ResultType` (which lives on controller attributes in the other assembly). Solution: the generator in the controller assembly emits a separate `HypermediaActionResultRegistry_<Assembly>` containing `ActionResultMapping(EntityName, ActionName, ResultName, ResultClasses)` entries. `HypermediaSchemaBuilder.ComposeSchema()` merges these mappings into the existing `ActionDescription` entries after collecting all schema registries — same post-processing pattern as `Definitions` deduplication. The schema model (`EntityTypeSchema`, `ActionDescription`) is not changed — `ResultName`/`ResultClasses` are populated at compose time, not at generation time. `ActionResultMapping` is a simple record in `RESTyard.Schema.Model`.
+- Verify tests: action with `ResultType` populates `ResultName`, Markdown shows "Returns" link, result entity shows incoming "Referenced by", multi-assembly scenario merges correctly
+
+#### Step 2.13.1: Update contract-first generator (`RESTyard.Generator`) to emit `ResultType`
+- The contract-first XML schema (`Hypermedia.xsd` / `Hypermedia.xml`) already describes action result types — the information is available
+- Update the server controller template (`server/csharp-controller/v4`) to emit `ResultType = typeof(...)` on generated `[HypermediaActionEndpoint]` attributes when the XML schema specifies an action result
+- Verify with CarShack: regenerate controllers, confirm `ResultType` appears on applicable action endpoints
 
 ### Phase 3: Schema Endpoint
 

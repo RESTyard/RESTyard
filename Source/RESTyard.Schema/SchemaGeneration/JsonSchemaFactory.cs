@@ -14,10 +14,21 @@ namespace RESTyard.Schema.SchemaGeneration
     // DataAnnotationsSupport.AddDataAnnotations();
     public class JsonSchemaFactory : IJsonSchemaFactory
     {
+        private static readonly object AttributeHandlerLock = new();
+        private static volatile bool attributeHandlersRegistered;
+
         private readonly SchemaGeneratorConfiguration config;
         private readonly ConcurrentDictionary<Type, JsonDocument> cache = new();
 
-        public JsonSchemaFactory()
+        /// <summary>
+        /// Creates a new factory with default configuration.
+        /// </summary>
+        /// <param name="extractComplexTypesToDefs">
+        /// When true (default), complex object types are extracted to <c>$defs</c> with <c>$ref</c>
+        /// instead of being inlined. This enables mappers and tooling to display type names
+        /// instead of <c>object</c>. Set to false to get the default <c>JsonSchema.Net</c> inline behavior.
+        /// </param>
+        public JsonSchemaFactory(bool extractComplexTypesToDefs = true)
         {
             config = new SchemaGeneratorConfiguration()
             {
@@ -32,10 +43,27 @@ namespace RESTyard.Schema.SchemaGeneration
                 },
             };
 
+            if (extractComplexTypesToDefs)
+            {
+                config.Refiners.Add(new ComplexTypeDefinitionRefiner());
+            }
 
-            AttributeHandler.AddHandler(new DisplayNameAttributeHandler());
-            AttributeHandler.AddHandler(new DescriptionAttributeHandler());
-            AttributeHandler.AddHandler(new ObsoleteAttributeHandler());
+            RegisterAttributeHandlersOnce();
+        }
+
+        // AttributeHandler.AddHandler is a global static method in JsonSchema.Net —
+        // concurrent calls (e.g., parallel tests) cause collection-modified exceptions.
+        private static void RegisterAttributeHandlersOnce()
+        {
+            if (attributeHandlersRegistered) return;
+            lock (AttributeHandlerLock)
+            {
+                if (attributeHandlersRegistered) return;
+                AttributeHandler.AddHandler(new DisplayNameAttributeHandler());
+                AttributeHandler.AddHandler(new DescriptionAttributeHandler());
+                AttributeHandler.AddHandler(new ObsoleteAttributeHandler());
+                attributeHandlersRegistered = true;
+            }
         }
 
         public JsonDocument Generate(Type type)

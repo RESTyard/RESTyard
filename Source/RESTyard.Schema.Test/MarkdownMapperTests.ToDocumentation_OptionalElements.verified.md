@@ -36,14 +36,15 @@ graph LR
 | optionalLink *(optional)* | [Target](#target) |  |
 | mandatoryLink | [Target](#target) |  |
 
-<a id="root-actions"></a>
-
 ### Actions
 
-| Action | Description | Links to |
-|---|---|---|
-| OptionalAction *(optional)* |  |  |
-| MandatoryAction |  |  |
+<a id="root-optionalaction"></a>
+
+#### OptionalAction *(optional)*
+
+<a id="root-mandatoryaction"></a>
+
+#### MandatoryAction
 
 <a id="root-embedded"></a>
 

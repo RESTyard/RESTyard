@@ -36,13 +36,13 @@ graph LR
 | **[Deprecated]** oldResource *(optional)* | [OldEntity](#oldentity) | Use newResource instead |
 | newResource *(optional)* | [NewEntity](#newentity) |  |
 
-<a id="entrypoint-actions"></a>
-
 ### Actions
 
-| Action | Description | Links to |
-|---|---|---|
-| **[Deprecated]** OldAction *(optional)* | Use NewAction instead |  |
+<a id="entrypoint-oldaction"></a>
+
+#### **[Deprecated]** OldAction *(optional)*
+
+Use NewAction instead
 
 <a id="entrypoint-embedded"></a>
 

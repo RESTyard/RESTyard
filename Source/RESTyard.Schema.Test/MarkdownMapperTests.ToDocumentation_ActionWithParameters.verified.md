@@ -19,15 +19,17 @@ graph LR
 
 - `Root`
 
-<a id="root-actions"></a>
-
 ### Actions
 
-| Action | Description | Links to |
-|---|---|---|
-| BuyCar *(optional)* | Purchase a car. |  |
+<a id="root-buycar"></a>
 
-  | Parameter | Type | Required | Description |
-  |---|---|---|---|
-  | carId | integer | yes | The car identifier |
-  | color | string | no |  |
+#### BuyCar *(optional)*
+
+Purchase a car.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| carId | integer | yes | The car identifier |
+| color | string | no |  |

@@ -22,6 +22,14 @@ RESTyard demo API for managing cars and customers
 - [CarInsurance](#carinsurance)
 - [NextLevelDerivedCar](#nextlevelderivedcar)
 
+**Definitions**
+
+- [Country](#definition-country)
+- [Pagination](#definition-pagination)
+- [SortParameter<CustomerSortProperties>](#definition-sortparameterofcustomersortproperties)
+- [CustomerFilter](#definition-customerfilter)
+- [AddressTo](#definition-addressto)
+
 ## API Map
 
 ```mermaid
@@ -99,24 +107,33 @@ The Customers API
 | BestCustomer | [Customer](#customer) |  |
 | self | [CustomersRoot](#customersroot) |  |
 
-<a id="customersroot-actions"></a>
-
 ### Actions
 
-| Action | Description | Links to |
-|---|---|---|
-| CreateCustomer |  |  |
+<a id="customersroot-createcustomer"></a>
 
-  | Parameter | Type | Required | Description |
-  |---|---|---|---|
-  | Name | string | no |  |
-| CreateQuery |  |  |
+#### CreateCustomer
 
-  | Parameter | Type | Required | Description |
-  |---|---|---|---|
-  | Pagination | object | no |  |
-  | SortBy | object | no |  |
-  | Filter | object | no |  |
+Request creation of a new Customer.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| Name | string | no |  |
+
+<a id="customersroot-createquery"></a>
+
+#### CreateQuery
+
+Query the Customers collection.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| Pagination | [Pagination](#definition-pagination) | no |  |
+| SortBy | [SortParameter<CustomerSortProperties>](#definition-sortparameterofcustomersortproperties) | no |  |
+| Filter | [CustomerFilter](#definition-customerfilter) | no |  |
 
 **Referenced by:**
 
@@ -142,19 +159,30 @@ The Cars API
 | SuperCar | [Car](#car) |  |
 | self | [CarsRoot](#carsroot) |  |
 
-<a id="carsroot-actions"></a>
-
 ### Actions
 
-| Action | Description | Links to |
-|---|---|---|
-| UploadCarImage |  |  |
+<a id="carsroot-uploadcarimage"></a>
 
-  | Parameter | Type | Required | Description |
-  |---|---|---|---|
-  | Text | string | no |  |
-  | Flag | boolean | no |  |
-| UploadInsuranceScan |  |  |
+#### UploadCarImage
+
+Upload image for car
+
+**File upload** (`multipart/form-data`)
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| Text | string | no |  |
+| Flag | boolean | no |  |
+
+<a id="carsroot-uploadinsurancescan"></a>
+
+#### UploadInsuranceScan
+
+Upload scan of insurance for the car
+
+**File upload** (`multipart/form-data`)
 
 **Referenced by:**
 
@@ -221,7 +249,7 @@ Query result on Customer
 |---|---|---|---|
 | Age | integer | no |  |
 | FullName | string | no |  |
-| Address | object | no |  |
+| Address | [AddressTo](#definition-addressto) | no |  |
 | IsFavorite | boolean | no |  |
 
 <a id="customer-links"></a>
@@ -233,31 +261,52 @@ Query result on Customer
 | PurchaseHistory | [CustomerPurchaseHistory](#customerpurchasehistory) |  |
 | self | [Customer](#customer) |  |
 
-<a id="customer-actions"></a>
-
 ### Actions
 
-| Action | Description | Links to |
-|---|---|---|
-| CustomerMove |  |  |
+<a id="customer-customermove"></a>
 
-  | Parameter | Type | Required | Description |
-  |---|---|---|---|
-  | Address | object | no |  |
-| CustomerRemove |  |  |
-| MarkAsFavorite |  |  |
+#### CustomerMove
 
-  | Parameter | Type | Required | Description |
-  |---|---|---|---|
-  | Customer | string | no | Format: `uri` |
-| BuyCar |  |  |
+A Customer moved to a new location.
 
-  | Parameter | Type | Required | Description |
-  |---|---|---|---|
-  | Brand | string | no |  |
-  | CarId | integer | no |  |
-  | Price | number | no |  |
-  | HiddenProperty | number | no |  |
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| Address | [AddressTo](#definition-addressto) | no |  |
+
+<a id="customer-customerremove"></a>
+
+#### CustomerRemove
+
+Remove a Customer.
+
+<a id="customer-markasfavorite"></a>
+
+#### MarkAsFavorite
+
+Marks a Customer as a favorite buyer.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| Customer | string | no | Format: `uri` |
+
+<a id="customer-buycar"></a>
+
+#### BuyCar
+
+Buy a car.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| Brand | string | no |  |
+| CarId | integer | no |  |
+| Price | number | no |  |
+| HiddenProperty | number | no |  |
 
 **Referenced by:**
 
@@ -288,8 +337,8 @@ Derived Car
 | Id | integer | no |  |
 | Brand | string | no |  |
 | PriceDevelopment | number[] | no |  |
-| PopularCountries | [country](#definition-country)[] | no |  |
-| MostPopularIn | [country](#definition-country) | no |  |
+| PopularCountries | [Country](#definition-country)[] | no |  |
+| MostPopularIn | [Country](#definition-country) | no |  |
 | LastInspection | string | no | Format: `date` |
 
 <a id="derivedcar-links"></a>
@@ -301,18 +350,25 @@ Derived Car
 | DerivedLink *(optional)* | [Customer](#customer) |  |
 | self | [DerivedCar](#derivedcar) |  |
 
-<a id="derivedcar-actions"></a>
-
 ### Actions
 
-| Action | Description | Links to |
-|---|---|---|
-| DerivedOperation |  |  |
-| UpdateInspection |  |  |
+<a id="derivedcar-derivedoperation"></a>
 
-  | Parameter | Type | Required | Description |
-  |---|---|---|---|
-  | NewInspection | string | no | Format: `date` |
+#### DerivedOperation
+
+Derived Operation
+
+<a id="derivedcar-updateinspection"></a>
+
+#### UpdateInspection
+
+
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| NewInspection | string | no | Format: `date` |
 
 <a id="derivedcar-embedded"></a>
 
@@ -345,8 +401,8 @@ A Car
 | Id | integer | no |  |
 | Brand | string | no |  |
 | PriceDevelopment | number[] | no |  |
-| PopularCountries | [country](#definition-country)[] | no |  |
-| MostPopularIn | [country](#definition-country) | no |  |
+| PopularCountries | [Country](#definition-country)[] | no |  |
+| MostPopularIn | [Country](#definition-country) | no |  |
 | LastInspection | string | no | Format: `date` |
 
 <a id="car-links"></a>
@@ -357,17 +413,19 @@ A Car
 |---|---|---|
 | self | [Car](#car) |  |
 
-<a id="car-actions"></a>
-
 ### Actions
 
-| Action | Description | Links to |
-|---|---|---|
-| UpdateInspection |  |  |
+<a id="car-updateinspection"></a>
 
-  | Parameter | Type | Required | Description |
-  |---|---|---|---|
-  | NewInspection | string | no | Format: `date` |
+#### UpdateInspection
+
+
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| NewInspection | string | no | Format: `date` |
 
 **Referenced by:**
 
@@ -495,8 +553,8 @@ Derives from Derived Car
 | Id | integer | no |  |
 | Brand | string | no |  |
 | PriceDevelopment | number[] | no |  |
-| PopularCountries | [country](#definition-country)[] | no |  |
-| MostPopularIn | [country](#definition-country) | no |  |
+| PopularCountries | [Country](#definition-country)[] | no |  |
+| MostPopularIn | [Country](#definition-country) | no |  |
 | LastInspection | string | no | Format: `date` |
 
 <a id="nextlevelderivedcar-links"></a>
@@ -508,18 +566,25 @@ Derives from Derived Car
 | self | [NextLevelDerivedCar](#nextlevelderivedcar) |  |
 | DerivedLink *(optional)* | [Customer](#customer) |  |
 
-<a id="nextlevelderivedcar-actions"></a>
-
 ### Actions
 
-| Action | Description | Links to |
-|---|---|---|
-| DerivedOperation |  |  |
-| UpdateInspection |  |  |
+<a id="nextlevelderivedcar-derivedoperation"></a>
 
-  | Parameter | Type | Required | Description |
-  |---|---|---|---|
-  | NewInspection | string | no | Format: `date` |
+#### DerivedOperation
+
+Derived Operation
+
+<a id="nextlevelderivedcar-updateinspection"></a>
+
+#### UpdateInspection
+
+
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| NewInspection | string | no | Format: `date` |
 
 <a id="nextlevelderivedcar-embedded"></a>
 
@@ -528,3 +593,75 @@ Derives from Derived Car
 | Relation | Target | Collection | Description |
 |---|---|---|---|
 | item | [Customer](#customer) | yes |  |
+
+## Definitions
+
+<a id="definition-country"></a>
+
+### Definition: Country
+
+**Referenced by:**
+
+- [Car](#car)
+- [DerivedCar](#derivedcar)
+- [NextLevelDerivedCar](#nextlevelderivedcar)
+
+| Property | Type | Required | Description |
+|---|---|---|---|
+| Name | string | no |  |
+| EstimatedPopulation | integer | no |  |
+| LanguageCode | string | no |  |
+
+<a id="definition-pagination"></a>
+
+### Definition: Pagination
+
+**Referenced by:**
+
+- [CustomersRoot → CreateQuery](#customersroot-createquery)
+
+| Property | Type | Required | Description |
+|---|---|---|---|
+| PageSize | integer | no |  |
+| PageOffset | integer | no |  |
+
+<a id="definition-sortparameterofcustomersortproperties"></a>
+
+### Definition: SortParameter<CustomerSortProperties>
+
+**Referenced by:**
+
+- [CustomersRoot → CreateQuery](#customersroot-createquery)
+
+| Property | Type | Required | Description |
+|---|---|---|---|
+| PropertyName | object | no | Values: `Age`, `Name`, `null` |
+| SortType | object | no | Values: `None`, `Ascending`, `Descending` |
+
+<a id="definition-customerfilter"></a>
+
+### Definition: CustomerFilter
+
+**Referenced by:**
+
+- [CustomersRoot → CreateQuery](#customersroot-createquery)
+
+| Property | Type | Required | Description |
+|---|---|---|---|
+| MinAge | integer | no |  |
+
+<a id="definition-addressto"></a>
+
+### Definition: AddressTo
+
+**Referenced by:**
+
+- [Customer](#customer)
+- [Customer → CustomerMove](#customer-customermove)
+
+| Property | Type | Required | Description |
+|---|---|---|---|
+| Street | string | no |  |
+| Number | string | no |  |
+| City | string | no |  |
+| ZipCode | string | no |  |

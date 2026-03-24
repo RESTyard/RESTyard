@@ -21,13 +21,15 @@ graph LR
 
 - `Root`
 
-<a id="root-actions"></a>
-
 ### Actions
 
-| Action | Description | Links to |
-|---|---|---|
-| CreateItem *(optional)* | Creates a new item. | [Item](#item) |
+<a id="root-createitem"></a>
+
+#### CreateItem *(optional)*
+
+Creates a new item.
+
+**Returns:** [Item](#item)
 
 ## Item
 
@@ -37,4 +39,4 @@ graph LR
 
 **Referenced by:**
 
-- [Root](#root-actions) (action: CreateItem)
+- [Root → CreateItem](#root-createitem) (action result)

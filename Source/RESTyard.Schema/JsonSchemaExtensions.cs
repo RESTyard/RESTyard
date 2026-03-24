@@ -34,6 +34,9 @@ internal static class JsonSchemaExtensions
     internal static JsonSchema? GetItemsSchema(this JsonSchema schema)
         => schema.Keywords?.OfType<ItemsKeyword>().FirstOrDefault()?.SingleSchema;
 
+    internal static IReadOnlyDictionary<string, JsonSchema>? GetDefs(this JsonSchema schema)
+        => schema.Keywords?.OfType<DefsKeyword>().FirstOrDefault()?.Definitions;
+
     internal static Uri? GetRef(this JsonSchema schema)
         => schema.Keywords?.OfType<RefKeyword>().FirstOrDefault()?.Reference;
 
@@ -57,12 +60,12 @@ internal static class JsonSchemaExtensions
     /// Like <see cref="SchemaToTypeString(JsonSchema)"/> but wraps <c>$ref</c> definition names
     /// in Markdown links (e.g., <c>[Address](#definition-address)</c>).
     /// </summary>
-    internal static string SchemaToLinkedTypeString(JsonSchema propSchema)
-        => SchemaToTypeString(propSchema, linkDefinitions: true);
+    internal static string SchemaToLinkedTypeString(JsonSchema propSchema, JsonSchema? parentSchema = null)
+        => SchemaToTypeString(propSchema, linkDefinitions: true, parentSchema: parentSchema);
 
-    private static string SchemaToTypeString(JsonSchema propSchema, bool linkDefinitions)
+    private static string SchemaToTypeString(JsonSchema propSchema, bool linkDefinitions, JsonSchema? parentSchema = null)
     {
-        // $ref → extract definition name from path (e.g., "#/definitions/Address" → "Address")
+        // $ref → extract definition name from path (e.g., "#/$defs/address" → "address")
         var refUri = propSchema.GetRef();
         if (refUri != null)
         {
@@ -70,10 +73,15 @@ internal static class JsonSchemaExtensions
             var lastSlash = refString.LastIndexOf('/');
             if (lastSlash >= 0 && lastSlash < refString.Length - 1)
             {
-                var name = refString.Substring(lastSlash + 1);
+                var rawName = refString.Substring(lastSlash + 1);
+                var anchor = rawName.ToLowerInvariant();
+
+                // Try to get clean display name from the definition's $id in the parent schema
+                var displayName = ResolveDisplayNameFromDefs(rawName, parentSchema);
+
                 return linkDefinitions
-                    ? $"[{name}](#definition-{name.ToLowerInvariant()})"
-                    : name;
+                    ? $"[{displayName}](#definition-{anchor})"
+                    : displayName;
             }
             return "object";
         }
@@ -94,7 +102,7 @@ internal static class JsonSchemaExtensions
             var itemsSchema = propSchema.GetItemsSchema();
             if (itemsSchema != null)
             {
-                var itemType = SchemaToTypeString(itemsSchema, linkDefinitions);
+                var itemType = SchemaToTypeString(itemsSchema, linkDefinitions, parentSchema);
                 return $"{itemType}[]";
             }
             return "array";
@@ -109,5 +117,33 @@ internal static class JsonSchemaExtensions
             case SchemaValueType.Object: return "object";
             default: return "object";
         }
+    }
+
+    /// <summary>
+    /// Looks up a $defs key in the parent schema's $defs, extracts the clean display name
+    /// from the definition's $id URI. Falls back to capitalizing the raw $defs key.
+    /// </summary>
+    private static string ResolveDisplayNameFromDefs(string defsKey, JsonSchema? parentSchema)
+    {
+        if (parentSchema != null)
+        {
+            var defs = parentSchema.GetDefs();
+            if (defs != null && defs.TryGetValue(defsKey, out var defSchema))
+            {
+                var id = defSchema.Keywords?.OfType<IdKeyword>().FirstOrDefault()?.Id;
+                if (id != null)
+                {
+                    var idString = id.OriginalString;
+                    const string prefix = "type:";
+                    var fullName = idString.StartsWith(prefix) ? idString.Substring(prefix.Length) : idString;
+                    return Markdown.MarkdownMapper.CleanTypeName(fullName);
+                }
+            }
+        }
+
+        // Fallback: capitalize first letter of the $defs key
+        return defsKey.Length > 0
+            ? char.ToUpperInvariant(defsKey[0]) + defsKey.Substring(1)
+            : defsKey;
     }
 }

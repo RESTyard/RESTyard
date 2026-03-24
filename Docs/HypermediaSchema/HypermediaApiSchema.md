@@ -176,12 +176,42 @@ Describes an embedded sub-entity within a parent entity type.
 
 ## Data Shapes and Definitions
 
-Entity properties (`propertiesSchema`) and action parameters (`parameterSchema`) use standard [JSON Schema (Draft 2020-12)](https://json-schema.org/draft/2020-12/json-schema-core). Complex types are extracted to the top-level `definitions` dictionary and referenced via `$ref`.
+Entity properties (`propertiesSchema`) and action parameters (`parameterSchema`) use standard [JSON Schema (Draft 2020-12)](https://json-schema.org/draft/2020-12/json-schema-core). Complex nested types (e.g., `Address`, `Pagination`) are automatically extracted to local `$defs` within each schema and referenced via `$ref`.
+
+### Self-Contained Schemas
+
+Each `propertiesSchema` and `parameterSchema` is a **valid, self-contained JSON Schema** — all `$ref` references resolve within the same document via local `$defs`. You can validate or process any individual schema without needing external context.
+
+```json
+{
+  "type": "object",
+  "$defs": {
+    "address": { "type": "object", "properties": { "Street": { "type": "string" }, "City": { "type": "string" } } }
+  },
+  "properties": {
+    "Name": { "type": "string" },
+    "HomeAddress": { "$ref": "#/$defs/address" }
+  }
+}
+```
+
+### Top-Level `definitions` Catalog
+
+The same complex types also appear in the top-level `HypermediaApiSchema.definitions` as a **deduplicated catalog**. If `Address` appears in both `Customer.propertiesSchema` and `Order.propertiesSchema`, it's listed once in `definitions`.
+
+This catalog is useful for **tooling**:
+- **Client generators**: iterate `definitions` first to generate one shared class per definition, then generate entity-specific code referencing the shared types. This avoids generating duplicate `Address` classes.
+- **Documentation tools**: render a "Shared Types" section listing each definition with its properties.
+
+The duplication (definitions in both local `$defs` and top-level `definitions`) is intentional — individual schemas remain self-contained and valid, while the catalog provides deduplication for tools that need it.
+
+### JSON Schema Generation
 
 The JSON Schema is generated at runtime by `IJsonSchemaFactory`, which supports:
 - `[Title]` / `[Description]` attributes → JSON Schema `title` / `description` keywords
 - `[DisplayName]` / `[Description]` from `System.ComponentModel` → `title` / `description`
 - `[Obsolete]` → JSON Schema `deprecated: true`
+- Complex types → extracted to `$defs` with `$ref` (opt-out via `new JsonSchemaFactory(extractComplexTypesToDefs: false)`)
 - Custom temporal type handling (`DateOnly`, `TimeOnly`, `DateTimeOffset`, `TimeSpan`)
 - User-extensible via `IAttributeHandler` registration
 
