@@ -346,7 +346,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Verified: schema JSON has `resultName` on 5 actions, Markdown docs show "Returns" links, all end-to-end
 - Added `EmitCompilerGeneratedFiles` to CarShack csproj for debugging generated source
 
-#### Step 2.15.1: Explore action result edges in API map
+#### Step 2.15.1: ✅ Action result edges in API map and class diagram
 - Currently the Mermaid API map only shows link and embedded entity edges between entity types
 - Actions with `ResultName` (producing a Location header to another entity) represent a navigation path that is not visualized
 - Explore adding dashed or differently-styled edges for action results (e.g., `CustomersRoot -. "CreateQuery" .-> CustomerQueryResult`)

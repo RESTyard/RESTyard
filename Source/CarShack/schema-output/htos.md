@@ -9,8 +9,8 @@ classDiagram
     class Entrypoint {
     }
     class CarsRoot {
-        +UploadCarImage(params)
-        +UploadInsuranceScan()
+        +UploadCarImage(params) CarImage
+        +UploadInsuranceScan() CarInsurance
     }
     class Car {
         +integer Id
@@ -19,7 +19,7 @@ classDiagram
         +Country[] PopularCountries
         +Country MostPopularIn
         +string LastInspection
-        +UpdateInspection(params)
+        +UpdateInspection(params) Car
     }
     class CarImage {
     }
@@ -49,8 +49,8 @@ classDiagram
         +UpdateInspection(params)
     }
     class CustomersRoot {
-        +CreateCustomer(params)
-        +CreateQuery(params)
+        +CreateCustomer(params) Customer
+        +CreateQuery(params) CustomerQueryResult
     }
     class CustomerPurchase {
         +integer Amount
@@ -67,7 +67,7 @@ classDiagram
         +CustomerMove(params)
         +CustomerRemove()
         +MarkAsFavorite(params)
-        +BuyCar(params)
+        +BuyCar(params) Car
     }
     class CustomerQueryResult {
         +integer TotalEntities

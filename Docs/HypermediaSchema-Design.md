@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 2. Last completed: **Step 2.14** (Legacy attribute support for ResultType). Next: **Step 2.15** (CarShack ResultType) or **Phase 3** (Schema Endpoint).
+> **Plan execution in progress.** Phase 2 complete. Last completed: **Step 2.15.1** (Action result edges in diagrams). Next: **Phase 3** (Schema Endpoint).
 
 ## Table of Contents
 

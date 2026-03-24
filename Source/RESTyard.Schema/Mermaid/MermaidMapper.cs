@@ -57,6 +57,15 @@ public static class MermaidMapper
                 AppendEdgeSeparatorOnce(sb, ref hasEdges);
                 sb.AppendLine($"    {entity.Name} -- \"{rel}\" --> {embedded.TargetName}");
             }
+
+            foreach (var action in entity.Actions)
+            {
+                if (action.ResultName != null)
+                {
+                    AppendEdgeSeparatorOnce(sb, ref hasEdges);
+                    sb.AppendLine($"    {entity.Name} -. \"action: {action.Name}\" .-> {action.ResultName}");
+                }
+            }
         }
 
         return sb.ToString().TrimEnd();
@@ -108,7 +117,8 @@ public static class MermaidMapper
                 foreach (var action in entity.Actions)
                 {
                     var paramIndicator = action.ParameterSchema is not null ? "params" : "";
-                    sb.AppendLine($"        +{action.Name}({paramIndicator})");
+                    var returnType = action.ResultName != null ? $" {action.ResultName}" : "";
+                    sb.AppendLine($"        +{action.Name}({paramIndicator}){returnType}");
                 }
             }
 

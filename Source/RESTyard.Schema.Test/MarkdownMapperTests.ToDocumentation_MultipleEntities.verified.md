@@ -33,7 +33,9 @@ graph LR
     EntryPoint -- "customers" --> CustomersRoot
     EntryPoint -- "cars" --> CarsRoot
     CustomersRoot -- "item" --> Customer
+    CustomersRoot -. "action: CreateCustomer" .-> Customer
     Customer -- "orders" --> CarsRoot
+    Customer -. "action: BuyCar" .-> Car
     CarsRoot -- "item" --> Car
 ```
 

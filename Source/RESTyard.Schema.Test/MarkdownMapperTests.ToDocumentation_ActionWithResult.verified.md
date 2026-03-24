@@ -13,6 +13,8 @@
 graph LR
     Root["Root"]
     Item["Item"]
+
+    Root -. "action: CreateItem" .-> Item
 ```
 
 ## Root
