@@ -432,11 +432,12 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Add `[HypermediaAccessGroup]` to 1-2 hand-written HTO partials (entity-level only — action/link attributes can't be added from partial classes)
 - Verify `DeclaredAccessGroups` appears in full schema and filtering works end to end
 
-#### Step 4.5: Access group filtering in CLI
+#### Step 4.5: ✅ Access group filtering and help in CLI
 - Add `--access-groups <groups>` (include mode) and `--exclude-access-groups <groups>` (exclude mode) to `GenerateSchemaIfRequested`
 - Reuse `HypermediaSchemaFilter.ForAccessGroups` / `ExcludeAccessGroups` — apply filter before passing schema to mappers
 - Validate mutual exclusivity (error if both specified)
 - Note: CLI does not use `ISchemaAccessGroupSanitizer` (no HTTP context) — the caller is trusted
+- Add `--schema-help` — prints all available schema generation arguments to console and returns `true`
 - Test with CarShack: generate filtered schema/diagrams for specific access group combinations
 
 #### Step 4.6: Update mappers to render access groups
@@ -465,6 +466,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Document the filtered `/hypermedia-schema` endpoint: `?accessGroups=` and `?excludeAccessGroups=` query parameters, include vs. exclude semantics, mutual exclusivity
 - Document `ISchemaAccessGroupSanitizer`: purpose, default behavior, example implementation
 - Document the CLI access group args: `--access-groups`, `--exclude-access-groups`, examples
+- Document the CLI --schema-help usage
 - Add examples: annotated JSON showing filtered vs. full schema, CarShack access group setup
 
 #### Step 4.8 (Future idea): Schema as RESTyard HTO with query action in SchemaRootHto

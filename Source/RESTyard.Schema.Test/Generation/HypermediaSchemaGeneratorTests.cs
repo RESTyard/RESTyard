@@ -46,6 +46,15 @@ public class HypermediaSchemaGeneratorTests : IDisposable
     }
 
     [Fact]
+    public void GenerateIfRequested_returns_true_for_schema_help()
+    {
+        var result = HypermediaSchemaGenerator.GenerateIfRequested(_schema, ["--schema-help"]);
+
+        result.Should().BeTrue();
+        Directory.Exists(_outputPath).Should().BeFalse("help should not generate files");
+    }
+
+    [Fact]
     public void GenerateIfRequested_returns_true_and_generates_all_artifacts()
     {
         var result = HypermediaSchemaGenerator.GenerateIfRequested(
@@ -198,5 +207,91 @@ public class HypermediaSchemaGeneratorTests : IDisposable
         var apiMap = File.ReadAllText(Path.Combine(_outputPath, "api-map.md"));
         apiMap.Should().NotContain("# API Map");
         apiMap.Should().NotContain("```mermaid");
+    }
+
+    [Fact]
+    public void GenerateIfRequested_with_access_groups_filters_schema()
+    {
+        var schema = CreateSchemaWithAccessGroups();
+
+        HypermediaSchemaGenerator.GenerateIfRequested(
+            schema, ["--generate-schema", "--schema-output", _outputPath,
+                "--schema-artifacts", "json-hypermedia-api-schema",
+                "--access-groups", "read"]);
+
+        var json = File.ReadAllText(Path.Combine(_outputPath, "hypermedia-api-schema.json"));
+        json.Should().Contain("Root");
+        json.Should().Contain("Customer");
+        json.Should().NotContain("AdminDashboard");
+    }
+
+    [Fact]
+    public void GenerateIfRequested_with_exclude_access_groups_filters_schema()
+    {
+        var schema = CreateSchemaWithAccessGroups();
+
+        HypermediaSchemaGenerator.GenerateIfRequested(
+            schema, ["--generate-schema", "--schema-output", _outputPath,
+                "--schema-artifacts", "json-hypermedia-api-schema",
+                "--exclude-access-groups", "admin"]);
+
+        var json = File.ReadAllText(Path.Combine(_outputPath, "hypermedia-api-schema.json"));
+        json.Should().Contain("Customer");
+        json.Should().NotContain("AdminDashboard");
+    }
+
+    [Fact]
+    public void GenerateIfRequested_with_both_access_group_args_throws()
+    {
+        var schema = CreateSchemaWithAccessGroups();
+
+        var act = () => HypermediaSchemaGenerator.GenerateIfRequested(
+            schema, ["--generate-schema", "--schema-output", _outputPath,
+                "--access-groups", "read",
+                "--exclude-access-groups", "admin"]);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*both*");
+    }
+
+    [Fact]
+    public void GenerateIfRequested_without_access_groups_keeps_all()
+    {
+        var schema = CreateSchemaWithAccessGroups();
+
+        HypermediaSchemaGenerator.GenerateIfRequested(
+            schema, ["--generate-schema", "--schema-output", _outputPath,
+                "--schema-artifacts", "json-hypermedia-api-schema"]);
+
+        var json = File.ReadAllText(Path.Combine(_outputPath, "hypermedia-api-schema.json"));
+        json.Should().Contain("Customer");
+        json.Should().Contain("AdminDashboard");
+        json.Should().Contain("declaredAccessGroups");
+    }
+
+    private static HypermediaApiSchema CreateSchemaWithAccessGroups()
+    {
+        return new HypermediaApiSchema
+        {
+            SchemaVersion = "1.0.0",
+            Title = "Test API",
+            EntryPointName = "Root",
+            DeclaredAccessGroups = ["admin", "read"],
+            EntityTypes =
+            [
+                new EntityTypeSchema
+                {
+                    Name = "Root",
+                    Classes = ["EntryPoint"],
+                    Links =
+                    [
+                        new LinkDescription { Relations = ["customers"], TargetName = "Customer" },
+                        new LinkDescription { Relations = ["admin"], TargetName = "AdminDashboard", AccessGroups = ["admin"] },
+                    ],
+                },
+                new EntityTypeSchema { Name = "Customer", Classes = ["Customer"], AccessGroups = ["read"] },
+                new EntityTypeSchema { Name = "AdminDashboard", Classes = ["AdminDashboard"], AccessGroups = ["admin"] },
+            ],
+        };
     }
 }

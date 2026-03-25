@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 4 in progress. Last completed: **Step 4.4** (CarShack demo). Next: **Step 4.5** (CLI access group filtering).
+> **Plan execution in progress.** Phase 4 in progress. Last completed: **Step 4.5** (CLI access group filtering and help). Next: **Step 4.6** (Update mappers to render access groups).
 
 ## Table of Contents
 
@@ -1354,14 +1354,22 @@ When `--schema-artifacts` is omitted, all four formats are generated. When speci
 --markdown-include-diagram     Include Mermaid diagram in Markdown (default: true)
 ```
 
-**Deferred parameters** (Phase 4: access groups):
+**Access group filtering:**
 
 ```
---access-groups <groups>       Include filter: only elements visible to these access groups
---exclude-access-groups <groups>  Exclude filter: remove elements requiring these access groups
+--access-groups <groups>       Include filter: only elements visible to these access groups (comma-separated, OR semantics)
+--exclude-access-groups <groups>  Exclude filter: remove elements requiring these access groups (comma-separated)
 ```
 
-Access group filtering in the CLI reuses the same `HypermediaSchemaFilter` from the filtered schema endpoint — the filter is applied before passing the schema to the mappers. `--access-groups` and `--exclude-access-groups` are mutually exclusive (error if both specified). See Phase 4 (Step 4.5) in the plan.
+Access group filtering reuses `HypermediaSchemaFilter` — the filter is applied before passing the schema to the mappers. `--access-groups` and `--exclude-access-groups` are mutually exclusive (error if both specified). No `ISchemaAccessGroupSanitizer` is applied — the CLI caller is trusted.
+
+**Help:**
+
+```
+--schema-help                  Print available schema generation arguments and exit
+```
+
+`--schema-help` prints a summary of all available arguments to the console and returns `true` (so the app exits). It does not require `--generate-schema` — it can be used standalone.
 
 ### Example CI Usage
 
