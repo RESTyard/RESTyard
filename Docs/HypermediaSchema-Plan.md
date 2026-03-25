@@ -378,21 +378,28 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 > **Optional.** See the "Future Idea: Access Groups" section in `HypermediaSchema-Design.md` for the full design. Placed here (before ToSiren) because it's a schema concern that naturally extends Phases 2–3.
 
-**Goal:** Allow the schema to describe which actions, links, and embedded entities require which access groups, and let clients request a filtered schema.
+**Goal:** Allow the schema to describe which entity types, actions, links, and embedded entities require which access groups, and let clients request a filtered schema. This enables documentation tools, client generators, and AI agents to understand permission boundaries and request schemas scoped to their access level.
+
+**Scope:** Entity types, actions, links, and embedded entities. **Not** individual properties — too granular, runtime visibility already handles this.
 
 #### Step 4.1: `[HypermediaAccessGroup]` attribute and generator support
-- Define `[HypermediaAccessGroup("groupName")]` attribute in `RESTyard.AspNetCore`
-- Extend the source generator to read `[HypermediaAccessGroup]` from actions, links, and embedded entity properties
-- Emit `RequiredAccessGroups` on `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription`
+- Define `[HypermediaAccessGroup("group1", "group2", ...)]` attribute in `RESTyard.Schema` — accepts a `params string[]` of access group names
+- Applicable to:
+  - **HTO classes** — marks the entire entity type as requiring the access group
+  - **Action properties** — marks individual actions as restricted
+  - **Link properties** — marks individual links as restricted
+  - **Embedded entity properties** — marks individual embedded entities as restricted
+- Extend the source generator to read `[HypermediaAccessGroup]` from all four targets
+- Emit `RequiredAccessGroups` on `EntityTypeSchema`, `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription`
 - Collect all discovered access groups into `HypermediaApiSchema.DeclaredAccessGroups`
-- Verify tests: HTO with grouped and ungrouped elements, `DeclaredAccessGroups` completeness
+- Verify tests: HTO with grouped and ungrouped elements at all levels, `DeclaredAccessGroups` completeness
 
 #### Step 4.2: Filtered schema endpoint — include mode
 - Implement `HypermediaSchemaFilter.ForAccessGroups(schema, grantedAccessGroups)`
   - Remove elements whose `RequiredAccessGroups` are not satisfied by the granted set
   - Remove unreachable entity types
   - Strip `DeclaredAccessGroups` from filtered output
-- Extend `/hypermedia-schema` endpoint to accept `?accessGroups=read,write` query parameter. should be possible to buidl a link to this with usual RESTyard LinkTo() helper.
+- Extend `/hypermedia-schema` endpoint to accept `?accessGroups=read,write` query parameter. should be possible to buidl a link to this with usual RESTyard mechanisms.
 - Verify tests:
 - Integration test: CarShack with access groups, verify filtered output for different group combinations
 
@@ -401,7 +408,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   - Remove elements whose `RequiredAccessGroups` intersect with the excluded set
   - Remove unreachable entity types
   - Strip `DeclaredAccessGroups` from filtered output
-- Extend `/hypermedia-schema` endpoint to accept `?excludeAccessGroups=admin` query parameter
+- Extend `/hypermedia-schema` endpoint to accept `?excludeAccessGroups=admin,sales` query parameter
 - Integration test: CarShack excluding specific access groups, verify elements are removed correctly
 
 #### Step 4.3: `ISchemaAccessGroupSanitizer` hook
@@ -410,6 +417,16 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Wire into the `/hypermedia-schema` endpoint: sanitize before calling `HypermediaSchemaFilter`
 - Unit test: sanitizer removes groups, verify filtered output reflects sanitized set
 - Integration test: register a role-based sanitizer in CarShack, verify non-admin can't query admin-only groups
+
+#### Step 4.3.1: Access groups discovery endpoint
+- `MapHypermediaSchemaAccessGroups(Action<HypermediaSchemaAccessGroupsOptions>? configure = null)` extension method on `IEndpointRouteBuilder`
+- `HypermediaSchemaAccessGroupsOptions`: `Route` (default `"/schema/access-groups"`)
+- Returns `{ "accessGroups": [...] }` with content type `application/vnd.restyard.hypermedia-schema-access-groups+json` — the `DeclaredAccessGroups` filtered through `ISchemaAccessGroupSanitizer` for the current user
+- Add constant to `SchemaMediaTypes`: `HypermediaSchemaAccessGroups`
+- When no sanitizer registered: returns all `DeclaredAccessGroups`
+- Returns `IEndpointConventionBuilder` for chaining `.RequireAuthorization()` etc.
+- Unit test: verify endpoint returns sanitized groups based on registered sanitizer
+- Integration test: verify non-admin sees fewer groups than admin
 
 #### Step 4.4: CarShack demo
 - Add `[HypermediaAccessGroup]` to selected CarShack actions and links

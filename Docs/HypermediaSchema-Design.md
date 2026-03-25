@@ -962,7 +962,9 @@ This is purely descriptive metadata — the server still enforces authorization 
 
 ### Approach: Access Groups on Elements
 
-A `RequiredAccessGroups` string list on `LinkDescription`, `ActionDescription`, and `EmbeddedEntityDescription`. Declared via a `[HypermediaAccessGroup("...")]` attribute on HTO members. The source generator reads the attribute and emits the strings into the schema. `null` = no restriction (public). All discovered access groups are collected into `HypermediaApiSchema.DeclaredAccessGroups` automatically.
+A `RequiredAccessGroups` string list on `EntityTypeSchema`, `LinkDescription`, `ActionDescription`, and `EmbeddedEntityDescription`. Declared via a `[HypermediaAccessGroup("admin", "sales", ...)]` attribute that accepts a `params string[]` of access group names. The source generator reads the attribute and emits the strings into the schema. `null` = no restriction (public). All discovered access groups are collected into `HypermediaApiSchema.DeclaredAccessGroups` automatically.
+
+**Scope:** Entity types (HTO classes), actions, links, and embedded entities. **Not** individual properties — too granular, runtime visibility handles this.
 
 ### Schema Model Additions
 
@@ -973,10 +975,16 @@ public class HypermediaApiSchema
     public IReadOnlyList<string>? DeclaredAccessGroups { get; set; }  // All access groups found in the API, collected automatically
 }
 
-public class ActionDescription
+public class EntityTypeSchema
 {
     // ... existing fields ...
     public IReadOnlyList<string>? RequiredAccessGroups { get; set; }  // null = no restriction (public)
+}
+
+public class ActionDescription
+{
+    // ... existing fields ...
+    public IReadOnlyList<string>? RequiredAccessGroups { get; set; }
 }
 
 public class LinkDescription
@@ -997,17 +1005,29 @@ public class EmbeddedEntityDescription
 Access groups are declared close to the code via attributes:
 
 ```csharp
-[HypermediaAction(Name = "DeleteCustomer")]
+// Entity-level: entire HTO requires admin access
+[HypermediaObject(Title = "Admin Dashboard", Classes = ["AdminDashboard"])]
 [HypermediaAccessGroup("admin")]
+public class HypermediaAdminDashboardHto : HypermediaObject { ... }
+
+// Action with multiple access groups
+[HypermediaAction(Name = "DeleteCustomer")]
+[HypermediaAccessGroup("admin", "sales")]
 public HypermediaAction? DeleteCustomer { get; set; }
 
+// Action with single access group
 [HypermediaAction(Name = "MarkAsFavorite")]
 [HypermediaAccessGroup("write")]
 public HypermediaAction? MarkAsFavorite { get; set; }
 
+// Link with access group
 [Relations(["orders"])]
 [HypermediaAccessGroup("read")]
 public ILink<HypermediaOrdersHto>? Orders { get; set; }
+
+// No attribute = public (no restriction)
+[Relations(["self"])]
+public ILink<HypermediaCustomerHto> Self { get; set; }
 ```
 
 No startup configuration needed — the source generator collects everything from attributes.
@@ -1097,6 +1117,43 @@ public class RoleBasedSanitizer : ISchemaAccessGroupSanitizer
 ```
 
 The sanitizer is called **before** `HypermediaSchemaFilter` — the filter only sees the sanitized groups. This means a non-admin requesting `?accessGroups=read,admin` gets the same result as `?accessGroups=read`.
+
+### Access Groups Discovery Endpoint
+
+A dedicated endpoint exposes the access groups available to the current user:
+
+```csharp
+app.MapHypermediaSchemaAccessGroups();
+// or with custom route:
+app.MapHypermediaSchemaAccessGroups(o => o.Route = "/api/schema/access-groups");
+```
+
+**Default route:** `GET /schema/access-groups`
+
+**Content type:** `application/vnd.restyard.hypermedia-schema-access-groups+json`
+
+**Response:**
+
+```json
+{
+  "accessGroups": ["read", "write"]
+}
+```
+
+The endpoint reads `DeclaredAccessGroups` from the full schema and passes them through `ISchemaAccessGroupSanitizer` to filter to what the current user is allowed to see. A non-admin would see `["read", "write"]` while an admin sees `["read", "write", "admin"]`.
+
+**Use cases:**
+- **AI agents** — discover which access groups they can filter by before calling `/hypermedia-schema?accessGroups=...`
+- **UIs** — populate a dropdown/checklist for schema filtering
+- **Clients** — validate their own access level against the API's declared groups
+
+Like `MapHypermediaSchema()`, it returns an `IEndpointConventionBuilder` so standard policies can be chained:
+
+```csharp
+app.MapHypermediaSchemaAccessGroups().RequireAuthorization();
+```
+
+When no `ISchemaAccessGroupSanitizer` is registered, the endpoint returns all `DeclaredAccessGroups` unfiltered.
 
 ### Future Idea: Schema as a RESTyard HTO
 
