@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 4 in progress. Last completed: **Step 4.3.1** (Access groups discovery endpoint). Next: **Step 4.4** (CarShack demo).
+> **Plan execution in progress.** Phase 4 in progress. Last completed: **Step 4.4** (CarShack demo). Next: **Step 4.5** (CLI access group filtering).
 
 ## Table of Contents
 
@@ -962,7 +962,7 @@ This is purely descriptive metadata — the server still enforces authorization 
 
 ### Approach: Access Groups on Elements
 
-A `RequiredAccessGroups` string list on `EntityTypeSchema`, `LinkDescription`, `ActionDescription`, and `EmbeddedEntityDescription`. Declared via a `[HypermediaAccessGroup("admin", "sales", ...)]` attribute that accepts a `params string[]` of access group names. The source generator reads the attribute and emits the strings into the schema. `null` = no restriction (public). All discovered access groups are collected into `HypermediaApiSchema.DeclaredAccessGroups` automatically.
+A `AccessGroups` string list on `EntityTypeSchema`, `LinkDescription`, `ActionDescription`, and `EmbeddedEntityDescription`. Declared via a `[HypermediaAccessGroup("admin", "sales", ...)]` attribute that accepts a `params string[]` of access group names. The source generator reads the attribute and emits the strings into the schema. `null` = no restriction (public). All discovered access groups are collected into `HypermediaApiSchema.DeclaredAccessGroups` automatically.
 
 **Scope:** Entity types (HTO classes), actions, links, and embedded entities. **Not** individual properties — too granular, runtime visibility handles this.
 
@@ -978,25 +978,25 @@ public class HypermediaApiSchema
 public class EntityTypeSchema
 {
     // ... existing fields ...
-    public IReadOnlyList<string>? RequiredAccessGroups { get; set; }  // null = no restriction (public)
+    public IReadOnlyList<string>? AccessGroups { get; set; }  // null = no restriction (public)
 }
 
 public class ActionDescription
 {
     // ... existing fields ...
-    public IReadOnlyList<string>? RequiredAccessGroups { get; set; }
+    public IReadOnlyList<string>? AccessGroups { get; set; }
 }
 
 public class LinkDescription
 {
     // ... existing fields ...
-    public IReadOnlyList<string>? RequiredAccessGroups { get; set; }
+    public IReadOnlyList<string>? AccessGroups { get; set; }
 }
 
 public class EmbeddedEntityDescription
 {
     // ... existing fields ...
-    public IReadOnlyList<string>? RequiredAccessGroups { get; set; }
+    public IReadOnlyList<string>? AccessGroups { get; set; }
 }
 ```
 
@@ -1064,9 +1064,9 @@ GET /hypermedia-schema?excludeAccessGroups=admin                → exclude: all
 GET /hypermedia-schema?excludeAccessGroups=admin,internal       → exclude: all elements except those requiring "admin" or "internal"
 ```
 
-**Include mode** (`accessGroups`): Returns only elements whose `RequiredAccessGroups` are satisfied by the given set, plus elements with no access group restriction. Use case: "show me what the `read` role can see."
+**Include mode** (`accessGroups`): Returns only elements whose `AccessGroups` are satisfied by the given set, plus elements with no access group restriction. Use case: "show me what the `read` role can see."
 
-**Exclude mode** (`excludeAccessGroups`): Returns all elements *except* those whose `RequiredAccessGroups` intersect with the excluded set. Use case: "show me everything except `admin`-only elements."
+**Exclude mode** (`excludeAccessGroups`): Returns all elements *except* those whose `AccessGroups` intersect with the excluded set. Use case: "show me everything except `admin`-only elements."
 
 Specifying both `accessGroups` and `excludeAccessGroups` is invalid — the endpoint returns `400 Bad Request in problem json format`.
 
@@ -1175,18 +1175,20 @@ This approach stays within RESTyard's hypermedia design: the client discovers fi
 
 Filtering logic:
 
+**Access group semantics: OR (any match grants access).** An element annotated with `[HypermediaAccessGroup("admin", "sales")]` is visible to a user who has *either* "admin" or "sales" — they don't need both. This matches common role-based authorization patterns where any matching role grants access.
+
 **Include mode** (given a set of granted access groups):
-1. Remove entity types whose `RequiredAccessGroups` contains any group not in the granted set
-2. Remove actions where `RequiredAccessGroups` contains any group not in the granted set
-3. Remove links where `RequiredAccessGroups` contains any group not in the granted set
+1. Remove entity types where none of the element's access groups are in the granted set
+2. Remove actions where none of the element's access groups are in the granted set
+3. Remove links where none of the element's access groups are in the granted set
 4. Same for embedded entities
 5. Remove unreachable entity types (see below)
 6. Strip `DeclaredAccessGroups` from the filtered output (irrelevant)
 
 **Exclude mode** (given a set of excluded access groups):
-1. Remove entity types whose `RequiredAccessGroups` intersects with the excluded set
-2. Remove actions where `RequiredAccessGroups` intersects with the excluded set
-3. Remove links where `RequiredAccessGroups` intersects with the excluded set
+1. Remove entity types where any of the element's access groups intersect with the excluded set
+2. Remove actions where any of the element's access groups intersect with the excluded set
+3. Remove links where any of the element's access groups intersect with the excluded set
 4. Same for embedded entities
 5. Remove unreachable entity types (see below)
 6. Strip `DeclaredAccessGroups` from the filtered output
@@ -1206,11 +1208,11 @@ Entity types that satisfy none of these conditions are removed. This is a single
 ```csharp
 public static class HypermediaSchemaFilter
 {
-    /// Include mode: keep elements whose RequiredAccessGroups ⊆ grantedAccessGroups (or null).
+    /// Include mode: keep elements where AccessGroups ∩ grantedAccessGroups ≠ ∅ (or null). OR semantics.
     public static HypermediaApiSchema ForAccessGroups(
         HypermediaApiSchema fullSchema, ISet<string> grantedAccessGroups);
 
-    /// Exclude mode: remove elements whose RequiredAccessGroups ∩ excludedAccessGroups ≠ ∅.
+    /// Exclude mode: remove elements where AccessGroups ∩ excludedAccessGroups ≠ ∅.
     public static HypermediaApiSchema ExcludeAccessGroups(
         HypermediaApiSchema fullSchema, ISet<string> excludedAccessGroups);
 }

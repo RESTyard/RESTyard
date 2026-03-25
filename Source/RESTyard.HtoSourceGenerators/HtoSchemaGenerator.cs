@@ -1141,7 +1141,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             }
         }
 
-        EmitAccessGroups(sb, metadata.AccessGroups, SchemaTypeNames.EntityTypeSchema_RequiredAccessGroups, "            ");
+        EmitAccessGroups(sb, metadata.AccessGroups, SchemaTypeNames.EntityTypeSchema_AccessGroups, "            ");
 
         var classLiterals = string.Join(", ", metadata.Classes.Select(c => $"\"{EscapeString(c)}\""));
         sb.Append("            ").Append(SchemaTypeNames.EntityTypeSchema_Classes)
@@ -1228,7 +1228,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 }
             }
 
-            EmitAccessGroups(sb, link.AccessGroups, SchemaTypeNames.LinkDescription_RequiredAccessGroups, "                    ");
+            EmitAccessGroups(sb, link.AccessGroups, SchemaTypeNames.LinkDescription_AccessGroups, "                    ");
             sb.Append("                    ").Append(SchemaTypeNames.LinkDescription_IsMandatory)
                 .Append(" = ").Append(link.IsMandatory ? "true" : "false").AppendLine(",");
             sb.AppendLine("                },");
@@ -1301,7 +1301,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 }
             }
 
-            EmitAccessGroups(sb, action.AccessGroups, SchemaTypeNames.ActionDescription_RequiredAccessGroups, "                    ");
+            EmitAccessGroups(sb, action.AccessGroups, SchemaTypeNames.ActionDescription_AccessGroups, "                    ");
             sb.Append("                    ").Append(SchemaTypeNames.ActionDescription_IsMandatory)
                 .Append(" = ").Append(action.IsMandatory ? "true" : "false").AppendLine(",");
             sb.AppendLine("                },");
@@ -1355,7 +1355,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 }
             }
 
-            EmitAccessGroups(sb, embedded.AccessGroups, SchemaTypeNames.EmbeddedEntityDescription_RequiredAccessGroups, "                    ");
+            EmitAccessGroups(sb, embedded.AccessGroups, SchemaTypeNames.EmbeddedEntityDescription_AccessGroups, "                    ");
             sb.Append("                    ").Append(SchemaTypeNames.EmbeddedEntityDescription_IsMandatory)
                 .Append(" = ").Append(embedded.IsMandatory ? "true" : "false").AppendLine(",");
             sb.AppendLine("                },");
@@ -1365,7 +1365,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     }
 
     /// <summary>
-    /// Emits a <c>RequiredAccessGroups = new[] { "group1", "group2" }</c> assignment
+    /// Emits a <c>AccessGroups = new[] { "group1", "group2" }</c> assignment
     /// when the access groups array is non-empty. Emits nothing when empty (null in schema = public).
     /// </summary>
     private static void EmitAccessGroups(StringBuilder sb, EquatableArray<string> accessGroups, string propertyName, string indent)

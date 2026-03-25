@@ -12,11 +12,10 @@ namespace RESTyard.Schema;
 public static class HypermediaSchemaFilter
 {
     /// <summary>
-    /// Include mode: keeps elements whose <c>RequiredAccessGroups</c> are a subset of
-    /// <paramref name="grantedAccessGroups"/>, plus elements with no access group restriction (null).
-    /// Entity types whose <c>RequiredAccessGroups</c> are not satisfied are removed entirely.
-    /// Entity types that become unreachable (no remaining links, actions, embedded entities,
-    /// and not referenced by any remaining element) are also removed.
+    /// Include mode: keeps elements where any of the element's access groups is in
+    /// <paramref name="grantedAccessGroups"/> (OR semantics), plus elements with no restriction (null).
+    /// Entity types that don't match are removed entirely.
+    /// Unreachable entity types are also removed.
     /// <c>DeclaredAccessGroups</c> is stripped from the output.
     /// </summary>
     public static HypermediaApiSchema ForAccessGroups(
@@ -27,7 +26,7 @@ public static class HypermediaSchemaFilter
 
         foreach (var entity in fullSchema.EntityTypes)
         {
-            if (!IsGranted(entity.RequiredAccessGroups, grantedAccessGroups))
+            if (!IsGranted(entity.AccessGroups, grantedAccessGroups))
             {
                 continue;
             }
@@ -53,7 +52,7 @@ public static class HypermediaSchemaFilter
     }
 
     /// <summary>
-    /// Exclude mode: removes elements whose <c>RequiredAccessGroups</c> intersect with
+    /// Exclude mode: removes elements whose <c>AccessGroups</c> intersect with
     /// <paramref name="excludedAccessGroups"/>. Elements with no access group restriction (null) are kept.
     /// Entity types that become unreachable are also removed.
     /// <c>DeclaredAccessGroups</c> is stripped from the output.
@@ -66,7 +65,7 @@ public static class HypermediaSchemaFilter
 
         foreach (var entity in fullSchema.EntityTypes)
         {
-            if (IsExcluded(entity.RequiredAccessGroups, excludedAccessGroups))
+            if (IsExcluded(entity.AccessGroups, excludedAccessGroups))
             {
                 continue;
             }
@@ -92,30 +91,30 @@ public static class HypermediaSchemaFilter
     }
 
     /// <summary>
-    /// Returns true when the element's required access groups are all contained in the granted set,
+    /// Returns true when any of the element's access groups is contained in the granted set (OR semantics),
     /// or when the element has no access group restriction.
     /// </summary>
-    private static bool IsGranted(IReadOnlyList<string>? requiredAccessGroups, ISet<string> grantedAccessGroups)
+    private static bool IsGranted(IReadOnlyList<string>? accessGroups, ISet<string> grantedAccessGroups)
     {
-        if (requiredAccessGroups == null || requiredAccessGroups.Count == 0)
+        if (accessGroups == null || accessGroups.Count == 0)
         {
             return true;
         }
 
-        return requiredAccessGroups.All(grantedAccessGroups.Contains);
+        return accessGroups.Any(grantedAccessGroups.Contains);
     }
 
     /// <summary>
     /// Returns true when the element's required access groups intersect with the excluded set.
     /// </summary>
-    private static bool IsExcluded(IReadOnlyList<string>? requiredAccessGroups, ISet<string> excludedAccessGroups)
+    private static bool IsExcluded(IReadOnlyList<string>? accessGroups, ISet<string> excludedAccessGroups)
     {
-        if (requiredAccessGroups == null || requiredAccessGroups.Count == 0)
+        if (accessGroups == null || accessGroups.Count == 0)
         {
             return false;
         }
 
-        return requiredAccessGroups.Any(excludedAccessGroups.Contains);
+        return accessGroups.Any(excludedAccessGroups.Contains);
     }
 
     private static EntityTypeSchema FilterEntityElements(
@@ -128,17 +127,17 @@ public static class HypermediaSchemaFilter
             Title = entity.Title,
             Description = entity.Description,
             PropertiesSchema = entity.PropertiesSchema,
-            RequiredAccessGroups = entity.RequiredAccessGroups,
+            AccessGroups = entity.AccessGroups,
             IsDeprecated = entity.IsDeprecated,
             DeprecationMessage = entity.DeprecationMessage,
             Links = entity.Links
-                .Where(l => IsGranted(l.RequiredAccessGroups, grantedAccessGroups))
+                .Where(l => IsGranted(l.AccessGroups, grantedAccessGroups))
                 .ToList(),
             Actions = entity.Actions
-                .Where(a => IsGranted(a.RequiredAccessGroups, grantedAccessGroups))
+                .Where(a => IsGranted(a.AccessGroups, grantedAccessGroups))
                 .ToList(),
             EmbeddedEntities = entity.EmbeddedEntities
-                .Where(e => IsGranted(e.RequiredAccessGroups, grantedAccessGroups))
+                .Where(e => IsGranted(e.AccessGroups, grantedAccessGroups))
                 .ToList(),
         };
     }
@@ -153,17 +152,17 @@ public static class HypermediaSchemaFilter
             Title = entity.Title,
             Description = entity.Description,
             PropertiesSchema = entity.PropertiesSchema,
-            RequiredAccessGroups = entity.RequiredAccessGroups,
+            AccessGroups = entity.AccessGroups,
             IsDeprecated = entity.IsDeprecated,
             DeprecationMessage = entity.DeprecationMessage,
             Links = entity.Links
-                .Where(l => !IsExcluded(l.RequiredAccessGroups, excludedAccessGroups))
+                .Where(l => !IsExcluded(l.AccessGroups, excludedAccessGroups))
                 .ToList(),
             Actions = entity.Actions
-                .Where(a => !IsExcluded(a.RequiredAccessGroups, excludedAccessGroups))
+                .Where(a => !IsExcluded(a.AccessGroups, excludedAccessGroups))
                 .ToList(),
             EmbeddedEntities = entity.EmbeddedEntities
-                .Where(e => !IsExcluded(e.RequiredAccessGroups, excludedAccessGroups))
+                .Where(e => !IsExcluded(e.AccessGroups, excludedAccessGroups))
                 .ToList(),
         };
     }

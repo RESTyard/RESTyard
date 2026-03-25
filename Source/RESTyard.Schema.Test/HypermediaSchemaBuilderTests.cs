@@ -100,10 +100,10 @@ public class HypermediaSchemaBuilderTests
             {
                 Name = "Customer",
                 Classes = ["Customer"],
-                RequiredAccessGroups = ["admin"],
-                Actions = [new ActionDescription { Name = "Delete", RequiredAccessGroups = ["admin", "sales"] }],
-                Links = [new LinkDescription { Relations = ["orders"], TargetName = "Order", RequiredAccessGroups = ["read"] }],
-                EmbeddedEntities = [new EmbeddedEntityDescription { Relations = ["address"], TargetName = "Address", RequiredAccessGroups = ["read", "write"] }],
+                AccessGroups = ["admin"],
+                Actions = [new ActionDescription { Name = "Delete", AccessGroups = ["admin", "sales"] }],
+                Links = [new LinkDescription { Relations = ["orders"], TargetName = "Order", AccessGroups = ["read"] }],
+                EmbeddedEntities = [new EmbeddedEntityDescription { Relations = ["address"], TargetName = "Address", AccessGroups = ["read", "write"] }],
             },
         };
 

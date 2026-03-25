@@ -231,21 +231,21 @@ public static class HypermediaSchemaBuilder
 
         foreach (var entity in entityTypes)
         {
-            AddGroups(groups, entity.RequiredAccessGroups);
+            AddGroups(groups, entity.AccessGroups);
 
             foreach (var action in entity.Actions)
             {
-                AddGroups(groups, action.RequiredAccessGroups);
+                AddGroups(groups, action.AccessGroups);
             }
 
             foreach (var link in entity.Links)
             {
-                AddGroups(groups, link.RequiredAccessGroups);
+                AddGroups(groups, link.AccessGroups);
             }
 
             foreach (var embedded in entity.EmbeddedEntities)
             {
-                AddGroups(groups, embedded.RequiredAccessGroups);
+                AddGroups(groups, embedded.AccessGroups);
             }
         }
 

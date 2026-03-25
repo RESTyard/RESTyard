@@ -26,7 +26,7 @@ public class HypermediaSchemaFilterTests
                     Links =
                     [
                         new LinkDescription { Relations = ["customers"], TargetName = "CustomersRoot" },
-                        new LinkDescription { Relations = ["admin"], TargetName = "AdminDashboard", RequiredAccessGroups = ["admin"] },
+                        new LinkDescription { Relations = ["admin"], TargetName = "AdminDashboard", AccessGroups = ["admin"] },
                     ],
                 },
                 new EntityTypeSchema
@@ -36,7 +36,7 @@ public class HypermediaSchemaFilterTests
                     Actions =
                     [
                         new ActionDescription { Name = "CreateQuery" },
-                        new ActionDescription { Name = "DeleteAll", RequiredAccessGroups = ["admin"] },
+                        new ActionDescription { Name = "DeleteAll", AccessGroups = ["admin"] },
                     ],
                     Links =
                     [
@@ -45,30 +45,30 @@ public class HypermediaSchemaFilterTests
                     EmbeddedEntities =
                     [
                         new EmbeddedEntityDescription { Relations = ["item"], TargetName = "Customer" },
-                        new EmbeddedEntityDescription { Relations = ["audit"], TargetName = "AuditLog", RequiredAccessGroups = ["admin"] },
+                        new EmbeddedEntityDescription { Relations = ["audit"], TargetName = "AuditLog", AccessGroups = ["admin"] },
                     ],
                 },
                 new EntityTypeSchema
                 {
                     Name = "Customer",
                     Classes = ["Customer"],
-                    RequiredAccessGroups = ["read"],
+                    AccessGroups = ["read"],
                     Actions =
                     [
-                        new ActionDescription { Name = "Update", RequiredAccessGroups = ["write"] },
+                        new ActionDescription { Name = "Update", AccessGroups = ["write"] },
                     ],
                 },
                 new EntityTypeSchema
                 {
                     Name = "AdminDashboard",
                     Classes = ["AdminDashboard"],
-                    RequiredAccessGroups = ["admin"],
+                    AccessGroups = ["admin"],
                 },
                 new EntityTypeSchema
                 {
                     Name = "AuditLog",
                     Classes = ["AuditLog"],
-                    RequiredAccessGroups = ["admin"],
+                    AccessGroups = ["admin"],
                 },
             ],
         };

@@ -17,7 +17,7 @@ internal static class SchemaTypeNames
     internal const string EntityTypeSchema_Title = "Title";
     internal const string EntityTypeSchema_Description = "Description";
     internal const string EntityTypeSchema_Classes = "Classes";
-    internal const string EntityTypeSchema_RequiredAccessGroups = "RequiredAccessGroups";
+    internal const string EntityTypeSchema_AccessGroups = "AccessGroups";
     internal const string EntityTypeSchema_IsDeprecated = "IsDeprecated";
     internal const string EntityTypeSchema_DeprecationMessage = "DeprecationMessage";
     internal const string EntityTypeSchema_PropertiesSchema = "PropertiesSchema";
@@ -30,7 +30,7 @@ internal static class SchemaTypeNames
     internal const string LinkDescription_TargetClasses = "TargetClasses";
     internal const string LinkDescription_Title = "Title";
     internal const string LinkDescription_Description = "Description";
-    internal const string LinkDescription_RequiredAccessGroups = "RequiredAccessGroups";
+    internal const string LinkDescription_AccessGroups = "AccessGroups";
     internal const string LinkDescription_IsMandatory = "IsMandatory";
     internal const string LinkDescription_IsDeprecated = "IsDeprecated";
     internal const string LinkDescription_DeprecationMessage = "DeprecationMessage";
@@ -46,7 +46,7 @@ internal static class SchemaTypeNames
     internal const string ActionDescription_IsFileUpload = "IsFileUpload";
     internal const string ActionDescription_IsDeprecated = "IsDeprecated";
     internal const string ActionDescription_DeprecationMessage = "DeprecationMessage";
-    internal const string ActionDescription_RequiredAccessGroups = "RequiredAccessGroups";
+    internal const string ActionDescription_AccessGroups = "AccessGroups";
     internal const string ActionDescription_ResultName = "ResultName";
     internal const string ActionDescription_ResultClasses = "ResultClasses";
     internal const string EntityTypeSchema_Actions = "Actions";
@@ -57,7 +57,7 @@ internal static class SchemaTypeNames
     internal const string EmbeddedEntityDescription_TargetName = "TargetName";
     internal const string EmbeddedEntityDescription_TargetClasses = "TargetClasses";
     internal const string EmbeddedEntityDescription_IsCollection = "IsCollection";
-    internal const string EmbeddedEntityDescription_RequiredAccessGroups = "RequiredAccessGroups";
+    internal const string EmbeddedEntityDescription_AccessGroups = "AccessGroups";
     internal const string EmbeddedEntityDescription_IsMandatory = "IsMandatory";
     internal const string EmbeddedEntityDescription_Title = "Title";
     internal const string EmbeddedEntityDescription_Description = "Description";

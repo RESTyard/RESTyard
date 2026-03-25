@@ -64,9 +64,9 @@ public class EntityTypeSchema
     /// <summary>
     /// Access groups required for this entity type. Null means no restriction (public).
     /// </summary>
-    [JsonPropertyName("requiredAccessGroups")]
+    [JsonPropertyName("accessGroups")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IReadOnlyList<string>? RequiredAccessGroups { get; set; }
+    public IReadOnlyList<string>? AccessGroups { get; set; }
 
     /// <summary>
     /// Whether this entity type is deprecated.

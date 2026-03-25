@@ -390,13 +390,13 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   - **Link properties** — marks individual links as restricted
   - **Embedded entity properties** — marks individual embedded entities as restricted
 - Extend the source generator to read `[HypermediaAccessGroup]` from all four targets
-- Emit `RequiredAccessGroups` on `EntityTypeSchema`, `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription`
+- Emit `AccessGroups` on `EntityTypeSchema`, `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription`
 - Collect all discovered access groups into `HypermediaApiSchema.DeclaredAccessGroups`
 - Verify tests: HTO with grouped and ungrouped elements at all levels, `DeclaredAccessGroups` completeness
 
 #### Step 4.2: ✅ Filtered schema endpoint — include mode
 - Implement `HypermediaSchemaFilter.ForAccessGroups(schema, grantedAccessGroups)`
-  - Remove elements whose `RequiredAccessGroups` are not satisfied by the granted set
+  - Remove elements whose `AccessGroups` are not satisfied by the granted set
   - Remove unreachable entity types
   - Strip `DeclaredAccessGroups` from filtered output
 - Extend `/hypermedia-schema` endpoint to accept `?accessGroups=read,write` query parameter. should be possible to buidl a link to this with usual RESTyard mechanisms.
@@ -405,7 +405,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 #### Step 4.2b: ✅ Filtered schema endpoint — exclude mode
 - Implement `HypermediaSchemaFilter.ExcludeAccessGroups(schema, excludedAccessGroups)`
-  - Remove elements whose `RequiredAccessGroups` intersect with the excluded set
+  - Remove elements whose `AccessGroups` intersect with the excluded set
   - Remove unreachable entity types
   - Strip `DeclaredAccessGroups` from filtered output
 - Extend `/hypermedia-schema` endpoint to accept `?excludeAccessGroups=admin,sales` query parameter
@@ -428,10 +428,9 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Unit test: verify endpoint returns sanitized groups based on registered sanitizer
 - Integration test: verify non-admin sees fewer groups than admin
 
-#### Step 4.4: CarShack demo
-- Add `[HypermediaAccessGroup]` to selected CarShack actions and links
-- Register a sample `ISchemaAccessGroupSanitizer` that restricts `admin` group to admin users
-- Verify the full and filtered schema endpoints work end to end
+#### Step 4.4: ✅ CarShack demo
+- Add `[HypermediaAccessGroup]` to 1-2 hand-written HTO partials (entity-level only — action/link attributes can't be added from partial classes)
+- Verify `DeclaredAccessGroups` appears in full schema and filtering works end to end
 
 #### Step 4.5: Access group filtering in CLI
 - Add `--access-groups <groups>` (include mode) and `--exclude-access-groups <groups>` (exclude mode) to `GenerateSchemaIfRequested`
@@ -444,10 +443,10 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 **MarkdownMapper:**
 - **Header section:** List `DeclaredAccessGroups` after entry point (e.g., "**Declared Access Groups:** admin, read, write"). Omit when null.
-- **Entity heading:** Show `RequiredAccessGroups` after description (e.g., "**Required Access Groups:** admin, sales"). Omit for public entities.
-- **Actions:** Show `RequiredAccessGroups` after action heading, same format as existing **Returns:** line (e.g., "**Required Access Groups:** admin")
-- **Links table:** Add "Required Access Groups" column showing groups or empty for public
-- **Embedded entities table:** Add "Required Access Groups" column showing groups or empty for public
+- **Entity heading:** Show `AccessGroups` after description (e.g., "**Access Groups:** admin, sales"). Omit for public entities.
+- **Actions:** Show `AccessGroups` after action heading, same format as existing **Returns:** line (e.g., "**Access Groups:** admin")
+- **Links table:** Add "Access Groups" column showing groups or empty for public
+- **Embedded entities table:** Add "Access Groups" column showing groups or empty for public
 
 **MermaidMapper:**
 - **API Map:** Append access group annotation to node labels for restricted entities (e.g., `Entity["Entity 🔒"]` or `Entity["Entity [admin]"]`)
@@ -459,8 +458,9 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Unit tests for MermaidMapper output containing access group annotations
 
 #### Step 4.7: Update documentation for access groups
-- Document the `[HypermediaAccessGroup]` attribute: usage, semantics (descriptive not enforcing), relation to `[Authorize]`
-- Document `RequiredAccessGroups` on `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription` — what null vs. populated means
+- Document the `[HypermediaAccessGroup]` attribute: usage, OR semantics (any matching group grants access), descriptive not enforcing, relation to `[Authorize]`
+- Document OR semantics clearly: `[HypermediaAccessGroup("admin", "sales")]` means either "admin" or "sales" grants access, not both required
+- Document `AccessGroups` on `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription` — what null vs. populated means
 - Document `DeclaredAccessGroups` on `HypermediaApiSchema` — auto-collected, useful for typo detection
 - Document the filtered `/hypermedia-schema` endpoint: `?accessGroups=` and `?excludeAccessGroups=` query parameters, include vs. exclude semantics, mutual exclusivity
 - Document `ISchemaAccessGroupSanitizer`: purpose, default behavior, example implementation
@@ -588,6 +588,10 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   - Remove `InheritsFrom` helper method
   - The test `Legacy_HttpMethodHypermediaAction_type_exists` in `HtoSchemaGeneratorTests` will fail when the legacy type is removed — this is intentional as a reminder to clean up the generator code
 - Verify with CarShack: regenerate controllers with new template, confirm `ResultType` appears, all tests pass
+- Extend `Hypermedia.xsd` and its C# model classes to support `accessGroups` on documents (entity types), operations (actions), and references (links/embedded entities)
+- Extend Razor templates (v5) to emit `[HypermediaAccessGroup("group1", "group2")]` on generated HTO classes, action properties, and link properties when specified in the XML schema
+- This enables full access group coverage for contract-first APIs — currently Step 4.4 (CarShack demo) only covers entity-level access groups from hand-written partial classes because action/link attributes can't be added from partials
+- Add CarShack XML schema examples with access groups and regenerate to verify end-to-end
 
 #### Step 8.5: Migrate `ActionParameterTypes` endpoint to minimal API
 - The current `ActionParameterTypesController` is an MVC controller registered automatically via `AddHypermediaExtensions`. It serves JSON Schema for action parameter types. Users cannot add authorization policies to it (only global MVC filters apply).
