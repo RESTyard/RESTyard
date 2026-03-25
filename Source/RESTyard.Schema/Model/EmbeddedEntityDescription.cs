@@ -48,6 +48,13 @@ public class EmbeddedEntityDescription
     public bool IsCollection { get; set; }
 
     /// <summary>
+    /// Access groups required for this embedded entity. Null means no restriction (public).
+    /// </summary>
+    [JsonPropertyName("requiredAccessGroups")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<string>? RequiredAccessGroups { get; set; }
+
+    /// <summary>
     /// Whether this embedded entity is always present.
     /// </summary>
     [JsonPropertyName("isMandatory")]

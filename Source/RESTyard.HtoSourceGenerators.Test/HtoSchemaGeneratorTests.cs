@@ -1515,4 +1515,72 @@ public class HtoSchemaGeneratorTests
         tree.Should().NotBeNull("expected generated schema registry");
         return tree!.GetText().ToString();
     }
+
+    // --- Access Groups tests ---
+
+    [Fact]
+    public void HtoWithAccessGroups_entity_has_RequiredAccessGroups()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithAccessGroups);
+
+        schema.RequiredAccessGroups.Should().NotBeNull();
+        schema.RequiredAccessGroups.Should().BeEquivalentTo(["admin", "sales"]);
+    }
+
+    [Fact]
+    public void HtoWithAccessGroups_action_has_RequiredAccessGroups()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithAccessGroups);
+
+        var deleteAction = schema.Actions.Single(a => a.Name == "DeleteCustomer");
+        deleteAction.RequiredAccessGroups.Should().BeEquivalentTo(["admin"]);
+    }
+
+    [Fact]
+    public void HtoWithAccessGroups_link_has_RequiredAccessGroups()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithAccessGroups);
+
+        var ordersLink = schema.Links.Single(l => l.Relations.Contains("orders"));
+        ordersLink.RequiredAccessGroups.Should().BeEquivalentTo(["read"]);
+    }
+
+    [Fact]
+    public void HtoWithAccessGroups_link_without_access_group_has_null()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithAccessGroups);
+
+        var selfLink = schema.Links.Single(l => l.Relations.Contains("self"));
+        selfLink.RequiredAccessGroups.Should().BeNull();
+    }
+
+    [Fact]
+    public void HtoWithAccessGroups_embedded_has_RequiredAccessGroups()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithAccessGroups);
+
+        var addressEmbedded = schema.EmbeddedEntities.Single(e => e.Relations.Contains("address"));
+        addressEmbedded.RequiredAccessGroups.Should().BeEquivalentTo(["read", "write"]);
+    }
+
+    [Fact]
+    public void HtoWithoutAccessGroups_has_null_RequiredAccessGroups()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaSimpleHto", TestHtoSources.HtoWithoutAccessGroups);
+
+        schema.RequiredAccessGroups.Should().BeNull();
+        schema.Links.Single().RequiredAccessGroups.Should().BeNull();
+    }
+
+    [Fact]
+    public void HtoWithAccessGroups_compiles_correctly()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithAccessGroups);
+    }
 }

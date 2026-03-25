@@ -55,6 +55,9 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     private const string HypermediaAssemblyAttributeFullName =
         "RESTyard.AspNetCore.Hypermedia.Attributes.HypermediaAssemblyAttribute";
 
+    private const string HypermediaAccessGroupAttributeFullName =
+        "RESTyard.Schema.Model.HypermediaAccessGroupAttribute";
+
     private const string ObsoleteAttributeFullName =
         "System.ObsoleteAttribute";
 
@@ -345,6 +348,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         var (isDeprecated, deprecationMessage) = GetDeprecation(symbol);
 
         var classes = GetNamedArgumentStringArray(attribute, "Classes");
+        var accessGroups = GetAccessGroups(symbol);
         var properties = ExtractProperties(symbol);
         var links = ExtractLinks(symbol);
         var actions = ExtractActions(symbol);
@@ -365,6 +369,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             isDeprecated,
             deprecationMessage,
             new EquatableArray<string>(classes),
+            new EquatableArray<string>(accessGroups),
             properties,
             links,
             actions,
@@ -462,6 +467,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                                       ?? GetXmlDocElement(member, "remarks");
 
                 var (linkIsDeprecated, linkDeprecationMessage) = GetDeprecation(member);
+                var linkAccessGroups = GetAccessGroups(member);
 
                 links.Add(new LinkMetadata(
                     new EquatableArray<string>(relations),
@@ -471,7 +477,8 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                     linkDescription,
                     linkIsDeprecated,
                     linkDeprecationMessage,
-                    isMandatory));
+                    isMandatory,
+                    new EquatableArray<string>(linkAccessGroups)));
             }
 
             current = current.BaseType;
@@ -530,8 +537,9 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 var parameterTypeFullName = GetActionParameterType(member.Type);
                 var isFileUpload = IsFileUploadAction(member.Type);
                 var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
+                var actionAccessGroups = GetAccessGroups(member);
 
-                actions.Add(new ActionMetadata(name, actionTitle, actionDescription, parameterTypeFullName, isFileUpload, actionIsDeprecated, actionDeprecationMessage, isMandatory, null, null));
+                actions.Add(new ActionMetadata(name, actionTitle, actionDescription, parameterTypeFullName, isFileUpload, actionIsDeprecated, actionDeprecationMessage, isMandatory, null, null, new EquatableArray<string>(actionAccessGroups)));
             }
 
             current = current.BaseType;
@@ -596,6 +604,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                                           ?? GetXmlDocElement(member, "remarks");
 
                 var (embeddedIsDeprecated, embeddedDeprecationMessage) = GetDeprecation(member);
+                var embeddedAccessGroups = GetAccessGroups(member);
 
                 embeddedEntities.Add(new EmbeddedEntityMetadata(
                     new EquatableArray<string>(relations),
@@ -606,7 +615,8 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                     embeddedDescription,
                     embeddedIsDeprecated,
                     embeddedDeprecationMessage,
-                    isMandatory));
+                    isMandatory,
+                    new EquatableArray<string>(embeddedAccessGroups)));
             }
 
             current = current.BaseType;
@@ -1131,6 +1141,8 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             }
         }
 
+        EmitAccessGroups(sb, metadata.AccessGroups, SchemaTypeNames.EntityTypeSchema_RequiredAccessGroups, "            ");
+
         var classLiterals = string.Join(", ", metadata.Classes.Select(c => $"\"{EscapeString(c)}\""));
         sb.Append("            ").Append(SchemaTypeNames.EntityTypeSchema_Classes)
             .Append(" = new[] { ").Append(classLiterals).AppendLine(" },");
@@ -1216,6 +1228,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 }
             }
 
+            EmitAccessGroups(sb, link.AccessGroups, SchemaTypeNames.LinkDescription_RequiredAccessGroups, "                    ");
             sb.Append("                    ").Append(SchemaTypeNames.LinkDescription_IsMandatory)
                 .Append(" = ").Append(link.IsMandatory ? "true" : "false").AppendLine(",");
             sb.AppendLine("                },");
@@ -1288,6 +1301,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 }
             }
 
+            EmitAccessGroups(sb, action.AccessGroups, SchemaTypeNames.ActionDescription_RequiredAccessGroups, "                    ");
             sb.Append("                    ").Append(SchemaTypeNames.ActionDescription_IsMandatory)
                 .Append(" = ").Append(action.IsMandatory ? "true" : "false").AppendLine(",");
             sb.AppendLine("                },");
@@ -1341,12 +1355,29 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 }
             }
 
+            EmitAccessGroups(sb, embedded.AccessGroups, SchemaTypeNames.EmbeddedEntityDescription_RequiredAccessGroups, "                    ");
             sb.Append("                    ").Append(SchemaTypeNames.EmbeddedEntityDescription_IsMandatory)
                 .Append(" = ").Append(embedded.IsMandatory ? "true" : "false").AppendLine(",");
             sb.AppendLine("                },");
         }
 
         sb.AppendLine("            },");
+    }
+
+    /// <summary>
+    /// Emits a <c>RequiredAccessGroups = new[] { "group1", "group2" }</c> assignment
+    /// when the access groups array is non-empty. Emits nothing when empty (null in schema = public).
+    /// </summary>
+    private static void EmitAccessGroups(StringBuilder sb, EquatableArray<string> accessGroups, string propertyName, string indent)
+    {
+        if (accessGroups.Length == 0)
+        {
+            return;
+        }
+
+        var literals = string.Join(", ", accessGroups.Select(g => $"\"{EscapeString(g)}\""));
+        sb.Append(indent).Append(propertyName)
+            .Append(" = new[] { ").Append(literals).AppendLine(" },");
     }
 
     /// <summary>
@@ -1371,6 +1402,33 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         }
 
         return (true, message);
+    }
+
+    /// <summary>
+    /// Reads <c>[HypermediaAccessGroup("group1", "group2")]</c> from a symbol.
+    /// Returns the access group names as an immutable array, or empty if not present.
+    /// The attribute uses a <c>params string[]</c> constructor argument.
+    /// </summary>
+    private static ImmutableArray<string> GetAccessGroups(ISymbol symbol)
+    {
+        var attr = symbol.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == HypermediaAccessGroupAttributeFullName);
+
+        if (attr == null)
+        {
+            return ImmutableArray<string>.Empty;
+        }
+
+        // params string[] is passed as a single constructor argument containing an array of TypedConstants
+        if (attr.ConstructorArguments.Length > 0 && attr.ConstructorArguments[0].Kind == TypedConstantKind.Array)
+        {
+            return attr.ConstructorArguments[0].Values
+                .Where(v => v.Value is string)
+                .Select(v => (string)v.Value!)
+                .ToImmutableArray();
+        }
+
+        return ImmutableArray<string>.Empty;
     }
 
     /// <summary>

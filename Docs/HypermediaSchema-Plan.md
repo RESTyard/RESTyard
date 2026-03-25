@@ -382,7 +382,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 **Scope:** Entity types, actions, links, and embedded entities. **Not** individual properties — too granular, runtime visibility already handles this.
 
-#### Step 4.1: `[HypermediaAccessGroup]` attribute and generator support
+#### Step 4.1: ✅ `[HypermediaAccessGroup]` attribute and generator support
 - Define `[HypermediaAccessGroup("group1", "group2", ...)]` attribute in `RESTyard.Schema` — accepts a `params string[]` of access group names
 - Applicable to:
   - **HTO classes** — marks the entire entity type as requiring the access group

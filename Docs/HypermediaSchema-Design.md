@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 3 complete. Last completed: **Step 3.1** (Schema endpoint). Next: **Phase 4** (Access Groups) or **Phase 5** (Siren POCOs).
+> **Plan execution in progress.** Phase 4 in progress. Last completed: **Step 4.1** (`[HypermediaAccessGroup]` attribute and generator support). Next: **Step 4.2** (Filtered schema endpoint — include mode).
 
 ## Table of Contents
 

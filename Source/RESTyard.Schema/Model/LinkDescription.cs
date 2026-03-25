@@ -49,6 +49,13 @@ public class LinkDescription
     public string? Description { get; set; }
 
     /// <summary>
+    /// Access groups required for this link. Null means no restriction (public).
+    /// </summary>
+    [JsonPropertyName("requiredAccessGroups")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<string>? RequiredAccessGroups { get; set; }
+
+    /// <summary>
     /// Whether this link is always present on the entity.
     /// </summary>
     [JsonPropertyName("isMandatory")]

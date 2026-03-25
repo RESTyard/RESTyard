@@ -511,6 +511,78 @@ internal static class TestHtoSources
     /// <summary>
     /// HTO combining properties, links, actions, and embedded entities.
     /// </summary>
+    private const string UsingsWithAccessGroups = """
+        using System;
+        using System.Collections.Generic;
+        using Json.Schema.Generation;
+        using RESTyard.AspNetCore.Hypermedia;
+        using RESTyard.AspNetCore.Hypermedia.Actions;
+        using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using RESTyard.Schema.Model;
+        """;
+
+    /// <summary>
+    /// HTO with access groups on entity, actions, links, and embedded entities.
+    /// </summary>
+    internal const string HtoWithAccessGroups = $$"""
+        {{UsingsWithAccessGroups}}
+        {{AssemblyAttribute}}
+
+        namespace TestHtos;
+
+        [HypermediaObject(Title = "Address", Classes = ["Address"])]
+        public class HypermediaAddressHto : HypermediaObject
+        {
+            public string Street { get; set; } = string.Empty;
+        }
+
+        public class DeleteAction : HypermediaAction
+        {
+            public DeleteAction() : base(() => true) { }
+        }
+
+        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+        [HypermediaAccessGroup("admin", "sales")]
+        public class HypermediaCustomerHto : HypermediaObject
+        {
+            public string Name { get; set; } = string.Empty;
+
+            [Relations(["self"])]
+            public ILink<HypermediaCustomerHto> Self { get; set; } = default!;
+
+            [Relations(["orders"])]
+            [HypermediaAccessGroup("read")]
+            public ILink<HypermediaCustomerHto>? Orders { get; set; }
+
+            [HypermediaAction(Name = "DeleteCustomer")]
+            [HypermediaAccessGroup("admin")]
+            public DeleteAction? Delete { get; set; }
+
+            [Relations(["address"])]
+            [HypermediaAccessGroup("read", "write")]
+            public IEmbeddedEntity<HypermediaAddressHto>? Address { get; set; }
+        }
+        """;
+
+    /// <summary>
+    /// HTO without any access groups — verifies null/absent behavior.
+    /// </summary>
+    internal const string HtoWithoutAccessGroups = $$"""
+        {{UsingsWithAccessGroups}}
+        {{AssemblyAttribute}}
+
+        namespace TestHtos;
+
+        [HypermediaObject(Title = "Simple", Classes = ["Simple"])]
+        public class HypermediaSimpleHto : HypermediaObject
+        {
+            public string Name { get; set; } = string.Empty;
+
+            [Relations(["self"])]
+            public ILink<HypermediaSimpleHto> Self { get; set; } = default!;
+        }
+        """;
+
     internal const string FullHto = $$"""
         {{Usings}}
         {{AssemblyAttribute}}

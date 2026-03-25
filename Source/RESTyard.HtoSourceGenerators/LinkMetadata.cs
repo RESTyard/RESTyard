@@ -18,4 +18,6 @@ internal readonly record struct LinkMetadata(
     bool IsDeprecated,
     string? DeprecationMessage,
     /// <summary>Whether the link property is non-nullable (mandatory).</summary>
-    bool IsMandatory);
+    bool IsMandatory,
+    /// <summary>Access groups from <c>[HypermediaAccessGroup]</c>. Empty if none.</summary>
+    EquatableArray<string> AccessGroups);

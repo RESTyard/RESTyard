@@ -90,4 +90,39 @@ public class HypermediaSchemaBuilderTests
 
         entityTypes.Should().BeEmpty();
     }
+
+    [Fact]
+    public void ComposeSchema_collects_DeclaredAccessGroups_from_all_levels()
+    {
+        var entityTypes = new List<EntityTypeSchema>
+        {
+            new()
+            {
+                Name = "Customer",
+                Classes = ["Customer"],
+                RequiredAccessGroups = ["admin"],
+                Actions = [new ActionDescription { Name = "Delete", RequiredAccessGroups = ["admin", "sales"] }],
+                Links = [new LinkDescription { Relations = ["orders"], TargetName = "Order", RequiredAccessGroups = ["read"] }],
+                EmbeddedEntities = [new EmbeddedEntityDescription { Relations = ["address"], TargetName = "Address", RequiredAccessGroups = ["read", "write"] }],
+            },
+        };
+
+        var schema = HypermediaSchemaBuilder.ComposeSchema(entityTypes, null, null);
+
+        schema.DeclaredAccessGroups.Should().NotBeNull();
+        schema.DeclaredAccessGroups.Should().BeEquivalentTo(["admin", "read", "sales", "write"]);
+    }
+
+    [Fact]
+    public void ComposeSchema_returns_null_DeclaredAccessGroups_when_none_declared()
+    {
+        var entityTypes = new List<EntityTypeSchema>
+        {
+            new() { Name = "Customer", Classes = ["Customer"] },
+        };
+
+        var schema = HypermediaSchemaBuilder.ComposeSchema(entityTypes, null, null);
+
+        schema.DeclaredAccessGroups.Should().BeNull();
+    }
 }

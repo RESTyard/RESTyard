@@ -15,6 +15,8 @@ internal readonly record struct HtoMetadata(
     bool IsDeprecated,
     string? DeprecationMessage,
     EquatableArray<string> Classes,
+    /// <summary>Access groups from <c>[HypermediaAccessGroup]</c> on the HTO class. Empty if none.</summary>
+    EquatableArray<string> AccessGroups,
     EquatableArray<PropertyMetadata> Properties,
     EquatableArray<LinkMetadata> Links,
     EquatableArray<ActionMetadata> Actions,

@@ -21,4 +21,6 @@ internal readonly record struct ActionMetadata(
     /// <summary>Schema name of the result entity type (from <c>ResultType</c> on the controller endpoint). Null if no result.</summary>
     string? ResultSchemaName,
     /// <summary>Siren classes of the result entity type. Null if no result.</summary>
-    EquatableArray<string>? ResultClasses);
+    EquatableArray<string>? ResultClasses,
+    /// <summary>Access groups from <c>[HypermediaAccessGroup]</c>. Empty if none.</summary>
+    EquatableArray<string> AccessGroups);

@@ -20,4 +20,6 @@ internal readonly record struct EmbeddedEntityMetadata(
     bool IsDeprecated,
     string? DeprecationMessage,
     /// <summary>Whether the embedded entity property is non-nullable (mandatory).</summary>
-    bool IsMandatory);
+    bool IsMandatory,
+    /// <summary>Access groups from <c>[HypermediaAccessGroup]</c>. Empty if none.</summary>
+    EquatableArray<string> AccessGroups);

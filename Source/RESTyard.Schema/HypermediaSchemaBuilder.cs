@@ -131,6 +131,7 @@ public static class HypermediaSchemaBuilder
         }
 
         var definitions = ExtractDefinitions(entityTypes, logger);
+        var declaredAccessGroups = CollectDeclaredAccessGroups(entityTypes);
 
         return new HypermediaApiSchema
         {
@@ -142,6 +143,7 @@ public static class HypermediaSchemaBuilder
             ExternalDocsUrl = options?.ExternalDocsUrl,
             EntityTypes = entityTypes,
             Definitions = definitions,
+            DeclaredAccessGroups = declaredAccessGroups,
         };
     }
 
@@ -217,6 +219,46 @@ public static class HypermediaSchemaBuilder
         var idString = id.OriginalString;
         const string prefix = "type:";
         return idString.StartsWith(prefix) ? idString.Substring(prefix.Length) : idString;
+    }
+
+    /// <summary>
+    /// Collects all unique access group names from entity types, actions, links, and embedded entities.
+    /// Returns null when no access groups are declared (keeps JSON clean).
+    /// </summary>
+    private static IReadOnlyList<string>? CollectDeclaredAccessGroups(List<EntityTypeSchema> entityTypes)
+    {
+        var groups = new SortedSet<string>(StringComparer.Ordinal);
+
+        foreach (var entity in entityTypes)
+        {
+            AddGroups(groups, entity.RequiredAccessGroups);
+
+            foreach (var action in entity.Actions)
+            {
+                AddGroups(groups, action.RequiredAccessGroups);
+            }
+
+            foreach (var link in entity.Links)
+            {
+                AddGroups(groups, link.RequiredAccessGroups);
+            }
+
+            foreach (var embedded in entity.EmbeddedEntities)
+            {
+                AddGroups(groups, embedded.RequiredAccessGroups);
+            }
+        }
+
+        return groups.Count > 0 ? groups.ToList() : null;
+
+        static void AddGroups(SortedSet<string> target, IReadOnlyList<string>? source)
+        {
+            if (source == null) return;
+            foreach (var group in source)
+            {
+                target.Add(group);
+            }
+        }
     }
 
     private static string? DetectEntryPoint(List<EntityTypeSchema> entityTypes)

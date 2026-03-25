@@ -62,6 +62,13 @@ public class EntityTypeSchema
     public IReadOnlyList<EmbeddedEntityDescription> EmbeddedEntities { get; set; } = Array.Empty<EmbeddedEntityDescription>();
 
     /// <summary>
+    /// Access groups required for this entity type. Null means no restriction (public).
+    /// </summary>
+    [JsonPropertyName("requiredAccessGroups")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<string>? RequiredAccessGroups { get; set; }
+
+    /// <summary>
     /// Whether this entity type is deprecated.
     /// </summary>
     [JsonPropertyName("isDeprecated")]

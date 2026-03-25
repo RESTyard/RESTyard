@@ -63,6 +63,15 @@ public class HypermediaApiSchema
     public IDictionary<string, JsonDocument> Definitions { get; set; } = new Dictionary<string, JsonDocument>();
 
     /// <summary>
+    /// All access group names discovered across the API, collected automatically
+    /// from <see cref="HypermediaAccessGroupAttribute"/> attributes.
+    /// Null when no access groups are declared.
+    /// </summary>
+    [JsonPropertyName("declaredAccessGroups")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<string>? DeclaredAccessGroups { get; set; }
+
+    /// <summary>
     /// Deserializes a <see cref="HypermediaApiSchema"/> from a JSON string.
     /// </summary>
     /// <param name="json">The JSON string representing the schema.</param>

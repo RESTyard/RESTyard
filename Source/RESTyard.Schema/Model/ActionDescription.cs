@@ -58,6 +58,13 @@ public class ActionDescription
     public IReadOnlyList<string>? ResultClasses { get; set; }
 
     /// <summary>
+    /// Access groups required for this action. Null means no restriction (public).
+    /// </summary>
+    [JsonPropertyName("requiredAccessGroups")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<string>? RequiredAccessGroups { get; set; }
+
+    /// <summary>
     /// Whether this action is always present on the entity.
     /// </summary>
     [JsonPropertyName("isMandatory")]
