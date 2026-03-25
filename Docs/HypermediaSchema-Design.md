@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 4 in progress. Last completed: **Step 4.1** (`[HypermediaAccessGroup]` attribute and generator support). Next: **Step 4.2** (Filtered schema endpoint — include mode).
+> **Plan execution in progress.** Phase 4 in progress. Last completed: **Step 4.2/4.2b** (Filtered schema endpoint — include + exclude mode). Next: **Step 4.3** (`ISchemaAccessGroupSanitizer` hook).
 
 ## Table of Contents
 
@@ -1176,29 +1176,43 @@ This approach stays within RESTyard's hypermedia design: the client discovers fi
 Filtering logic:
 
 **Include mode** (given a set of granted access groups):
-1. Remove actions where `RequiredAccessGroups` contains any group not in the granted set
-2. Remove links where `RequiredAccessGroups` contains any group not in the granted set
-3. Same for embedded entities
-4. Remove entity types that become unreachable (no links, no actions, no embedded entities, and not referenced by any remaining element)
-5. Strip `DeclaredAccessGroups` from the filtered output (irrelevant)
+1. Remove entity types whose `RequiredAccessGroups` contains any group not in the granted set
+2. Remove actions where `RequiredAccessGroups` contains any group not in the granted set
+3. Remove links where `RequiredAccessGroups` contains any group not in the granted set
+4. Same for embedded entities
+5. Remove unreachable entity types (see below)
+6. Strip `DeclaredAccessGroups` from the filtered output (irrelevant)
 
 **Exclude mode** (given a set of excluded access groups):
-1. Remove actions where `RequiredAccessGroups` intersects with the excluded set
-2. Remove links where `RequiredAccessGroups` intersects with the excluded set
-3. Same for embedded entities
-4. Remove entity types that become unreachable
-5. Strip `DeclaredAccessGroups` from the filtered output
+1. Remove entity types whose `RequiredAccessGroups` intersects with the excluded set
+2. Remove actions where `RequiredAccessGroups` intersects with the excluded set
+3. Remove links where `RequiredAccessGroups` intersects with the excluded set
+4. Same for embedded entities
+5. Remove unreachable entity types (see below)
+6. Strip `DeclaredAccessGroups` from the filtered output
+
+**Unreachable entity type removal (`RemoveUnreachableEntityTypes`):**
+
+After filtering elements, some entity types may no longer be referenced by any remaining link, embedded entity, or action result. These "orphaned" entity types are removed to keep the filtered schema clean.
+
+An entity type is considered **reachable** if any of the following is true:
+- It is the entry point (`EntryPointName`)
+- It is the `TargetName` of any remaining link on any entity
+- It is the `TargetName` of any remaining embedded entity on any entity
+- It is the `ResultName` of any remaining action on any entity
+
+Entity types that satisfy none of these conditions are removed. This is a single-pass check — it does not transitively chase references (i.e., if A links to B and B is the only reference to C, removing A's link to B removes B, but C is evaluated independently based on whether any other entity still references it).
 
 ```csharp
 public static class HypermediaSchemaFilter
 {
     /// Include mode: keep elements whose RequiredAccessGroups ⊆ grantedAccessGroups (or null).
     public static HypermediaApiSchema ForAccessGroups(
-        HypermediaApiSchema fullSchema, IReadOnlySet<string> grantedAccessGroups);
+        HypermediaApiSchema fullSchema, ISet<string> grantedAccessGroups);
 
     /// Exclude mode: remove elements whose RequiredAccessGroups ∩ excludedAccessGroups ≠ ∅.
     public static HypermediaApiSchema ExcludeAccessGroups(
-        HypermediaApiSchema fullSchema, IReadOnlySet<string> excludedAccessGroups);
+        HypermediaApiSchema fullSchema, ISet<string> excludedAccessGroups);
 }
 ```
 

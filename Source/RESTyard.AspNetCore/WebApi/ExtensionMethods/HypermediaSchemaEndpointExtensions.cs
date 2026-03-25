@@ -1,11 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 using RESTyard.AspNetCore.Hypermedia;
-using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.Schema;
 using RESTyard.Schema.Model;
 
@@ -31,6 +31,8 @@ public static class HypermediaSchemaEndpointExtensions
 
     /// <summary>
     /// Maps a GET endpoint that serves the <see cref="HypermediaApiSchema"/> as JSON.
+    /// Supports optional access group filtering via query parameters:
+    /// <c>?accessGroups=read,write</c> (include mode) or <c>?excludeAccessGroups=admin</c> (exclude mode).
     /// </summary>
     /// <remarks>
     /// Make sure <c>AddHypermediaSchema()</c> was called during service registration
@@ -52,14 +54,45 @@ public static class HypermediaSchemaEndpointExtensions
         var options = new HypermediaSchemaEndpointOptions();
         configure?.Invoke(options);
 
-        return endpoints.MapGet(options.Route, (HttpContext context) =>
+        return endpoints.MapGet(options.Route, (
+            HypermediaApiSchema schema,
+            HttpContext context,
+            string? accessGroups,
+            string? excludeAccessGroups) =>
         {
-            var schema = context.RequestServices.GetRequiredService<HypermediaApiSchema>();
-            var json = JsonSerializer.Serialize(schema, SerializerOptions);
+            if (!string.IsNullOrEmpty(accessGroups) && !string.IsNullOrEmpty(excludeAccessGroups))
+            {
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                context.Response.ContentType = "application/problem+json";
+                var problem = JsonSerializer.Serialize(new
+                {
+                    type = "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+                    title = "Invalid query parameters",
+                    status = 400,
+                    detail = "Cannot specify both 'accessGroups' and 'excludeAccessGroups'. Use one or the other.",
+                });
+                return context.Response.WriteAsync(problem);
+            }
 
+            if (!string.IsNullOrEmpty(accessGroups))
+            {
+                schema = HypermediaSchemaFilter.ForAccessGroups(schema, ParseAccessGroups(accessGroups));
+            }
+            else if (!string.IsNullOrEmpty(excludeAccessGroups))
+            {
+                schema = HypermediaSchemaFilter.ExcludeAccessGroups(schema, ParseAccessGroups(excludeAccessGroups));
+            }
+
+            var json = JsonSerializer.Serialize(schema, SerializerOptions);
             context.Response.ContentType = SchemaMediaType;
             return context.Response.WriteAsync(json);
         }).WithName(RouteName);
     }
 
+    private static HashSet<string> ParseAccessGroups(string commaSeparated)
+    {
+        return commaSeparated
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToHashSet(StringComparer.Ordinal);
+    }
 }

@@ -394,7 +394,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Collect all discovered access groups into `HypermediaApiSchema.DeclaredAccessGroups`
 - Verify tests: HTO with grouped and ungrouped elements at all levels, `DeclaredAccessGroups` completeness
 
-#### Step 4.2: Filtered schema endpoint — include mode
+#### Step 4.2: ✅ Filtered schema endpoint — include mode
 - Implement `HypermediaSchemaFilter.ForAccessGroups(schema, grantedAccessGroups)`
   - Remove elements whose `RequiredAccessGroups` are not satisfied by the granted set
   - Remove unreachable entity types
@@ -403,7 +403,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Verify tests:
 - Integration test: CarShack with access groups, verify filtered output for different group combinations
 
-#### Step 4.2b: Filtered schema endpoint — exclude mode
+#### Step 4.2b: ✅ Filtered schema endpoint — exclude mode
 - Implement `HypermediaSchemaFilter.ExcludeAccessGroups(schema, excludedAccessGroups)`
   - Remove elements whose `RequiredAccessGroups` intersect with the excluded set
   - Remove unreachable entity types
@@ -440,7 +440,25 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Note: CLI does not use `ISchemaAccessGroupSanitizer` (no HTTP context) — the caller is trusted
 - Test with CarShack: generate filtered schema/diagrams for specific access group combinations
 
-#### Step 4.6: Update documentation for access groups
+#### Step 4.6: Update mappers to render access groups
+
+**MarkdownMapper:**
+- **Header section:** List `DeclaredAccessGroups` after entry point (e.g., "**Declared Access Groups:** admin, read, write"). Omit when null.
+- **Entity heading:** Show `RequiredAccessGroups` after description (e.g., "**Required Access Groups:** admin, sales"). Omit for public entities.
+- **Actions:** Show `RequiredAccessGroups` after action heading, same format as existing **Returns:** line (e.g., "**Required Access Groups:** admin")
+- **Links table:** Add "Required Access Groups" column showing groups or empty for public
+- **Embedded entities table:** Add "Required Access Groups" column showing groups or empty for public
+
+**MermaidMapper:**
+- **API Map:** Append access group annotation to node labels for restricted entities (e.g., `Entity["Entity 🔒"]` or `Entity["Entity [admin]"]`)
+- **Class Diagram:** Use `<<access: group1, group2>>` stereotype on restricted entity classes. Optionally annotate restricted actions/links in method/relationship labels.
+- Keep diagrams readable — only annotate restricted elements, not public ones
+
+**Tests:**
+- Unit tests for MarkdownMapper output containing access group text
+- Unit tests for MermaidMapper output containing access group annotations
+
+#### Step 4.7: Update documentation for access groups
 - Document the `[HypermediaAccessGroup]` attribute: usage, semantics (descriptive not enforcing), relation to `[Authorize]`
 - Document `RequiredAccessGroups` on `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription` — what null vs. populated means
 - Document `DeclaredAccessGroups` on `HypermediaApiSchema` — auto-collected, useful for typo detection
@@ -449,7 +467,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Document the CLI access group args: `--access-groups`, `--exclude-access-groups`, examples
 - Add examples: annotated JSON showing filtered vs. full schema, CarShack access group setup
 
-#### Step 4.7 (Future idea): Schema as RESTyard HTO with query action in SchemaRootHto
+#### Step 4.8 (Future idea): Schema as RESTyard HTO with query action in SchemaRootHto
 - **Not designed yet** — to be explored after basic filtering is stable
 - Serve the schema as `HypermediaSchemaHto` — a proper RESTyard hypermedia resource
 - Query action accepts `accessGroups` / `excludeAccessGroups` as parameters, returns filtered schema
