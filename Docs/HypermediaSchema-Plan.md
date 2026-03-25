@@ -458,18 +458,32 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Unit tests for MarkdownMapper output containing access group text
 - Unit tests for MermaidMapper output containing access group annotations
 
-#### Step 4.7: Update documentation for access groups
-- Document the `[HypermediaAccessGroup]` attribute: usage, OR semantics (any matching group grants access), descriptive not enforcing, relation to `[Authorize]`
-- Document OR semantics clearly: `[HypermediaAccessGroup("admin", "sales")]` means either "admin" or "sales" grants access, not both required
-- Document `AccessGroups` on `ActionDescription`, `LinkDescription`, `EmbeddedEntityDescription` — what null vs. populated means
-- Document `DeclaredAccessGroups` on `HypermediaApiSchema` — auto-collected, useful for typo detection
-- Document the filtered `/hypermedia-schema` endpoint: `?accessGroups=` and `?excludeAccessGroups=` query parameters, include vs. exclude semantics, mutual exclusivity
-- Document `ISchemaAccessGroupSanitizer`: purpose, default behavior, example implementation
-- Document the CLI access group args: `--access-groups`, `--exclude-access-groups`, examples
-- Document the CLI --schema-help usage
-- Document `HypermediaSchemaAccessGroups.Link()` helper — how to add a discoverable link to the access groups endpoint from an HTO (similar to `HypermediaSchema.Link()`)
-- Document `HypermediaSchema.Link()` and `HypermediaSchemaAccessGroups.Link()` together with usage example
-- Add examples: annotated JSON showing filtered vs. full schema, CarShack access group setup
+#### Step 4.7: ✅ Update documentation for access groups
+
+**Attribute & semantics:**
+- `[HypermediaAccessGroup]` attribute: targets (class, property), `params string[]`, OR semantics (any match grants access)
+- Relation to `[Authorize]`: descriptive only, no runtime enforcement
+- `AccessGroups` on schema model types: null = public, populated = restricted
+- `DeclaredAccessGroups` on `HypermediaApiSchema`: auto-collected, useful for typo detection
+
+**Filtered schema endpoint:**
+- `?accessGroups=` (include) and `?excludeAccessGroups=` (exclude) query parameters
+- Mutually exclusive — specifying both returns 400
+- `RemoveUnreachableEntityTypes`: entity types that become orphaned after filtering are removed
+
+**Access groups discovery endpoint:**
+- `MapHypermediaSchemaAccessGroups()` setup with `HypermediaSchemaAccessGroupsOptions` (configurable route, default `/schema/access-groups`)
+- `AccessGroupsResponse` model and `SchemaMediaTypes.HypermediaSchemaAccessGroups` media type
+
+**Sanitizer:**
+- `ISchemaAccessGroupSanitizer`: purpose, default pass-through, brief example
+
+**Link helpers:**
+- `HypermediaSchema.Link()` and `HypermediaSchemaAccessGroups.Link()` — usage for discoverable links from HTOs
+
+**CLI:**
+- `--access-groups`, `--exclude-access-groups` args
+- `--schema-help` usage
 
 #### Step 4.8 (Future idea): Schema as RESTyard HTO with query action in SchemaRootHto
 - **Not designed yet** — to be explored after basic filtering is stable

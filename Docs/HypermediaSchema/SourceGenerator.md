@@ -165,6 +165,25 @@ The generator extracts title and description for entity types, links, actions, a
 
 On properties within the generated Properties POCO (entity data properties and action parameter members), `[Obsolete]` produces JSON Schema `deprecated: true` via the registered `ObsoleteAttributeHandler`.
 
+### Access Groups
+
+`[HypermediaAccessGroup("group1", "group2")]` on HTO classes, action properties, link properties, or embedded entity properties maps to `AccessGroups` in the schema. Accepts `params string[]`.
+
+**Semantics:** OR — any matching group grants access. Elements without the attribute are public.
+
+```csharp
+[HypermediaObject(Title = "Admin", Classes = ["Admin"])]
+[HypermediaAccessGroup("admin")]
+public class HypermediaAdminHto : HypermediaObject
+{
+    [HypermediaAction(Name = "Delete")]
+    [HypermediaAccessGroup("admin", "sales")]
+    public HypermediaAction? Delete { get; set; }
+}
+```
+
+All discovered group names are collected into `HypermediaApiSchema.DeclaredAccessGroups` automatically.
+
 ### Property Handling
 
 | Attribute | Effect in generated POCO |
@@ -174,7 +193,7 @@ On properties within the generated Properties POCO (entity data properties and a
 | `[Key]` | Property included (it's a data property), `[Key]` attribute not forwarded |
 | `[JsonConverter]`, `[JsonPropertyName]`, etc. | Forwarded verbatim |
 | `[Title]`, `[Description]`, `[Obsolete]` | Forwarded verbatim |
-| `[Relations]`, `[HypermediaAction]` | Not forwarded (consumed by generator) |
+| `[Relations]`, `[HypermediaAction]`, `[HypermediaAccessGroup]` | Not forwarded (consumed by generator) |
 
 ### JSON Schema on Properties
 

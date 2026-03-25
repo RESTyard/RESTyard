@@ -37,6 +37,7 @@ graph TD
 | `entryPointName` | `string` | Name of the entry point entity type (references `EntityTypeSchema.Name`). Auto-detected from entity types with Siren class `"EntryPoint"`, or empty if none found. |
 | `entityTypes` | `EntityTypeSchema[]` | All entity types in the API. |
 | `definitions` | `Dictionary<string, JsonSchema>` | Shared JSON Schema type definitions, referenced via `$ref` from property and parameter schemas. |
+| `declaredAccessGroups` | `string[]?` | All access group names found across the API, collected automatically from `[HypermediaAccessGroup]` attributes. Null when none are declared. Useful for tooling (typo detection, UI dropdowns). |
 
 **Example (from CarShack):**
 
@@ -65,6 +66,7 @@ Describes one type of Siren entity — its data shape and hypermedia connections
 | `links` | `LinkDescription[]` | Hypermedia links this entity type exposes. |
 | `actions` | `ActionDescription[]` | Hypermedia actions available on this entity type. |
 | `embeddedEntities` | `EmbeddedEntityDescription[]` | Embedded sub-entities. |
+| `accessGroups` | `string[]?` | Access groups from `[HypermediaAccessGroup]`. Null = public (no restriction). OR semantics: any matching group grants access. |
 | `isDeprecated` | `bool` | `true` when the HTO class has `[Obsolete]`. |
 | `deprecationMessage` | `string?` | The message from `[Obsolete("message")]`. |
 
@@ -100,6 +102,7 @@ Describes a hypermedia link from one entity type to another.
 | `targetClasses` | `string[]` | Siren classes of the target entity type. |
 | `title` | `string?` | From `[Title]` attribute or XML doc `<summary>`. |
 | `description` | `string?` | From `[Description]` attribute or XML doc `<remarks>`. |
+| `accessGroups` | `string[]?` | Access groups from `[HypermediaAccessGroup]`. Null = public. |
 | `isMandatory` | `bool` | `true` when the link property is non-nullable — always present on the entity. |
 | `mediaType` | `string?` | Declared media type hint (e.g., `"text/html"` for external links). Null for standard Siren links. |
 | `isDeprecated` | `bool` | `true` when the link property has `[Obsolete]`. |
@@ -128,6 +131,7 @@ Describes a hypermedia action (state transition) on an entity type.
 | `description` | `string?` | From `[Description]` attribute or XML doc `<remarks>`. |
 | `parameterSchema` | `JsonSchema?` | JSON Schema for the action's parameter type. Null for parameterless actions. |
 | `contentType` | `string?` | Content type for the action request (e.g., `"multipart/form-data"` for file uploads). |
+| `accessGroups` | `string[]?` | Access groups from `[HypermediaAccessGroup]`. Null = public. |
 | `isMandatory` | `bool` | `true` when the action property is non-nullable. |
 | `isFileUpload` | `bool` | `true` for `FileUploadHypermediaAction`. |
 | `isDeprecated` | `bool` | `true` when the action property has `[Obsolete]`. |
@@ -168,6 +172,7 @@ Describes an embedded sub-entity within a parent entity type.
 | `targetName` | `string` | Name of the embedded entity type (references `EntityTypeSchema.Name`). |
 | `targetClasses` | `string[]` | Siren classes of the embedded entity type. |
 | `isCollection` | `bool` | `true` when the property is a `List<IEmbeddedEntity<T>>` (collection of embedded entities). |
+| `accessGroups` | `string[]?` | Access groups from `[HypermediaAccessGroup]`. Null = public. |
 | `isMandatory` | `bool` | `true` when the property is non-nullable. |
 | `title` | `string?` | From `[Title]` attribute or XML doc `<summary>`. |
 | `description` | `string?` | From `[Description]` attribute or XML doc `<remarks>`. |
@@ -236,11 +241,107 @@ graph LR
     CustomerPurchaseHistory -- "Purchases" --> CustomerPurchase
 ```
 
+## Access Groups
+
+Access groups describe which permissions are needed to see specific entity types, actions, links, or embedded entities. They are **purely descriptive metadata** — the server still enforces authorization at runtime.
+
+### `[HypermediaAccessGroup]`
+
+Declare access groups on HTO classes (entity types) and properties (actions, links, embedded entities):
+
+```csharp
+[HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+[HypermediaAccessGroup("customer")]
+public class HypermediaCustomerHto : HypermediaObject
+{
+    [HypermediaAction(Name = "Delete")]
+    [HypermediaAccessGroup("admin", "sales")]
+    public HypermediaAction? Delete { get; set; }
+
+    [Relations(["orders"])]
+    [HypermediaAccessGroup("read")]
+    public ILink<HypermediaOrdersHto>? Orders { get; set; }
+}
+```
+
+**Semantics:** OR — `[HypermediaAccessGroup("admin", "sales")]` means *either* "admin" or "sales" grants access, not both required. Elements without the attribute are public (no restriction).
+
+The source generator reads the attribute and populates `accessGroups` on `EntityTypeSchema`, `ActionDescription`, `LinkDescription`, and `EmbeddedEntityDescription`. All discovered group names are collected into `declaredAccessGroups` on the schema.
+
+### Filtered Schema Endpoint
+
+The `/hypermedia-schema` endpoint supports access group filtering via query parameters:
+
+```
+GET /hypermedia-schema                              → full schema
+GET /hypermedia-schema?accessGroups=read,write       → include: elements visible to "read" or "write"
+GET /hypermedia-schema?excludeAccessGroups=admin     → exclude: everything except "admin" elements
+```
+
+- **Include mode:** keeps elements where any access group matches the granted set, plus public elements
+- **Exclude mode:** removes elements where any access group matches the excluded set
+- Specifying both parameters returns `400 Bad Request`
+- Entity types that become unreachable after filtering (no remaining links, embedded entities, or action results pointing to them) are removed automatically
+
+### `ISchemaAccessGroupSanitizer`
+
+Optional DI hook to control which access groups a user can query. Registered via DI — called before the filter is applied.
+
+```csharp
+public class RoleBasedSanitizer : ISchemaAccessGroupSanitizer
+{
+    public IReadOnlySet<string> SanitizeRequestedGroups(
+        IReadOnlySet<string> requestedGroups, HttpContext httpContext)
+    {
+        if (!httpContext.User.IsInRole("admin"))
+            return requestedGroups.Except(new[] { "admin" }).ToHashSet();
+        return requestedGroups;
+    }
+}
+
+builder.Services.AddSingleton<ISchemaAccessGroupSanitizer, RoleBasedSanitizer>();
+```
+
+When no sanitizer is registered, requested groups are passed through unchanged (schema is public).
+
+### Access Groups Discovery Endpoint
+
+Exposes the access groups available to the current user:
+
+```csharp
+app.MapHypermediaSchemaAccessGroups();
+```
+
+Returns `{ "accessGroups": ["read", "write"] }` at `GET /schema/access-groups` with content type `application/vnd.restyard.hypermedia-schema-access-groups+json`. Groups are filtered through `ISchemaAccessGroupSanitizer` if registered.
+
+The route is configurable:
+
+```csharp
+app.MapHypermediaSchemaAccessGroups(o => o.Route = "/api/access-groups");
+```
+
+### Linking to Schema and Access Groups
+
+Add discoverable links from your entry point HTO:
+
+```csharp
+public partial class HypermediaEntrypointHto
+{
+    [Relations(["schema"])]
+    public ExternalLink Schema { get; init; } = HypermediaSchema.Link();
+
+    [Relations(["access-groups"])]
+    public ExternalLink AccessGroups { get; init; } = HypermediaSchemaAccessGroups.Link();
+}
+```
+
 ## CLI Schema Generation
 
-Generate schema artifacts from your server application:
+Generate schema artifacts from your server application. Use `--schema-help` for a full list of arguments:
 
 ```bash
+myapp --schema-help
+
 # Generate all artifacts
 dotnet run --project MyApi -- --generate-schema --schema-output ./docs
 
@@ -249,6 +350,10 @@ dotnet run --project MyApi -- --generate-schema --schema-artifacts json-hypermed
 
 # Generate with raw Mermaid (no Markdown wrapping)
 dotnet run --project MyApi -- --generate-schema --schema-output ./docs --mermaid-wrap-markdown false
+
+# Generate filtered by access groups
+dotnet run --project MyApi -- --generate-schema --schema-output ./docs --access-groups read,write
+dotnet run --project MyApi -- --generate-schema --schema-output ./docs --exclude-access-groups admin
 ```
 
 ### Available Artifacts
@@ -269,6 +374,15 @@ dotnet run --project MyApi -- --generate-schema --schema-output ./docs --mermaid
 | `--mermaid-wrap-markdown` | `true` | Wrap Mermaid in Markdown with title and code fence |
 | `--markdown-include-toc` | `true` | Include table of contents |
 | `--markdown-include-diagram` | `true` | Include Mermaid diagram in Markdown |
+
+### Access Group Filtering
+
+| CLI arg | Description |
+|---|---|
+| `--access-groups <groups>` | Include mode: comma-separated, keep elements visible to any of these groups |
+| `--exclude-access-groups <groups>` | Exclude mode: comma-separated, remove elements matching any of these groups |
+
+Mutually exclusive — specifying both results in an error. No `ISchemaAccessGroupSanitizer` is applied in CLI mode — the caller is trusted.
 
 ## Schema Endpoint
 

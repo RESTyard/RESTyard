@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 4 in progress. Last completed: **Step 4.6** (Update mappers to render access groups). Next: **Step 4.7** (Update documentation for access groups).
+> **Plan execution in progress.** Phase 4 complete. Last completed: **Step 4.7** (Update documentation for access groups). Next: **Phase 5** (Siren POCOs) or **Phase 8** (Migration and Parity).
 
 ## Table of Contents
 
