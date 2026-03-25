@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 4 in progress. Last completed: **Step 4.2/4.2b** (Filtered schema endpoint — include + exclude mode). Next: **Step 4.3** (`ISchemaAccessGroupSanitizer` hook).
+> **Plan execution in progress.** Phase 4 in progress. Last completed: **Step 4.3** (`ISchemaAccessGroupSanitizer` hook). Next: **Step 4.3.1** (Access groups discovery endpoint).
 
 ## Table of Contents
 

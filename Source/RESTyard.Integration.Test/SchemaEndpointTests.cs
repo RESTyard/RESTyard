@@ -1,5 +1,10 @@
+using System.Collections.Generic;
 using System.Net;
 using AwesomeAssertions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 using RESTyard.Integration.Test.Fixtures;
 using RESTyard.Schema.Model;
 using Xunit.Abstractions;
@@ -105,5 +110,38 @@ public class SchemaEndpointTests : IAsyncLifetime
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         response.Content.Headers.ContentType?.MediaType.Should().Be("application/problem+json");
+    }
+
+    [Fact]
+    public async Task Schema_endpoint_sanitizer_strips_groups()
+    {
+        // Register a sanitizer that removes "secret" from requested groups
+        var client = waf.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton<ISchemaAccessGroupSanitizer>(new StripSecretSanitizer());
+            });
+        }).CreateClient();
+
+        // Request with "secret" group — sanitizer removes it, leaving only "read"
+        // CarShack has no access groups, so all public entities remain
+        var json = await client.GetStringAsync("/hypermedia-schema?accessGroups=read,secret");
+        var schema = HypermediaApiSchema.FromJson(json);
+
+        schema.Should().NotBeNull();
+        schema.EntityTypes.Should().NotBeEmpty();
+        schema.DeclaredAccessGroups.Should().BeNull();
+    }
+
+    private class StripSecretSanitizer : ISchemaAccessGroupSanitizer
+    {
+        public IReadOnlySet<string> SanitizeRequestedGroups(
+            IReadOnlySet<string> requestedGroups, HttpContext httpContext)
+        {
+            var sanitized = new HashSet<string>(requestedGroups, StringComparer.Ordinal);
+            sanitized.Remove("secret");
+            return sanitized;
+        }
     }
 }

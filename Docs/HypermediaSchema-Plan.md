@@ -411,7 +411,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Extend `/hypermedia-schema` endpoint to accept `?excludeAccessGroups=admin,sales` query parameter
 - Integration test: CarShack excluding specific access groups, verify elements are removed correctly
 
-#### Step 4.3: `ISchemaAccessGroupSanitizer` hook
+#### Step 4.3: ✅ `ISchemaAccessGroupSanitizer` hook
 - Define `ISchemaAccessGroupSanitizer` interface in `RESTyard.AspNetCore`: `SanitizeRequestedGroups(IReadOnlySet<string> requestedGroups, HttpContext httpContext)` → returns the groups the user is allowed to query
 - Default behavior when no implementation registered: pass through unchanged (schema is public)
 - Wire into the `/hypermedia-schema` endpoint: sanitize before calling `HypermediaSchemaFilter`

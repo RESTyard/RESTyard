@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.Schema;
 using RESTyard.Schema.Model;
@@ -76,11 +77,13 @@ public static class HypermediaSchemaEndpointExtensions
 
             if (!string.IsNullOrEmpty(accessGroups))
             {
-                schema = HypermediaSchemaFilter.ForAccessGroups(schema, ParseAccessGroups(accessGroups));
+                var groups = SanitizeGroups(ParseAccessGroups(accessGroups), context);
+                schema = HypermediaSchemaFilter.ForAccessGroups(schema, groups);
             }
             else if (!string.IsNullOrEmpty(excludeAccessGroups))
             {
-                schema = HypermediaSchemaFilter.ExcludeAccessGroups(schema, ParseAccessGroups(excludeAccessGroups));
+                var groups = SanitizeGroups(ParseAccessGroups(excludeAccessGroups), context);
+                schema = HypermediaSchemaFilter.ExcludeAccessGroups(schema, groups);
             }
 
             var json = JsonSerializer.Serialize(schema, SerializerOptions);
@@ -94,5 +97,23 @@ public static class HypermediaSchemaEndpointExtensions
         return commaSeparated
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .ToHashSet(StringComparer.Ordinal);
+    }
+
+    /// <summary>
+    /// Applies the <see cref="ISchemaAccessGroupSanitizer"/> if registered in DI.
+    /// When no sanitizer is registered, the groups are passed through unchanged.
+    /// Returns a <see cref="HashSet{T}"/> to satisfy <see cref="HypermediaSchemaFilter"/>
+    /// which requires <see cref="ISet{T}"/> (netstandard2.0 compatibility).
+    /// </summary>
+    private static HashSet<string> SanitizeGroups(HashSet<string> groups, HttpContext context)
+    {
+        var sanitizer = context.RequestServices.GetService<ISchemaAccessGroupSanitizer>();
+        if (sanitizer == null)
+        {
+            return groups;
+        }
+
+        var sanitized = sanitizer.SanitizeRequestedGroups(groups, context);
+        return sanitized as HashSet<string> ?? sanitized.ToHashSet(StringComparer.Ordinal);
     }
 }
