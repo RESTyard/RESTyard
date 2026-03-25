@@ -6,6 +6,8 @@ RESTyard demo API for managing cars and customers
 
 **Entry Point:** [Entrypoint](#entrypoint)
 
+**Declared Access Groups:** customer, fleet-manager
+
 ## Table of Contents
 
 - [Entrypoint](#entrypoint)
@@ -36,7 +38,7 @@ RESTyard demo API for managing cars and customers
 graph LR
     Truck["Truck"]
     Entrypoint["Entrypoint"]
-    CarsRoot["CarsRoot"]
+    CarsRoot["CarsRoot [fleet-manager]"]
     Car["Car"]
     CarImage["CarImage"]
     CarInsurance["CarInsurance"]
@@ -45,7 +47,7 @@ graph LR
     CustomersRoot["CustomersRoot"]
     CustomerPurchase["CustomerPurchase"]
     CustomerPurchaseHistory["CustomerPurchaseHistory"]
-    Customer["Customer"]
+    Customer["Customer [customer]"]
     CustomerQueryResult["CustomerQueryResult"]
 
     Entrypoint -- "CustomersRoot" --> CustomersRoot
@@ -87,11 +89,11 @@ Entry to the Rest API
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| CustomersRoot | [CustomersRoot](#customersroot) |  |
-| CarsRoot | [CarsRoot](#carsroot) |  |
-| self | [Entrypoint](#entrypoint) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| CustomersRoot | [CustomersRoot](#customersroot) |  |  |
+| CarsRoot | [CarsRoot](#carsroot) |  |  |
+| self | [Entrypoint](#entrypoint) |  |  |
 
 ## CustomersRoot
 
@@ -107,11 +109,11 @@ The Customers API
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| all | [CustomerQueryResult](#customerqueryresult) |  |
-| BestCustomer | [Customer](#customer) |  |
-| self | [CustomersRoot](#customersroot) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| all | [CustomerQueryResult](#customerqueryresult) |  |  |
+| BestCustomer | [Customer](#customer) |  |  |
+| self | [CustomersRoot](#customersroot) |  |  |
 
 ### Actions
 
@@ -159,15 +161,17 @@ The Cars API
 
 - `CarsRoot`
 
+**Access Groups:** fleet-manager
+
 <a id="carsroot-links"></a>
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| NiceCar | [DerivedCar](#derivedcar) |  |
-| SuperCar | [Car](#car) |  |
-| self | [CarsRoot](#carsroot) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| NiceCar | [DerivedCar](#derivedcar) |  |  |
+| SuperCar | [Car](#car) |  |  |
+| self | [CarsRoot](#carsroot) |  |  |
 
 ### Actions
 
@@ -225,21 +229,21 @@ Query result on Customer
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| Next *(optional)* | [CustomerQueryResult](#customerqueryresult) |  |
-| Previous *(optional)* | [CustomerQueryResult](#customerqueryresult) |  |
-| Last *(optional)* | [CustomerQueryResult](#customerqueryresult) |  |
-| All *(optional)* | [CustomerQueryResult](#customerqueryresult) |  |
-| self | [CustomerQueryResult](#customerqueryresult) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| Next *(optional)* | [CustomerQueryResult](#customerqueryresult) |  |  |
+| Previous *(optional)* | [CustomerQueryResult](#customerqueryresult) |  |  |
+| Last *(optional)* | [CustomerQueryResult](#customerqueryresult) |  |  |
+| All *(optional)* | [CustomerQueryResult](#customerqueryresult) |  |  |
+| self | [CustomerQueryResult](#customerqueryresult) |  |  |
 
 <a id="customerqueryresult-embedded"></a>
 
 ### Embedded Entities
 
-| Relation | Target | Collection | Description |
-|---|---|---|---|
-| Customers | [Customer](#customer) | yes |  |
+| Relation | Target | Collection | Access Groups | Description |
+|---|---|---|---|---|
+| Customers | [Customer](#customer) | yes |  |  |
 
 **Referenced by:**
 
@@ -256,6 +260,8 @@ Query result on Customer
 
 - `Customer`
 
+**Access Groups:** customer
+
 <a id="customer-properties"></a>
 
 ### Properties
@@ -271,10 +277,10 @@ Query result on Customer
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| PurchaseHistory | [CustomerPurchaseHistory](#customerpurchasehistory) |  |
-| self | [Customer](#customer) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| PurchaseHistory | [CustomerPurchaseHistory](#customerpurchasehistory) |  |  |
+| self | [Customer](#customer) |  |  |
 
 ### Actions
 
@@ -363,10 +369,10 @@ Derived Car
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| DerivedLink *(optional)* | [Customer](#customer) |  |
-| self | [DerivedCar](#derivedcar) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| DerivedLink *(optional)* | [Customer](#customer) |  |  |
+| self | [DerivedCar](#derivedcar) |  |  |
 
 ### Actions
 
@@ -392,9 +398,9 @@ Derived Operation
 
 ### Embedded Entities
 
-| Relation | Target | Collection | Description |
-|---|---|---|---|
-| item | [Customer](#customer) | yes |  |
+| Relation | Target | Collection | Access Groups | Description |
+|---|---|---|---|---|
+| item | [Customer](#customer) | yes |  |  |
 
 **Referenced by:**
 
@@ -427,9 +433,9 @@ A Car
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| self | [Car](#car) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| self | [Car](#car) |  |  |
 
 ### Actions
 
@@ -463,17 +469,17 @@ A Car
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| self | [CustomerPurchaseHistory](#customerpurchasehistory) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| self | [CustomerPurchaseHistory](#customerpurchasehistory) |  |  |
 
 <a id="customerpurchasehistory-embedded"></a>
 
 ### Embedded Entities
 
-| Relation | Target | Collection | Description |
-|---|---|---|---|
-| Purchases | [CustomerPurchase](#customerpurchase) | yes |  |
+| Relation | Target | Collection | Access Groups | Description |
+|---|---|---|---|---|
+| Purchases | [CustomerPurchase](#customerpurchase) | yes |  |  |
 
 **Referenced by:**
 
@@ -532,9 +538,9 @@ Image for a car
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| self | [CarImage](#carimage) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| self | [CarImage](#carimage) |  |  |
 
 **Referenced by:**
 
@@ -554,9 +560,9 @@ Insurance scan for a car
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| self | [CarInsurance](#carinsurance) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| self | [CarInsurance](#carinsurance) |  |  |
 
 **Referenced by:**
 
@@ -591,10 +597,10 @@ Derives from Derived Car
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| self | [NextLevelDerivedCar](#nextlevelderivedcar) |  |
-| DerivedLink *(optional)* | [Customer](#customer) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| self | [NextLevelDerivedCar](#nextlevelderivedcar) |  |  |
+| DerivedLink *(optional)* | [Customer](#customer) |  |  |
 
 ### Actions
 
@@ -620,9 +626,9 @@ Derived Operation
 
 ### Embedded Entities
 
-| Relation | Target | Collection | Description |
-|---|---|---|---|
-| item | [Customer](#customer) | yes |  |
+| Relation | Target | Collection | Access Groups | Description |
+|---|---|---|---|---|
+| item | [Customer](#customer) | yes |  |  |
 
 ## Definitions
 

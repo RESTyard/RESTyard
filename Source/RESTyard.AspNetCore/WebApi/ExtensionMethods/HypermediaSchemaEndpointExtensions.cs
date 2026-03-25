@@ -23,6 +23,11 @@ public static class HypermediaSchemaEndpointExtensions
     /// </summary>
     public const string RouteName = "HypermediaSchema";
 
+    /// <summary>
+    /// The route name for the access groups discovery endpoint.
+    /// </summary>
+    public const string AccessGroupsRouteName = "HypermediaSchemaAccessGroups";
+
     private const string SchemaMediaType = SchemaMediaTypes.HypermediaApiSchema;
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
@@ -150,6 +155,6 @@ public static class HypermediaSchemaEndpointExtensions
             var json = JsonSerializer.Serialize(response, SerializerOptions);
             context.Response.ContentType = SchemaMediaTypes.HypermediaSchemaAccessGroups;
             return context.Response.WriteAsync(json);
-        });
+        }).WithName(AccessGroupsRouteName);
     }
 }

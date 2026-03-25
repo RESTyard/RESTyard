@@ -31,10 +31,10 @@ graph LR
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| **[Deprecated]** oldResource *(optional)* | [OldEntity](#oldentity) | Use newResource instead |
-| newResource *(optional)* | [NewEntity](#newentity) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| **[Deprecated]** oldResource *(optional)* | [OldEntity](#oldentity) |  | Use newResource instead |
+| newResource *(optional)* | [NewEntity](#newentity) |  |  |
 
 ### Actions
 
@@ -48,9 +48,9 @@ Use NewAction instead
 
 ### Embedded Entities
 
-| Relation | Target | Collection | Description |
-|---|---|---|---|
-| **[Deprecated]** legacyItems *(optional)* | [OldEntity](#oldentity) | no | Use newResource link instead |
+| Relation | Target | Collection | Access Groups | Description |
+|---|---|---|---|---|
+| **[Deprecated]** legacyItems *(optional)* | [OldEntity](#oldentity) | no |  | Use newResource link instead |
 
 ## **[Deprecated]** OldEntity
 

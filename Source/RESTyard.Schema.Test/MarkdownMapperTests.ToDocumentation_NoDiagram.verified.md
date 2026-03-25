@@ -20,11 +20,11 @@
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| self *(optional)* | [EntryPoint](#entrypoint) |  |
-| customers *(optional)* | [CustomersRoot](#customersroot) |  |
-| cars *(optional)* | [CarsRoot](#carsroot) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| self *(optional)* | [EntryPoint](#entrypoint) |  |  |
+| customers *(optional)* | [CustomersRoot](#customersroot) |  |  |
+| cars *(optional)* | [CarsRoot](#carsroot) |  |  |
 
 ## CustomersRoot
 
@@ -36,9 +36,9 @@
 
 ### Embedded Entities
 
-| Relation | Target | Collection | Description |
-|---|---|---|---|
-| item *(optional)* | [Customer](#customer) | yes |  |
+| Relation | Target | Collection | Access Groups | Description |
+|---|---|---|---|---|
+| item *(optional)* | [Customer](#customer) | yes |  |  |
 
 **Referenced by:**
 
@@ -54,9 +54,9 @@
 
 ### Embedded Entities
 
-| Relation | Target | Collection | Description |
-|---|---|---|---|
-| item *(optional)* | [Car](#car) | yes |  |
+| Relation | Target | Collection | Access Groups | Description |
+|---|---|---|---|---|
+| item *(optional)* | [Car](#car) | yes |  |  |
 
 **Referenced by:**
 
@@ -81,9 +81,9 @@
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| self *(optional)* | [Customer](#customer) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| self *(optional)* | [Customer](#customer) |  |  |
 
 ### Actions
 

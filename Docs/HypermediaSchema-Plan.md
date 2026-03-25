@@ -440,7 +440,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Add `--schema-help` — prints all available schema generation arguments to console and returns `true`
 - Test with CarShack: generate filtered schema/diagrams for specific access group combinations
 
-#### Step 4.6: Update mappers to render access groups
+#### Step 4.6: ✅ Update mappers to render access groups
 
 **MarkdownMapper:**
 - **Header section:** List `DeclaredAccessGroups` after entry point (e.g., "**Declared Access Groups:** admin, read, write"). Omit when null.
@@ -467,6 +467,8 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Document `ISchemaAccessGroupSanitizer`: purpose, default behavior, example implementation
 - Document the CLI access group args: `--access-groups`, `--exclude-access-groups`, examples
 - Document the CLI --schema-help usage
+- Document `HypermediaSchemaAccessGroups.Link()` helper — how to add a discoverable link to the access groups endpoint from an HTO (similar to `HypermediaSchema.Link()`)
+- Document `HypermediaSchema.Link()` and `HypermediaSchemaAccessGroups.Link()` together with usage example
 - Add examples: annotated JSON showing filtered vs. full schema, CarShack access group setup
 
 #### Step 4.8 (Future idea): Schema as RESTyard HTO with query action in SchemaRootHto
@@ -594,6 +596,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Extend Razor templates (v5) to emit `[HypermediaAccessGroup("group1", "group2")]` on generated HTO classes, action properties, and link properties when specified in the XML schema
 - This enables full access group coverage for contract-first APIs — currently Step 4.4 (CarShack demo) only covers entity-level access groups from hand-written partial classes because action/link attributes can't be added from partials
 - Add CarShack XML schema examples with access groups and regenerate to verify end-to-end
+- Make sure mappers (mermaid and markdown) are supporting  access groups on actiosn, links subentities. Prompt the user to check visaually.
 
 #### Step 8.5: Migrate `ActionParameterTypes` endpoint to minimal API
 - The current `ActionParameterTypesController` is an MVC controller registered automatically via `AddHypermediaExtensions`. It serves JSON Schema for action parameter types. Users cannot add authorization policies to it (only global MVC filters apply).

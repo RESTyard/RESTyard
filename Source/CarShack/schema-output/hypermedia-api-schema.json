@@ -155,7 +155,7 @@
         }
       ],
       "embeddedEntities": [],
-      "requiredAccessGroups": [
+      "accessGroups": [
         "fleet-manager"
       ],
       "isDeprecated": false
@@ -959,7 +959,7 @@
         }
       ],
       "embeddedEntities": [],
-      "requiredAccessGroups": [
+      "accessGroups": [
         "customer"
       ],
       "isDeprecated": false

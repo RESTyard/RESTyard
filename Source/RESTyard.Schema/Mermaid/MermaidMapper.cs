@@ -34,7 +34,10 @@ public static class MermaidMapper
 
         foreach (var entity in schema.EntityTypes)
         {
-            sb.AppendLine($"    {entity.Name}[\"{entity.Name}\"]");
+            var label = entity.AccessGroups is { Count: > 0 } groups
+                ? $"{entity.Name} [{string.Join(", ", groups)}]"
+                : entity.Name;
+            sb.AppendLine($"    {entity.Name}[\"{label}\"]");
         }
 
         var hasEdges = false;
@@ -100,6 +103,11 @@ public static class MermaidMapper
         foreach (var entity in schema.EntityTypes)
         {
             sb.AppendLine($"    class {entity.Name} {{");
+
+            if (entity.AccessGroups is { Count: > 0 } groups)
+            {
+                sb.AppendLine($"        access: {string.Join(", ", groups)}");
+            }
 
             if (opts.IncludeProperties
                 && entity.PropertiesSchema is { } propDoc

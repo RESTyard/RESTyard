@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+using AwesomeAssertions;
 using RESTyard.Schema.Mermaid;
 using RESTyard.Schema.Model;
 using VerifyTests;
@@ -166,5 +167,68 @@ public class MermaidMapperTests() : VerifyBase()
         var result = schema.ToClassDiagram();
         var markdown = $"```mermaid\n{result}\n```";
         return Verify(markdown, extension: "md");
+    }
+
+    [Fact]
+    public void ToApiMap_annotates_restricted_entities()
+    {
+        var schema = new HypermediaApiSchema
+        {
+            SchemaVersion = "1.0.0",
+            EntityTypes = new[]
+            {
+                new EntityTypeSchema { Name = "Root", Classes = new[] { "EntryPoint" } },
+                new EntityTypeSchema { Name = "Admin", Classes = new[] { "Admin" }, AccessGroups = new[] { "admin" } },
+            },
+        };
+
+        var result = schema.ToApiMap();
+
+        result.Should().Contain("Root[\"Root\"]");
+        result.Should().Contain("Admin[\"Admin [admin]\"]");
+    }
+
+    [Fact]
+    public void ToClassDiagram_adds_note_for_restricted_entities()
+    {
+        var schema = new HypermediaApiSchema
+        {
+            SchemaVersion = "1.0.0",
+            EntityTypes = new[]
+            {
+                new EntityTypeSchema { Name = "Root", Classes = new[] { "EntryPoint" } },
+                new EntityTypeSchema { Name = "Admin", Classes = new[] { "Admin" }, AccessGroups = new[] { "admin", "sales" } },
+            },
+        };
+
+        var result = schema.ToClassDiagram();
+
+        result.Should().Contain("access: admin, sales");
+    }
+
+    [Fact]
+    public void ToClassDiagram_access_appears_before_actions()
+    {
+        var schema = new HypermediaApiSchema
+        {
+            SchemaVersion = "1.0.0",
+            EntityTypes = new[]
+            {
+                new EntityTypeSchema
+                {
+                    Name = "Admin",
+                    Classes = new[] { "Admin" },
+                    AccessGroups = new[] { "admin" },
+                    Actions = new[] { new ActionDescription { Name = "Delete" } },
+                },
+            },
+        };
+
+        var result = schema.ToClassDiagram();
+        var accessIndex = result.IndexOf("access:", StringComparison.Ordinal);
+        var deleteIndex = result.IndexOf("+Delete()", StringComparison.Ordinal);
+
+        accessIndex.Should().BeGreaterThan(-1);
+        deleteIndex.Should().BeGreaterThan(accessIndex);
     }
 }

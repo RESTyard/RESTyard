@@ -4,7 +4,7 @@
 graph LR
     Truck["Truck"]
     Entrypoint["Entrypoint"]
-    CarsRoot["CarsRoot"]
+    CarsRoot["CarsRoot [fleet-manager]"]
     Car["Car"]
     CarImage["CarImage"]
     CarInsurance["CarInsurance"]
@@ -13,7 +13,7 @@ graph LR
     CustomersRoot["CustomersRoot"]
     CustomerPurchase["CustomerPurchase"]
     CustomerPurchaseHistory["CustomerPurchaseHistory"]
-    Customer["Customer"]
+    Customer["Customer [customer]"]
     CustomerQueryResult["CustomerQueryResult"]
 
     Entrypoint -- "CustomersRoot" --> CustomersRoot

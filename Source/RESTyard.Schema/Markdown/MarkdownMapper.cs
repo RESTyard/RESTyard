@@ -89,6 +89,12 @@ public static class MarkdownMapper
             sb.AppendLine();
             sb.AppendLine($"**Entry Point:** [{schema.EntryPointName}](#{ToAnchor(schema.EntryPointName)})");
         }
+
+        if (schema.DeclaredAccessGroups is { Count: > 0 } groups)
+        {
+            sb.AppendLine();
+            sb.AppendLine($"**Declared Access Groups:** {string.Join(", ", groups)}");
+        }
     }
 
     private static void AppendTableOfContents(
@@ -178,6 +184,8 @@ public static class MarkdownMapper
             }
         }
 
+        AppendAccessGroups(sb, entity.AccessGroups);
+
         AppendPropertiesTable(sb, entity);
         AppendLinksTable(sb, entity);
         AppendActions(sb, entity);
@@ -223,16 +231,17 @@ public static class MarkdownMapper
         sb.AppendLine();
         sb.AppendLine("### Links");
         sb.AppendLine();
-        sb.AppendLine("| Relation | Target | Description |");
-        sb.AppendLine("|---|---|---|");
+        sb.AppendLine("| Relation | Target | Access Groups | Description |");
+        sb.AppendLine("|---|---|---|---|");
 
         foreach (var link in entity.Links)
         {
             var rel = MermaidMapper.GetFirstRelation(link.Relations);
             var relDisplay = FormatRelation(rel, link.IsMandatory, link.IsDeprecated);
             var target = $"[{link.TargetName}](#{ToAnchor(link.TargetName)})";
+            var accessGroups = FormatAccessGroupsInline(link.AccessGroups);
             var description = link.Description ?? "";
-            sb.AppendLine($"| {relDisplay} | {target} | {description} |");
+            sb.AppendLine($"| {relDisplay} | {target} | {accessGroups} | {description} |");
         }
     }
 
@@ -271,6 +280,8 @@ public static class MarkdownMapper
                 sb.AppendLine();
                 sb.AppendLine($"**Returns:** [{action.ResultName}](#{ToAnchor(action.ResultName)})");
             }
+
+            AppendAccessGroups(sb, action.AccessGroups);
 
             if (action.IsFileUpload)
             {
@@ -328,8 +339,8 @@ public static class MarkdownMapper
         sb.AppendLine();
         sb.AppendLine("### Embedded Entities");
         sb.AppendLine();
-        sb.AppendLine("| Relation | Target | Collection | Description |");
-        sb.AppendLine("|---|---|---|---|");
+        sb.AppendLine("| Relation | Target | Collection | Access Groups | Description |");
+        sb.AppendLine("|---|---|---|---|---|");
 
         foreach (var embedded in entity.EmbeddedEntities)
         {
@@ -337,8 +348,9 @@ public static class MarkdownMapper
             var relDisplay = FormatRelation(rel, embedded.IsMandatory, embedded.IsDeprecated);
             var target = $"[{embedded.TargetName}](#{ToAnchor(embedded.TargetName)})";
             var collection = embedded.IsCollection ? "yes" : "no";
+            var accessGroups = FormatAccessGroupsInline(embedded.AccessGroups);
             var description = embedded.Description ?? "";
-            sb.AppendLine($"| {relDisplay} | {target} | {collection} | {description} |");
+            sb.AppendLine($"| {relDisplay} | {target} | {collection} | {accessGroups} | {description} |");
         }
     }
 
@@ -548,6 +560,23 @@ public static class MarkdownMapper
                 }
             }
         }
+    }
+
+    private static void AppendAccessGroups(StringBuilder sb, IReadOnlyList<string>? accessGroups)
+    {
+        if (accessGroups == null || accessGroups.Count == 0)
+            return;
+
+        sb.AppendLine();
+        sb.AppendLine($"**Access Groups:** {string.Join(", ", accessGroups)}");
+    }
+
+    private static string FormatAccessGroupsInline(IReadOnlyList<string>? accessGroups)
+    {
+        if (accessGroups == null || accessGroups.Count == 0)
+            return "";
+
+        return string.Join(", ", accessGroups);
     }
 
     private static string FormatRelation(string rel, bool isMandatory, bool isDeprecated)

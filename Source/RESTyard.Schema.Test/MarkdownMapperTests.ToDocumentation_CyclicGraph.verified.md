@@ -31,9 +31,9 @@ graph LR
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| next *(optional)* | [B](#b) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| next *(optional)* | [B](#b) |  |  |
 
 **Referenced by:**
 
@@ -49,9 +49,9 @@ graph LR
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| next *(optional)* | [C](#c) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| next *(optional)* | [C](#c) |  |  |
 
 **Referenced by:**
 
@@ -67,9 +67,9 @@ graph LR
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| back *(optional)* | [A](#a) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| back *(optional)* | [A](#a) |  |  |
 
 **Referenced by:**
 

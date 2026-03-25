@@ -30,11 +30,11 @@ graph LR
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| self | [Root](#root) |  |
-| optionalLink *(optional)* | [Target](#target) |  |
-| mandatoryLink | [Target](#target) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| self | [Root](#root) |  |  |
+| optionalLink *(optional)* | [Target](#target) |  |  |
+| mandatoryLink | [Target](#target) |  |  |
 
 ### Actions
 
@@ -50,10 +50,10 @@ graph LR
 
 ### Embedded Entities
 
-| Relation | Target | Collection | Description |
-|---|---|---|---|
-| optionalEmbed *(optional)* | [Target](#target) | no |  |
-| mandatoryEmbed | [Target](#target) | no |  |
+| Relation | Target | Collection | Access Groups | Description |
+|---|---|---|---|---|
+| optionalEmbed *(optional)* | [Target](#target) | no |  |  |
+| mandatoryEmbed | [Target](#target) | no |  |  |
 
 ## Target
 

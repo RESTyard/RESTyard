@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 4 in progress. Last completed: **Step 4.5** (CLI access group filtering and help). Next: **Step 4.6** (Update mappers to render access groups).
+> **Plan execution in progress.** Phase 4 in progress. Last completed: **Step 4.6** (Update mappers to render access groups). Next: **Step 4.7** (Update documentation for access groups).
 
 ## Table of Contents
 

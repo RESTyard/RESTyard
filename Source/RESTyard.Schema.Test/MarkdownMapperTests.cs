@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+using AwesomeAssertions;
 using RESTyard.Schema.Markdown;
 using RESTyard.Schema.Model;
 using VerifyXunit;
@@ -593,5 +594,121 @@ public class MarkdownMapperTests() : VerifyBase()
         };
         var result = schema.ToDocumentation();
         return Verify(result, extension: "md");
+    }
+
+    [Fact]
+    public void ToDocumentation_renders_declared_access_groups_in_header()
+    {
+        var schema = new HypermediaApiSchema
+        {
+            SchemaVersion = "1.0.0",
+            Title = "Test",
+            EntryPointName = "Root",
+            DeclaredAccessGroups = new[] { "admin", "read" },
+            EntityTypes = new[] { new EntityTypeSchema { Name = "Root", Classes = new[] { "EntryPoint" } } },
+        };
+
+        var result = schema.ToDocumentation();
+
+        result.Should().Contain("**Declared Access Groups:** admin, read");
+    }
+
+    [Fact]
+    public void ToDocumentation_renders_entity_access_groups()
+    {
+        var schema = new HypermediaApiSchema
+        {
+            SchemaVersion = "1.0.0",
+            EntryPointName = "Root",
+            EntityTypes = new[]
+            {
+                new EntityTypeSchema { Name = "Root", Classes = new[] { "EntryPoint" }, AccessGroups = new[] { "admin" } },
+            },
+        };
+
+        var result = schema.ToDocumentation();
+
+        result.Should().Contain("**Access Groups:** admin");
+    }
+
+    [Fact]
+    public void ToDocumentation_renders_action_access_groups()
+    {
+        var schema = new HypermediaApiSchema
+        {
+            SchemaVersion = "1.0.0",
+            EntryPointName = "Root",
+            EntityTypes = new[]
+            {
+                new EntityTypeSchema
+                {
+                    Name = "Root",
+                    Classes = new[] { "EntryPoint" },
+                    Actions = new[] { new ActionDescription { Name = "Delete", AccessGroups = new[] { "admin", "sales" } } },
+                },
+            },
+        };
+
+        var result = schema.ToDocumentation();
+
+        result.Should().Contain("**Access Groups:** admin, sales");
+    }
+
+    [Fact]
+    public void ToDocumentation_renders_link_access_groups_in_table()
+    {
+        var schema = new HypermediaApiSchema
+        {
+            SchemaVersion = "1.0.0",
+            EntryPointName = "Root",
+            EntityTypes = new[]
+            {
+                new EntityTypeSchema
+                {
+                    Name = "Root",
+                    Classes = new[] { "EntryPoint" },
+                    Links = new[]
+                    {
+                        new LinkDescription { Relations = new[] { "admin" }, TargetName = "Admin", AccessGroups = new[] { "admin" } },
+                        new LinkDescription { Relations = new[] { "public" }, TargetName = "Public" },
+                    },
+                },
+                new EntityTypeSchema { Name = "Admin", Classes = new[] { "Admin" } },
+                new EntityTypeSchema { Name = "Public", Classes = new[] { "Public" } },
+            },
+        };
+
+        var result = schema.ToDocumentation();
+
+        result.Should().Contain("| Access Groups |");
+        result.Should().Contain("| admin |");
+    }
+
+    [Fact]
+    public void ToDocumentation_renders_embedded_access_groups_in_table()
+    {
+        var schema = new HypermediaApiSchema
+        {
+            SchemaVersion = "1.0.0",
+            EntryPointName = "Root",
+            EntityTypes = new[]
+            {
+                new EntityTypeSchema
+                {
+                    Name = "Root",
+                    Classes = new[] { "EntryPoint" },
+                    EmbeddedEntities = new[]
+                    {
+                        new EmbeddedEntityDescription { Relations = new[] { "audit" }, TargetName = "Audit", AccessGroups = new[] { "admin" } },
+                    },
+                },
+                new EntityTypeSchema { Name = "Audit", Classes = new[] { "Audit" } },
+            },
+        };
+
+        var result = schema.ToDocumentation();
+
+        result.Should().Contain("| Access Groups |");
+        result.Should().Contain("| admin |");
     }
 }

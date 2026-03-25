@@ -57,11 +57,11 @@ The root resource of the Car Shop API. Start here to discover available resource
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| self | [EntryPoint](#entrypoint) |  |
-| customers | [CustomersRoot](#customersroot) | Browse and manage customers |
-| cars | [CarsRoot](#carsroot) | Browse available cars |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| self | [EntryPoint](#entrypoint) |  |  |
+| customers | [CustomersRoot](#customersroot) |  | Browse and manage customers |
+| cars | [CarsRoot](#carsroot) |  | Browse available cars |
 
 ## CustomersRoot
 
@@ -82,9 +82,9 @@ Lists all customers with the ability to create new ones.
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| self | [CustomersRoot](#customersroot) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| self | [CustomersRoot](#customersroot) |  |  |
 
 ### Actions
 
@@ -110,9 +110,9 @@ Registers a new customer in the system.
 
 ### Embedded Entities
 
-| Relation | Target | Collection | Description |
-|---|---|---|---|
-| item | [Customer](#customer) | yes | Customer entries in the collection |
+| Relation | Target | Collection | Access Groups | Description |
+|---|---|---|---|---|
+| item | [Customer](#customer) | yes |  | Customer entries in the collection |
 
 **Referenced by:**
 
@@ -137,17 +137,17 @@ Browseable list of all available cars.
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| self | [CarsRoot](#carsroot) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| self | [CarsRoot](#carsroot) |  |  |
 
 <a id="carsroot-embedded"></a>
 
 ### Embedded Entities
 
-| Relation | Target | Collection | Description |
-|---|---|---|---|
-| item | [Car](#car) | yes | Car entries in the collection |
+| Relation | Target | Collection | Access Groups | Description |
+|---|---|---|---|---|
+| item | [Car](#car) | yes |  | Car entries in the collection |
 
 **Referenced by:**
 
@@ -184,10 +184,10 @@ Represents an individual customer with their profile and available actions.
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| self | [Customer](#customer) |  |
-| orders *(optional)* | [CarsRoot](#carsroot) | Cars purchased by this customer |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| self | [Customer](#customer) |  |  |
+| orders *(optional)* | [CarsRoot](#carsroot) |  | Cars purchased by this customer |
 
 ### Actions
 
@@ -252,9 +252,9 @@ Represents an individual car available for purchase.
 
 ### Links
 
-| Relation | Target | Description |
-|---|---|---|
-| self | [Car](#car) |  |
+| Relation | Target | Access Groups | Description |
+|---|---|---|---|
+| self | [Car](#car) |  |  |
 
 **Referenced by:**
 

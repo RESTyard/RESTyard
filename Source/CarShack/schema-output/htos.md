@@ -9,6 +9,7 @@ classDiagram
     class Entrypoint {
     }
     class CarsRoot {
+        access: fleet-manager
         +UploadCarImage(params) CarImage
         +UploadInsuranceScan() CarInsurance
     }
@@ -60,6 +61,7 @@ classDiagram
     class CustomerPurchaseHistory {
     }
     class Customer {
+        access: customer
         +integer Age
         +string FullName
         +AddressTo Address
