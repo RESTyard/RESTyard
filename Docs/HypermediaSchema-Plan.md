@@ -370,6 +370,10 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Add to CarShack `Program.cs`
 - Document Schema endpoint usage in user docs
 
+#### Step 3.2: ❌ ~~Refactor `ResultType` to generic type parameter~~ — REJECTED
+- **Reason:** `ResultType` can legitimately be a non-HTO type. Without a meaningful generic constraint (`where TResult : IHypermediaObject`), the generic provides no compile-time safety advantage over `typeof()`. The only remaining benefit (shorter syntax) is offset by needing two attribute classes and worse readability (`<THto, TResult>` with two long type names).
+- **Decision:** Keep `ResultType = typeof(...)` property syntax. RY0032 warning is sufficient for the HTO case.
+
 ### Phase 4 (Optional): Access Groups
 
 > **Optional.** See the "Future Idea: Access Groups" section in `HypermediaSchema-Design.md` for the full design. Placed here (before ToSiren) because it's a schema concern that naturally extends Phases 2–3.
@@ -535,6 +539,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 #### Step 8.4: Update contract-first generator to emit `ResultType` and migrate to `[HypermediaActionEndpoint<T>]`
 - **Deferred from Step 2.13.1** — the contract-first generator currently emits legacy `[Http*HypermediaAction]` attributes, not `[HypermediaActionEndpoint<T>]`. Updating `ResultType` on the legacy attributes was done as part of Step 2.13, but the template should be migrated to the new attribute pattern as part of the overall migration.
+- **only new template engine** make sure only to update new aproach using razor templates (v5). also regenerate onyl using this
 - Update the server controller template (`server/csharp-controller/v4` or new `v5`) to emit `[HypermediaActionEndpoint<THto>]` instead of `[Http*HypermediaAction]`
 - Emit `ResultType = typeof(...)` on the new attribute when `operation.resultDocument` is set in the XML schema
 - **Implementation insights from Step 2.13.1:**
