@@ -418,7 +418,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Unit test: sanitizer removes groups, verify filtered output reflects sanitized set
 - Integration test: register a role-based sanitizer in CarShack, verify non-admin can't query admin-only groups
 
-#### Step 4.3.1: Access groups discovery endpoint
+#### Step 4.3.1: ✅ Access groups discovery endpoint
 - `MapHypermediaSchemaAccessGroups(Action<HypermediaSchemaAccessGroupsOptions>? configure = null)` extension method on `IEndpointRouteBuilder`
 - `HypermediaSchemaAccessGroupsOptions`: `Route` (default `"/schema/access-groups"`)
 - Returns `{ "accessGroups": [...] }` with content type `application/vnd.restyard.hypermedia-schema-access-groups+json` — the `DeclaredAccessGroups` filtered through `ISchemaAccessGroupSanitizer` for the current user

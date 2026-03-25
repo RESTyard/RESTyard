@@ -32,19 +32,13 @@ public static class HypermediaSchemaEndpointExtensions
 
     /// <summary>
     /// Maps a GET endpoint that serves the <see cref="HypermediaApiSchema"/> as JSON.
+    /// Default route: <c>/hypermedia-schema</c>.
     /// Supports optional access group filtering via query parameters:
     /// <c>?accessGroups=read,write</c> (include mode) or <c>?excludeAccessGroups=admin</c> (exclude mode).
     /// </summary>
     /// <remarks>
-    /// Make sure <c>AddHypermediaSchema()</c> was called during service registration
-    /// to enable the schema feature.
+    /// Requires <c>AddHypermediaSchema()</c> during service registration.
     /// </remarks>
-    /// <example>
-    /// <code>
-    /// app.MapHypermediaSchema();
-    /// app.MapHypermediaSchema(o => o.Route = "/api/schema");
-    /// </code>
-    /// </example>
     /// <param name="endpoints">The endpoint route builder.</param>
     /// <param name="configure">Optional configuration for the endpoint (route, etc.).</param>
     /// <returns>The route handler builder for further configuration (e.g., authorization).</returns>
@@ -115,5 +109,47 @@ public static class HypermediaSchemaEndpointExtensions
 
         var sanitized = sanitizer.SanitizeRequestedGroups(groups, context);
         return sanitized as HashSet<string> ?? sanitized.ToHashSet(StringComparer.Ordinal);
+    }
+
+    /// <summary>
+    /// Maps a GET endpoint that returns the access groups available to the current user.
+    /// Default route: <c>/schema/access-groups</c>.
+    /// Returns the <c>DeclaredAccessGroups</c> from the schema, filtered through
+    /// <see cref="ISchemaAccessGroupSanitizer"/> if registered.
+    /// </summary>
+    /// <param name="endpoints">The endpoint route builder.</param>
+    /// <param name="configure">Optional configuration for the endpoint (route, etc.).</param>
+    /// <returns>The route handler builder for further configuration (e.g., authorization).</returns>
+    public static IEndpointConventionBuilder MapHypermediaSchemaAccessGroups(
+        this IEndpointRouteBuilder endpoints,
+        Action<HypermediaSchemaAccessGroupsOptions>? configure = null)
+    {
+        var options = new HypermediaSchemaAccessGroupsOptions();
+        configure?.Invoke(options);
+
+        return endpoints.MapGet(options.Route, (
+            HypermediaApiSchema schema,
+            HttpContext context) =>
+        {
+            var declaredGroups = schema.DeclaredAccessGroups ?? [];
+
+            var sanitizer = context.RequestServices.GetService<ISchemaAccessGroupSanitizer>();
+            IReadOnlyList<string> visibleGroups;
+            if (sanitizer != null)
+            {
+                var asSet = declaredGroups.ToHashSet(StringComparer.Ordinal);
+                var sanitized = sanitizer.SanitizeRequestedGroups(asSet, context);
+                visibleGroups = sanitized.Order().ToList();
+            }
+            else
+            {
+                visibleGroups = declaredGroups;
+            }
+
+            var response = new AccessGroupsResponse { AccessGroups = visibleGroups };
+            var json = JsonSerializer.Serialize(response, SerializerOptions);
+            context.Response.ContentType = SchemaMediaTypes.HypermediaSchemaAccessGroups;
+            return context.Response.WriteAsync(json);
+        });
     }
 }

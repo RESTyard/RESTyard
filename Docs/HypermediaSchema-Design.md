@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 4 in progress. Last completed: **Step 4.3** (`ISchemaAccessGroupSanitizer` hook). Next: **Step 4.3.1** (Access groups discovery endpoint).
+> **Plan execution in progress.** Phase 4 in progress. Last completed: **Step 4.3.1** (Access groups discovery endpoint). Next: **Step 4.4** (CarShack demo).
 
 ## Table of Contents
 

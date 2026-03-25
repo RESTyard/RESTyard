@@ -58,6 +58,7 @@ namespace CarShack
             });
             app.MapControllers();
             app.MapHypermediaSchema();
+            app.MapHypermediaSchemaAccessGroups();
 
             await app.RunAsync();
         }

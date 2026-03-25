@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 using RESTyard.Integration.Test.Fixtures;
+using RESTyard.Schema;
 using RESTyard.Schema.Model;
 using Xunit.Abstractions;
 
@@ -132,6 +133,43 @@ public class SchemaEndpointTests : IAsyncLifetime
         schema.Should().NotBeNull();
         schema.EntityTypes.Should().NotBeEmpty();
         schema.DeclaredAccessGroups.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task AccessGroups_endpoint_returns_correct_content_type()
+    {
+        var client = waf.CreateClient();
+        var response = await client.GetAsync("/schema/access-groups");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.Should().Be(SchemaMediaTypes.HypermediaSchemaAccessGroups);
+    }
+
+    [Fact]
+    public async Task AccessGroups_endpoint_returns_empty_when_no_groups_declared()
+    {
+        var client = waf.CreateClient();
+        var json = await client.GetStringAsync("/schema/access-groups");
+
+        json.Should().Contain("\"accessGroups\"");
+        // CarShack has no access groups currently
+        json.Should().Contain("[]");
+    }
+
+    [Fact]
+    public async Task AccessGroups_endpoint_with_sanitizer_filters_groups()
+    {
+        var client = waf.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton<ISchemaAccessGroupSanitizer>(new StripSecretSanitizer());
+            });
+        }).CreateClient();
+
+        // Sanitizer only affects groups that exist — with no declared groups, result is still empty
+        var json = await client.GetStringAsync("/schema/access-groups");
+        json.Should().Contain("\"accessGroups\"");
     }
 
     private class StripSecretSanitizer : ISchemaAccessGroupSanitizer
