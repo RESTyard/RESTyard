@@ -6,8 +6,6 @@ RESTyard demo API for managing cars and customers
 
 **Entry Point:** [Entrypoint](#entrypoint)
 
-**Declared Access Groups:** customer, fleet-manager
-
 ## Table of Contents
 
 - [Entrypoint](#entrypoint)
@@ -31,6 +29,11 @@ RESTyard demo API for managing cars and customers
 - [SortParameter<CustomerSortProperties>](#definition-sortparameterofcustomersortproperties)
 - [CustomerFilter](#definition-customerfilter)
 - [AddressTo](#definition-addressto)
+
+**Access Groups**
+
+- [customer](#access-group-customer)
+- [fleet-manager](#access-group-fleet-manager)
 
 ## API Map
 
@@ -161,7 +164,7 @@ The Cars API
 
 - `CarsRoot`
 
-**Access Groups:** fleet-manager
+**Access Groups:** [fleet-manager](#access-group-fleet-manager)
 
 <a id="carsroot-links"></a>
 
@@ -260,7 +263,7 @@ Query result on Customer
 
 - `Customer`
 
-**Access Groups:** customer
+**Access Groups:** [customer](#access-group-customer)
 
 <a id="customer-properties"></a>
 
@@ -701,3 +704,17 @@ Derived Operation
 | Number | string | no |  |
 | City | string | no |  |
 | ZipCode | string | no |  |
+
+## Access Groups
+
+<a id="access-group-customer"></a>
+
+### customer
+
+- [Customer](#customer) (entity)
+
+<a id="access-group-fleet-manager"></a>
+
+### fleet-manager
+
+- [CarsRoot](#carsroot) (entity)

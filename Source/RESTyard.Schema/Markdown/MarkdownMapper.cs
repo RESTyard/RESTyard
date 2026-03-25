@@ -34,10 +34,11 @@ public static class MarkdownMapper
         AppendHeader(sb, schema);
 
         var orderedEntities = GetBfsOrderedEntities(schema);
+        var accessGroupUsages = CollectAccessGroupUsages(schema);
 
         if (opts.IncludeTableOfContents && (orderedEntities.Count > 0 || schema.Definitions.Count > 0))
         {
-            AppendTableOfContents(sb, orderedEntities, schema.Definitions);
+            AppendTableOfContents(sb, orderedEntities, schema.Definitions, accessGroupUsages);
         }
 
         if (opts.IncludeDiagram && schema.EntityTypes.Count > 0)
@@ -56,6 +57,11 @@ public static class MarkdownMapper
         {
             var usages = CollectDefinitionUsages(schema);
             AppendDefinitionsSection(sb, schema.Definitions, usages);
+        }
+
+        if (accessGroupUsages.Count > 0)
+        {
+            AppendAccessGroupsSection(sb, accessGroupUsages);
         }
 
         return sb.ToString().TrimEnd();
@@ -90,17 +96,13 @@ public static class MarkdownMapper
             sb.AppendLine($"**Entry Point:** [{schema.EntryPointName}](#{ToAnchor(schema.EntryPointName)})");
         }
 
-        if (schema.DeclaredAccessGroups is { Count: > 0 } groups)
-        {
-            sb.AppendLine();
-            sb.AppendLine($"**Declared Access Groups:** {string.Join(", ", groups)}");
-        }
     }
 
     private static void AppendTableOfContents(
         StringBuilder sb,
         IReadOnlyList<EntityTypeSchema> entities,
-        IDictionary<string, JsonDocument> definitions)
+        IDictionary<string, JsonDocument> definitions,
+        SortedDictionary<string, List<string>> accessGroupUsages)
     {
         sb.AppendLine();
         sb.AppendLine("## Table of Contents");
@@ -122,6 +124,17 @@ public static class MarkdownMapper
                 var displayName = GetDisplayNameFromSchema(defSchema) ?? CleanTypeName(def.Key);
                 var anchor = ToAnchor(def.Key);
                 sb.AppendLine($"- [{displayName}](#definition-{anchor})");
+            }
+        }
+
+        if (accessGroupUsages.Count > 0)
+        {
+            sb.AppendLine();
+            sb.AppendLine("**Access Groups**");
+            sb.AppendLine();
+            foreach (var group in accessGroupUsages.Keys)
+            {
+                sb.AppendLine($"- [{group}](#access-group-{ToAnchor(group)})");
             }
         }
     }
@@ -492,7 +505,7 @@ public static class MarkdownMapper
         return null;
     }
 
-    private static void AddUsage(Dictionary<string, List<string>> usages, string defName, string usage)
+    private static void AddUsage(IDictionary<string, List<string>> usages, string defName, string usage)
     {
         if (!usages.TryGetValue(defName, out var list))
         {
@@ -567,8 +580,96 @@ public static class MarkdownMapper
         if (accessGroups == null || accessGroups.Count == 0)
             return;
 
+        var links = string.Join(", ", accessGroups.Select(g => $"[{g}](#access-group-{ToAnchor(g)})"));
         sb.AppendLine();
-        sb.AppendLine($"**Access Groups:** {string.Join(", ", accessGroups)}");
+        sb.AppendLine($"**Access Groups:** {links}");
+    }
+
+    /// <summary>
+    /// Collects all access group usages across entities, actions, links, and embedded entities.
+    /// Returns a sorted dictionary from group name to list of Markdown links pointing to the referencing elements.
+    /// </summary>
+    private static SortedDictionary<string, List<string>> CollectAccessGroupUsages(HypermediaApiSchema schema)
+    {
+        var usages = new SortedDictionary<string, List<string>>(StringComparer.Ordinal);
+
+        foreach (var entity in schema.EntityTypes)
+        {
+            if (entity.AccessGroups is { Count: > 0 } entityGroups)
+            {
+                foreach (var group in entityGroups)
+                {
+                    AddUsage(usages, group,
+                        $"[{entity.Name}](#{ToAnchor(entity.Name)}) (entity)");
+                }
+            }
+
+            foreach (var action in entity.Actions)
+            {
+                if (action.AccessGroups is { Count: > 0 } actionGroups)
+                {
+                    var actionAnchor = $"{ToAnchor(entity.Name)}-{ToAnchor(action.Name)}";
+                    foreach (var group in actionGroups)
+                    {
+                        AddUsage(usages, group,
+                            $"[{entity.Name} → {action.Name}](#{actionAnchor}) (action)");
+                    }
+                }
+            }
+
+            foreach (var link in entity.Links)
+            {
+                if (link.AccessGroups is { Count: > 0 } linkGroups)
+                {
+                    var rel = MermaidMapper.GetFirstRelation(link.Relations);
+                    foreach (var group in linkGroups)
+                    {
+                        AddUsage(usages, group,
+                            $"[{entity.Name}](#{ToAnchor(entity.Name)}-links) (link: {rel})");
+                    }
+                }
+            }
+
+            foreach (var embedded in entity.EmbeddedEntities)
+            {
+                if (embedded.AccessGroups is { Count: > 0 } embeddedGroups)
+                {
+                    var rel = MermaidMapper.GetFirstRelation(embedded.Relations);
+                    foreach (var group in embeddedGroups)
+                    {
+                        AddUsage(usages, group,
+                            $"[{entity.Name}](#{ToAnchor(entity.Name)}-embedded) (embedded: {rel})");
+                    }
+                }
+            }
+        }
+
+        return usages;
+    }
+
+    private static void AppendAccessGroupsSection(
+        StringBuilder sb,
+        SortedDictionary<string, List<string>> accessGroupUsages)
+    {
+        sb.AppendLine();
+        sb.AppendLine("## Access Groups");
+
+        foreach (var kvp in accessGroupUsages)
+        {
+            var group = kvp.Key;
+            var refs = kvp.Value;
+
+            sb.AppendLine();
+            sb.AppendLine($"<a id=\"access-group-{ToAnchor(group)}\"></a>");
+            sb.AppendLine();
+            sb.AppendLine($"### {group}");
+            sb.AppendLine();
+
+            foreach (var r in refs)
+            {
+                sb.AppendLine($"- {r}");
+            }
+        }
     }
 
     private static string FormatAccessGroupsInline(IReadOnlyList<string>? accessGroups)
@@ -576,7 +677,7 @@ public static class MarkdownMapper
         if (accessGroups == null || accessGroups.Count == 0)
             return "";
 
-        return string.Join(", ", accessGroups);
+        return string.Join(", ", accessGroups.Select(g => $"[{g}](#access-group-{ToAnchor(g)})"));
     }
 
     private static string FormatRelation(string rel, bool isMandatory, bool isDeprecated)

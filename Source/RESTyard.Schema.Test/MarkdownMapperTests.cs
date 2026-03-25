@@ -597,7 +597,7 @@ public class MarkdownMapperTests() : VerifyBase()
     }
 
     [Fact]
-    public void ToDocumentation_renders_declared_access_groups_in_header()
+    public void ToDocumentation_renders_access_groups_section_with_usages()
     {
         var schema = new HypermediaApiSchema
         {
@@ -605,16 +605,32 @@ public class MarkdownMapperTests() : VerifyBase()
             Title = "Test",
             EntryPointName = "Root",
             DeclaredAccessGroups = new[] { "admin", "read" },
-            EntityTypes = new[] { new EntityTypeSchema { Name = "Root", Classes = new[] { "EntryPoint" } } },
+            EntityTypes = new[]
+            {
+                new EntityTypeSchema
+                {
+                    Name = "Root",
+                    Classes = new[] { "EntryPoint" },
+                    AccessGroups = new[] { "admin" },
+                    Actions = new[] { new ActionDescription { Name = "Delete", AccessGroups = new[] { "admin" } } },
+                },
+            },
         };
 
         var result = schema.ToDocumentation();
 
-        result.Should().Contain("**Declared Access Groups:** admin, read");
+        // Section exists
+        result.Should().Contain("## Access Groups");
+        result.Should().Contain("### admin");
+        // Sub-items with links
+        result.Should().Contain("[Root](#root) (entity)");
+        result.Should().Contain("[Root → Delete](#root-delete) (action)");
+        // TOC entry
+        result.Should().Contain("[admin](#access-group-admin)");
     }
 
     [Fact]
-    public void ToDocumentation_renders_entity_access_groups()
+    public void ToDocumentation_renders_entity_access_groups_with_backlinks()
     {
         var schema = new HypermediaApiSchema
         {
@@ -628,11 +644,12 @@ public class MarkdownMapperTests() : VerifyBase()
 
         var result = schema.ToDocumentation();
 
-        result.Should().Contain("**Access Groups:** admin");
+        // Entity shows back-link to access group section
+        result.Should().Contain("**Access Groups:** [admin](#access-group-admin)");
     }
 
     [Fact]
-    public void ToDocumentation_renders_action_access_groups()
+    public void ToDocumentation_renders_action_access_groups_with_backlinks()
     {
         var schema = new HypermediaApiSchema
         {
@@ -651,7 +668,7 @@ public class MarkdownMapperTests() : VerifyBase()
 
         var result = schema.ToDocumentation();
 
-        result.Should().Contain("**Access Groups:** admin, sales");
+        result.Should().Contain("**Access Groups:** [admin](#access-group-admin), [sales](#access-group-sales)");
     }
 
     [Fact]
@@ -681,7 +698,7 @@ public class MarkdownMapperTests() : VerifyBase()
         var result = schema.ToDocumentation();
 
         result.Should().Contain("| Access Groups |");
-        result.Should().Contain("| admin |");
+        result.Should().Contain("[admin](#access-group-admin)");
     }
 
     [Fact]
@@ -709,6 +726,6 @@ public class MarkdownMapperTests() : VerifyBase()
         var result = schema.ToDocumentation();
 
         result.Should().Contain("| Access Groups |");
-        result.Should().Contain("| admin |");
+        result.Should().Contain("[admin](#access-group-admin)");
     }
 }
