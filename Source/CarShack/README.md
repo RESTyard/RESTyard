@@ -23,7 +23,13 @@ Note that a real client should **only** know the route to the EntryPoint and nav
 
 ## Schema Generation
 
-CarShack supports generating API schema artifacts via CLI:
+CarShack supports generating API schema artifacts via CLI. Use `--schema-help` to see all available options:
+
+```bash
+dotnet run --project Source/CarShack/CarShack.csproj -- --schema-help
+```
+
+Common usage:
 
 ```bash
 # Generate all artifacts (JSON schema, Mermaid diagrams, Markdown documentation)
@@ -32,8 +38,8 @@ dotnet run --project Source/CarShack/CarShack.csproj -- --generate-schema --sche
 # Generate only the JSON schema
 dotnet run --project Source/CarShack/CarShack.csproj -- --generate-schema --schema-artifacts json-hypermedia-api-schema --schema-output ./schema-output
 
-# Generate with raw Mermaid (no Markdown wrapping)
-dotnet run --project Source/CarShack/CarShack.csproj -- --generate-schema --schema-output ./schema-output
+# Generate filtered by access groups
+dotnet run --project Source/CarShack/CarShack.csproj -- --generate-schema --schema-output ./schema-output --access-groups customer
 ```
 
 This produces:
