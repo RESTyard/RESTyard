@@ -15,6 +15,7 @@ using RESTyard.AspNetCore.Util.Enum;
 using RESTyard.AspNetCore.Util.Repository;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
+using RESTyard.Schema.Model;
 
 namespace CarShack.Hypermedia;
 
@@ -93,6 +94,7 @@ public partial class HypermediaEntrypointHto
    public ExternalLink Schema { get; init; } = HypermediaSchema.Link();
 }
 
+[HypermediaAccessGroup("customer")]
 public partial class HypermediaCustomerHto
 {
     public partial record CustomKey(int Key);
@@ -159,6 +161,7 @@ public partial class HypermediaCustomersRootHto
     }
 }
 
+[HypermediaAccessGroup("fleet-manager")]
 public partial class HypermediaCarsRootHto
 {
     [ActivatorUtilitiesConstructor]

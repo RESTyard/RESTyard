@@ -155,6 +155,9 @@
         }
       ],
       "embeddedEntities": [],
+      "requiredAccessGroups": [
+        "fleet-manager"
+      ],
       "isDeprecated": false
     },
     {
@@ -956,6 +959,9 @@
         }
       ],
       "embeddedEntities": [],
+      "requiredAccessGroups": [
+        "customer"
+      ],
       "isDeprecated": false
     },
     {
@@ -1136,5 +1142,9 @@
       },
       "$id": "type:CarShack.Hypermedia.AddressTo"
     }
-  }
+  },
+  "declaredAccessGroups": [
+    "customer",
+    "fleet-manager"
+  ]
 }

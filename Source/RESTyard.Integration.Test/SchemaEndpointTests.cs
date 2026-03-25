@@ -48,6 +48,8 @@ public class SchemaEndpointTests : IAsyncLifetime
         schema.Title.Should().Be("CarShack API");
         schema.EntryPointName.Should().NotBeNullOrEmpty();
         schema.EntityTypes.Should().NotBeEmpty();
+        schema.DeclaredAccessGroups.Should().Contain("customer");
+        schema.DeclaredAccessGroups.Should().Contain("fleet-manager");
     }
 
     [Fact]
@@ -79,28 +81,28 @@ public class SchemaEndpointTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Schema_endpoint_with_accessGroups_returns_filtered_schema()
+    public async Task Schema_endpoint_with_accessGroups_filters_entities()
     {
         var client = waf.CreateClient();
-        // CarShack has no access groups, so filtering with any group should still return all public entities
-        var json = await client.GetStringAsync("/hypermedia-schema?accessGroups=read");
+        var json = await client.GetStringAsync("/hypermedia-schema?accessGroups=customer");
         var schema = HypermediaApiSchema.FromJson(json);
 
-        schema.Should().NotBeNull();
         schema.DeclaredAccessGroups.Should().BeNull("filtered schema should strip DeclaredAccessGroups");
-        schema.EntityTypes.Should().NotBeEmpty();
+        schema.EntityTypes.Should().Contain(e => e.Name == "Customer");
+        schema.EntityTypes.Should().NotContain(e => e.Name == "CarsRoot",
+            "CarsRoot requires 'fleet-manager' which is not in the granted set");
     }
 
     [Fact]
-    public async Task Schema_endpoint_with_excludeAccessGroups_returns_filtered_schema()
+    public async Task Schema_endpoint_with_excludeAccessGroups_filters_entities()
     {
         var client = waf.CreateClient();
-        var json = await client.GetStringAsync("/hypermedia-schema?excludeAccessGroups=admin");
+        var json = await client.GetStringAsync("/hypermedia-schema?excludeAccessGroups=customer");
         var schema = HypermediaApiSchema.FromJson(json);
 
-        schema.Should().NotBeNull();
         schema.DeclaredAccessGroups.Should().BeNull();
-        schema.EntityTypes.Should().NotBeEmpty();
+        schema.EntityTypes.Should().NotContain(e => e.Name == "Customer");
+        schema.EntityTypes.Should().Contain(e => e.Name == "CarsRoot");
     }
 
     [Fact]
@@ -146,14 +148,14 @@ public class SchemaEndpointTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task AccessGroups_endpoint_returns_empty_when_no_groups_declared()
+    public async Task AccessGroups_endpoint_returns_declared_groups()
     {
         var client = waf.CreateClient();
         var json = await client.GetStringAsync("/schema/access-groups");
 
         json.Should().Contain("\"accessGroups\"");
-        // CarShack has no access groups currently
-        json.Should().Contain("[]");
+        json.Should().Contain("customer");
+        json.Should().Contain("fleet-manager");
     }
 
     [Fact]
