@@ -57,10 +57,9 @@ public static class HypermediaSchemaEndpointExtensions
         return endpoints.MapGet(options.Route, (
             HypermediaApiSchema schema,
             HttpContext context,
-            string? accessGroups,
-            string? excludeAccessGroups) =>
+            [AsParameters] HypermediaSchemaFilterParameters filter) =>
         {
-            if (!string.IsNullOrEmpty(accessGroups) && !string.IsNullOrEmpty(excludeAccessGroups))
+            if (!string.IsNullOrEmpty(filter.AccessGroups) && !string.IsNullOrEmpty(filter.ExcludeAccessGroups))
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 context.Response.ContentType = "application/problem+json";
@@ -74,14 +73,14 @@ public static class HypermediaSchemaEndpointExtensions
                 return context.Response.WriteAsync(problem);
             }
 
-            if (!string.IsNullOrEmpty(accessGroups))
+            if (!string.IsNullOrEmpty(filter.AccessGroups))
             {
-                var groups = SanitizeGroups(ParseAccessGroups(accessGroups), context);
+                var groups = SanitizeGroups(ParseAccessGroups(filter.AccessGroups), context);
                 schema = HypermediaSchemaFilter.ForAccessGroups(schema, groups);
             }
-            else if (!string.IsNullOrEmpty(excludeAccessGroups))
+            else if (!string.IsNullOrEmpty(filter.ExcludeAccessGroups))
             {
-                var groups = SanitizeGroups(ParseAccessGroups(excludeAccessGroups), context);
+                var groups = SanitizeGroups(ParseAccessGroups(filter.ExcludeAccessGroups), context);
                 schema = HypermediaSchemaFilter.ExcludeAccessGroups(schema, groups);
             }
 

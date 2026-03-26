@@ -330,10 +330,16 @@ public partial class HypermediaEntrypointHto
     [Relations(["schema"])]
     public ExternalLink Schema { get; init; } = HypermediaSchema.Link();
 
+    [Relations(["schema-customer"])]
+    public ExternalLink CustomerSchema { get; init; } = HypermediaSchema.Link(
+        new HypermediaSchemaFilterParameters { AccessGroups = "customer" });
+
     [Relations(["access-groups"])]
     public ExternalLink AccessGroups { get; init; } = HypermediaSchemaAccessGroups.Link();
 }
 ```
+
+`HypermediaSchema.Link(HypermediaSchemaFilterParameters)` creates a link to the filtered schema. This also enables building a custom schema HTO with a filter action — the action handler can use `HypermediaSchema.Link(parameters)` to build the filtered URL and return it as a `Created` response with `Location` header.
 
 ## CLI Schema Generation
 

@@ -28,4 +28,17 @@ public static class HypermediaSchema
                 new InternalReference(HypermediaSchemaEndpointExtensions.RouteName)
                     .WithAvailableMediaType(SchemaMediaTypes.HypermediaApiSchema)));
     }
+
+    /// <summary>
+    /// Creates an <see cref="ExternalLink"/> pointing to the schema endpoint with access group filter
+    /// query parameters.
+    /// </summary>
+    /// <param name="filter">Filter parameters. Set either <c>AccessGroups</c> or <c>ExcludeAccessGroups</c>.</param>
+    public static ExternalLink Link(HypermediaSchemaFilterParameters filter)
+    {
+        return Hypermedia.Link.External(
+            new HypermediaObjectReference(
+                new InternalReference(HypermediaSchemaEndpointExtensions.RouteName, filter)
+                    .WithAvailableMediaType(SchemaMediaTypes.HypermediaApiSchema)));
+    }
 }

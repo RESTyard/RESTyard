@@ -174,6 +174,25 @@ public class SchemaEndpointTests : IAsyncLifetime
         json.Should().Contain("\"accessGroups\"");
     }
 
+    [Fact]
+    public async Task Entrypoint_filtered_schema_link_resolves_to_filtered_schema()
+    {
+        var client = waf.CreateClient();
+
+        // Get the entrypoint Siren response and find the schema-customer link
+        var entrypointJson = await client.GetStringAsync("/EntryPoint");
+        entrypointJson.Should().Contain("schema-customer");
+        entrypointJson.Should().Contain("AccessGroups=customer");
+
+        // Follow the filtered link — should return a filtered schema
+        var json = await client.GetStringAsync("/hypermedia-schema?accessGroups=customer");
+        var schema = HypermediaApiSchema.FromJson(json);
+
+        schema.EntityTypes.Should().Contain(e => e.Name == "Customer");
+        schema.EntityTypes.Should().NotContain(e => e.Name == "CarsRoot",
+            "CarsRoot requires 'fleet-manager' which is not in the granted set");
+    }
+
     private class StripSecretSanitizer : ISchemaAccessGroupSanitizer
     {
         public IReadOnlySet<string> SanitizeRequestedGroups(

@@ -93,6 +93,10 @@ public partial class HypermediaEntrypointHto
    [Relations(["schema"])]
    public ExternalLink Schema { get; init; } = HypermediaSchema.Link();
 
+   [Relations(["schema-customer"])]
+   public ExternalLink CustomerSchema { get; init; } = HypermediaSchema.Link(
+       new HypermediaSchemaFilterParameters { AccessGroups = "customer" });
+
    [Relations(["access-groups"])]
    public ExternalLink AccessGroups { get; init; } = HypermediaSchemaAccessGroups.Link();
 }

@@ -485,23 +485,12 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - `--access-groups`, `--exclude-access-groups` args
 - `--schema-help` usage
 
-#### Step 4.8 (Future idea): Hypermedia-discoverable filtered schema links
-
-Two options investigated:
-
-**Option A (simple): `HypermediaSchema.FilteredLink()` helper** — passes query params through existing `InternalReference` → route resolver → `LinkGenerator` chain. No new endpoint, no framework extension. The filter is idempotent so a GET link is sufficient.
-```csharp
-[Relations(["schema-customer"])]
-public ExternalLink CustomerSchema { get; init; }
-    = HypermediaSchema.FilteredLink(accessGroups: "customer");
-// → resolves to /hypermedia-schema?accessGroups=customer
-```
-
-**Option B (action via thin controller): `CreateSchemaQuery` action on entrypoint** — a standard `HypermediaAction<SchemaFilterParameters>` on the entrypoint HTO, backed by a thin controller with `[HypermediaActionEndpoint]` at `POST /hypermedia-schema/query`. The controller builds a Location URL to the existing GET endpoint with query params and returns `201 Created`. Standard RESTyard action flow — framework resolves the action href automatically.
-
-**Option C (full HTO): `HypermediaSchemaRootHto`** — a proper Siren resource with `AvailableAccessGroups` property and a query action. More complex (dedicated controller, route registration). Current framework limitation: `HypermediaExternalAction` doesn't support `InternalReference` for route resolution.
-
-> **Note:** The route resolver uses `IApiDescriptionGroupCollectionProvider` (ASP.NET Core ApiExplorer) which discovers both controller and minimal API endpoints. The filter checks for `IHypermediaEndpointMetadata` in endpoint metadata. Minimal API endpoints can attach this via `.WithMetadata(new HypermediaActionEndpointAttribute<T>(...))`. This means Option B could be a minimal API endpoint instead of a controller — needs verification.
+#### Step 4.8: ✅ Filtered schema links via `HypermediaSchema.Link(filter)`
+- `HypermediaSchema.Link(HypermediaSchemaFilterParameters)` creates links to filtered schemas
+- `HypermediaSchemaFilterParameters` shared between link helper and endpoint (`[AsParameters]`)
+- Added `schema-customer` filtered link to CarShack entrypoint
+- Integration test: entrypoint link resolves to filtered schema
+- No convenience schema HTO/action endpoint built — the link helper enables users to build their own if needed
 
 ### Phase 5: Source Generator — Siren POCOs
 
