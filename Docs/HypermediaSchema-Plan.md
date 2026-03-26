@@ -608,6 +608,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Make sure mappers (mermaid and markdown) are supporting  access groups on actiosn, links subentities. Prompt the user to check visaually.
 
 #### Step 8.5: Migrate `ActionParameterTypes` endpoint to minimal API
+- minimal api support is notyet implemented. work can be found e.g. here: https://github.com/RESTyard/RESTyard/blob/feature/restyard-minimal-apis/Source/RESTyard.AspNetCore/MinimalApi/Extensions/EndpointRouteBuilderExtensions.cs
 - The current `ActionParameterTypesController` is an MVC controller registered automatically via `AddHypermediaExtensions`. It serves JSON Schema for action parameter types. Users cannot add authorization policies to it (only global MVC filters apply).
 - Migrate to a minimal API endpoint similar to `MapHypermediaSchema()` — e.g., `MapActionParameterTypes()` returning `IEndpointConventionBuilder` so users can chain `.RequireAuthorization()`.
 - **Configuration bridge:** Currently `HypermediaExtensionsOptions` controls whether the endpoint is registered. Maintain this: if the user calls `MapActionParameterTypes()` explicitly, the old MVC controller is not registered. If they don't call it, the existing MVC controller behavior is preserved for backwards compatibility. Consider a flag like `HypermediaExtensionsOptions.AutoRegisterParameterTypeEndpoint = true` (default, current behavior) that can be set to `false` when the user opts into the minimal API version.
