@@ -485,17 +485,23 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - `--access-groups`, `--exclude-access-groups` args
 - `--schema-help` usage
 
-#### Step 4.8 (Future idea): Schema as RESTyard HTO with query action in SchemaRootHto
-- **Not designed yet** — to be explored after basic filtering is stable
-- Serve the schema as `HypermediaSchemaHto` — a proper RESTyard hypermedia resource
-- Query action accepts `accessGroups` / `excludeAccessGroups` as parameters, returns filtered schema
-- `AvailableAccessGroups` property lists only the groups the current user can query (post-sanitization via `ISchemaAccessGroupSanitizer`)
-- Query action parameter is a string list — client selects from `AvailableAccessGroups`
-- Stays within RESTyard's hypermedia design: client discovers filtering via the HTO's actions
-- Trade-off: more complex (controller, route registration, Siren serialization) vs. the simple JSON endpoint
-- Both query parameters and `AvailableAccessGroups` are sanitized by `ISchemaAccessGroupSanitizer`
-- Schema is still a JSON download link (not rendered as Siren) — the HTO wraps the query/filtering, not the schema content
-- Consider making this a default endpoint (auto-registered like action parameter schema endpoints)
+#### Step 4.8 (Future idea): Hypermedia-discoverable filtered schema links
+
+Two options investigated:
+
+**Option A (simple): `HypermediaSchema.FilteredLink()` helper** — passes query params through existing `InternalReference` → route resolver → `LinkGenerator` chain. No new endpoint, no framework extension. The filter is idempotent so a GET link is sufficient.
+```csharp
+[Relations(["schema-customer"])]
+public ExternalLink CustomerSchema { get; init; }
+    = HypermediaSchema.FilteredLink(accessGroups: "customer");
+// → resolves to /hypermedia-schema?accessGroups=customer
+```
+
+**Option B (action via thin controller): `CreateSchemaQuery` action on entrypoint** — a standard `HypermediaAction<SchemaFilterParameters>` on the entrypoint HTO, backed by a thin controller with `[HypermediaActionEndpoint]` at `POST /hypermedia-schema/query`. The controller builds a Location URL to the existing GET endpoint with query params and returns `201 Created`. Standard RESTyard action flow — framework resolves the action href automatically.
+
+**Option C (full HTO): `HypermediaSchemaRootHto`** — a proper Siren resource with `AvailableAccessGroups` property and a query action. More complex (dedicated controller, route registration). Current framework limitation: `HypermediaExternalAction` doesn't support `InternalReference` for route resolution.
+
+> **Note:** The route resolver uses `IApiDescriptionGroupCollectionProvider` (ASP.NET Core ApiExplorer) which discovers both controller and minimal API endpoints. The filter checks for `IHypermediaEndpointMetadata` in endpoint metadata. Minimal API endpoints can attach this via `.WithMetadata(new HypermediaActionEndpointAttribute<T>(...))`. This means Option B could be a minimal API endpoint instead of a controller — needs verification.
 
 ### Phase 5: Source Generator — Siren POCOs
 

@@ -950,6 +950,21 @@ The existing contract-first XML schema (`Hypermedia.xsd` / `Hypermedia.cs`) cont
   - **Entity properties via generated POCO instead of `SchemaHelper`**: Rather than generating individual `schemaFactory.Generate(typeof(string))` calls per property and gluing them together via `SchemaHelper.BuildPropertiesSchema`, the source generator emits a **properties POCO class** per HTO (e.g., `HypermediaCustomerHtoProperties`) and generates a single `schemaFactory.Generate(typeof(HypermediaCustomerHtoProperties))` call. The POCO contains only data properties (same filtering rules as the Siren properties POCO in Phase 5), with `[HypermediaProperty(Name)]` applied structurally and all non-RESTyard attributes forwarded verbatim. This means `[Title]`, `[Description]`, `[JsonConverter]`, and any 3rd-party attributes with registered `IAttributeHandler`s flow through `JsonSchema.Net`'s generation pipeline automatically — no custom JSON merging logic needed. XML doc comments from HTO properties are **copied verbatim** to the generated POCO (not converted to `[Title]`/`[Description]` attributes, to avoid pulling a `JsonSchema.Net.Generation` dependency into the source generator); a future `ISchemaRefiner` that reads XML doc comments would then pick them up for both entity properties and action parameters uniformly. This POCO is the **same type** reused in Phase 5 (Step 5.1) for `ToSiren()` Siren property mapping — one generated class serves both schema generation and Siren serialization. `SchemaHelper.BuildPropertiesSchema` becomes unnecessary for entity property schema generation and can be removed.
   - **AOT compatibility**: The runtime delegation approach uses reflection internally (via `JsonSchema.Net.Generation`), which is incompatible with NativeAOT trimming. This is acceptable for now — RESTyard and ASP.NET Core are reflection-heavy throughout. When AOT becomes a target, the planned migration path is a **two-phase build**: a post-compilation MSBuild task that loads the compiled assembly, runs `IJsonSchemaFactory` with the full DI configuration (preserving user-registered custom generators), and writes the resulting JSON Schema strings into a generated `.cs` file or embedded resource. This preserves `IJsonSchemaFactory` extensibility while eliminating runtime reflection. To be designed when AOT is actively pursued.
 
+### Known Limitation: Minimal API and `ResultType`
+
+Minimal API endpoints can serve as HTO and action endpoints by attaching metadata via `.WithMetadata()`. The `HypermediaApiExplorer` (which uses ASP.NET Core's `IApiDescriptionGroupCollectionProvider`) discovers both controller and minimal API endpoints.
+
+However, `ResultType` on `[HypermediaActionEndpoint]` is read by the **source generator at compile time** — it scans controller method attributes in the compilation. `.WithMetadata()` calls are runtime code, invisible to the source generator. This means:
+
+| Feature | Controller | Minimal API |
+|---|---|---|
+| `[HypermediaObjectEndpoint<T>]` route discovery | Yes (attribute) | Yes (`.WithMetadata()`) |
+| `[HypermediaActionEndpoint<T>]` route discovery | Yes (attribute) | Yes (`.WithMetadata()`) |
+| `[HypermediaAccessGroup]` on HTOs | Yes | Yes (attribute is on HTOs, not endpoints) |
+| `ResultType` for schema generation | Yes (compile-time) | **No** (runtime-only, invisible to generator) |
+
+**TODO:** To support `ResultType` with minimal API, consider a runtime registry for action result mappings (similar to `ActionResultRegistry` for multi-assembly support) or a separate attribute on the HTO action property itself (e.g., `[HypermediaAction(ResultType = typeof(X))]`).
+
 ## Future Idea: Access Groups
 
 > **Status:** Future idea — not part of the initial implementation. To be revisited after the core schema and source generator are stable.

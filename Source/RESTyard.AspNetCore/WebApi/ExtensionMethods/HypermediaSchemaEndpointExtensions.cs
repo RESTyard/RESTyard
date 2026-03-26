@@ -21,12 +21,12 @@ public static class HypermediaSchemaEndpointExtensions
     /// The route name for the schema endpoint. Use with <see cref="InternalReference"/>
     /// to create links to the schema from HTOs.
     /// </summary>
-    public const string RouteName = "HypermediaSchema";
+    public const string RouteName = "Restyard_HypermediaSchema";
 
     /// <summary>
     /// The route name for the access groups discovery endpoint.
     /// </summary>
-    public const string AccessGroupsRouteName = "HypermediaSchemaAccessGroups";
+    public const string AccessGroupsRouteName = "Restyard_HypermediaSchemaAccessGroups";
 
     private const string SchemaMediaType = SchemaMediaTypes.HypermediaApiSchema;
 

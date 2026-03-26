@@ -253,6 +253,24 @@ This populates `ActionDescription.ResultName` in the schema, enabling:
 public Task<IActionResult> CreateQueryAsync(...) { ... }
 ```
 
+## Minimal API Endpoints
+
+Minimal API endpoints can serve as HTO and action endpoints by attaching RESTyard metadata via `.WithMetadata()`:
+
+```csharp
+// HTO endpoint
+app.MapGet("/customers/{id}", (int id) => { ... })
+   .WithMetadata(new HypermediaObjectEndpointAttribute<HypermediaCustomerHto>(typeof(CustomerRouteKeyProducer)));
+
+// Action endpoint
+app.MapPost("/customers", ([FromBody] CreateCustomerParameters parameters) => { ... })
+   .WithMetadata(new HypermediaActionEndpointAttribute<HypermediaCustomersRootHto>("CreateCustomer"));
+```
+
+The route resolver discovers these endpoints via ASP.NET Core's `ApiExplorer`, which includes both controller and minimal API endpoints.
+
+**Limitation:** `ResultType` is not supported on minimal API endpoints. The source generator reads `ResultType` from controller method attributes at compile time — `.WithMetadata()` calls are runtime code and invisible to the generator. Use controllers when `ResultType` is needed, or declare result types on HTO action properties directly (future enhancement).
+
 ## Verifying Generation Works
 
 After adding `[assembly: HypermediaAssembly]` and building:
