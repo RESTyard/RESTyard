@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 4 complete. Last completed: **Step 4.7** (Update documentation for access groups). Next: **Phase 5** (Siren POCOs) or **Phase 8** (Migration and Parity).
+> **Plan execution in progress.** Phase 5 Step 5.1 complete. Last completed: **Step 5.1** (Add Siren POCO types to `RESTyard.AspNetCore`). Next: **Step 6.1** (Basic entity mapping using existing properties POCO).
 
 ## Table of Contents
 
@@ -748,27 +748,23 @@ Can be configured via DI (resolved by controller) or passed explicitly per call.
 
 ## Siren POCO Model
 
-Needed for `ToSiren()` return type. Plain C# classes matching the Siren JSON spec. These types are **emitted by the source generator** into the consuming project (not shipped as a separate assembly). Since they are simple data classes with no logic, source generation is ideal — users get the types automatically when they reference the generator package, with no extra NuGet dependency.
+Needed for `ToSiren()` return type. Plain C# classes matching the Siren JSON spec. These types live as regular C# classes in `RESTyard.AspNetCore` under `Hypermedia/Siren/Model/`. Since every HTO project already references `RESTyard.AspNetCore`, no extra NuGet dependency is needed. Keeping them as real classes (rather than source-generated) makes them easy to read, edit, and navigate in the IDE.
 
 **Reference**: The generated POCOs must conform to the official [Siren JSON Schema](https://github.com/kevinswiber/siren/blob/master/siren.schema.json). Property names, types, required fields, and structure should be validated against this schema. Any intentional deviations (e.g., the generic `SirenEntity<TProperties>` extension for typed properties) should be documented.
 
 `SirenEntity` is split into a non-generic base and a generic `SirenEntity<TProperties>`. The generic type is returned by `ToSiren()`, giving compile-time type safety for the properties bag. The non-generic base is used in collections (embedded entities) where different entity types with different property types coexist. The generated properties POCO per HTO (see [Generated Output per HTO](#generated-output-per-hto)) serves as `TProperties`.
 
 ```csharp
-// Non-generic base — used in embedded entity collections where property types are heterogeneous
-public class SirenEntity
+// Single generic class — returned by ToSiren(), TProperties is the generated properties POCO
+// Use SirenEntity<object> when the property type is not known at compile time
+public class SirenEntity<TProperties>
 {
     public IReadOnlyList<string>? Class { get; set; }
     public string? Title { get; set; }
+    public TProperties? Properties { get; set; }
     public IList<SirenLink>? Links { get; set; }
     public IList<SirenAction>? Actions { get; set; }
     public IList<SirenSubEntity>? Entities { get; set; }    // embedded or linked
-}
-
-// Generic — returned by ToSiren(), TProperties is the generated properties POCO
-public class SirenEntity<TProperties> : SirenEntity
-{
-    public TProperties? Properties { get; set; }
 }
 
 public class SirenLink
@@ -804,9 +800,16 @@ public abstract class SirenSubEntity
     public IReadOnlyList<string> Rel { get; set; }
 }
 
-public class SirenEmbeddedEntity : SirenSubEntity
+// Single generic class — use SirenEmbeddedEntity<object> when property type is unknown
+// Polymorphic serialization in IList<SirenSubEntity> handled by SirenSubEntityConverter
+public class SirenEmbeddedEntity<TProperties> : SirenSubEntity
 {
-    public SirenEntity Entity { get; set; }                 // Full inline entity (non-generic base, runtime type is SirenEntity<T>)
+    public IReadOnlyList<string>? Class { get; set; }
+    public string? Title { get; set; }
+    public TProperties? Properties { get; set; }
+    public IList<SirenLink>? Links { get; set; }
+    public IList<SirenAction>? Actions { get; set; }
+    public IList<SirenSubEntity>? Entities { get; set; }
 }
 
 public class SirenLinkedEntity : SirenSubEntity
@@ -839,22 +842,22 @@ Source/
     HtoSirenGenerator.cs               # Emits ToSiren() per HTO
     HtoSchemaGenerator.cs              # Emits GetSchema() per HTO
     HtoRegistryGenerator.cs            # Emits HypermediaSchemaRegistry per assembly
-    Emitted/                           # Source templates for types emitted into consuming project
-      SirenEntity.cs
+  RESTyard.AspNetCore/                 # Existing — references Schema, adds endpoint
+    Hypermedia/Siren/Model/            # Siren POCO types (regular C# classes)
+      SirenEntity.cs                   # Non-generic base + SirenEntity<TProperties>
       SirenLink.cs
       SirenAction.cs
       SirenField.cs
       SirenSubEntity.cs
       SirenEmbeddedEntity.cs
       SirenLinkedEntity.cs
-  RESTyard.AspNetCore/                 # Existing — references Schema, adds endpoint
     Schema/
       HypermediaSchemaEndpoint.cs      # MapHypermediaSchema() — default route: /hypermedia-schema
   RESTyard.Schema.Test/     # xunit — unit tests for schema model and Mermaid mapper
   RESTyard.HtoSourceGenerators.Test/   # xunit + Verify — snapshot tests for generated ToSiren(), GetSchema(), registry
 ```
 
-**Why Siren POCOs are emitted, not in a library:** The `ToSiren()` return type (`SirenEntity`) must be available in the consuming project. Emitting these types via the source generator avoids an extra NuGet dependency. The types are simple data classes with no logic — ideal for source generation.
+**Why Siren POCOs are in `RESTyard.AspNetCore`:** Every HTO project already references `RESTyard.AspNetCore`, so no extra dependency is needed. Keeping them as regular C# classes (rather than source-generated) makes them easy to read, edit, and navigate in the IDE. The source generator assembly cannot expose types to consuming projects (it runs inside the Roslyn compiler host, not at runtime).
 
 **Why Schema is a separate library:** The schema model (`HypermediaApiSchema`, `EntityTypeSchema`, etc.) needs to be consumed by external tools — client generators, Mermaid CLI, documentation UIs — that deserialize the `/hypermedia-schema` JSON endpoint. These tools should not need to reference the full ASP.NET Core server library. Keeping the schema model in a lightweight standalone package enables this.
 

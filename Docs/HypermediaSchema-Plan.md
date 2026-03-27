@@ -494,15 +494,17 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 ### Phase 5: Source Generator — Siren POCOs
 
-**Goal:** Emit the Siren POCO types into the consuming project.
+**Goal:** Add the Siren POCO types to `RESTyard.AspNetCore`.
 
-#### Step 5.1: Emit Siren POCO types
-- Reference the official Siren JSON Schema (https://github.com/kevinswiber/siren/blob/master/siren.schema.json) to ensure the generated POCOs match the Siren spec. Validate property names, types, required fields, and structure against the schema. Document any intentional deviations (e.g., generic `TProperties` extension).
-- Generator emits `SirenEntity` (non-generic base), `SirenEntity<TProperties>` (generic), `SirenLink`, `SirenAction`, `SirenField`, `SirenSubEntity`, `SirenEmbeddedEntity`, `SirenLinkedEntity` into the consuming project
+#### Step 5.1: ✅ Add Siren POCO types to `RESTyard.AspNetCore`
+- Add Siren POCO classes as regular C# files in `RESTyard.AspNetCore/Hypermedia/Siren/Model/`: `SirenEntity`, `SirenEntity<TProperties>`, `SirenLink`, `SirenAction`, `SirenField`, `SirenSubEntity`, `SirenEmbeddedEntity`, `SirenLinkedEntity`
+- **Not source-generated** — source generator assemblies run inside the Roslyn compiler host and cannot expose types to consuming projects at runtime. Since every HTO project already references `RESTyard.AspNetCore`, no extra dependency is needed. Real C# classes are easier to read, edit, and navigate in the IDE.
+- Reference the official Siren JSON Schema (https://github.com/kevinswiber/siren/blob/master/siren.schema.json) to ensure the POCOs match the Siren spec. Validate property names, types, required fields, and structure against the schema. Document any intentional deviations (e.g., generic `TProperties` extension).
 - `SirenEntity` has no `Properties` — only structural fields (Class, Title, Links, Actions, Entities)
 - `SirenEntity<TProperties> : SirenEntity` adds `TProperties? Properties`
 - `SirenEmbeddedEntity.Entity` is typed as `SirenEntity` (non-generic base)
-- Verify: CarShack can reference the emitted types, compile, and use them in a trivial test
+- Use `[JsonPropertyName("class")]` on `Class` properties since `class` is a C# keyword
+- Unit tests: verify JSON round-trip serialization of Siren POCOs (serialize → deserialize → assert equality)
 
 ### Phase 6: Source Generator — ToSiren() Emission
 
