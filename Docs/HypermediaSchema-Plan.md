@@ -510,42 +510,75 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 **Goal:** Generate `ToSiren()` extension methods replacing the reflection-based `SirenConverter`.
 
+**Testing strategy — parity tests alongside snapshots:**
+- All `ToSiren()` tests live in `RESTyard.HtoSourceGenerators.Test` (already references `RESTyard.AspNetCore`)
+- Each test verifies both: snapshot of generated Siren JSON (Verify) AND parity with `SirenConverter` output
+- `StubRouteResolver` implements `IHypermediaRouteResolver` — configured via a route mappings list (e.g., `RouteMapping.ForObject<THto>(url, method)`), no mocking library needed
+- Same `StubRouteResolver` instance feeds both `ToSiren()` and `SirenConverter` — any JSON difference is a real divergence in mapping logic
+- Uses the real `QueryStringBuilder` (no stub needed)
+- JSON normalization helper: `NormalizeJson(string json)` — parse via `JsonDocument`, re-serialize with `WriteIndented = true` via `System.Text.Json`. Eliminates formatting/whitespace differences between Newtonsoft (`SirenConverter`) and System.Text.Json (`ToSiren()`) output. If property ordering diverges between serializers, extend with key sorting.
+- Parity helper: `AssertParityAndVerify(hto, resolver)` — normalizes both outputs, compares JSON, snapshots the result
+
 #### Step 6.1: Basic entity mapping using existing properties POCO
 - **Properties POCO already exists** — generated in Step 2.7.1a (`HypermediaCustomerHtoProperties`), reused here. No new POCO generation needed.
+- Add Siren type constants to `SchemaTypeNames` (`SirenEntity`, `SirenLink`, `SirenAction`, `SirenField`, `SirenEmbeddedEntity`, `SirenSubEntity`, `SirenMapperOptions`, `IHypermediaRouteResolver`, `ResolvedRoute`, etc.)
+- Create `SirenMapperOptions` class in `RESTyard.AspNetCore/Hypermedia/Siren/SirenMapperOptions.cs` with `AutoSelfLink` (default `true`) — needed so generated code compiles
 - Emit `ToSiren()` extension method per HTO returning `SirenEntity<TProperties>`
-- Map `[HypermediaObject]` → `SirenEntity.Class`, `Title`
+- Emit `ToSirenEmbedded()` extension method per HTO returning `SirenEmbeddedEntity<TProperties>`, hidden via `[EditorBrowsable(EditorBrowsableState.Never)]` — called by parent HTOs for nested entities, avoids intermediate `SirenEntity` allocation
+- Both methods share the same mapping logic internally in the generator
+- Map `[HypermediaObject]` → `SirenEntity.Class`, `Title`. When `Classes` is null on the attribute, fall back to the type name (matches `SirenConverter` behavior)
 - Map HTO data properties → generated properties POCO instance (assign `hto.PropertyName` → `poco.PropertyName` for each data property)
-- Self link via `IHypermediaRouteResolver`
-- Verify tests: snapshot output for a simple HTO, property mapping correctness
+- Self link via `resolver.ObjectToRoute(hto)` when `options.AutoSelfLink != false`
+- Gated on `[HypermediaAssembly(Siren = true)]`
+- Verify tests: snapshot output for a simple HTO, property mapping correctness, `ToSirenEmbedded()` output
 
 #### Step 6.2: Link resolution
-- Resolve `ILink<T>` properties → `SirenLink` with URL from `IHypermediaRouteResolver`
+- Resolve `ILink<T>` properties → `SirenLink` with URL from `resolver.ReferenceToRoute(link.Value)`
+- Append query string from `reference.GetQuery()` via `QueryStringBuilder.CreateQueryString()` — required for query result links (same as `SirenConverter.ResolveReferenceRoute`)
+- Populate `SirenLink.Type` from `ResolvedRoute.AvailableMediaTypes` (media type info from runtime resolver)
 - Handle nullable links (omit when null)
-- Verify tests
+- Deduplicate links by relations (same behavior as `SirenConverter` — if multiple `ILink` properties share the same `[Relations]`, last one wins)
+- Handle `ExternalReference` links — use reference URI directly, no route resolver call
+- Verify tests: mandatory link, optional/null link, external link, media type populated, query string appended, deduplication
 
 #### Step 6.3: Action resolution
-- Resolve action properties → `SirenAction` with URL from `IHypermediaRouteResolver`
+- Resolve action properties → `SirenAction` with URL from `resolver.ActionToRoute(hto, action)`
+- Populate `SirenAction.Method` from `ResolvedRoute.HttpMethod`
+- Populate `SirenAction.Class` with built-in action class markers from `ActionClasses` (`ParameterLessActionClass`, `ParameterActionClass`, `FileUploadActionClass`, `FileUploadActionWithParameterClass`) plus user-defined classes from `[HypermediaAction(Classes = [...])]`
 - Null-safe check: `if (hto.Action?.CanExecute() == true)`
-- Map action parameters to `SirenField` entries with prefilled values
-- Verify tests: parameterless, with params, file upload, null/non-executable actions
+- Populate `SirenAction.Type`: `multipart/form-data` for file upload, `application/json` for parameterized, omitted for parameterless. Use `ResolvedRoute.AcceptableMediaType` when present (external actions), otherwise defaults.
+- Map action parameters to `SirenField` entries:
+  - Resolve parameter schema URL via `resolver.TryGetRouteByType(paramType, routeKeys)` with fallback to `resolver.RouteUrl(RouteNames.ActionParameterTypes, ...)` — put in `Fields[].Class`
+  - Handle `IDynamicSchema.SchemaRouteKeys` for dynamic actions (custom route keys for schema resolution)
+  - Include prefilled values via `action.GetPrefilledParameter()` in `Fields[].Value` — handle both string (parse as JSON) and object (serialize) cases
+  - Set `Fields[].Type` to `"application/json"` for JSON parameters
+- Handle file upload actions: `FileUploadHypermediaAction` / `FileUploadHypermediaAction<T>` with file field (`name = "UploadFiles"`, `type = "file"`, `accept`, `maxFileSizeBytes`, `allowMultiple`)
+- Handle external actions: `HypermediaExternalAction` — use `ExternalUri` directly, `HttpMethod`, `AcceptedMediaType` from the external action base
+- Verify tests: parameterless, with params, file upload, null/non-executable actions, external actions, action classes, prefilled values (string and object), dynamic schema route keys
 
 #### Step 6.4: Embedded entity resolution
-- Recursive `ToSiren()` calls for embedded entities
-- Handle single and collection embedded entities
-- Verify tests
+- **Resolved references** (`reference.IsResolved() == true`): call `ToSirenEmbedded()` on the instance (no intermediate `SirenEntity` allocation)
+- **Unresolved references** (`reference.IsResolved() == false`): emit a `SirenLinkedEntity` (href + class + rel) instead of a full embedded representation — resolve URL via `resolver.ReferenceToRoute()`. Handle `HypermediaExternalObjectReference` (use URI directly, with external classes).
+- Set `Rel` from `[Relations]` attribute on the parent HTO's embedded entity property
+- Handle single (`IEmbeddedEntity<T>`) and collection (`List<IEmbeddedEntity<T>>`) embedded entities
+- Handle nullable single embedded entities (omit when null)
+- Verify tests: single embedded, collection, nullable, nested embedded entities, unresolved → linked sub-entity, external object reference
 
-#### Step 6.5: SirenMapperOptions
-- `AutoSelfLink` toggle (default true)
-- Wire through DI or explicit parameter
-- Verify tests
+#### Step 6.5: SirenMapperOptions DI wiring
+- `SirenMapperOptions` class already created in Step 6.1
+- Add `WriteNullProperties` option (default `true`, matching `HypermediaConverterConfiguration.WriteNullProperties`) — controls whether null property values are included in the Siren JSON output. Maps to `JsonSerializerOptions.DefaultIgnoreCondition` at serialization time.
+- Wire through DI: `AddHypermediaSirenMapper(Action<SirenMapperOptions>?)` or resolve from `IServiceProvider`
+- Generated `ToSiren()` falls back to default options when `null` is passed
+- Verify tests: `AutoSelfLink = false` omits self link, `WriteNullProperties = false` omits nulls, defaults include both
 
 #### Step 6.6: Controller extension method `ToSiren(hto)`
 - Add `ControllerBaseExtensions.ToSiren(this ControllerBase, IHypermediaObject hto)` returning `SirenEntity<TProperties>` wrapped in `OkObjectResult`
 - Resolves `IHypermediaRouteResolver` from `HttpContext.RequestServices` — no need to inject resolver into controllers
+- **Set response Content-Type to `application/vnd.siren+json`** — the existing `SirenHypermediaFormatter` sets this automatically, but since `ToSiren()` bypasses the formatter and returns a plain POCO, the extension method must set the media type explicitly (e.g., via `ContentResult` or by setting `ContentTypes` on the `OkObjectResult`)
 - Usage: `return this.ToSiren(myHto);` instead of `return Ok(myHto.ToSiren(resolver))`
 - This is the **recommended pattern for new APIs** — explicit return type enables correct OpenAPI schema generation (Swagger sees `SirenEntity<T>`, not the HTO class)
 - Note: RESTyard's own `HypermediaApiSchema` is actually richer than OpenAPI for hypermedia APIs (describes the full hypermedia graph), but OpenAPI compatibility matters for mixed tooling ecosystems
-- Verify tests: extension method returns correct type, resolves resolver from DI
+- Verify tests: extension method returns correct type, resolves resolver from DI, response Content-Type is `application/vnd.siren+json`
 
 ### Phase 7: Generated Siren Output Formatter
 
