@@ -20,6 +20,11 @@ internal static class TestHtoSources
         [assembly: HypermediaAssembly]
         """;
 
+    private const string AssemblyAttributeWithSiren = """
+
+        [assembly: HypermediaAssembly(Siren = true)]
+        """;
+
     /// <summary>
     /// Minimal HTO with one string property.
     /// </summary>
@@ -34,6 +39,54 @@ internal static class TestHtoSources
         {
             public string Name { get; set; } = string.Empty;
             public int Age { get; set; }
+        }
+        """;
+
+    /// <summary>
+    /// Minimal HTO with Siren = true — generates ToSiren() and ToSirenEmbedded() in addition to GetSchema().
+    /// </summary>
+    internal const string SimpleHtoWithSiren = $$"""
+        {{Usings}}
+        {{AssemblyAttributeWithSiren}}
+
+        namespace TestHtos;
+
+        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+        public class HypermediaCustomerHto : HypermediaObject
+        {
+            public string Name { get; set; } = string.Empty;
+            public int Age { get; set; }
+        }
+        """;
+
+    /// <summary>
+    /// HTO with no data properties — tests SirenNoProperties usage.
+    /// </summary>
+    internal const string EmptyHtoWithSiren = $$"""
+        {{Usings}}
+        {{AssemblyAttributeWithSiren}}
+
+        namespace TestHtos;
+
+        [HypermediaObject(Title = "Empty", Classes = ["Empty"])]
+        public class HypermediaEmptyHto : HypermediaObject
+        {
+        }
+        """;
+
+    /// <summary>
+    /// HTO with no explicit Classes — tests fallback to type name.
+    /// </summary>
+    internal const string HtoWithoutClassesWithSiren = $$"""
+        {{Usings}}
+        {{AssemblyAttributeWithSiren}}
+
+        namespace TestHtos;
+
+        [HypermediaObject(Title = "A Widget")]
+        public class HypermediaWidgetHto : HypermediaObject
+        {
+            public string Label { get; set; } = string.Empty;
         }
         """;
 

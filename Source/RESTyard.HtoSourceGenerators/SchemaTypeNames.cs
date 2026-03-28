@@ -81,4 +81,28 @@ internal static class SchemaTypeNames
     // System.Text.Json
     internal const string JsonDocumentNamespace = "System.Text.Json";
     internal const string JsonDocument = "JsonDocument";
+
+    // Siren POCO Model (RESTyard.AspNetCore.Hypermedia.Siren.Model)
+    internal const string SirenModelNamespace = "RESTyard.AspNetCore.Hypermedia.Siren.Model";
+    internal const string SirenEntity = "SirenEntity";
+    internal const string SirenLink = "SirenLink";
+    internal const string SirenAction = "SirenAction";
+    internal const string SirenField = "SirenField";
+    internal const string SirenSubEntity = "SirenSubEntity";
+    internal const string SirenEmbeddedEntity = "SirenEmbeddedEntity";
+    internal const string SirenLinkedEntity = "SirenLinkedEntity";
+    internal const string NoProperties = "NoProperties";
+
+    // Siren Mapper Options (RESTyard.AspNetCore.Hypermedia.Siren)
+    internal const string SirenNamespace = "RESTyard.AspNetCore.Hypermedia.Siren";
+    internal const string SirenMapperOptions = "SirenMapperOptions";
+
+    // Route Resolver (RESTyard.AspNetCore.WebApi.RouteResolver)
+    internal const string RouteResolverNamespace = "RESTyard.AspNetCore.WebApi.RouteResolver";
+    internal const string IHypermediaRouteResolver = "IHypermediaRouteResolver";
+    internal const string ResolvedRoute = "ResolvedRoute";
+
+    // System.ComponentModel (for EditorBrowsable)
+    internal const string EditorBrowsableAttribute = "System.ComponentModel.EditorBrowsable";
+    internal const string EditorBrowsableStateNever = "System.ComponentModel.EditorBrowsableState.Never";
 }

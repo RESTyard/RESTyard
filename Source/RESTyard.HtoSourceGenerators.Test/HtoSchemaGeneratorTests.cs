@@ -1,7 +1,10 @@
+using System;
 using System.Linq;
 using System.Text.Json;
 using AwesomeAssertions;
 using Microsoft.CodeAnalysis;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 using Xunit;
 
 namespace RESTyard.HtoSourceGenerators.Test;
@@ -15,7 +18,7 @@ public class HtoSchemaGeneratorTests
 
         result.Diagnostics.Should().BeEmpty();
         result.GeneratedTrees.Should().ContainSingle(t =>
-            t.FilePath.Contains("HypermediaCustomerHtoSirenMapper"));
+            t.FilePath.Contains("HypermediaCustomerHtoSchema"));
 
         var source = GetGeneratedSource(result, "HypermediaCustomerHto");
         source.Should().Contain("namespace TestHtos;");
@@ -44,9 +47,9 @@ public class HtoSchemaGeneratorTests
 
         fileNames.Should().BeEquivalentTo(
             "HypermediaAddressHtoProperties.g.cs",
-            "HypermediaAddressHtoSirenMapper.g.cs",
+            "HypermediaAddressHtoSchema.g.cs",
             "HypermediaCustomerHtoProperties.g.cs",
-            "HypermediaCustomerHtoSirenMapper.g.cs",
+            "HypermediaCustomerHtoSchema.g.cs",
             "HypermediaSchemaRegistry.g.cs");
 
         GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.FullHto);
@@ -1136,9 +1139,9 @@ public class HtoSchemaGeneratorTests
         var registry = GetGeneratedRegistry(result);
 
         // Customer has properties → needs schemaFactory
-        registry.Should().Contain("HypermediaCustomerHtoSirenMapper.GetSchema(schemaFactory)");
+        registry.Should().Contain("HypermediaCustomerHtoSchema.GetSchema(schemaFactory)");
         // Address has properties → needs schemaFactory
-        registry.Should().Contain("HypermediaAddressHtoSirenMapper.GetSchema(schemaFactory)");
+        registry.Should().Contain("HypermediaAddressHtoSchema.GetSchema(schemaFactory)");
     }
 
     [Fact]
@@ -1168,9 +1171,9 @@ public class HtoSchemaGeneratorTests
         var registry = GetGeneratedRegistry(result);
 
         // Empty has no properties → parameterless
-        registry.Should().Contain("HypermediaEmptyHtoSirenMapper.GetSchema()");
+        registry.Should().Contain("HypermediaEmptyHtoSchema.GetSchema()");
         // Other has properties → with factory
-        registry.Should().Contain("HypermediaOtherHtoSirenMapper.GetSchema(schemaFactory)");
+        registry.Should().Contain("HypermediaOtherHtoSchema.GetSchema(schemaFactory)");
     }
 
     [Fact]
@@ -1490,9 +1493,20 @@ public class HtoSchemaGeneratorTests
         string htoClassName)
     {
         var tree = result.GeneratedTrees
-            .SingleOrDefault(t => t.FilePath.Contains($"{htoClassName}SirenMapper"));
+            .SingleOrDefault(t => t.FilePath.Contains($"{htoClassName}Schema.g.cs"));
 
         tree.Should().NotBeNull($"expected generated source for {htoClassName}");
+        return tree!.GetText().ToString();
+    }
+
+    private static string GetGeneratedSirenSource(
+        GeneratorDriverRunResult result,
+        string htoClassName)
+    {
+        var tree = result.GeneratedTrees
+            .SingleOrDefault(t => t.FilePath.Contains($"{htoClassName}SirenExtensions.g.cs"));
+
+        tree.Should().NotBeNull($"expected generated Siren source for {htoClassName}");
         return tree!.GetText().ToString();
     }
 
@@ -1582,5 +1596,175 @@ public class HtoSchemaGeneratorTests
     public void HtoWithAccessGroups_compiles_correctly()
     {
         GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithAccessGroups);
+    }
+
+    // --- Siren (ToSiren / ToSirenEmbedded) tests ---
+
+    [Fact]
+    public void SimpleHtoWithSiren_generates_ToSiren_and_ToSirenEmbedded()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.SimpleHtoWithSiren);
+
+        result.Diagnostics.Should().BeEmpty();
+
+        var sirenSource = GetGeneratedSirenSource(result, "HypermediaCustomerHto");
+        sirenSource.Should().Contain("public static SirenEntity<HypermediaCustomerHtoProperties> ToSiren(");
+        sirenSource.Should().Contain("public static SirenEmbeddedEntity<HypermediaCustomerHtoProperties> ToSirenEmbedded(");
+        sirenSource.Should().Contain("IHypermediaRouteResolver resolver");
+        sirenSource.Should().Contain("SirenMapperOptions? options = null");
+    }
+
+    [Fact]
+    public void SimpleHtoWithSiren_ToSiren_maps_class_and_title()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.SimpleHtoWithSiren);
+
+        var sirenSource = GetGeneratedSirenSource(result, "HypermediaCustomerHto");
+        sirenSource.Should().Contain("Class = new[] { \"Customer\" }");
+        sirenSource.Should().Contain("Title = \"Customer\"");
+    }
+
+    [Fact]
+    public void SimpleHtoWithSiren_ToSiren_maps_properties_to_poco()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.SimpleHtoWithSiren);
+
+        var sirenSource = GetGeneratedSirenSource(result, "HypermediaCustomerHto");
+        sirenSource.Should().Contain("Properties = new HypermediaCustomerHtoProperties");
+        sirenSource.Should().Contain("Name = hto.Name,");
+        sirenSource.Should().Contain("Age = hto.Age,");
+    }
+
+    [Fact]
+    public void SimpleHtoWithSiren_ToSiren_adds_self_link()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.SimpleHtoWithSiren);
+
+        var sirenSource = GetGeneratedSirenSource(result, "HypermediaCustomerHto");
+        sirenSource.Should().Contain("resolver.ObjectToRoute(hto)");
+        sirenSource.Should().Contain("options?.AutoSelfLink != false");
+        sirenSource.Should().Contain("Rel = new[] { \"self\" }");
+        sirenSource.Should().Contain("Href = selfRoute.Url");
+    }
+
+    [Fact]
+    public void SimpleHtoWithSiren_ToSirenEmbedded_has_EditorBrowsable_Never()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.SimpleHtoWithSiren);
+
+        var sirenSource = GetGeneratedSirenSource(result, "HypermediaCustomerHto");
+        sirenSource.Should().Contain("[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]");
+    }
+
+    [Fact]
+    public void SimpleHtoWithSiren_generated_source_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.SimpleHtoWithSiren);
+    }
+
+    [Fact]
+    public void HtoWithoutClasses_WithSiren_falls_back_to_type_name()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithoutClassesWithSiren);
+
+        var sirenSource = GetGeneratedSirenSource(result, "HypermediaWidgetHto");
+        sirenSource.Should().Contain("Class = new[] { \"HypermediaWidgetHto\" }");
+    }
+
+    [Fact]
+    public void SimpleHto_without_Siren_flag_does_not_emit_ToSiren()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.SimpleHto);
+
+        var sirenFiles = result.GeneratedTrees
+            .Where(t => t.FilePath.Contains("SirenExtensions.g.cs"))
+            .ToArray();
+
+        sirenFiles.Should().BeEmpty("Siren = false (default) should not emit ToSiren methods");
+    }
+
+    [Fact]
+    public void SimpleHtoWithSiren_emits_separate_schema_and_siren_classes()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.SimpleHtoWithSiren);
+
+        var schemaSource = GetGeneratedSource(result, "HypermediaCustomerHto");
+        schemaSource.Should().Contain("public static class HypermediaCustomerHtoSchema");
+
+        var sirenSource = GetGeneratedSirenSource(result, "HypermediaCustomerHto");
+        sirenSource.Should().Contain("public static class HypermediaCustomerHtoSirenExtensions");
+    }
+
+    [Fact]
+    public void EmptyHtoWithSiren_uses_NoProperties()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.EmptyHtoWithSiren);
+
+        var sirenSource = GetGeneratedSirenSource(result, "HypermediaEmptyHto");
+        sirenSource.Should().Contain("SirenEntity<NoProperties>");
+        sirenSource.Should().Contain("SirenEmbeddedEntity<NoProperties>");
+        sirenSource.Should().NotContain("Properties =");
+    }
+
+    [Fact]
+    public void EmptyHtoWithSiren_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.EmptyHtoWithSiren);
+    }
+
+    // --- Parity tests: ToSiren() vs SirenConverter ---
+
+    [Fact]
+    public void SimpleHtoWithSiren_ToSiren_parity_with_SirenConverter()
+    {
+        var resolver = new StubRouteResolver(
+            new ResolvedRoute("http://test/customers/42", "GET"));
+
+        // Generated ToSiren()
+        var generatedJson = GeneratorTestHelper.RunGeneratorAndGetSirenJson(
+            "HypermediaCustomerHto",
+            resolver,
+            hto =>
+            {
+                hto.GetType().GetProperty("Name")!.SetValue(hto, "John");
+                hto.GetType().GetProperty("Age")!.SetValue(hto, 30);
+            },
+            TestHtoSources.SimpleHtoWithSiren);
+
+        // Reflection-based SirenConverter
+        var htoAssembly = GeneratorTestHelper.EmitAssembly(TestHtoSources.SimpleHtoWithSiren);
+        var htoType = htoAssembly.GetType("TestHtos.HypermediaCustomerHto")!;
+        var htoInstance = (IHypermediaObject)Activator.CreateInstance(htoType)!;
+        htoType.GetProperty("Name")!.SetValue(htoInstance, "John");
+        htoType.GetProperty("Age")!.SetValue(htoInstance, 30);
+
+        var converter = new RESTyard.AspNetCore.WebApi.Formatter.SirenConverter(
+            resolver, new RESTyard.AspNetCore.Query.QueryStringBuilder());
+        var converterJson = converter.ConvertToString(htoInstance);
+
+        // Compare normalized JSON — focus on class, title, properties, self link
+        var normalizedGenerated = GeneratorTestHelper.NormalizeJson(generatedJson);
+        var normalizedConverter = GeneratorTestHelper.NormalizeJson(converterJson);
+
+        // Parse both for structural comparison
+        using var genDoc = JsonDocument.Parse(normalizedGenerated);
+        using var convDoc = JsonDocument.Parse(normalizedConverter);
+
+        var genRoot = genDoc.RootElement;
+        var convRoot = convDoc.RootElement;
+
+        // Class
+        genRoot.GetProperty("class").ToString().Should().Be(convRoot.GetProperty("class").ToString());
+
+        // Title
+        genRoot.GetProperty("title").GetString().Should().Be(convRoot.GetProperty("title").GetString());
+
+        // Properties
+        genRoot.GetProperty("properties").ToString().Should().Be(convRoot.GetProperty("properties").ToString());
+
+        // Self link — SirenConverter adds "self" link automatically from ObjectToRoute
+        // Note: SirenConverter uses lowercase "rel", "href" — verify both outputs have self links
+        // Self link parity deferred to Step 6.2 — SirenConverter resolves links from ILink properties,
+        // while ToSiren() uses resolver.ObjectToRoute(). Full link parity requires link resolution (Step 6.2).
     }
 }

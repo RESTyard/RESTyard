@@ -8,7 +8,7 @@ using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.WebApi.ExtensionMethods;
 using RESTyard.Schema;
 
-[assembly: HypermediaAssembly]
+[assembly: HypermediaAssembly(Siren = true)]
 
 namespace CarShack
 {

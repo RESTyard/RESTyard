@@ -7,10 +7,16 @@ namespace RESTyard.HtoSourceGenerators;
 /// </summary>
 internal readonly record struct PropertyMetadata(
     /// <summary>
-    /// The property name as it appears in the Siren output
+    /// The property name as it appears in the Siren output and on the generated POCO
     /// (respects <c>[HypermediaProperty(Name)]</c> override).
     /// </summary>
     string Name,
+    /// <summary>
+    /// The original C# property name on the HTO class.
+    /// Used by <c>ToSiren()</c> to emit <c>hto.OriginalName</c> when reading from the HTO instance.
+    /// Same as <see cref="Name"/> when no <c>[HypermediaProperty(Name)]</c> override is present.
+    /// </summary>
+    string OriginalName,
     /// <summary>
     /// The fully qualified CLR type name of the property,
     /// used to emit <c>typeof(T)</c> in generated code for runtime schema generation.

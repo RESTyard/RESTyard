@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.AspNetCore.Mvc;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
 using RESTyard.Schema.SchemaGeneration;
 using RESTyard.Schema.Model;
 
@@ -86,7 +87,7 @@ internal static class GeneratorTestHelper
         ms.Seek(0, SeekOrigin.Begin);
         var assembly = Assembly.Load(ms.ToArray());
 
-        var mapperTypeName = $"TestHtos.{htoClassName}SirenMapper";
+        var mapperTypeName = $"TestHtos.{htoClassName}Schema";
         var mapperType = assembly.GetType(mapperTypeName)
                          ?? throw new InvalidOperationException($"Type '{mapperTypeName}' not found in emitted assembly");
 
@@ -105,6 +106,96 @@ internal static class GeneratorTestHelper
         }
 
         return (EntityTypeSchema)(result ?? throw new InvalidOperationException("GetSchema returned null"));
+    }
+
+    /// <summary>
+    /// Runs the generator, compiles the output, loads the assembly, creates an HTO instance,
+    /// and invokes the generated ToSiren() method via reflection.
+    /// Returns the serialized JSON string of the SirenEntity result.
+    /// </summary>
+    internal static string RunGeneratorAndGetSirenJson(
+        string htoClassName,
+        IHypermediaRouteResolver resolver,
+        Action<object>? configureHto = null,
+        params string[] sources)
+    {
+        var (outputCompilation, _) = RunGeneratorCore(sources);
+
+        using var ms = new MemoryStream();
+        var emitResult = outputCompilation.Emit(ms);
+        if (!emitResult.Success)
+        {
+            var errors = string.Join("\n", emitResult.Diagnostics
+                .Where(d => d.Severity == DiagnosticSeverity.Error)
+                .Select(d => d.ToString()));
+            throw new InvalidOperationException($"Emit failed:\n{errors}");
+        }
+
+        ms.Seek(0, SeekOrigin.Begin);
+        var assembly = Assembly.Load(ms.ToArray());
+
+        // Create HTO instance
+        var htoTypeName = $"TestHtos.{htoClassName}";
+        var htoType = assembly.GetType(htoTypeName)
+                      ?? throw new InvalidOperationException($"Type '{htoTypeName}' not found in emitted assembly");
+        var hto = Activator.CreateInstance(htoType)
+                  ?? throw new InvalidOperationException($"Could not create instance of '{htoTypeName}'");
+        configureHto?.Invoke(hto);
+
+        // Find and invoke ToSiren()
+        var extensionsTypeName = $"TestHtos.{htoClassName}SirenExtensions";
+        var extensionsType = assembly.GetType(extensionsTypeName)
+                             ?? throw new InvalidOperationException($"Type '{extensionsTypeName}' not found in emitted assembly");
+        var toSirenMethod = extensionsType.GetMethod("ToSiren", BindingFlags.Public | BindingFlags.Static)
+                            ?? throw new InvalidOperationException($"Method 'ToSiren' not found on '{extensionsTypeName}'");
+
+        var sirenResult = toSirenMethod.Invoke(null, [hto, resolver, null]);
+        if (sirenResult == null)
+        {
+            throw new InvalidOperationException("ToSiren returned null");
+        }
+
+        // No PropertyNamingPolicy — the Siren POCOs use explicit [JsonPropertyName] for Siren
+        // structural properties (class, title, etc.), and the properties POCO uses the property
+        // names from the HTO (PascalCase by default, or [HypermediaProperty(Name)] overrides).
+        // This matches SirenConverter behavior which uses PascalCase property names.
+        return JsonSerializer.Serialize(sirenResult, sirenResult.GetType(), new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+            WriteIndented = true,
+        });
+    }
+
+    /// <summary>
+    /// Normalizes JSON for comparison — parse and re-serialize with consistent formatting.
+    /// Eliminates whitespace/formatting differences between Newtonsoft and System.Text.Json output.
+    /// </summary>
+    internal static string NormalizeJson(string json)
+    {
+        using var doc = JsonDocument.Parse(json);
+        return JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true });
+    }
+
+    /// <summary>
+    /// Runs the generator, compiles the output, and returns the loaded assembly.
+    /// Useful for creating HTO instances for SirenConverter parity tests.
+    /// </summary>
+    internal static Assembly EmitAssembly(params string[] sources)
+    {
+        var (outputCompilation, _) = RunGeneratorCore(sources);
+
+        using var ms = new MemoryStream();
+        var emitResult = outputCompilation.Emit(ms);
+        if (!emitResult.Success)
+        {
+            var errors = string.Join("\n", emitResult.Diagnostics
+                .Where(d => d.Severity == DiagnosticSeverity.Error)
+                .Select(d => d.ToString()));
+            throw new InvalidOperationException($"Emit failed:\n{errors}");
+        }
+
+        ms.Seek(0, SeekOrigin.Begin);
+        return Assembly.Load(ms.ToArray());
     }
 
     private static (Compilation OutputCompilation, GeneratorDriverRunResult DriverResult) RunGeneratorCore(

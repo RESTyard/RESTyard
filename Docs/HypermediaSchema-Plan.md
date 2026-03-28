@@ -510,6 +510,12 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 **Goal:** Generate `ToSiren()` extension methods replacing the reflection-based `SirenConverter`.
 
+**Migration guide:** `Docs/HypermediaSchema/migration-guide.md` — tracks behavioral differences discovered during implementation. Update as new differences are found in each step.
+
+**Key design note — property name casing:** When using `ToSiren()` directly, the user controls property name casing via `JsonSerializerOptions.PropertyNamingPolicy`. Siren structural properties (`class`, `rel`, `href`) always use lowercase via `[JsonPropertyName]`. Entity data properties use C# property names as-is — the user chooses the serializer naming policy. This differs from `SirenConverter` which always uses PascalCase.
+
+**Key design note — auto self link:** `ToSiren()` automatically adds a `"self"` link via `resolver.ObjectToRoute(hto)` (controlled by `SirenMapperOptions.AutoSelfLink`, default `true`). This is new behavior — `SirenConverter` only includes self links from explicit `ILink<T>` properties. Documented in migration guide.
+
 **Testing strategy — parity tests alongside snapshots:**
 - All `ToSiren()` tests live in `RESTyard.HtoSourceGenerators.Test` (already references `RESTyard.AspNetCore`)
 - Each test verifies both: snapshot of generated Siren JSON (Verify) AND parity with `SirenConverter` output
@@ -519,7 +525,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - JSON normalization helper: `NormalizeJson(string json)` — parse via `JsonDocument`, re-serialize with `WriteIndented = true` via `System.Text.Json`. Eliminates formatting/whitespace differences between Newtonsoft (`SirenConverter`) and System.Text.Json (`ToSiren()`) output. If property ordering diverges between serializers, extend with key sorting.
 - Parity helper: `AssertParityAndVerify(hto, resolver)` — normalizes both outputs, compares JSON, snapshots the result
 
-#### Step 6.1: Basic entity mapping using existing properties POCO
+#### Step 6.1: ✅ Basic entity mapping using existing properties POCO
 - **Properties POCO already exists** — generated in Step 2.7.1a (`HypermediaCustomerHtoProperties`), reused here. No new POCO generation needed.
 - Add Siren type constants to `SchemaTypeNames` (`SirenEntity`, `SirenLink`, `SirenAction`, `SirenField`, `SirenEmbeddedEntity`, `SirenSubEntity`, `SirenMapperOptions`, `IHypermediaRouteResolver`, `ResolvedRoute`, etc.)
 - Create `SirenMapperOptions` class in `RESTyard.AspNetCore/Hypermedia/Siren/SirenMapperOptions.cs` with `AutoSelfLink` (default `true`) — needed so generated code compiles

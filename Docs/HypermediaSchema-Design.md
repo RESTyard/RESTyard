@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Phase 5 Step 5.1 complete. Last completed: **Step 5.1** (Add Siren POCO types to `RESTyard.AspNetCore`). Next: **Step 6.1** (Basic entity mapping using existing properties POCO).
+> **Plan execution in progress.** Last completed: **Step 6.1** (Basic entity mapping — ToSiren/ToSirenEmbedded, properties, self link). Next: **Step 6.2** (Link resolution).
 
 ## Table of Contents
 
@@ -783,7 +783,7 @@ public IActionResult Get(int id)
 
 The `SirenEntity<TProperties>` is a plain POCO — serialized as regular JSON by ASP.NET Core. The `TProperties` is a generated properties class per HTO (see [Generated Output per HTO](#generated-output-per-hto)) that carries all forwarded attributes from the HTO's properties. This ensures user-defined serializer attributes (`[JsonConverter]`, `[JsonPropertyName]`, third-party attributes, etc.) work correctly without RESTyard needing to interpret them.
 
-**JSON serialization note:** Siren uses `class` as a property name, which is a C# keyword. The Siren POCOs must use `[JsonPropertyName("class")]` on the `Class` properties (or configure a naming policy that lowercases property names). Ensure the serializer is configured with `PropertyNamingPolicy = JsonNamingPolicy.CamelCase` or explicit `[JsonPropertyName]` attributes on all properties.
+**JSON serialization note:** Siren structural properties (`class`, `rel`, `href`, `title`, etc.) use explicit `[JsonPropertyName]` attributes on the Siren POCOs — these are always lowercase regardless of serializer configuration. However, the *entity properties* (the `TProperties` POCO) use the C# property names as-is (PascalCase by default, or as set by `[HypermediaProperty(Name)]`). **When using `ToSiren()` directly, the user is responsible for configuring the JSON serializer's naming policy** (e.g., `PropertyNamingPolicy = JsonNamingPolicy.CamelCase` for camelCase output). The existing `SirenConverter` always uses PascalCase for entity property names — this is a behavioral difference that must be documented in the migration guide.
 
 ### SirenMapperOptions
 
