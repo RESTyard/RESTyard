@@ -538,7 +538,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Gated on `[HypermediaAssembly(Siren = true)]`
 - Verify tests: snapshot output for a simple HTO, property mapping correctness, `ToSirenEmbedded()` output
 
-#### Step 6.2: Link resolution
+#### Step 6.2: ✅ Link resolution
 - Resolve `ILink<T>` properties → `SirenLink` with URL from `resolver.ReferenceToRoute(link.Value)`
 - Append query string from `reference.GetQuery()` via `IQueryStringBuilder.CreateQueryString()` — required for query result links (same as `SirenConverter.ResolveReferenceRoute`)
 - Populate `SirenLink.Type` from `ResolvedRoute.AvailableMediaTypes` (media type info from runtime resolver)
@@ -550,6 +550,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Verify tests: mandatory link, optional/null link, external link, media type populated, query string appended, deduplication, duplicate relation warning
 
 #### Step 6.3: Action resolution
+- Add `SirenHelper.AddAction()` to the shared `SirenHelper` class (emitted per-assembly) — centralizes action resolution logic (route, method, fields, prefilled values, file upload metadata)
 - Resolve action properties → `SirenAction` with URL from `resolver.ActionToRoute(hto, action)`
 - Populate `SirenAction.Method` from `ResolvedRoute.HttpMethod`
 - Populate `SirenAction.Class` with built-in action class markers from `ActionClasses` (`ParameterLessActionClass`, `ParameterActionClass`, `FileUploadActionClass`, `FileUploadActionWithParameterClass`) plus user-defined classes from `[HypermediaAction(Classes = [...])]`
@@ -568,9 +569,11 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 #### Step 6.4: Embedded entity resolution
 - **Resolved references** (`reference.IsResolved() == true`): call `ToSirenEmbedded()` on the instance (no intermediate `SirenEntity` allocation)
 - **Unresolved references** (`reference.IsResolved() == false`): emit a `SirenLinkedEntity` (href + class + rel) instead of a full embedded representation — resolve URL via `resolver.ReferenceToRoute()`. Handle `HypermediaExternalObjectReference` (use URI directly, with external classes).
+- Add `SirenHelper.AddEmbeddedEntity()` and `SirenHelper.AddLinkedEntity()` to the shared `SirenHelper` class — centralizes embedded/linked entity construction
 - Set `Rel` from `[Relations]` attribute on the parent HTO's embedded entity property
 - Handle single (`IEmbeddedEntity<T>`) and collection (`List<IEmbeddedEntity<T>>`) embedded entities
 - Handle nullable single embedded entities (omit when null)
+- Null guard on mandatory embedded entity properties: throw `InvalidOperationException` with property name (same pattern as `SirenHelper.AddLink` null guard for mandatory links)
 -  DO NOT Deduplicate as thw SirenCOnverter does (if multiple embedded entities share the same `[Relations]`, they are all included)
 - Make sure the source genrator also detects and raises the same errors as SirenConverter
 - Verify tests: single embedded, collection, nullable, nested embedded entities, unresolved → linked sub-entity, external object reference
@@ -628,7 +631,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Integration tests pass for both paths
 
 #### Step 8.3: Deprecate reflection-based formatter
-- Mark `SirenHypermediaFormatter` and `SirenConverter` as `[Obsolete]`
+- Mark `SirenHypermediaFormatter`, `HypermediaConverterConfiguration` and `SirenConverter` as `[Obsolete]`
 - Document migration path in Docs/HypermediaSchema/
 
 #### Step 8.4: Update contract-first generator to emit `ResultType` and migrate to `[HypermediaActionEndpoint<T>]`
@@ -638,7 +641,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Emit `ResultType = typeof(...)` on the new attribute when `operation.resultDocument` is set in the XML schema
 - **Implementation insights from Step 2.13.1:**
   - The XML schema's `OperationType.resultDocument` contains the result document name — access via `operation.resultDocument` in Scriban (not `operation.result_document` — Scriban uses the exact C# property name on .NET objects)
-  - The `isNotEmpty` helper from `_common.sbn` works for checking if resultDocument is set
+  - The `isNotEmpty` helper from `_common.sbn` works for checking if resu~~~~ltDocument is set
   - CarShack has 6 operations with `resultDocument` (UploadCarImage, UploadInsuranceScan, UpdateInspection, CreateCustomer, CreateQuery, BuyCar)
   - The legacy `HttpMethodHypermediaAction` base class now has `ResultType` property — source generator scans it via `InheritsFrom` helper
 - **Legacy cleanup:** When this step is done, remove legacy support from the source generator:
@@ -668,6 +671,8 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 #### Step 8.6 Cleaup
 
 - Refactor HTO sourc generators to more classes/functions to make it easier to add new features and understand the code better.
+  - Considder seperating getting the current state (of HTOs) and emitting stuff for schema and `ToSiren()` generation.
+  - Consider when emitting ToSiren make functions for each aspect of emitting (properties, links, actions, embedded entities)  
 - Revisit tests or ToSiren and SirenConverter. Maybe it is possible to use the same tests and feed it to both methods. Alos tests shoudl describe features more. 
 
 ### Phase 9: Revisit Open Questions

@@ -136,6 +136,14 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor DuplicateLinkRelations = new(
+        id: "RY0040",
+        title: "Duplicate link relations",
+        messageFormat: "Properties '{0}' and '{1}' on '{2}' have identical [Relations] — the last one will win at runtime (Siren relations identify a unique link)",
+        category: "RESTyard.Siren",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
     /// <inheritdoc />
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -252,6 +260,26 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                     metadata.ClassName));
             }
 
+            // Detect duplicate link relations
+            var seenLinkRelations = new Dictionary<string, string>(); // relKey → first property name
+            foreach (var link in metadata.Links)
+            {
+                var relKey = string.Join(",", link.Relations.OrderBy(r => r, System.StringComparer.Ordinal));
+                if (seenLinkRelations.TryGetValue(relKey, out var firstPropertyName))
+                {
+                    spc.ReportDiagnostic(Diagnostic.Create(
+                        DuplicateLinkRelations,
+                        Location.None,
+                        firstPropertyName,
+                        link.PropertyName,
+                        metadata.ClassName));
+                }
+                else
+                {
+                    seenLinkRelations[relKey] = link.PropertyName;
+                }
+            }
+
             spc.AddSource(
                 $"{metadata.ClassName}Schema.g.cs",
                 GenerateSchemaSource(metadata));
@@ -303,6 +331,14 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             spc.AddSource(
                 $"HypermediaSchemaRegistry.g.cs",
                 GenerateRegistrySource(allHtos, assemblyNameSafe));
+
+            // Siren = true — emit shared SirenHelper class with AddLink, AddAction, etc.
+            if (siren)
+            {
+                spc.AddSource(
+                    "SirenHelper.g.cs",
+                    GenerateSirenHelper());
+            }
 
             // Emit action result registry for multi-assembly support
             if (!resultData.Mappings.IsEmpty)
@@ -478,6 +514,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 var linkAccessGroups = GetAccessGroups(member);
 
                 links.Add(new LinkMetadata(
+                    member.Name,
                     new EquatableArray<string>(relations),
                     targetSchemaName,
                     new EquatableArray<string>(targetClasses),
@@ -1717,6 +1754,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         sb.Append("using ").Append(SchemaTypeNames.SirenModelNamespace).AppendLine(";");
         sb.Append("using ").Append(SchemaTypeNames.SirenNamespace).AppendLine(";");
         sb.Append("using ").Append(SchemaTypeNames.RouteResolverNamespace).AppendLine(";");
+        sb.Append("using ").Append(SchemaTypeNames.QueryNamespace).AppendLine(";");
         sb.AppendLine("using System.Collections.Generic;");
         sb.AppendLine();
 
@@ -1766,6 +1804,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         sb.Append("    public static ").Append(returnType).Append(' ').Append(methodName).AppendLine("(");
         sb.Append("        this ").Append(metadata.ClassName).AppendLine(" hto,");
         sb.Append("        ").Append(SchemaTypeNames.IHypermediaRouteResolver).AppendLine(" resolver,");
+        sb.Append("        ").Append(SchemaTypeNames.IQueryStringBuilder).AppendLine(" queryStringBuilder,");
         sb.Append("        ").Append(SchemaTypeNames.SirenMapperOptions).AppendLine("? options = null)");
         sb.AppendLine("    {");
 
@@ -1813,15 +1852,22 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         sb.AppendLine("        };");
         sb.AppendLine();
 
-        // Self link
-        sb.AppendLine("        if (options?.AutoSelfLink != false)");
-        sb.AppendLine("        {");
-        sb.Append("            entity.Links.Add(new ").Append(SchemaTypeNames.SirenLink)
-            .AppendLine(" { Rel = new[] { \"self\" }, Href = selfRoute.Url });");
-        sb.AppendLine("        }");
-        sb.AppendLine();
+        // Self link — skip if the HTO already has an explicit self link property
+        var hasExplicitSelfLink = metadata.Links.Any(l =>
+            l.Relations.Any(r => string.Equals(r, "self", System.StringComparison.OrdinalIgnoreCase)));
+        if (!hasExplicitSelfLink)
+        {
+            sb.AppendLine("        if (options?.AutoSelfLink != false)");
+            sb.AppendLine("        {");
+            sb.Append("            entity.Links.Add(new ").Append(SchemaTypeNames.SirenLink)
+                .AppendLine(" { Rel = new[] { \"self\" }, Href = selfRoute.Url });");
+            sb.AppendLine("        }");
+            sb.AppendLine();
+        }
 
-        // TODO Step 6.2: Link resolution
+        // Links — resolve URLs at runtime, append query string, deduplicate by relations
+        EmitLinkResolution(sb, metadata);
+
         // TODO Step 6.3: Action resolution
         // TODO Step 6.4: Embedded entity resolution
 
@@ -1846,6 +1892,112 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             // Fallback to type name when Classes is null (matches SirenConverter behavior)
             sb.Append("            Class = new[] { \"").Append(EscapeString(metadata.ClassName)).AppendLine("\" },");
         }
+    }
+
+    /// <summary>
+    /// Emits link resolution code for all ILink properties.
+    /// Handles nullable links, query string appending, media types, and deduplication by relations.
+    /// </summary>
+    private static void EmitLinkResolution(StringBuilder sb, HtoMetadata metadata)
+    {
+        if (metadata.Links.Length == 0)
+        {
+            return;
+        }
+
+        foreach (var link in metadata.Links)
+        {
+            var relArray = EmitStringArray(link.Relations);
+
+            if (!link.IsMandatory)
+            {
+                sb.Append("        if (hto.").Append(link.PropertyName)
+                    .AppendLine(" is { } " + link.PropertyName + "Link)");
+                sb.AppendLine("        {");
+                sb.Append("            SirenHelper.AddLink(entity.Links, ")
+                    .Append(link.PropertyName).Append("Link, ")
+                    .Append(relArray).Append(", \"").Append(EscapeString(link.PropertyName))
+                    .AppendLine("\", resolver, queryStringBuilder);");
+                sb.AppendLine("        }");
+            }
+            else
+            {
+                sb.Append("        SirenHelper.AddLink(entity.Links, hto.")
+                    .Append(link.PropertyName).Append(", ")
+                    .Append(relArray).Append(", \"").Append(EscapeString(link.PropertyName))
+                    .AppendLine("\", resolver, queryStringBuilder);");
+            }
+
+            sb.AppendLine();
+        }
+    }
+
+    private static string EmitStringArray(EquatableArray<string> items)
+    {
+        var sb = new StringBuilder("new[] { ");
+        for (int i = 0; i < items.Length; i++)
+        {
+            if (i > 0) sb.Append(", ");
+            sb.Append('"').Append(EscapeString(items[i])).Append('"');
+        }
+        sb.Append(" }");
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Emits a shared SirenHelper class with utility methods (AddLink, etc.) used by all
+    /// per-HTO SirenExtensions classes. Emitted once per assembly when Siren = true.
+    /// </summary>
+    internal static string GenerateSirenHelper()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("// <auto-generated/>");
+        sb.AppendLine("#nullable enable");
+        sb.AppendLine();
+        sb.Append("using ").Append(SchemaTypeNames.SirenModelNamespace).AppendLine(";");
+        sb.Append("using ").Append(SchemaTypeNames.RouteResolverNamespace).AppendLine(";");
+        sb.Append("using ").Append(SchemaTypeNames.QueryNamespace).AppendLine(";");
+        sb.AppendLine("using System.Collections.Generic;");
+        sb.AppendLine("using System.Linq;");
+        sb.AppendLine("using RESTyard.AspNetCore.Hypermedia;");
+        sb.AppendLine();
+        sb.AppendLine("internal static class SirenHelper");
+        sb.AppendLine("{");
+
+        // AddLink
+        sb.AppendLine("    internal static void AddLink(");
+        sb.AppendLine("        IList<SirenLink> links,");
+        sb.AppendLine("        ILink? link,");
+        sb.AppendLine("        string[] rel,");
+        sb.AppendLine("        string propertyName,");
+        sb.AppendLine("        IHypermediaRouteResolver resolver,");
+        sb.AppendLine("        IQueryStringBuilder queryStringBuilder)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        if (link is null)");
+        sb.AppendLine("        {");
+        sb.AppendLine("            throw new System.InvalidOperationException(");
+        sb.AppendLine("                $\"Non-nullable link property '{propertyName}' is null. \" +");
+        sb.AppendLine("                \"Ensure the property is initialized or marked as nullable.\");");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        var route = resolver.ReferenceToRoute(link.Reference);");
+        sb.AppendLine("        var query = link.Reference.GetQuery();");
+        sb.AppendLine("        var href = route.Url + queryStringBuilder.CreateQueryString(query);");
+        sb.AppendLine("        links.Add(new SirenLink");
+        sb.AppendLine("        {");
+        sb.AppendLine("            Rel = rel,");
+        sb.AppendLine("            Href = href,");
+        sb.AppendLine("            Type = route.AvailableMediaTypes.Count > 0");
+        sb.AppendLine("                ? string.Join(\",\", route.AvailableMediaTypes)");
+        sb.AppendLine("                : null,");
+        sb.AppendLine("        });");
+        sb.AppendLine("    }");
+
+        // TODO Step 6.3: AddAction()
+        // TODO Step 6.4: AddEmbeddedEntity()
+
+        sb.AppendLine("}");
+        return sb.ToString();
     }
 
     /// <summary>

@@ -1611,6 +1611,7 @@ public class HtoSchemaGeneratorTests
         sirenSource.Should().Contain("public static SirenEntity<HypermediaCustomerHtoProperties> ToSiren(");
         sirenSource.Should().Contain("public static SirenEmbeddedEntity<HypermediaCustomerHtoProperties> ToSirenEmbedded(");
         sirenSource.Should().Contain("IHypermediaRouteResolver resolver");
+        sirenSource.Should().Contain("IQueryStringBuilder queryStringBuilder");
         sirenSource.Should().Contain("SirenMapperOptions? options = null");
     }
 
@@ -1645,6 +1646,19 @@ public class HtoSchemaGeneratorTests
         sirenSource.Should().Contain("options?.AutoSelfLink != false");
         sirenSource.Should().Contain("Rel = new[] { \"self\" }");
         sirenSource.Should().Contain("Href = selfRoute.Url");
+    }
+
+    [Fact]
+    public void HtoWithExplicitSelfLink_suppresses_auto_self_link()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithLinksWithSiren);
+
+        var sirenSource = GetGeneratedSirenSource(result, "HypermediaCustomerHto");
+        // Should NOT contain auto self link — HTO has explicit [Relations(["self"])]
+        sirenSource.Should().NotContain("options?.AutoSelfLink");
+        sirenSource.Should().NotContain("Rel = new[] { \"self\" }, Href = selfRoute.Url");
+        // But should still contain the explicit self link via SirenHelper.AddLink
+        sirenSource.Should().Contain("SirenHelper.AddLink(entity.Links, hto.Self,");
     }
 
     [Fact]
@@ -1710,6 +1724,29 @@ public class HtoSchemaGeneratorTests
     public void EmptyHtoWithSiren_compiles()
     {
         GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.EmptyHtoWithSiren);
+    }
+
+    // --- Step 6.2: Link resolution tests ---
+
+    [Fact]
+    public void HtoWithLinksWithSiren_generates_link_resolution_code()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithLinksWithSiren);
+
+        result.Diagnostics.Should().BeEmpty();
+
+        var sirenSource = GetGeneratedSirenSource(result, "HypermediaCustomerHto");
+        // Mandatory link — direct call to SirenHelper
+        sirenSource.Should().Contain("SirenHelper.AddLink(entity.Links, hto.Self,");
+        // Optional link — null-checked then call to SirenHelper
+        sirenSource.Should().Contain("if (hto.BestFriend is { } BestFriendLink)");
+        sirenSource.Should().Contain("SirenHelper.AddLink(entity.Links, BestFriendLink,");
+    }
+
+    [Fact]
+    public void HtoWithLinksWithSiren_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithLinksWithSiren);
     }
 
     // --- Parity tests: ToSiren() vs SirenConverter ---

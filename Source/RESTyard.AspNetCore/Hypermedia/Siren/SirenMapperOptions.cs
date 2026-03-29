@@ -9,7 +9,14 @@ public class SirenMapperOptions
     /// <summary>
     /// When <c>true</c> (default), the generated <c>ToSiren()</c> automatically adds a <c>"self"</c> link
     /// by resolving the HTO's own route via the route resolver.
-    /// Set to <c>false</c> if self links are managed manually via explicit <c>ILink</c> properties.
+    /// <para>
+    /// <b>Duplicate prevention:</b> If the HTO already has an explicit <c>ILink</c> property with
+    /// <c>[Relations(["self"])]</c> (case-insensitive), the auto self link is suppressed at compile time
+    /// regardless of this setting — the explicit link takes precedence.
+    /// </para>
+    /// <para>
+    /// Set to <c>false</c> to disable auto self links globally for HTOs that do not have explicit self links.
+    /// </para>
     /// </summary>
     public bool AutoSelfLink { get; set; } = true;
 }

@@ -113,6 +113,29 @@ internal static class TestHtoSources
         """;
 
     /// <summary>
+    /// HTO with mandatory and optional links — Siren = true.
+    /// </summary>
+    internal const string HtoWithLinksWithSiren = $$"""
+        {{Usings}}
+        using RESTyard.AspNetCore.Hypermedia.Links;
+        {{AssemblyAttributeWithSiren}}
+
+        namespace TestHtos;
+
+        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+        public class HypermediaCustomerHto : HypermediaObject
+        {
+            public string Name { get; set; } = string.Empty;
+
+            [Relations(["self"])]
+            public ILink<HypermediaCustomerHto> Self { get; set; } = default!;
+
+            [Relations(["bestFriend"])]
+            public ILink<HypermediaCustomerHto>? BestFriend { get; set; }
+        }
+        """;
+
+    /// <summary>
     /// HTO with parameterless and parameterized actions.
     /// </summary>
     internal const string HtoWithActions = $$"""

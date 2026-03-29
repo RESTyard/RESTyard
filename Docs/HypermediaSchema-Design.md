@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Last completed: **Step 6.1** (Basic entity mapping — ToSiren/ToSirenEmbedded, properties, self link). Next: **Step 6.2** (Link resolution).
+> **Plan execution in progress.** Last completed: **Step 6.2** (Link resolution). Next: **Step 6.3** (Action resolution).
 
 ## Table of Contents
 

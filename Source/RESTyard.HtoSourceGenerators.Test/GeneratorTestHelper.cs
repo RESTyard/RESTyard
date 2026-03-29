@@ -149,7 +149,8 @@ internal static class GeneratorTestHelper
         var toSirenMethod = extensionsType.GetMethod("ToSiren", BindingFlags.Public | BindingFlags.Static)
                             ?? throw new InvalidOperationException($"Method 'ToSiren' not found on '{extensionsTypeName}'");
 
-        var sirenResult = toSirenMethod.Invoke(null, [hto, resolver, null]);
+        var queryStringBuilder = new RESTyard.AspNetCore.Query.QueryStringBuilder();
+        var sirenResult = toSirenMethod.Invoke(null, [hto, resolver, queryStringBuilder, null]);
         if (sirenResult == null)
         {
             throw new InvalidOperationException("ToSiren returned null");

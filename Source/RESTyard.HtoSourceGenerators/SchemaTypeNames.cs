@@ -102,6 +102,10 @@ internal static class SchemaTypeNames
     internal const string IHypermediaRouteResolver = "IHypermediaRouteResolver";
     internal const string ResolvedRoute = "ResolvedRoute";
 
+    // Query String Builder (RESTyard.AspNetCore.Query)
+    internal const string QueryNamespace = "RESTyard.AspNetCore.Query";
+    internal const string IQueryStringBuilder = "IQueryStringBuilder";
+
     // System.ComponentModel (for EditorBrowsable)
     internal const string EditorBrowsableAttribute = "System.ComponentModel.EditorBrowsable";
     internal const string EditorBrowsableStateNever = "System.ComponentModel.EditorBrowsableState.Never";

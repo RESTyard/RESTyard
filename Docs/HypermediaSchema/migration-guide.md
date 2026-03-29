@@ -25,8 +25,10 @@ using RESTyard.AspNetCore.Hypermedia.Siren;         // SirenMapperOptions
 
 **`ToSiren()` (new):** A self link is **automatically added** by resolving the HTO's own route via `resolver.ObjectToRoute(hto)`. This is controlled by `SirenMapperOptions.AutoSelfLink` (default: `true`).
 
+**Duplicate prevention:** If the HTO has an explicit `ILink` property with `[Relations(["self"])]` (case-insensitive match), the auto self link is **suppressed at compile time** — the explicit link takes precedence. No duplicate self links will be produced in this case, regardless of the `AutoSelfLink` setting.
+
 **Action required:**
-- If your HTOs already have explicit self link properties, you may get duplicate self links. Either remove the explicit self link from the HTO, or set `AutoSelfLink = false`.
+- If your HTOs already have explicit self link properties: **no action needed** — the generator detects them and suppresses the auto self link.
 - If your HTOs do NOT have self links today and clients don't expect them, set `AutoSelfLink = false` to preserve the existing behavior.
 - If you want the new auto-self-link behavior (recommended), no action needed — it's the default.
 
