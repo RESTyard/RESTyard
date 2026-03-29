@@ -540,12 +540,14 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 #### Step 6.2: Link resolution
 - Resolve `ILink<T>` properties → `SirenLink` with URL from `resolver.ReferenceToRoute(link.Value)`
-- Append query string from `reference.GetQuery()` via `QueryStringBuilder.CreateQueryString()` — required for query result links (same as `SirenConverter.ResolveReferenceRoute`)
+- Append query string from `reference.GetQuery()` via `IQueryStringBuilder.CreateQueryString()` — required for query result links (same as `SirenConverter.ResolveReferenceRoute`)
 - Populate `SirenLink.Type` from `ResolvedRoute.AvailableMediaTypes` (media type info from runtime resolver)
 - Handle nullable links (omit when null)
-- Deduplicate links by relations (same behavior as `SirenConverter` — if multiple `ILink` properties share the same `[Relations]`, last one wins)
+- Deduplicate links by relations at runtime (same behavior as `SirenConverter` — if multiple `ILink` properties share the same `[Relations]`, last one wins). This is correct Siren behavior: a relation identifies a unique link.
+- Emit a compile-time diagnostic warning (e.g., `RY0040`) when the source generator detects two `ILink` properties with identical `[Relations]` — signals likely user error, even though the runtime dedup handles it gracefully
 - Handle `ExternalReference` links — use reference URI directly, no route resolver call
-- Verify tests: mandatory link, optional/null link, external link, media type populated, query string appended, deduplication
+- Make sure the source generator also detects and raises the same errors as `SirenConverter` (e.g., missing `[Relations]` on `ILink` properties)
+- Verify tests: mandatory link, optional/null link, external link, media type populated, query string appended, deduplication, duplicate relation warning
 
 #### Step 6.3: Action resolution
 - Resolve action properties → `SirenAction` with URL from `resolver.ActionToRoute(hto, action)`
@@ -560,6 +562,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   - Set `Fields[].Type` to `"application/json"` for JSON parameters
 - Handle file upload actions: `FileUploadHypermediaAction` / `FileUploadHypermediaAction<T>` with file field (`name = "UploadFiles"`, `type = "file"`, `accept`, `maxFileSizeBytes`, `allowMultiple`)
 - Handle external actions: `HypermediaExternalAction` — use `ExternalUri` directly, `HttpMethod`, `AcceptedMediaType` from the external action base
+- Make sure the source genrator also detects and raises the same errors as SirenConverter
 - Verify tests: parameterless, with params, file upload, null/non-executable actions, external actions, action classes, prefilled values (string and object), dynamic schema route keys
 
 #### Step 6.4: Embedded entity resolution
@@ -568,11 +571,13 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Set `Rel` from `[Relations]` attribute on the parent HTO's embedded entity property
 - Handle single (`IEmbeddedEntity<T>`) and collection (`List<IEmbeddedEntity<T>>`) embedded entities
 - Handle nullable single embedded entities (omit when null)
+-  DO NOT Deduplicate as thw SirenCOnverter does (if multiple embedded entities share the same `[Relations]`, they are all included)
+- Make sure the source genrator also detects and raises the same errors as SirenConverter
 - Verify tests: single embedded, collection, nullable, nested embedded entities, unresolved → linked sub-entity, external object reference
 
 #### Step 6.5: SirenMapperOptions DI wiring
 - `SirenMapperOptions` class already created in Step 6.1
-- Add `WriteNullProperties` option (default `true`, matching `HypermediaConverterConfiguration.WriteNullProperties`) — controls whether null property values are included in the Siren JSON output. Maps to `JsonSerializerOptions.DefaultIgnoreCondition` at serialization time.
+- evaluate: is this needed since user is in control of serializer: Add `WriteNullProperties` option (default `true`, matching `HypermediaConverterConfiguration.WriteNullProperties`) — controls whether null property values are included in the Siren JSON output. Maps to `JsonSerializerOptions.DefaultIgnoreCondition` at serialization time.
 - Wire through DI: `AddHypermediaSirenMapper(Action<SirenMapperOptions>?)` or resolve from `IServiceProvider`
 - Generated `ToSiren()` falls back to default options when `null` is passed
 - Verify tests: `AutoSelfLink = false` omits self link, `WriteNullProperties = false` omits nulls, defaults include both
@@ -659,6 +664,11 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   - Explain why: consistent with `MapHypermediaSchema()`, enables per-endpoint auth policies
   - Show both patterns: keep auto-registration (no change needed) vs. opt into minimal API
 - Verify with CarShack: migrate, confirm parameter type endpoints still work, integration tests pass
+
+#### Step 8.6 Cleaup
+
+- Refactor HTO sourc generators to more classes/functions to make it easier to add new features and understand the code better.
+- Revisit tests or ToSiren and SirenConverter. Maybe it is possible to use the same tests and feed it to both methods. Alos tests shoudl describe features more. 
 
 ### Phase 9: Revisit Open Questions
 
