@@ -10,6 +10,9 @@
 
     <!-- CS1591: missing documentation on public methods -->
     <NoWarn>CS1591</NoWarn>
+
+    <!-- Emit generated source files to disk for inspection -->
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
   <ItemGroup>
