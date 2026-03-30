@@ -136,6 +136,41 @@ internal static class TestHtoSources
         """;
 
     /// <summary>
+    /// HTO with parameterless and parameterized actions — Siren = true.
+    /// </summary>
+    internal const string HtoWithActionsWithSiren = $$"""
+        {{Usings}}
+        using RESTyard.AspNetCore.Hypermedia.Actions;
+        {{AssemblyAttributeWithSiren}}
+
+        namespace TestHtos;
+
+        public record MoveParameters(string Street, string City) : IHypermediaActionParameter;
+
+        public class MoveOp : HypermediaAction<MoveParameters>
+        {
+            public MoveOp(MoveParameters? prefilledValues = null) : base(prefilledValues!) { }
+        }
+
+        public class MarkAsFavoriteOp : HypermediaAction
+        {
+            public MarkAsFavoriteOp() : base(() => true) { }
+        }
+
+        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+        public class HypermediaCustomerHto : HypermediaObject
+        {
+            public string Name { get; set; } = string.Empty;
+
+            [HypermediaAction(Name = "MarkAsFavorite", Title = "Mark as Favorite")]
+            public MarkAsFavoriteOp? MarkAsFavorite { get; set; }
+
+            [HypermediaAction(Name = "CustomerMove", Title = "Customer moved", Classes = new[] { "Destructive" })]
+            public MoveOp? CustomerMove { get; set; }
+        }
+        """;
+
+    /// <summary>
     /// HTO with parameterless and parameterized actions.
     /// </summary>
     internal const string HtoWithActions = $$"""

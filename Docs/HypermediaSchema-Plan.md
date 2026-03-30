@@ -549,7 +549,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Make sure the source generator also detects and raises the same errors as `SirenConverter` (e.g., missing `[Relations]` on `ILink` properties)
 - Verify tests: mandatory link, optional/null link, external link, media type populated, query string appended, deduplication, duplicate relation warning
 
-#### Step 6.3: Action resolution
+#### Step 6.3: ✅ Action resolution
 - Add `SirenHelper.AddAction()` to the shared `SirenHelper` class (emitted per-assembly) — centralizes action resolution logic (route, method, fields, prefilled values, file upload metadata)
 - Resolve action properties → `SirenAction` with URL from `resolver.ActionToRoute(hto, action)`
 - Populate `SirenAction.Method` from `ResolvedRoute.HttpMethod`
@@ -577,6 +577,11 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 -  DO NOT Deduplicate as thw SirenCOnverter does (if multiple embedded entities share the same `[Relations]`, they are all included)
 - Make sure the source genrator also detects and raises the same errors as SirenConverter
 - Verify tests: single embedded, collection, nullable, nested embedded entities, unresolved → linked sub-entity, external object reference
+- **Comprehensive parity tests (deferred from Steps 6.2/6.3):** After embedded entity resolution is complete, add full runtime parity tests comparing `ToSiren()` output against `SirenConverter` output. Cover all special cases:
+  - **Links:** internal links, external links, query string links, media type links, nullable links, deduplication
+  - **Actions:** parameterless, with parameters (prefilled values), file upload, file upload with parameters, external actions, dynamic actions (`IDynamicSchema`), action classes (built-in + user-defined)
+  - **Embedded entities:** single resolved, collection resolved, unresolved → linked sub-entity, external object reference, nullable, nested
+  - Setup requires constructing HTO instances with actions/links/embedded entities via reflection (types from emitted assembly), with `StubRouteResolver` fallback routes feeding both `ToSiren()` and `SirenConverter`
 
 #### Step 6.5: SirenMapperOptions DI wiring
 - `SirenMapperOptions` class already created in Step 6.1

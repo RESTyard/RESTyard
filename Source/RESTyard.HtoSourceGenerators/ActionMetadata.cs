@@ -4,6 +4,8 @@ namespace RESTyard.HtoSourceGenerators;
 /// Compile-time metadata for a single action property on an HTO.
 /// </summary>
 internal readonly record struct ActionMetadata(
+    /// <summary>The C# property name on the HTO class, used to emit <c>hto.PropertyName</c>.</summary>
+    string PropertyName,
     /// <summary>Action name from <c>[HypermediaAction(Name)]</c>, falling back to C# property name.</summary>
     string Name,
     /// <summary>Action title from <c>[HypermediaAction(Title)]</c>, <c>[Title]</c> attribute, or XML doc <c>&lt;summary&gt;</c>.</summary>
@@ -22,5 +24,7 @@ internal readonly record struct ActionMetadata(
     string? ResultSchemaName,
     /// <summary>Siren classes of the result entity type. Null if no result.</summary>
     EquatableArray<string>? ResultClasses,
+    /// <summary>User-defined classes from <c>[HypermediaAction(Classes = [...])]</c>. Empty if none.</summary>
+    EquatableArray<string> UserClasses,
     /// <summary>Access groups from <c>[HypermediaAccessGroup]</c>. Empty if none.</summary>
     EquatableArray<string> AccessGroups);

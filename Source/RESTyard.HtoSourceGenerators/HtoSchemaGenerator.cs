@@ -584,7 +584,10 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
                 var actionAccessGroups = GetAccessGroups(member);
 
-                actions.Add(new ActionMetadata(name, actionTitle, actionDescription, parameterTypeFullName, isFileUpload, actionIsDeprecated, actionDeprecationMessage, isMandatory, null, null, new EquatableArray<string>(actionAccessGroups)));
+                // User-defined classes from [HypermediaAction(Classes = [...])]
+                var userClasses = GetNamedArgumentStringArray(actionAttr, "Classes");
+
+                actions.Add(new ActionMetadata(member.Name, name, actionTitle, actionDescription, parameterTypeFullName, isFileUpload, actionIsDeprecated, actionDeprecationMessage, isMandatory, null, null, new EquatableArray<string>(userClasses), new EquatableArray<string>(actionAccessGroups)));
             }
 
             current = current.BaseType;
@@ -1868,7 +1871,8 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         // Links — resolve URLs at runtime, append query string, deduplicate by relations
         EmitLinkResolution(sb, metadata);
 
-        // TODO Step 6.3: Action resolution
+        // Actions — null-safe check, resolve route, build fields
+        EmitActionResolution(sb, metadata);
         // TODO Step 6.4: Embedded entity resolution
 
         sb.AppendLine("        return entity;");
@@ -1898,6 +1902,60 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     /// Emits link resolution code for all ILink properties.
     /// Handles nullable links, query string appending, media types, and deduplication by relations.
     /// </summary>
+    private static void EmitActionResolution(StringBuilder sb, HtoMetadata metadata)
+    {
+        if (metadata.Actions.Length == 0)
+        {
+            return;
+        }
+
+        foreach (var action in metadata.Actions)
+        {
+            var classesArray = EmitStringArray(action.UserClasses);
+
+            if (!action.IsMandatory)
+            {
+                // Nullable action — CanExecute check
+                sb.Append("        if (hto.").Append(action.PropertyName).AppendLine("?.CanExecute() == true)");
+                sb.AppendLine("        {");
+                sb.Append("            SirenHelper.AddAction(entity.Actions, hto, hto.")
+                    .Append(action.PropertyName).Append(", ");
+                EmitActionArgs(sb, action, classesArray);
+                sb.AppendLine(");");
+                sb.AppendLine("        }");
+            }
+            else
+            {
+                // Mandatory action — still check CanExecute
+                sb.Append("        if (hto.").Append(action.PropertyName).AppendLine("?.CanExecute() == true)");
+                sb.AppendLine("        {");
+                sb.Append("            SirenHelper.AddAction(entity.Actions, hto, hto.")
+                    .Append(action.PropertyName).Append(", ");
+                EmitActionArgs(sb, action, classesArray);
+                sb.AppendLine(");");
+                sb.AppendLine("        }");
+            }
+
+            sb.AppendLine();
+        }
+    }
+
+    private static void EmitActionArgs(StringBuilder sb, ActionMetadata action, string classesArray)
+    {
+        sb.Append('"').Append(EscapeString(action.Name)).Append('"');
+        sb.Append(", ");
+        if (action.Title != null)
+        {
+            sb.Append('"').Append(EscapeString(action.Title)).Append('"');
+        }
+        else
+        {
+            sb.Append("null");
+        }
+        sb.Append(", ").Append(classesArray);
+        sb.Append(", resolver");
+    }
+
     private static void EmitLinkResolution(StringBuilder sb, HtoMetadata metadata)
     {
         if (metadata.Links.Length == 0)
@@ -1934,6 +1992,11 @@ public class HtoSchemaGenerator : IIncrementalGenerator
 
     private static string EmitStringArray(EquatableArray<string> items)
     {
+        if (items.Length == 0)
+        {
+            return "System.Array.Empty<string>()";
+        }
+
         var sb = new StringBuilder("new[] { ");
         for (int i = 0; i < items.Length; i++)
         {
@@ -1993,7 +2056,131 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         sb.AppendLine("        });");
         sb.AppendLine("    }");
 
-        // TODO Step 6.3: AddAction()
+        sb.AppendLine();
+
+        // AddAction
+        sb.AppendLine("    internal static void AddAction(");
+        sb.AppendLine("        IList<SirenAction> actions,");
+        sb.AppendLine("        RESTyard.AspNetCore.Hypermedia.IHypermediaObject hto,");
+        sb.AppendLine("        RESTyard.AspNetCore.Hypermedia.Actions.HypermediaActionBase action,");
+        sb.AppendLine("        string actionName,");
+        sb.AppendLine("        string? actionTitle,");
+        sb.AppendLine("        string[] userClasses,");
+        sb.AppendLine("        IHypermediaRouteResolver resolver)");
+        sb.AppendLine("    {");
+        // Resolve route — external vs internal
+        sb.AppendLine("        ResolvedRoute resolvedRoute;");
+        sb.AppendLine("        if (action is RESTyard.AspNetCore.Hypermedia.Actions.HypermediaExternalActionBase externalAction)");
+        sb.AppendLine("        {");
+        sb.AppendLine("            resolvedRoute = new ResolvedRoute(");
+        sb.AppendLine("                externalAction.ExternalUri.ToString(),");
+        sb.AppendLine("                externalAction.HttpMethod,");
+        sb.AppendLine("                acceptableMediaType: externalAction.AcceptedMediaType);");
+        sb.AppendLine("        }");
+        sb.AppendLine("        else");
+        sb.AppendLine("        {");
+        sb.AppendLine("            resolvedRoute = resolver.ActionToRoute(hto, action);");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        // Determine action class marker and type
+        sb.AppendLine("        string classField;");
+        sb.AppendLine("        string? actionType = null;");
+        sb.AppendLine("        var fields = new List<SirenField>();");
+        sb.AppendLine();
+        sb.AppendLine("        if (action is RESTyard.AspNetCore.Hypermedia.Actions.IFileUploadConfiguration fileUploadConfig)");
+        sb.AppendLine("        {");
+        sb.AppendLine("            actionType = resolvedRoute.AcceptableMediaType ?? RESTyard.MediaTypes.DefaultMediaTypes.MultipartFormData;");
+        sb.AppendLine("            var uploadConfig = fileUploadConfig.FileUploadConfiguration;");
+        sb.AppendLine("            var fileField = new SirenField { Name = \"UploadFiles\", Type = \"file\" };");
+        sb.AppendLine("            if (uploadConfig.Accept.Any())");
+        sb.AppendLine("                fileField.Accept = string.Join(\",\", uploadConfig.Accept);");
+        sb.AppendLine("            if (uploadConfig.MaxFileSizeBytes >= 0)");
+        sb.AppendLine("                fileField.MaxFileSizeBytes = uploadConfig.MaxFileSizeBytes;");
+        sb.AppendLine("            if (uploadConfig.AllowMultiple)");
+        sb.AppendLine("                fileField.AllowMultiple = true;");
+        sb.AppendLine("            fields.Add(fileField);");
+        sb.AppendLine();
+        sb.AppendLine("            if (action.TryGetParameterType(out var paramType))");
+        sb.AppendLine("            {");
+        sb.AppendLine("                classField = RESTyard.AspNetCore.WebApi.Formatter.ActionClasses.FileUploadActionWithParameterClass;");
+        sb.AppendLine("                fields.Add(BuildParameterField(action, paramType, resolver));");
+        sb.AppendLine("            }");
+        sb.AppendLine("            else");
+        sb.AppendLine("            {");
+        sb.AppendLine("                classField = RESTyard.AspNetCore.WebApi.Formatter.ActionClasses.FileUploadActionClass;");
+        sb.AppendLine("            }");
+        sb.AppendLine("        }");
+        sb.AppendLine("        else if (action.TryGetParameterType(out var paramType))");
+        sb.AppendLine("        {");
+        sb.AppendLine("            actionType = resolvedRoute.AcceptableMediaType ?? RESTyard.MediaTypes.DefaultMediaTypes.ApplicationJson;");
+        sb.AppendLine("            classField = RESTyard.AspNetCore.WebApi.Formatter.ActionClasses.ParameterActionClass;");
+        sb.AppendLine("            fields.Add(BuildParameterField(action, paramType, resolver));");
+        sb.AppendLine("        }");
+        sb.AppendLine("        else");
+        sb.AppendLine("        {");
+        sb.AppendLine("            classField = RESTyard.AspNetCore.WebApi.Formatter.ActionClasses.ParameterLessActionClass;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        // Build class array: user classes + action class marker
+        sb.AppendLine("        var classList = new List<string>();");
+        sb.AppendLine("        classList.AddRange(userClasses);");
+        sb.AppendLine("        classList.Add(classField);");
+        sb.AppendLine();
+        // Build the SirenAction
+        sb.AppendLine("        actions.Add(new SirenAction");
+        sb.AppendLine("        {");
+        sb.AppendLine("            Name = actionName,");
+        sb.AppendLine("            Href = resolvedRoute.Url,");
+        sb.AppendLine("            Method = resolvedRoute.HttpMethod ?? \"Undefined\",");
+        sb.AppendLine("            Title = actionTitle,");
+        sb.AppendLine("            Class = classList,");
+        sb.AppendLine("            Type = actionType,");
+        sb.AppendLine("            Fields = fields.Count > 0 ? fields : null,");
+        sb.AppendLine("        });");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+
+        // BuildParameterField — helper for JSON parameter fields
+        sb.AppendLine("    private static SirenField BuildParameterField(");
+        sb.AppendLine("        RESTyard.AspNetCore.Hypermedia.Actions.HypermediaActionBase action,");
+        sb.AppendLine("        System.Type parameterType,");
+        sb.AppendLine("        IHypermediaRouteResolver resolver)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        var paramName = RESTyard.AspNetCore.Util.TypeExtension.BeautifulName(parameterType);");
+        sb.AppendLine("        var field = new SirenField");
+        sb.AppendLine("        {");
+        sb.AppendLine("            Name = paramName,");
+        sb.AppendLine("            Type = RESTyard.MediaTypes.DefaultMediaTypes.ApplicationJson,");
+        sb.AppendLine("        };");
+        sb.AppendLine();
+        // Schema URL resolution — dynamic schema route keys first, then fallback
+        sb.AppendLine("        object? routeKeys = action is RESTyard.AspNetCore.Hypermedia.IDynamicSchema dynamicSchema");
+        sb.AppendLine("            ? dynamicSchema.SchemaRouteKeys : null;");
+        sb.AppendLine("        resolver.TryGetRouteByType(parameterType, routeKeys).Match(");
+        sb.AppendLine("            some: classRoute => field.Class = new[] { classRoute.Url },");
+        sb.AppendLine("            none: () =>");
+        sb.AppendLine("            {");
+        sb.AppendLine("                var generatedUrl = resolver.RouteUrl(");
+        sb.AppendLine("                    \"ActionParameterTypes\",");
+        sb.AppendLine("                    new { parameterTypeName = paramName });");
+        sb.AppendLine("                field.Class = new[] { generatedUrl.GetValueOrThrow() };");
+        sb.AppendLine("            });");
+        sb.AppendLine();
+        // Prefilled values
+        sb.AppendLine("        var prefilled = action.GetPrefilledParameter();");
+        sb.AppendLine("        if (prefilled is string str)");
+        sb.AppendLine("        {");
+        sb.AppendLine("            field.Value = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(str);");
+        sb.AppendLine("        }");
+        sb.AppendLine("        else if (prefilled != null)");
+        sb.AppendLine("        {");
+        sb.AppendLine("            field.Value = prefilled;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        return field;");
+        sb.AppendLine("    }");
+
+        sb.AppendLine();
         // TODO Step 6.4: AddEmbeddedEntity()
 
         sb.AppendLine("}");

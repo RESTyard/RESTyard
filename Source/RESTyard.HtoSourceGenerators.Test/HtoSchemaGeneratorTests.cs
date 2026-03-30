@@ -1749,6 +1749,32 @@ public class HtoSchemaGeneratorTests
         GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithLinksWithSiren);
     }
 
+    // --- Step 6.3: Action resolution tests ---
+
+    [Fact]
+    public void HtoWithActionsWithSiren_generates_action_resolution_code()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithActionsWithSiren);
+
+        result.Diagnostics.Should().BeEmpty();
+
+        var sirenSource = GetGeneratedSirenSource(result, "HypermediaCustomerHto");
+        // Parameterless action — CanExecute null-safe check
+        sirenSource.Should().Contain("hto.MarkAsFavorite?.CanExecute() == true");
+        sirenSource.Should().Contain("SirenHelper.AddAction(entity.Actions, hto, hto.MarkAsFavorite");
+        sirenSource.Should().Contain("\"MarkAsFavorite\"");
+        // Parameterized action with user-defined classes
+        sirenSource.Should().Contain("hto.CustomerMove?.CanExecute() == true");
+        sirenSource.Should().Contain("\"CustomerMove\"");
+        sirenSource.Should().Contain("\"Destructive\"");
+    }
+
+    [Fact]
+    public void HtoWithActionsWithSiren_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithActionsWithSiren);
+    }
+
     // --- Parity tests: ToSiren() vs SirenConverter ---
 
     [Fact]

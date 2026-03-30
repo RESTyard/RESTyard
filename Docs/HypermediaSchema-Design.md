@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Last completed: **Step 6.2** (Link resolution). Next: **Step 6.3** (Action resolution).
+> **Plan execution in progress.** Last completed: **Step 6.3** (Action resolution). Next: **Step 6.4** (Embedded entity resolution + comprehensive parity tests).
 
 ## Table of Contents
 
