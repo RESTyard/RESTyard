@@ -2093,11 +2093,17 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         sb.AppendLine("            var uploadConfig = fileUploadConfig.FileUploadConfiguration;");
         sb.AppendLine("            var fileField = new SirenField { Name = \"UploadFiles\", Type = \"file\" };");
         sb.AppendLine("            if (uploadConfig.Accept.Any())");
+        sb.AppendLine("            {");
         sb.AppendLine("                fileField.Accept = string.Join(\",\", uploadConfig.Accept);");
+        sb.AppendLine("            }");
         sb.AppendLine("            if (uploadConfig.MaxFileSizeBytes >= 0)");
+        sb.AppendLine("            {");
         sb.AppendLine("                fileField.MaxFileSizeBytes = uploadConfig.MaxFileSizeBytes;");
+        sb.AppendLine("            }");
         sb.AppendLine("            if (uploadConfig.AllowMultiple)");
+        sb.AppendLine("            {");
         sb.AppendLine("                fileField.AllowMultiple = true;");
+        sb.AppendLine("            }");
         sb.AppendLine("            fields.Add(fileField);");
         sb.AppendLine();
         sb.AppendLine("            if (action.TryGetParameterType(out var paramType))");
