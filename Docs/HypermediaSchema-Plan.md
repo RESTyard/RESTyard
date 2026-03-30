@@ -577,20 +577,29 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 -  DO NOT Deduplicate as thw SirenCOnverter does (if multiple embedded entities share the same `[Relations]`, they are all included)
 - Make sure the source genrator also detects and raises the same errors as SirenConverter
 - Verify tests: single embedded, collection, nullable, nested embedded entities, unresolved → linked sub-entity, external object reference
-- **Comprehensive parity tests (deferred from Steps 6.2/6.3):** After embedded entity resolution is complete, add full runtime parity tests comparing `ToSiren()` output against `SirenConverter` output. Cover all special cases:
+
+#### Step 6.5: Test infrastructure and comprehensive parity tests
+- Create `RESTyard.HtoSourceGenerators.TestHtos` project — small project with `[assembly: HypermediaAssembly(Siren = true)]` containing real HTO classes. Generator runs on it at build time, producing real `ToSiren()`/`ToSirenEmbedded()` methods. Add to `RESTyard.sln`.
+  - Include test HTOs covering all features: properties, links (internal, external, query), actions (parameterless, parameterized, file upload, external, dynamic), embedded entities (single, collection, resolved, unresolved)
+  - `RESTyard.HtoSourceGenerators.Test` references this project — parity tests use real types directly (no reflection, fully readable)
+  - Consider migrating some existing reflection-based generator tests to use this project where readability improves
+- Full runtime parity tests comparing `ToSiren()` output against `SirenConverter` output, using real HTO types from `RESTyard.HtoSourceGenerators.TestHtos` (no reflection)
+- Same `StubRouteResolver` instance feeds both `ToSiren()` and `SirenConverter` — any JSON difference is a real divergence
+- Cover all special cases:
   - **Links:** internal links, external links, query string links, media type links, nullable links, deduplication
   - **Actions:** parameterless, with parameters (prefilled values), file upload, file upload with parameters, external actions, dynamic actions (`IDynamicSchema`), action classes (built-in + user-defined)
   - **Embedded entities:** single resolved, collection resolved, unresolved → linked sub-entity, external object reference, nullable, nested
-  - Setup requires constructing HTO instances with actions/links/embedded entities via reflection (types from emitted assembly), with `StubRouteResolver` fallback routes feeding both `ToSiren()` and `SirenConverter`
+- Use `NormalizeJson` for formatting-independent comparison
+- Snapshot each result via Verify for regression detection
 
-#### Step 6.5: SirenMapperOptions DI wiring
+#### Step 6.6: SirenMapperOptions DI wiring
 - `SirenMapperOptions` class already created in Step 6.1
 - evaluate: is this needed since user is in control of serializer: Add `WriteNullProperties` option (default `true`, matching `HypermediaConverterConfiguration.WriteNullProperties`) — controls whether null property values are included in the Siren JSON output. Maps to `JsonSerializerOptions.DefaultIgnoreCondition` at serialization time.
 - Wire through DI: `AddHypermediaSirenMapper(Action<SirenMapperOptions>?)` or resolve from `IServiceProvider`
 - Generated `ToSiren()` falls back to default options when `null` is passed
 - Verify tests: `AutoSelfLink = false` omits self link, `WriteNullProperties = false` omits nulls, defaults include both
 
-#### Step 6.6: Controller extension method `ToSiren(hto)`
+#### Step 6.7: Controller extension method `ToSiren(hto)`
 - Add `ControllerBaseExtensions.ToSiren(this ControllerBase, IHypermediaObject hto)` returning `SirenEntity<TProperties>` wrapped in `OkObjectResult`
 - Resolves `IHypermediaRouteResolver` from `HttpContext.RequestServices` — no need to inject resolver into controllers
 - **Set response Content-Type to `application/vnd.siren+json`** — the existing `SirenHypermediaFormatter` sets this automatically, but since `ToSiren()` bypasses the formatter and returns a plain POCO, the extension method must set the media type explicitly (e.g., via `ContentResult` or by setting `ContentTypes` on the `OkObjectResult`)
