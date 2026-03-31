@@ -5,10 +5,14 @@ namespace RESTyard.HtoSourceGenerators;
 /// storing the relation names, target entity info, collection flag, and nullability.
 /// </summary>
 internal readonly record struct EmbeddedEntityMetadata(
+    /// <summary>The C# property name on the parent HTO (e.g. "Customers").</summary>
+    string PropertyName,
     /// <summary>Relation types from <c>[Relations]</c> attribute.</summary>
     EquatableArray<string> Relations,
     /// <summary>Schema name of the target HTO (derived via <c>DeriveSchemaName</c>).</summary>
     string TargetSchemaName,
+    /// <summary>Fully qualified type name of the target HTO (e.g. "MyApp.HypermediaCustomerHto").</summary>
+    string TargetFullyQualifiedName,
     /// <summary>Siren classes of the target HTO from <c>[HypermediaObject(Classes)]</c>.</summary>
     EquatableArray<string> TargetClasses,
     /// <summary>Whether this embedded entity represents a collection.</summary>

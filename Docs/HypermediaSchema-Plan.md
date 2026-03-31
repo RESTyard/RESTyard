@@ -566,7 +566,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Make sure the source genrator also detects and raises the same errors as SirenConverter
 - Verify tests: parameterless, with params, file upload, null/non-executable actions, external actions, action classes, prefilled values (string and object), dynamic schema route keys
 
-#### Step 6.4: Embedded entity resolution
+#### Step 6.4: ✅ Embedded entity resolution
 - **Resolved references** (`reference.IsResolved() == true`): call `ToSirenEmbedded()` on the instance (no intermediate `SirenEntity` allocation)
 - **Unresolved references** (`reference.IsResolved() == false`): emit a `SirenLinkedEntity` (href + class + rel) instead of a full embedded representation — resolve URL via `resolver.ReferenceToRoute()`. Handle `HypermediaExternalObjectReference` (use URI directly, with external classes).
 - Add `SirenHelper.AddEmbeddedEntity()` and `SirenHelper.AddLinkedEntity()` to the shared `SirenHelper` class — centralizes embedded/linked entity construction

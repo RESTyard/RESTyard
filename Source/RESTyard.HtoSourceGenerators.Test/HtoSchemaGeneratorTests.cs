@@ -1775,6 +1775,38 @@ public class HtoSchemaGeneratorTests
         GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithActionsWithSiren);
     }
 
+    // --- Step 6.4: Embedded entity resolution tests ---
+
+    [Fact]
+    public void HtoWithEmbeddedWithSiren_generates_embedded_entity_resolution_code()
+    {
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.HtoWithEmbeddedWithSiren);
+
+        result.Diagnostics.Should().BeEmpty();
+
+        var sirenSource = GetGeneratedSirenSource(result, "HypermediaCustomerHto");
+        // Nullable single — skip when null
+        sirenSource.Should().Contain("hto.Address is { } AddressValue");
+        sirenSource.Should().Contain("reference.IsResolved()");
+        sirenSource.Should().Contain("ToSirenEmbedded(resolver, queryStringBuilder, options)");
+        sirenSource.Should().Contain("new[] { \"address\" }");
+        // Mandatory collection — null guard
+        sirenSource.Should().Contain("hto.Addresses is null");
+        sirenSource.Should().Contain("InvalidOperationException");
+        sirenSource.Should().Contain("foreach (var item in hto.Addresses)");
+        // Unresolved external path
+        sirenSource.Should().Contain("HypermediaExternalObjectReference externalRef");
+        sirenSource.Should().Contain("SirenLinkedEntity");
+        // Unresolved internal path
+        sirenSource.Should().Contain("resolver.ReferenceToRoute(reference)");
+    }
+
+    [Fact]
+    public void HtoWithEmbeddedWithSiren_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithEmbeddedWithSiren);
+    }
+
     // --- Parity tests: ToSiren() vs SirenConverter ---
 
     [Fact]

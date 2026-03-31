@@ -171,6 +171,34 @@ internal static class TestHtoSources
         """;
 
     /// <summary>
+    /// HTO with single, collection, and nullable embedded entities — Siren = true.
+    /// </summary>
+    internal const string HtoWithEmbeddedWithSiren = $$"""
+        {{Usings}}
+        {{AssemblyAttributeWithSiren}}
+
+        namespace TestHtos;
+
+        [HypermediaObject(Title = "Address", Classes = ["Address"])]
+        public class HypermediaAddressHto : HypermediaObject
+        {
+            public string Street { get; set; } = string.Empty;
+        }
+
+        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+        public class HypermediaCustomerHto : HypermediaObject
+        {
+            public string Name { get; set; } = string.Empty;
+
+            [Relations(["address"])]
+            public IEmbeddedEntity<HypermediaAddressHto>? Address { get; set; }
+
+            [Relations(["addresses"])]
+            public List<IEmbeddedEntity<HypermediaAddressHto>> Addresses { get; set; } = new();
+        }
+        """;
+
+    /// <summary>
     /// HTO with parameterless and parameterized actions.
     /// </summary>
     internal const string HtoWithActions = $$"""

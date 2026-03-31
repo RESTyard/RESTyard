@@ -655,8 +655,10 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 var embeddedAccessGroups = GetAccessGroups(member);
 
                 embeddedEntities.Add(new EmbeddedEntityMetadata(
+                    member.Name,
                     new EquatableArray<string>(relations),
                     targetSchemaName,
+                    targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                     new EquatableArray<string>(targetClasses),
                     isCollection,
                     embeddedTitle,
@@ -1759,6 +1761,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         sb.Append("using ").Append(SchemaTypeNames.RouteResolverNamespace).AppendLine(";");
         sb.Append("using ").Append(SchemaTypeNames.QueryNamespace).AppendLine(";");
         sb.AppendLine("using System.Collections.Generic;");
+        sb.AppendLine("using System.Linq;");
         sb.AppendLine();
 
         if (!string.IsNullOrEmpty(metadata.Namespace))
@@ -1873,7 +1876,8 @@ public class HtoSchemaGenerator : IIncrementalGenerator
 
         // Actions — null-safe check, resolve route, build fields
         EmitActionResolution(sb, metadata);
-        // TODO Step 6.4: Embedded entity resolution
+        // Embedded entities — resolved → inline, unresolved → linked sub-entity
+        EmitEmbeddedEntityResolution(sb, metadata);
 
         sb.AppendLine("        return entity;");
         sb.AppendLine("    }");
@@ -1954,6 +1958,142 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         }
         sb.Append(", ").Append(classesArray);
         sb.Append(", resolver");
+    }
+
+    private static void EmitEmbeddedEntityResolution(StringBuilder sb, HtoMetadata metadata)
+    {
+        if (metadata.EmbeddedEntities.Length == 0)
+        {
+            return;
+        }
+
+        foreach (var embedded in metadata.EmbeddedEntities)
+        {
+            var relArray = EmitStringArray(embedded.Relations);
+            // Strip 'global::' prefix for cleaner generated code
+            var targetFqn = embedded.TargetFullyQualifiedName;
+            if (targetFqn.StartsWith("global::"))
+            {
+                targetFqn = targetFqn.Substring("global::".Length);
+            }
+
+            if (embedded.IsCollection)
+            {
+                EmitCollectionEmbeddedEntity(sb, embedded, relArray, targetFqn, metadata.ClassName);
+            }
+            else
+            {
+                EmitSingleEmbeddedEntity(sb, embedded, relArray, targetFqn, metadata.ClassName);
+            }
+
+            sb.AppendLine();
+        }
+    }
+
+    private static void EmitSingleEmbeddedEntity(
+        StringBuilder sb, EmbeddedEntityMetadata embedded, string relArray, string targetFqn, string parentFqn)
+    {
+        if (!embedded.IsMandatory)
+        {
+            // Nullable single — skip when null
+            sb.Append("        if (hto.").Append(embedded.PropertyName).AppendLine(" is { } " + embedded.PropertyName + "Value)");
+            sb.AppendLine("        {");
+            EmitEmbeddedEntityBody(sb, embedded.PropertyName + "Value", relArray, embedded, targetFqn, "            ");
+            sb.AppendLine("        }");
+        }
+        else
+        {
+            // Mandatory single — null guard
+            sb.Append("        if (hto.").Append(embedded.PropertyName).AppendLine(" is null)");
+            sb.AppendLine("        {");
+            sb.Append("            throw new System.InvalidOperationException(\"Mandatory embedded entity '")
+                .Append(EscapeString(embedded.PropertyName))
+                .Append("' on '").Append(EscapeString(parentFqn))
+                .AppendLine("' is null.\");");
+            sb.AppendLine("        }");
+            EmitEmbeddedEntityBody(sb, "hto." + embedded.PropertyName, relArray, embedded, targetFqn, "        ");
+        }
+    }
+
+    private static void EmitCollectionEmbeddedEntity(
+        StringBuilder sb, EmbeddedEntityMetadata embedded, string relArray, string targetFqn, string parentFqn)
+    {
+        if (!embedded.IsMandatory)
+        {
+            // Nullable collection — skip when null
+            sb.Append("        if (hto.").Append(embedded.PropertyName).AppendLine(" is { } " + embedded.PropertyName + "List)");
+            sb.AppendLine("        {");
+            sb.Append("            foreach (var item in ").Append(embedded.PropertyName).AppendLine("List)");
+            sb.AppendLine("            {");
+            EmitEmbeddedEntityBody(sb, "item", relArray, embedded, targetFqn, "                ");
+            sb.AppendLine("            }");
+            sb.AppendLine("        }");
+        }
+        else
+        {
+            // Mandatory collection — null guard
+            sb.Append("        if (hto.").Append(embedded.PropertyName).AppendLine(" is null)");
+            sb.AppendLine("        {");
+            sb.Append("            throw new System.InvalidOperationException(\"Mandatory embedded entity '")
+                .Append(EscapeString(embedded.PropertyName))
+                .Append("' on '").Append(EscapeString(parentFqn))
+                .AppendLine("' is null.\");");
+            sb.AppendLine("        }");
+            sb.Append("        foreach (var item in hto.").Append(embedded.PropertyName).AppendLine(")");
+            sb.AppendLine("        {");
+            EmitEmbeddedEntityBody(sb, "item", relArray, embedded, targetFqn, "            ");
+            sb.AppendLine("        }");
+        }
+    }
+
+    /// <summary>
+    /// Emits the body that processes a single embedded entity reference:
+    /// resolved → call ToSirenEmbedded() on the instance,
+    /// unresolved external → SirenLinkedEntity with URI,
+    /// unresolved internal → SirenLinkedEntity via resolver.
+    /// </summary>
+    private static void EmitEmbeddedEntityBody(
+        StringBuilder sb, string varName, string relArray,
+        EmbeddedEntityMetadata embedded, string targetFqn, string indent)
+    {
+        var classesArray = EmitStringArray(embedded.TargetClasses);
+
+        // Access the Reference property (EmbeddedEntity<THto> has public Reference)
+        sb.Append(indent).Append("var reference = ((RESTyard.AspNetCore.Hypermedia.EmbeddedEntity<")
+            .Append(targetFqn).Append(">)").Append(varName).AppendLine(").Reference;");
+
+        sb.Append(indent).AppendLine("if (reference.IsResolved())");
+        sb.Append(indent).AppendLine("{");
+        // Resolved — call ToSirenEmbedded() on the instance
+        sb.Append(indent).Append("    var embedded = ((").Append(targetFqn)
+            .AppendLine(")reference.GetInstance()!).ToSirenEmbedded(resolver, queryStringBuilder, options);");
+        sb.Append(indent).Append("    embedded.Rel = ").Append(relArray).AppendLine(";");
+        sb.Append(indent).AppendLine("    entity.Entities.Add(embedded);");
+        sb.Append(indent).AppendLine("}");
+
+        sb.Append(indent).AppendLine("else");
+        sb.Append(indent).AppendLine("{");
+        // Unresolved — external or internal linked entity
+        sb.Append(indent).AppendLine("    if (reference is RESTyard.AspNetCore.Hypermedia.Links.HypermediaExternalObjectReference externalRef)");
+        sb.Append(indent).AppendLine("    {");
+        sb.Append(indent).AppendLine("        entity.Entities.Add(new SirenLinkedEntity");
+        sb.Append(indent).AppendLine("        {");
+        sb.Append(indent).Append("            Rel = ").Append(relArray).AppendLine(",");
+        sb.Append(indent).AppendLine("            Class = new[] { \"External\" }.Concat(externalRef.Classes).ToArray(),");
+        sb.Append(indent).AppendLine("            Href = externalRef.Uri.ToString(),");
+        sb.Append(indent).AppendLine("        });");
+        sb.Append(indent).AppendLine("    }");
+        sb.Append(indent).AppendLine("    else");
+        sb.Append(indent).AppendLine("    {");
+        sb.Append(indent).AppendLine("        var resolvedRoute = resolver.ReferenceToRoute(reference);");
+        sb.Append(indent).AppendLine("        entity.Entities.Add(new SirenLinkedEntity");
+        sb.Append(indent).AppendLine("        {");
+        sb.Append(indent).Append("            Rel = ").Append(relArray).AppendLine(",");
+        sb.Append(indent).Append("            Class = ").Append(classesArray).AppendLine(",");
+        sb.Append(indent).AppendLine("            Href = resolvedRoute.Url,");
+        sb.Append(indent).AppendLine("        });");
+        sb.Append(indent).AppendLine("    }");
+        sb.Append(indent).AppendLine("}");
     }
 
     private static void EmitLinkResolution(StringBuilder sb, HtoMetadata metadata)
@@ -2187,8 +2327,6 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         sb.AppendLine("    }");
 
         sb.AppendLine();
-        // TODO Step 6.4: AddEmbeddedEntity()
-
         sb.AppendLine("}");
         return sb.ToString();
     }
