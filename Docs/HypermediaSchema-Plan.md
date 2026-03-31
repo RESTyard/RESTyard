@@ -578,12 +578,15 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Make sure the source genrator also detects and raises the same errors as SirenConverter
 - Verify tests: single embedded, collection, nullable, nested embedded entities, unresolved → linked sub-entity, external object reference
 
-#### Step 6.5: Test infrastructure and comprehensive parity tests
-- Create `RESTyard.HtoSourceGenerators.TestHtos` project — small project with `[assembly: HypermediaAssembly(Siren = true)]` containing real HTO classes. Generator runs on it at build time, producing real `ToSiren()`/`ToSirenEmbedded()` methods. Add to `RESTyard.sln`.
+#### Step 6.5: ✅ Test infrastructure and comprehensive parity tests
+- **Two test approaches, each for its purpose:**
+  - **Source-string tests** (existing, in `RESTyard.HtoSourceGenerators.Test`): test generator correctness in isolation — always buildable even if the generator is broken. Keep these as the primary generator unit tests; do NOT migrate them to TestHtos.
+  - **Parity tests** (new, using `TestHtos`): test runtime equivalence between `ToSiren()` and `SirenConverter` — require a working generator by definition, so build coupling is acceptable.
+- Create `RESTyard.HtoSourceGenerators.TestHtos` project — small project with `[assembly: HypermediaAssembly(Siren = true)]` containing real HTO classes. Generator runs on it at build time, producing real `ToSiren()`/`ToSirenEmbedded()` methods. Add to `RESTyard.sln`. **Only used for parity tests**, not for generator unit tests.
   - Include test HTOs covering all features: properties, links (internal, external, query), actions (parameterless, parameterized, file upload, external, dynamic), embedded entities (single, collection, resolved, unresolved)
-  - `RESTyard.HtoSourceGenerators.Test` references this project — parity tests use real types directly (no reflection, fully readable)
-  - Consider migrating some existing reflection-based generator tests to use this project where readability improves
-- Full runtime parity tests comparing `ToSiren()` output against `SirenConverter` output, using real HTO types from `RESTyard.HtoSourceGenerators.TestHtos` (no reflection)
+  - `RESTyard.HtoSourceGenerators.Test` references this project for parity tests
+- Parity tests live in a separate file `SirenConverter_ToSiren_ParityTests.cs` (clear separation from generator unit tests in `HtoSchemaGeneratorTests.cs`)
+- Full runtime parity tests comparing `ToSiren()` output against `SirenConverter` output, using real HTO types from `RESTyard.HtoSourceGenerators.TestHtos`
 - Same `StubRouteResolver` instance feeds both `ToSiren()` and `SirenConverter` — any JSON difference is a real divergence
 - Cover all special cases:
   - **Links:** internal links, external links, query string links, media type links, nullable links, deduplication

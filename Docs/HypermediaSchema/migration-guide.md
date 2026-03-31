@@ -39,3 +39,43 @@ using RESTyard.AspNetCore.Hypermedia.Siren;         // SirenMapperOptions
 **`ToSiren()` (new):** HTOs without data properties use `SirenEntity<NoProperties>`. The `Properties` field is `null`, which may be omitted from JSON depending on serializer settings.
 
 **Action required:** If clients depend on `"properties": {}` being present, ensure your serializer includes null properties (`DefaultIgnoreCondition` does not exclude nulls).
+
+## Serializer Configuration
+
+**`SirenConverter` (old):** Serialization is handled internally by the converter using Newtonsoft.Json. The user has no direct control over how the Siren JSON is produced.
+
+**`ToSiren()` (new):** Returns a `SirenEntity<T>` POCO. The user serializes it with `System.Text.Json` (or any serializer) and is in full control of the `JsonSerializerOptions`.
+
+**Recommended `JsonSerializerOptions`:**
+
+```csharp
+var options = new JsonSerializerOptions
+{
+    // Omit null structural properties (class, title, type on links/actions)
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+
+    // Enum serialization — see "Enum Serialization" section below
+    Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+};
+```
+
+## Enum Serialization
+
+**`SirenConverter` (old):** Enums in HTO properties are serialized using `[EnumMember(Value = "...")]` attribute values via `EnumHelper.GetEnumMemberValue()`. For example, `[EnumMember(Value = "red")] Red` serializes as `"red"`.
+
+**`ToSiren()` (new):** Enum serialization is controlled by the consumer's `JsonSerializerOptions`. The `[EnumMember]` attribute is **not supported** by `System.Text.Json` in .NET 8. Without configuration, enums serialize as numeric values (e.g. `0`, `1`).
+
+**Action required:**
+- Add `JsonStringEnumConverter` to your serializer options. Use `JsonNamingPolicy.CamelCase` for simple cases where `[EnumMember]` values match the camelCase member name.
+- For custom `[EnumMember]` values that don't match camelCase (e.g. `[EnumMember(Value = "some-custom-value")]`), replace `[EnumMember]` with System.Text.Json attributes:
+  - .NET 9+: Use `[JsonStringEnumMemberName("some-custom-value")]`
+  - .NET 8: Use a custom `JsonConverter` or a third-party package
+- **This also applies to enums in action prefilled/default values** — they go through the same serializer.
+
+## Null Property Handling
+
+**`SirenConverter` (old):** Null property values are included in the output as `"propertyName": null` (controlled by `HypermediaConverterConfiguration.WriteNullProperties`, default `true`).
+
+**`ToSiren()` (new):** Null handling is controlled by the consumer's `JsonSerializerOptions.DefaultIgnoreCondition`. With `WhenWritingNull`, null properties are omitted from the JSON output.
+
+**Action required:** If clients depend on null properties being present in the JSON, do NOT set `DefaultIgnoreCondition = WhenWritingNull`, or set it only at the serializer level and not on the properties POCO. Note that `WhenWritingNull` applies globally — it also omits null Siren structural properties (`class`, `title`, etc.), which is typically desirable.

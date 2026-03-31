@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Last completed: **Step 6.4** (Embedded entity resolution). Next: **Step 6.5** (Test infrastructure + comprehensive parity tests).
+> **Plan execution in progress.** Last completed: **Step 6.5** (Test infrastructure + parity tests). Next: **Step 6.6** (SirenMapperOptions DI wiring).
 
 ## Table of Contents
 

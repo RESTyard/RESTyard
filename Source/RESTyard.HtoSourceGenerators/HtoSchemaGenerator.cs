@@ -1851,9 +1851,9 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         }
 
         // Initialize collections
-        sb.Append("            Links = new List<").Append(SchemaTypeNames.SirenLink).AppendLine(">(),");
-        sb.Append("            Actions = new List<").Append(SchemaTypeNames.SirenAction).AppendLine(">(),");
         sb.Append("            Entities = new List<").Append(SchemaTypeNames.SirenSubEntity).AppendLine(">(),");
+        sb.Append("            Actions = new List<").Append(SchemaTypeNames.SirenAction).AppendLine(">(),");
+        sb.Append("            Links = new List<").Append(SchemaTypeNames.SirenLink).AppendLine(">(),");
 
         sb.AppendLine("        };");
         sb.AppendLine();
@@ -2073,26 +2073,17 @@ public class HtoSchemaGenerator : IIncrementalGenerator
 
         sb.Append(indent).AppendLine("else");
         sb.Append(indent).AppendLine("{");
-        // Unresolved — external or internal linked entity
-        sb.Append(indent).AppendLine("    if (reference is RESTyard.AspNetCore.Hypermedia.Links.HypermediaExternalObjectReference externalRef)");
+        // Unresolved — resolve via route resolver and emit a linked sub-entity.
+        // Note: HypermediaExternalObjectReference is NOT handled here because its constructor
+        // throws (internal ExternalObject class lacks [HypermediaObject]). It is dead code in
+        // SirenConverter too. For external links, use ExternalReference via Link.External() instead.
+        sb.Append(indent).AppendLine("    var resolvedRoute = resolver.ReferenceToRoute(reference);");
+        sb.Append(indent).AppendLine("    entity.Entities.Add(new SirenLinkedEntity");
         sb.Append(indent).AppendLine("    {");
-        sb.Append(indent).AppendLine("        entity.Entities.Add(new SirenLinkedEntity");
-        sb.Append(indent).AppendLine("        {");
-        sb.Append(indent).Append("            Rel = ").Append(relArray).AppendLine(",");
-        sb.Append(indent).AppendLine("            Class = new[] { \"External\" }.Concat(externalRef.Classes).ToArray(),");
-        sb.Append(indent).AppendLine("            Href = externalRef.Uri.ToString(),");
-        sb.Append(indent).AppendLine("        });");
-        sb.Append(indent).AppendLine("    }");
-        sb.Append(indent).AppendLine("    else");
-        sb.Append(indent).AppendLine("    {");
-        sb.Append(indent).AppendLine("        var resolvedRoute = resolver.ReferenceToRoute(reference);");
-        sb.Append(indent).AppendLine("        entity.Entities.Add(new SirenLinkedEntity");
-        sb.Append(indent).AppendLine("        {");
-        sb.Append(indent).Append("            Rel = ").Append(relArray).AppendLine(",");
-        sb.Append(indent).Append("            Class = ").Append(classesArray).AppendLine(",");
-        sb.Append(indent).AppendLine("            Href = resolvedRoute.Url,");
-        sb.Append(indent).AppendLine("        });");
-        sb.Append(indent).AppendLine("    }");
+        sb.Append(indent).Append("        Rel = ").Append(relArray).AppendLine(",");
+        sb.Append(indent).Append("        Class = ").Append(classesArray).AppendLine(",");
+        sb.Append(indent).AppendLine("        Href = resolvedRoute.Url,");
+        sb.Append(indent).AppendLine("    });");
         sb.Append(indent).AppendLine("}");
     }
 

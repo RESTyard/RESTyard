@@ -1794,11 +1794,11 @@ public class HtoSchemaGeneratorTests
         sirenSource.Should().Contain("hto.Addresses is null");
         sirenSource.Should().Contain("InvalidOperationException");
         sirenSource.Should().Contain("foreach (var item in hto.Addresses)");
-        // Unresolved external path
-        sirenSource.Should().Contain("HypermediaExternalObjectReference externalRef");
+        // Unresolved path — linked sub-entity via resolver
         sirenSource.Should().Contain("SirenLinkedEntity");
-        // Unresolved internal path
         sirenSource.Should().Contain("resolver.ReferenceToRoute(reference)");
+        // HypermediaExternalObjectReference is NOT handled (dead code in SirenConverter — ctor throws)
+        sirenSource.Should().NotContain("HypermediaExternalObjectReference");
     }
 
     [Fact]

@@ -40,10 +40,10 @@ public class SirenEntity<TProperties>
     public TProperties? Properties { get; set; }
 
     /// <summary>
-    /// Navigation links that connect this entity to related resources.
+    /// Related sub-entities — either embedded representations or linked sub-entities.
     /// </summary>
-    [JsonPropertyName("links")]
-    public IList<SirenLink>? Links { get; set; }
+    [JsonPropertyName("entities")]
+    public IList<SirenSubEntity>? Entities { get; set; }
 
     /// <summary>
     /// Available actions that can be performed on this entity.
@@ -52,8 +52,8 @@ public class SirenEntity<TProperties>
     public IList<SirenAction>? Actions { get; set; }
 
     /// <summary>
-    /// Related sub-entities — either embedded representations or linked sub-entities.
+    /// Navigation links that connect this entity to related resources.
     /// </summary>
-    [JsonPropertyName("entities")]
-    public IList<SirenSubEntity>? Entities { get; set; }
+    [JsonPropertyName("links")]
+    public IList<SirenLink>? Links { get; set; }
 }

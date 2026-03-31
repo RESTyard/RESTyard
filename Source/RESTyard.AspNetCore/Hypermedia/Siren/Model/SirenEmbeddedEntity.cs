@@ -27,10 +27,10 @@ public class SirenEmbeddedEntity<TProperties> : SirenSubEntity
     public TProperties? Properties { get; set; }
 
     /// <summary>
-    /// Navigation links for the embedded entity.
+    /// Nested sub-entities of the embedded entity.
     /// </summary>
-    [JsonPropertyName("links")]
-    public IList<SirenLink>? Links { get; set; }
+    [JsonPropertyName("entities")]
+    public IList<SirenSubEntity>? Entities { get; set; }
 
     /// <summary>
     /// Available actions on the embedded entity.
@@ -39,8 +39,8 @@ public class SirenEmbeddedEntity<TProperties> : SirenSubEntity
     public IList<SirenAction>? Actions { get; set; }
 
     /// <summary>
-    /// Nested sub-entities of the embedded entity.
+    /// Navigation links for the embedded entity.
     /// </summary>
-    [JsonPropertyName("entities")]
-    public IList<SirenSubEntity>? Entities { get; set; }
+    [JsonPropertyName("links")]
+    public IList<SirenLink>? Links { get; set; }
 }

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <IsPackable>false</IsPackable>
+
+        <!-- Emit generated source files to disk for inspection -->
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\RESTyard.AspNetCore\RESTyard.AspNetCore.csproj" />
+        <ProjectReference Include="..\RESTyard.HtoSourceGenerators\RESTyard.HtoSourceGenerators.csproj"
+                          OutputItemType="Analyzer"
+                          ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\RESTyard.Schema\RESTyard.Schema.csproj" />
+    </ItemGroup>
+
+</Project>
