@@ -460,4 +460,37 @@ public class SirenConverter_ToSiren_ParityTests
     // SirenConverter.SirenAddEntities() is dead code. The type system also prevents
     // IEmbeddedEntity<HypermediaExternalObjectReference> (not IHypermediaObject).
     // For external links, use ExternalReference via Link.External() instead.
+
+    // --- AutoSelfLink option ---
+
+    [Fact]
+    public void AutoSelfLink_default_adds_self_link()
+    {
+        var resolver = new StubRouteResolver(
+            new ResolvedRoute("http://test/no-self/1", "GET"));
+
+        var hto = new HtoWithAutoSelfLink { Name = "Test" };
+        var json = SerializeToSirenJson(hto.ToSiren(resolver, QueryStringBuilder));
+
+        using var doc = JsonDocument.Parse(json);
+        var links = doc.RootElement.GetProperty("links");
+        links.GetArrayLength().Should().Be(1);
+        links[0].GetProperty("rel")[0].GetString().Should().Be("self");
+        links[0].GetProperty("href").GetString().Should().Be("http://test/no-self/1");
+    }
+
+    [Fact]
+    public void AutoSelfLink_false_omits_self_link()
+    {
+        var resolver = new StubRouteResolver(
+            new ResolvedRoute("http://test/no-self/1", "GET"));
+
+        var hto = new HtoWithAutoSelfLink { Name = "Test" };
+        var options = new RESTyard.AspNetCore.Hypermedia.Siren.SirenMapperOptions { AutoSelfLink = false };
+        var json = SerializeToSirenJson(hto.ToSiren(resolver, QueryStringBuilder, options));
+
+        using var doc = JsonDocument.Parse(json);
+        var links = doc.RootElement.GetProperty("links");
+        links.GetArrayLength().Should().Be(0);
+    }
 }

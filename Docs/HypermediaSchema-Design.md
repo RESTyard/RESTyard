@@ -1,6 +1,6 @@
 # Hypermedia Schema — Design Document
 
-> **Plan execution in progress.** Last completed: **Step 6.5** (Test infrastructure + parity tests). Next: **Step 6.6** (SirenMapperOptions DI wiring).
+> **Plan execution in progress.** Last completed: **Step 6.6** (SirenMapperOptions verification). Next: **Step 6.7** (Controller extension method + DI wiring).
 
 ## Table of Contents
 

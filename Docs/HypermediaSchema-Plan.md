@@ -595,21 +595,27 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Use `NormalizeJson` for formatting-independent comparison
 - Snapshot each result via Verify for regression detection
 
-#### Step 6.6: SirenMapperOptions DI wiring
-- `SirenMapperOptions` class already created in Step 6.1
-- evaluate: is this needed since user is in control of serializer: Add `WriteNullProperties` option (default `true`, matching `HypermediaConverterConfiguration.WriteNullProperties`) — controls whether null property values are included in the Siren JSON output. Maps to `JsonSerializerOptions.DefaultIgnoreCondition` at serialization time.
-- Wire through DI: `AddHypermediaSirenMapper(Action<SirenMapperOptions>?)` or resolve from `IServiceProvider`
-- Generated `ToSiren()` falls back to default options when `null` is passed
-- Verify tests: `AutoSelfLink = false` omits self link, `WriteNullProperties = false` omits nulls, defaults include both
+#### Step 6.6: ✅ SirenMapperOptions verification
+- `SirenMapperOptions` already created in Step 6.1, `AutoSelfLink` already wired in generated code
+- ~~`WriteNullProperties`~~ **Dropped** — null handling is the consumer's `JsonSerializerOptions.DefaultIgnoreCondition` concern, documented in migration guide
+- ~~DI wiring~~ **Deferred to Step 6.7** — the controller extension method needs DI resolution anyway, wire it there
+- Add test: `AutoSelfLink = false` omits the auto self link
+- Add test: default options include auto self link
 
-#### Step 6.7: Controller extension method `ToSiren(hto)`
+#### Step 6.7: Controller extension method `ToSiren(hto)` + DI wiring
+- Wire `SirenMapperOptions` through DI: `AddHypermediaSirenMapper(Action<SirenMapperOptions>?)` or resolve from `IServiceProvider`
 - Add `ControllerBaseExtensions.ToSiren(this ControllerBase, IHypermediaObject hto)` returning `SirenEntity<TProperties>` wrapped in `OkObjectResult`
-- Resolves `IHypermediaRouteResolver` from `HttpContext.RequestServices` — no need to inject resolver into controllers
+- Resolves `IHypermediaRouteResolver` and `SirenMapperOptions` from `HttpContext.RequestServices` — no need to inject into controllers
+- consifer a convenient place to set SirenMapperOptions.
 - **Set response Content-Type to `application/vnd.siren+json`** — the existing `SirenHypermediaFormatter` sets this automatically, but since `ToSiren()` bypasses the formatter and returns a plain POCO, the extension method must set the media type explicitly (e.g., via `ContentResult` or by setting `ContentTypes` on the `OkObjectResult`)
 - Usage: `return this.ToSiren(myHto);` instead of `return Ok(myHto.ToSiren(resolver))`
 - This is the **recommended pattern for new APIs** — explicit return type enables correct OpenAPI schema generation (Swagger sees `SirenEntity<T>`, not the HTO class)
 - Note: RESTyard's own `HypermediaApiSchema` is actually richer than OpenAPI for hypermedia APIs (describes the full hypermedia graph), but OpenAPI compatibility matters for mixed tooling ecosystems
 - Verify tests: extension method returns correct type, resolves resolver from DI, response Content-Type is `application/vnd.siren+json`
+
+#### Step 6.8:
+
+- update jsonschema packages (onyl v8 since new mainenance fee. also lock version for now in csproj.)
 
 ### Phase 7: Generated Siren Output Formatter
 
