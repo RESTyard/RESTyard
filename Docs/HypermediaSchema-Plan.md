@@ -603,9 +603,11 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Add test: default options include auto self link
 
 #### Step 6.7: Controller extension method `ToSiren(hto)` + DI wiring
-- Wire `SirenMapperOptions` through DI: `AddHypermediaSirenMapper(Action<SirenMapperOptions>?)` or resolve from `IServiceProvider`
+- Add `SirenMapperOptions.Default` static readonly field — avoids null checks everywhere
+- Generated `ToSiren()` resolves `options ?? SirenMapperOptions.Default` at the top, no null propagation (`options?.`) in generated code
+- Add `services.ConfigureSirenMapper(Action<SirenMapperOptions>)` extension method — optional, only needed to override defaults. Registers `SirenMapperOptions` as singleton in DI.
 - Add `ControllerBaseExtensions.ToSiren(this ControllerBase, IHypermediaObject hto)` returning `SirenEntity<TProperties>` wrapped in `OkObjectResult`
-- Resolves `IHypermediaRouteResolver` and `SirenMapperOptions` from `HttpContext.RequestServices` — no need to inject into controllers
+- Resolves `IHypermediaRouteResolver`, `IQueryStringBuilder`, and `SirenMapperOptions` from `HttpContext.RequestServices` — falls back to `SirenMapperOptions.Default` if not registered
 - consifer a convenient place to set SirenMapperOptions.
 - **Set response Content-Type to `application/vnd.siren+json`** — the existing `SirenHypermediaFormatter` sets this automatically, but since `ToSiren()` bypasses the formatter and returns a plain POCO, the extension method must set the media type explicitly (e.g., via `ContentResult` or by setting `ContentTypes` on the `OkObjectResult`)
 - Usage: `return this.ToSiren(myHto);` instead of `return Ok(myHto.ToSiren(resolver))`
