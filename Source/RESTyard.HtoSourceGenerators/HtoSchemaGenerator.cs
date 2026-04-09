@@ -2340,7 +2340,12 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         sb.AppendLine("                var generatedUrl = resolver.RouteUrl(");
         sb.AppendLine("                    \"ActionParameterTypes\",");
         sb.AppendLine("                    new { parameterTypeName = paramName });");
-        sb.AppendLine("                field.Class = new[] { generatedUrl.GetValueOrThrow() };");
+        sb.AppendLine("                generatedUrl.Match(");
+        sb.AppendLine("                    url => field.Class = new[] { url },");
+        sb.AppendLine("                    error => throw new System.InvalidOperationException(");
+        sb.AppendLine("                        $\"No route found for action parameter type '{paramName}'. \" +");
+        sb.AppendLine("                        $\"Ensure 'AutoDeliverJsonSchemaForActionParameterTypes' is true in HypermediaExtensionsOptions, \" +");
+        sb.AppendLine("                        $\"or register a custom route for this type. Error: {error}\"));");
         sb.AppendLine("            });");
         sb.AppendLine();
         // Prefilled values

@@ -613,7 +613,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Manual path: constructor injection + `Ok(hto.ToSiren(resolver, qsb))` + `[Produces]` attribute
 - Migration guide updated with both approaches
 
-#### Step 6.9: Descriptive error when ActionParameterTypes route is missing
+#### Step 6.8: ✅ Descriptive error when ActionParameterTypes route is missing
 - Pre-existing bug: when `TryGetRouteByType` returns None and the fallback `RouteUrl("ActionParameterTypes", ...)` fails, the error is unclear.
 - Fix in `SirenConverter`: throw a descriptive exception (e.g. "No route found for action parameter type '{typeName}'. Ensure `AutoDeliverJsonSchemaForActionParameterTypes` is true or register a custom route.").
 - Fix in generated `SirenHelper.BuildParameterField`: same descriptive exception on the fallback path.
