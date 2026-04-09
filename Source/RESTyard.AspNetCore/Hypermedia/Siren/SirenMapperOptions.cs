@@ -7,6 +7,12 @@ namespace RESTyard.AspNetCore.Hypermedia.Siren;
 public class SirenMapperOptions
 {
     /// <summary>
+    /// Default options instance. Used when no options are passed to <c>ToSiren()</c>
+    /// and no <c>SirenMapperOptions</c> is registered in DI.
+    /// </summary>
+    public static readonly SirenMapperOptions Default = new();
+
+    /// <summary>
     /// When <c>true</c> (default), the generated <c>ToSiren()</c> automatically adds a <c>"self"</c> link
     /// by resolving the HTO's own route via the route resolver.
     /// <para>

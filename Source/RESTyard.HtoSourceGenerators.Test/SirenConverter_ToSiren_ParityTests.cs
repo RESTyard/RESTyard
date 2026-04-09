@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using AwesomeAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Hypermedia.Links;
@@ -460,6 +461,42 @@ public class SirenConverter_ToSiren_ParityTests
     // SirenConverter.SirenAddEntities() is dead code. The type system also prevents
     // IEmbeddedEntity<HypermediaExternalObjectReference> (not IHypermediaObject).
     // For external links, use ExternalReference via Link.External() instead.
+
+    // --- OkSiren() integration ---
+
+    [Fact]
+    public void OkSiren_resolves_services_and_sets_content_type()
+    {
+        var resolver = new StubRouteResolver(
+            new ResolvedRoute("http://test/customers/1", "GET"));
+
+        // Set up a minimal DI container with the required services
+        var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+        services.AddSingleton<RESTyard.AspNetCore.WebApi.RouteResolver.IHypermediaRouteResolver>(resolver);
+        services.AddSingleton<RESTyard.AspNetCore.Query.IQueryStringBuilder>(QueryStringBuilder);
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Create a controller with a real HttpContext
+        var httpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext
+        {
+            RequestServices = serviceProvider,
+        };
+        var controller = new TestController { ControllerContext = new Microsoft.AspNetCore.Mvc.ControllerContext { HttpContext = httpContext } };
+
+        var hto = new SimpleCustomerHto { Name = "John", Age = 30 };
+        var result = controller.OkSiren(hto);
+
+        // Verify return type and content type
+        result.Value.Should().NotBeNull();
+        httpContext.Response.ContentType.Should().Be(RESTyard.MediaTypes.DefaultMediaTypes.Siren);
+
+        // Verify the Siren entity has correct structure
+        var sirenEntity = result.Value!;
+        sirenEntity.Class.Should().Contain("Customer");
+        sirenEntity.Title.Should().Be("A Customer");
+    }
+
+    private class TestController : Microsoft.AspNetCore.Mvc.ControllerBase { }
 
     // --- AutoSelfLink option ---
 

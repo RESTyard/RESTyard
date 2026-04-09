@@ -1643,7 +1643,7 @@ public class HtoSchemaGeneratorTests
 
         var sirenSource = GetGeneratedSirenSource(result, "HypermediaCustomerHto");
         sirenSource.Should().Contain("resolver.ObjectToRoute(hto)");
-        sirenSource.Should().Contain("options?.AutoSelfLink != false");
+        sirenSource.Should().Contain("effectiveOptions.AutoSelfLink");
         sirenSource.Should().Contain("Rel = new[] { \"self\" }");
         sirenSource.Should().Contain("Href = selfRoute.Url");
     }
@@ -1655,7 +1655,7 @@ public class HtoSchemaGeneratorTests
 
         var sirenSource = GetGeneratedSirenSource(result, "HypermediaCustomerHto");
         // Should NOT contain auto self link — HTO has explicit [Relations(["self"])]
-        sirenSource.Should().NotContain("options?.AutoSelfLink");
+        sirenSource.Should().NotContain("effectiveOptions.AutoSelfLink");
         sirenSource.Should().NotContain("Rel = new[] { \"self\" }, Href = selfRoute.Url");
         // But should still contain the explicit self link via SirenHelper.AddLink
         sirenSource.Should().Contain("SirenHelper.AddLink(entity.Links, hto.Self,");

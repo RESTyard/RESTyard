@@ -1782,11 +1782,46 @@ public class HtoSchemaGenerator : IIncrementalGenerator
 
         sb.AppendLine();
 
+        // --- OkSiren() controller convenience extension ---
+        EmitOkSirenExtension(sb, metadata, propertiesType);
+
+        sb.AppendLine();
+
         // --- ToSirenEmbedded() ---
         EmitToSirenMethod(sb, metadata, propertiesType, isEmbedded: true);
 
         sb.AppendLine("}");
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// Emits an OkSiren() controller extension that resolves services from HttpContext,
+    /// calls ToSiren(), sets the Siren content type, and returns OkObjectResult.
+    /// </summary>
+    private static void EmitOkSirenExtension(
+        StringBuilder sb, HtoMetadata metadata, string propertiesType)
+    {
+        var returnType = $"Microsoft.AspNetCore.Mvc.ActionResult<{SchemaTypeNames.SirenEntity}<{propertiesType}>>";
+
+        sb.AppendLine("    /// <summary>");
+        sb.Append("    /// Converts the HTO to a <see cref=\"").Append(SchemaTypeNames.SirenEntity).Append("{T}\"/> and returns an ");
+        sb.AppendLine("<see cref=\"Microsoft.AspNetCore.Mvc.ActionResult{T}\"/>");
+        sb.AppendLine("    /// with <c>application/vnd.siren+json</c> content type.");
+        sb.AppendLine("    /// Resolves route resolver, query string builder, and mapper options from DI.");
+        sb.AppendLine("    /// </summary>");
+        sb.Append("    public static ").Append(returnType).AppendLine(" OkSiren(");
+        sb.AppendLine("        this Microsoft.AspNetCore.Mvc.ControllerBase controller,");
+        sb.Append("        ").Append(metadata.ClassName).AppendLine(" hto)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        var services = controller.HttpContext.RequestServices;");
+        sb.AppendLine("        var resolver = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<RESTyard.AspNetCore.WebApi.RouteResolver.IHypermediaRouteResolver>(services);");
+        sb.AppendLine("        var queryStringBuilder = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<RESTyard.AspNetCore.Query.IQueryStringBuilder>(services);");
+        sb.Append("        var options = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetService<")
+            .Append(SchemaTypeNames.SirenMapperOptions).Append(">(services) ?? ")
+            .Append(SchemaTypeNames.SirenMapperOptions).AppendLine(".Default;");
+        sb.Append("        controller.HttpContext.Response.ContentType = ").AppendLine("RESTyard.MediaTypes.DefaultMediaTypes.Siren;");
+        sb.AppendLine("        return hto.ToSiren(resolver, queryStringBuilder, options);");
+        sb.AppendLine("    }");
     }
 
     private static void EmitToSirenMethod(
@@ -1813,6 +1848,11 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         sb.Append("        ").Append(SchemaTypeNames.IQueryStringBuilder).AppendLine(" queryStringBuilder,");
         sb.Append("        ").Append(SchemaTypeNames.SirenMapperOptions).AppendLine("? options = null)");
         sb.AppendLine("    {");
+
+        // Resolve options — fall back to static default
+        sb.Append("        var effectiveOptions = options ?? ")
+            .Append(SchemaTypeNames.SirenMapperOptions).AppendLine(".Default;");
+        sb.AppendLine();
 
         // Resolve self route
         sb.AppendLine("        var selfRoute = resolver.ObjectToRoute(hto);");
@@ -1863,7 +1903,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             l.Relations.Any(r => string.Equals(r, "self", System.StringComparison.OrdinalIgnoreCase)));
         if (!hasExplicitSelfLink)
         {
-            sb.AppendLine("        if (options?.AutoSelfLink != false)");
+            sb.AppendLine("        if (effectiveOptions.AutoSelfLink)");
             sb.AppendLine("        {");
             sb.Append("            entity.Links.Add(new ").Append(SchemaTypeNames.SirenLink)
                 .AppendLine(" { Rel = new[] { \"self\" }, Href = selfRoute.Url });");

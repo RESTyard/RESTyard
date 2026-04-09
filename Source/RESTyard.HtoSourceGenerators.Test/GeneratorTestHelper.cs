@@ -42,6 +42,10 @@ internal static class GeneratorTestHelper
         MetadataReference.CreateFromFile(typeof(FunicularSwitch.Option).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(FunicularSwitch.Result).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(System.Collections.Immutable.ImmutableList<>).Assembly.Location),
+        MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Http.HttpContext).Assembly.Location),
+        MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions).Assembly.Location),
+        MetadataReference.CreateFromFile(typeof(RESTyard.MediaTypes.DefaultMediaTypes).Assembly.Location),
+        MetadataReference.CreateFromFile(typeof(System.IServiceProvider).Assembly.Location),
     ];
 
     internal static GeneratorDriverRunResult RunGenerator(params string[] sources)

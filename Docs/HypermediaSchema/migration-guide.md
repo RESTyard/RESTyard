@@ -79,3 +79,52 @@ var options = new JsonSerializerOptions
 **`ToSiren()` (new):** Null handling is controlled by the consumer's `JsonSerializerOptions.DefaultIgnoreCondition`. With `WhenWritingNull`, null properties are omitted from the JSON output.
 
 **Action required:** If clients depend on null properties being present in the JSON, do NOT set `DefaultIgnoreCondition = WhenWritingNull`, or set it only at the serializer level and not on the properties POCO. Note that `WhenWritingNull` applies globally — it also omits null Siren structural properties (`class`, `title`, etc.), which is typically desirable.
+
+## Controller Usage Pattern
+
+**`SirenConverter` (old):** Controllers return HTO objects directly; the formatter converts them automatically and sets the content type:
+
+```csharp
+return Ok(myHto);
+```
+
+**`ToSiren()` (new):** Two approaches — convenience or manual.
+
+### Convenience: `OkSiren()` (recommended)
+
+A generated controller extension per HTO that resolves services from DI, calls `ToSiren()`, and sets the `application/vnd.siren+json` content type:
+
+```csharp
+[ApiController]
+public class MyController : ControllerBase
+{
+    [HttpGet]
+    public IActionResult Get()
+    {
+        var hto = new MyHto();
+        return this.OkSiren(hto);
+    }
+}
+```
+
+### Manual: constructor injection
+
+Inject `IHypermediaRouteResolver` and `IQueryStringBuilder` via constructor, call `ToSiren()` directly. Use `[Produces]` to set the content type:
+
+```csharp
+[Produces("application/vnd.siren+json")]
+[ApiController]
+public class MyController(
+    IHypermediaRouteResolver resolver,
+    IQueryStringBuilder queryStringBuilder) : ControllerBase
+{
+    [HttpGet]
+    public IActionResult Get()
+    {
+        var hto = new MyHto();
+        return Ok(hto.ToSiren(resolver, queryStringBuilder));
+    }
+}
+```
+
+The manual approach gives full control over serialization and response handling. `SirenMapperOptions` can be injected as an additional parameter if needed (falls back to `SirenMapperOptions.Default` when omitted).

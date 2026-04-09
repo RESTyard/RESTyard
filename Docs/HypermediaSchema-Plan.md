@@ -602,18 +602,16 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Add test: `AutoSelfLink = false` omits the auto self link
 - Add test: default options include auto self link
 
-#### Step 6.7: Controller extension method `ToSiren(hto)` + DI wiring
-- Add `SirenMapperOptions.Default` static readonly field — avoids null checks everywhere
-- Generated `ToSiren()` resolves `options ?? SirenMapperOptions.Default` at the top, no null propagation (`options?.`) in generated code
-- Add `services.ConfigureSirenMapper(Action<SirenMapperOptions>)` extension method — optional, only needed to override defaults. Registers `SirenMapperOptions` as singleton in DI.
-- Add `ControllerBaseExtensions.ToSiren(this ControllerBase, IHypermediaObject hto)` returning `SirenEntity<TProperties>` wrapped in `OkObjectResult`
-- Resolves `IHypermediaRouteResolver`, `IQueryStringBuilder`, and `SirenMapperOptions` from `HttpContext.RequestServices` — falls back to `SirenMapperOptions.Default` if not registered
-- consifer a convenient place to set SirenMapperOptions.
-- **Set response Content-Type to `application/vnd.siren+json`** — the existing `SirenHypermediaFormatter` sets this automatically, but since `ToSiren()` bypasses the formatter and returns a plain POCO, the extension method must set the media type explicitly (e.g., via `ContentResult` or by setting `ContentTypes` on the `OkObjectResult`)
-- Usage: `return this.ToSiren(myHto);` instead of `return Ok(myHto.ToSiren(resolver))`
-- This is the **recommended pattern for new APIs** — explicit return type enables correct OpenAPI schema generation (Swagger sees `SirenEntity<T>`, not the HTO class)
-- Note: RESTyard's own `HypermediaApiSchema` is actually richer than OpenAPI for hypermedia APIs (describes the full hypermedia graph), but OpenAPI compatibility matters for mixed tooling ecosystems
-- Verify tests: extension method returns correct type, resolves resolver from DI, response Content-Type is `application/vnd.siren+json`
+#### Step 6.7: ✅ Controller convenience + DI wiring
+- `SirenMapperOptions.Default` static readonly field — avoids null checks everywhere
+- Generated `ToSiren()` resolves `options ?? SirenMapperOptions.Default` at the top, no null propagation
+- `services.ConfigureSirenMapper(Action<SirenMapperOptions>)` — optional DI extension, registers `SirenMapperOptions` as singleton
+- Generated `OkSiren(this ControllerBase, HtoType)` per HTO — convenience one-liner:
+  - Resolves `IHypermediaRouteResolver`, `IQueryStringBuilder`, `SirenMapperOptions` from `HttpContext.RequestServices`
+  - Calls `ToSiren()`, sets `application/vnd.siren+json` content type, returns `OkObjectResult`
+  - Usage: `return this.OkSiren(myHto);`
+- Manual path: constructor injection + `Ok(hto.ToSiren(resolver, qsb))` + `[Produces]` attribute
+- Migration guide updated with both approaches
 
 #### Step 6.8:
 
