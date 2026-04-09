@@ -613,10 +613,6 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Manual path: constructor injection + `Ok(hto.ToSiren(resolver, qsb))` + `[Produces]` attribute
 - Migration guide updated with both approaches
 
-#### Step 6.8:
-
-- update jsonschema packages (onyl v8 since new mainenance fee. also lock version for now in csproj.)
-
 #### Step 6.9: Descriptive error when ActionParameterTypes route is missing
 - Pre-existing bug: when `TryGetRouteByType` returns None and the fallback `RouteUrl("ActionParameterTypes", ...)` fails, the error is unclear.
 - Fix in `SirenConverter`: throw a descriptive exception (e.g. "No route found for action parameter type '{typeName}'. Ensure `AutoDeliverJsonSchemaForActionParameterTypes` is true or register a custom route.").
@@ -717,7 +713,14 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - For each question, decide: resolve now, defer, or close as won't-do
 - Update the spec accordingly — move resolved items to Design Decisions, remove closed items
 
-#### Step 9.2: Evaluate deferred features
+#### Step 9.2: Update JsonSchema.Net packages -> reevaluate
+- **Deferred:** v8 has breaking API changes — `Keywords` property removed, keyword types are now singletons with `IKeywordHandler`, accessed via `JsonSchemaNode.Keywords` → `KeywordData[]`. Requires rewriting `JsonSchemaExtensions.cs` and `HypermediaSchemaBuilder.cs`.
+- Versions pinned with `[exact]` syntax and comment in csproj explaining why.
+- Current: `JsonSchema.Net` 7.4.0, `JsonSchema.Net.Generation` 5.1.1
+- Target: `JsonSchema.Net` 8.0.5, `JsonSchema.Net.Generation` 6.0.0 (also requires `System.Text.Json` 10.0.0)
+- v8 also requires investigating `JsonSchemaNode` tree-based API for keyword access (`KeywordData.Handler`, `KeywordData.Value`/`RawValue`)
+
+#### Step 9.3: Evaluate deferred features
 - **Parameter validation routes** — is there a concrete use case from CarShack or real projects?
 - **Example values** — would CarShack benefit from examples in the schema?
 - **Tag groups** — is there a grouping need beyond the entity graph?
