@@ -619,6 +619,12 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 - update jsonschema packages (onyl v8 since new mainenance fee. also lock version for now in csproj.)
 
+#### Step 6.9: Descriptive error when ActionParameterTypes route is missing
+- Pre-existing bug: when `TryGetRouteByType` returns None and the fallback `RouteUrl("ActionParameterTypes", ...)` fails, the error is unclear.
+- Fix in `SirenConverter`: throw a descriptive exception (e.g. "No route found for action parameter type '{typeName}'. Ensure `AutoDeliverJsonSchemaForActionParameterTypes` is true or register a custom route.").
+- Fix in generated `SirenHelper.BuildParameterField`: same descriptive exception on the fallback path.
+- Full migration to minimal API deferred to Step 8.5.
+
 ### Phase 7: Generated Siren Output Formatter
 
 **Goal:** Provide a drop-in replacement output formatter that uses the generated `ToSiren()` internally, for existing APIs that want the performance benefit without rewriting controllers.
@@ -692,6 +698,10 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   - Explain why: consistent with `MapHypermediaSchema()`, enables per-endpoint auth policies
   - Show both patterns: keep auto-registration (no change needed) vs. opt into minimal API
 - Verify with CarShack: migrate, confirm parameter type endpoints still work, integration tests pass
+- **Insights from Step 6.9 analysis:**
+  - **Drop `AutoDeliverJsonSchemaForActionParameterTypes`** — redundant when endpoint registration is explicit (`MapActionParameterTypes()` or not)
+  - CORS/auth must be configured explicitly on minimal API endpoints (`.RequireCors()`, `.RequireAuthorization()`) — they don't inherit from `app.UseCors()` or global MVC filters
+  - **Migration guide note:** replace config boolean with explicit `app.MapActionParameterTypes()` call. Document that CORS (`.RequireCors()`), authorization (`.RequireAuthorization()`), and other policies must be chained explicitly — minimal API endpoints don't inherit global MVC filters or `app.UseCors()` middleware.
 
 #### Step 8.6 Cleaup
 
