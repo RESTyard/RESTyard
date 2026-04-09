@@ -119,7 +119,7 @@ public static class HypermediaSchemaGenerator
         }
 
         var result = (SchemaOutputFormats)0;
-        foreach (var part in formatArg.Split(','))
+        foreach (var part in formatArg!.Split(','))
         {
             var trimmed = part.Trim().ToLowerInvariant();
             result |= trimmed switch
@@ -179,7 +179,7 @@ public static class HypermediaSchemaGenerator
     /// <summary>
     /// Parses <c>--access-groups</c> and <c>--exclude-access-groups</c> CLI arguments
     /// and applies the corresponding filter. Throws if both are specified.
-    /// No <see cref="ISchemaAccessGroupSanitizer"/> is applied — the CLI caller is trusted.
+    /// No ISchemaAccessGroupSanitizer is applied — the CLI caller is trusted.
     /// </summary>
     private static HypermediaApiSchema ApplyAccessGroupFilter(HypermediaApiSchema schema, string[] args)
     {

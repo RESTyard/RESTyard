@@ -107,7 +107,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     private static readonly DiagnosticDescriptor MissingResultTypeWith201 = new(
         id: "RY0031",
         title: "Action endpoint returns 201 but has no ResultType",
-        messageFormat: "Action endpoint '{0}.{1}' on '{2}' has a 201 response annotation but no ResultType — consider adding ResultType to declare the result entity for schema generation.",
+        messageFormat: "Action endpoint '{0}.{1}' on '{2}' has a 201 response annotation but no ResultType — consider adding ResultType to declare the result entity for schema generation",
         category: "RESTyard.Schema",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);

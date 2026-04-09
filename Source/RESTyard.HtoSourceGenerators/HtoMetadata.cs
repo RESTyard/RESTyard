@@ -6,6 +6,21 @@ namespace RESTyard.HtoSourceGenerators;
 /// Compile-time metadata extracted from an HTO class, used by the incremental generator
 /// to produce schema and mapper source code.
 /// </summary>
+/// <param name="Namespace">The namespace of the HTO class.</param>
+/// <param name="ClassName">The class name of the HTO.</param>
+/// <param name="SchemaName">The schema name derived from the class name.</param>
+/// <param name="Title">Title from <c>[HypermediaObject(Title)]</c> or XML doc summary.</param>
+/// <param name="Description">Description from <c>[Description]</c> or XML doc remarks.</param>
+/// <param name="IsDeprecated">Whether the HTO is marked as deprecated.</param>
+/// <param name="DeprecationMessage">Deprecation message, if any.</param>
+/// <param name="Classes">Siren classes from <c>[HypermediaObject(Classes)]</c>.</param>
+/// <param name="AccessGroups">Access groups from <c>[HypermediaAccessGroup]</c> on the HTO class. Empty if none.</param>
+/// <param name="Properties">Data properties metadata.</param>
+/// <param name="Links">Link properties metadata.</param>
+/// <param name="Actions">Action properties metadata.</param>
+/// <param name="EmbeddedEntities">Embedded entity properties metadata.</param>
+/// <param name="EmbeddedEntityPropertiesWithoutRelations">Property names of type <c>IEmbeddedEntity</c> but missing <c>[Relations]</c>. Used to emit RY0020 warnings.</param>
+/// <param name="LinkPropertiesWithoutRelations">Property names of type <c>ILink</c> but missing <c>[Relations]</c>. Used to emit RY0021 warnings.</param>
 internal readonly record struct HtoMetadata(
     string Namespace,
     string ClassName,
@@ -15,21 +30,12 @@ internal readonly record struct HtoMetadata(
     bool IsDeprecated,
     string? DeprecationMessage,
     EquatableArray<string> Classes,
-    /// <summary>Access groups from <c>[HypermediaAccessGroup]</c> on the HTO class. Empty if none.</summary>
     EquatableArray<string> AccessGroups,
     EquatableArray<PropertyMetadata> Properties,
     EquatableArray<LinkMetadata> Links,
     EquatableArray<ActionMetadata> Actions,
     EquatableArray<EmbeddedEntityMetadata> EmbeddedEntities,
-    /// <summary>
-    /// Property names that are of type <c>IEmbeddedEntity</c> but missing <c>[Relations]</c>.
-    /// Used to emit RY0020 warnings during source generation.
-    /// </summary>
     EquatableArray<string> EmbeddedEntityPropertiesWithoutRelations,
-    /// <summary>
-    /// Property names that are of type <c>ILink</c> but missing <c>[Relations]</c>.
-    /// Used to emit RY0021 warnings during source generation.
-    /// </summary>
     EquatableArray<string> LinkPropertiesWithoutRelations)
 {
     /// <summary>

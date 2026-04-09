@@ -36,7 +36,9 @@ public class JsonSchemaFactoryTests
     [Fact]
     public void Obsolete_type_produces_deprecated_at_root()
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         var schema = factory.Generate(typeof(ObsoleteType));
+#pragma warning restore CS0618 // Type or member is obsolete
         var root = schema.RootElement;
 
         root.TryGetProperty("deprecated", out var deprecated).Should().BeTrue();
