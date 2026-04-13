@@ -43,7 +43,7 @@ public class SirenEntity<TProperties>
     /// Related sub-entities — either embedded representations or linked sub-entities.
     /// </summary>
     [JsonPropertyName("entities")]
-    public IList<SirenSubEntity>? Entities { get; set; }
+    public IList<ISirenSubEntity>? Entities { get; set; }
 
     /// <summary>
     /// Available actions that can be performed on this entity.

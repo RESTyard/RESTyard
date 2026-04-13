@@ -88,7 +88,7 @@ internal static class SchemaTypeNames
     internal const string SirenLink = "SirenLink";
     internal const string SirenAction = "SirenAction";
     internal const string SirenField = "SirenField";
-    internal const string SirenSubEntity = "SirenSubEntity";
+    internal const string ISirenSubEntity = "ISirenSubEntity";
     internal const string SirenEmbeddedEntity = "SirenEmbeddedEntity";
     internal const string SirenLinkedEntity = "SirenLinkedEntity";
     internal const string NoProperties = "NoProperties";

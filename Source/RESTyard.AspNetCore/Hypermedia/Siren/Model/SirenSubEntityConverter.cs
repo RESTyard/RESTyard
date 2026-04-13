@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace RESTyard.AspNetCore.Hypermedia.Siren.Model;
 
 /// <summary>
-/// Custom JSON converter for <see cref="SirenSubEntity"/> that serializes derived type properties
+/// Custom JSON converter for <see cref="ISirenSubEntity"/> that serializes derived type properties
 /// based on the runtime type. This avoids the need for <see cref="JsonDerivedTypeAttribute"/>
 /// which cannot register open generic types like <see cref="SirenEmbeddedEntity{TProperties}"/>.
 /// <para>
@@ -14,16 +14,16 @@ namespace RESTyard.AspNetCore.Hypermedia.Siren.Model;
 /// If it contains <c>href</c>, it deserializes as <see cref="SirenLinkedEntity"/>.
 /// </para>
 /// </summary>
-public class SirenSubEntityConverter : JsonConverter<SirenSubEntity>
+public class SirenSubEntityConverter : JsonConverter<ISirenSubEntity>
 {
     /// <summary>
-    /// Only handle the abstract base type. Derived types (<see cref="SirenEmbeddedEntity{TProperties}"/>,
+    /// Only handle the interface type. Concrete types (<see cref="SirenEmbeddedEntity{TProperties}"/>,
     /// <see cref="SirenLinkedEntity"/>) are deserialized by the default object deserializer,
     /// preventing recursion when <see cref="Read"/> calls <c>Deserialize</c> for a concrete type.
     /// </summary>
-    public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(SirenSubEntity);
+    public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(ISirenSubEntity);
 
-    public override SirenSubEntity? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override ISirenSubEntity? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         // get the json doc so we can decide the type
         using var jsonDoc = JsonDocument.ParseValue(ref reader);
@@ -39,12 +39,12 @@ public class SirenSubEntityConverter : JsonConverter<SirenSubEntity>
 
         if (hasProperties || hasEntities)
         {
-            // It's an Embedded Entity. 
-            // We use JsonElement as the generic type so we don't lose data 
+            // It's an Embedded Entity.
+            // We use JsonElement as the generic type so we don't lose data
             // regardless of what the 'properties' object contains.
             return root.Deserialize<SirenEmbeddedEntity<JsonElement>>(options);
         }
-        
+
         if (hasHref)
         {
             // It's a Linked Entity.
@@ -55,7 +55,7 @@ public class SirenSubEntityConverter : JsonConverter<SirenSubEntity>
         throw new JsonException("Siren SubEntity must have either 'href' or 'properties/entities'.");
     }
 
-    public override void Write(Utf8JsonWriter writer, SirenSubEntity value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, ISirenSubEntity value, JsonSerializerOptions options)
     {
         // Serialize using the runtime type so all derived properties are included.
         JsonSerializer.Serialize(writer, value, value.GetType(), options);

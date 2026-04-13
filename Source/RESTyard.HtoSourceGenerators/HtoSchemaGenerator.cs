@@ -1862,7 +1862,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         sb.Append("        var entity = new ").Append(returnType).AppendLine();
         sb.AppendLine("        {");
 
-        // Rel — required by SirenSubEntity, initialized empty for embedded (caller sets it)
+        // Rel — required on SirenEmbeddedEntity (via ISirenSubEntity), initialized empty for embedded (caller sets it)
         if (isEmbedded)
         {
             sb.AppendLine("            Rel = System.Array.Empty<string>(),");
@@ -1891,7 +1891,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         }
 
         // Initialize collections
-        sb.Append("            Entities = new List<").Append(SchemaTypeNames.SirenSubEntity).AppendLine(">(),");
+        sb.Append("            Entities = new List<").Append(SchemaTypeNames.ISirenSubEntity).AppendLine(">(),");
         sb.Append("            Actions = new List<").Append(SchemaTypeNames.SirenAction).AppendLine(">(),");
         sb.Append("            Links = new List<").Append(SchemaTypeNames.SirenLink).AppendLine(">(),");
 

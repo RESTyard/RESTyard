@@ -47,7 +47,7 @@ public class SirenModelSerializationTests
 
         var json = JsonSerializer.Serialize(entity, JsonOptions);
 
-        // Use JsonDocument for verification since SirenSubEntity deserialization
+        // Use JsonDocument for verification since ISirenSubEntity deserialization
         // requires a custom converter (structural discrimination)
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
@@ -189,7 +189,7 @@ public class SirenModelSerializationTests
         };
 
         // Serialize as base type to verify [JsonDerivedType] includes derived properties
-        var json = JsonSerializer.Serialize<SirenSubEntity>(embedded, JsonOptions);
+        var json = JsonSerializer.Serialize<ISirenSubEntity>(embedded, JsonOptions);
         json.Should().Contain("\"rel\"");
         json.Should().Contain("\"class\"");
         json.Should().Contain("\"properties\"");
@@ -216,8 +216,8 @@ public class SirenModelSerializationTests
         // Type safety: compiler enforces correct property type
         embedded.Properties!.Name.Should().Be("John");
 
-        // Serialize as SirenSubEntity (the list element type) — generic properties must survive
-        var json = JsonSerializer.Serialize<SirenSubEntity>(embedded, JsonOptions);
+        // Serialize as ISirenSubEntity (the list element type) — generic properties must survive
+        var json = JsonSerializer.Serialize<ISirenSubEntity>(embedded, JsonOptions);
 
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
@@ -239,7 +239,7 @@ public class SirenModelSerializationTests
         };
 
         // Serialize as base type to verify [JsonDerivedType] includes derived properties
-        var json = JsonSerializer.Serialize<SirenSubEntity>(linked, JsonOptions);
+        var json = JsonSerializer.Serialize<ISirenSubEntity>(linked, JsonOptions);
 
         json.Should().Contain("\"href\":\"/orders/100\"");
         json.Should().Contain("\"rel\"");
@@ -370,7 +370,7 @@ public class SirenModelSerializationTests
             }
             """;
 
-        var result = JsonSerializer.Deserialize<SirenSubEntity>(json, JsonOptions);
+        var result = JsonSerializer.Deserialize<ISirenSubEntity>(json, JsonOptions);
 
         result.Should().BeOfType<SirenEmbeddedEntity<JsonElement>>();
         var embedded = (SirenEmbeddedEntity<JsonElement>)result!;
@@ -394,7 +394,7 @@ public class SirenModelSerializationTests
             }
             """;
 
-        var result = JsonSerializer.Deserialize<SirenSubEntity>(json, JsonOptions);
+        var result = JsonSerializer.Deserialize<ISirenSubEntity>(json, JsonOptions);
 
         result.Should().BeOfType<SirenEmbeddedEntity<JsonElement>>();
         var embedded = (SirenEmbeddedEntity<JsonElement>)result!;
@@ -415,7 +415,7 @@ public class SirenModelSerializationTests
             }
             """;
 
-        var result = JsonSerializer.Deserialize<SirenSubEntity>(json, JsonOptions);
+        var result = JsonSerializer.Deserialize<ISirenSubEntity>(json, JsonOptions);
 
         result.Should().BeOfType<SirenLinkedEntity>();
         var linked = (SirenLinkedEntity)result!;
@@ -431,7 +431,7 @@ public class SirenModelSerializationTests
     {
         var json = """{ "rel": ["unknown"] }""";
 
-        var act = () => JsonSerializer.Deserialize<SirenSubEntity>(json, JsonOptions);
+        var act = () => JsonSerializer.Deserialize<ISirenSubEntity>(json, JsonOptions);
 
         act.Should().Throw<JsonException>();
     }
