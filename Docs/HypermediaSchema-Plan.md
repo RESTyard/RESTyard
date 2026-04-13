@@ -619,6 +619,17 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Fix in generated `SirenHelper.BuildParameterField`: same descriptive exception on the fallback path.
 - Full migration to minimal API deferred to Step 8.5.
 
+#### Step 6.9: Cleanups
+
+- Currently we use SirenEntity<T> for all Siren POCOs, derive a class MyHtoSiren : SirenEntity<THroProperties> so the siren entity has a better name. 
+  - use this name in tosiren() and tosirenembedded()
+  - check other places where we use the better name and suggest to user
+- Updated documentation and migration guides
+
+#### Step 6.10: More explicit siren container
+
+- evaluate: can we generate a SirenEntity object per Hto which contains also information on possible links, actiosn and embedded entities?
+
 ### Phase 7: Generated Siren Output Formatter
 
 **Goal:** Provide a drop-in replacement output formatter that uses the generated `ToSiren()` internally, for existing APIs that want the performance benefit without rewriting controllers.
@@ -648,7 +659,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 #### Step 8.1: Parity tests
 - For every HTO in CarShack: compare `SirenConverter` JSON output vs `ToSiren()` JSON output
-- Fix any discrepancies in the generator
+- Fix any discrepancies in the generator, prompt when in doubt
 
 #### Step 8.2: Opt-in migration in CarShack
 - Migrate CarShack controllers one by one to use `hto.ToSiren(resolver)`
@@ -697,7 +708,14 @@ During migration, compare the JSON output of the existing `SirenConverter` again
   - CORS/auth must be configured explicitly on minimal API endpoints (`.RequireCors()`, `.RequireAuthorization()`) — they don't inherit from `app.UseCors()` or global MVC filters
   - **Migration guide note:** replace config boolean with explicit `app.MapActionParameterTypes()` call. Document that CORS (`.RequireCors()`), authorization (`.RequireAuthorization()`), and other policies must be chained explicitly — minimal API endpoints don't inherit global MVC filters or `app.UseCors()` middleware.
 
-#### Step 8.6 Cleaup
+#### Step 8.6: Migrate helper function for location headers
+
+- currently done by a formatter.
+- evaluate if helper can be refactored (links and entity) to be done in controller by resolving IRouteResolverFactory from http context.
+  - Goal would be to replace HypermediaLocationFormatter<T> and related types and retunr types (or deprecate for now)
+  - RESTyard.AspNetCore.WebApi.ExtensionMethods.ControllerExtensions.Created
+
+#### Step 8.7 Cleaup
 
 - Refactor HTO sourc generators to more classes/functions to make it easier to add new features and understand the code better.
   - Considder seperating getting the current state (of HTOs) and emitting stuff for schema and `ToSiren()` generation.
