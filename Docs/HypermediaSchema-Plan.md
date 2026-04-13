@@ -619,12 +619,42 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Fix in generated `SirenHelper.BuildParameterField`: same descriptive exception on the fallback path.
 - Full migration to minimal API deferred to Step 8.5.
 
-#### Step 6.9: Cleanups
+#### Step 6.8.a: Refactor Siren model hierarchy — replace `SirenSubEntity` abstract class with `ISirenSubEntity` interface
 
-- Currently we use SirenEntity<T> for all Siren POCOs, derive a class MyHtoSiren : SirenEntity<THroProperties> so the siren entity has a better name. 
-  - use this name in tosiren() and tosirenembedded()
-  - check other places where we use the better name and suggest to user
-- Updated documentation and migration guides
+**Motivation:** `SirenEmbeddedEntity<T>` currently duplicates four properties from `SirenEntity<T>` (`Properties`, `Entities`, `Actions`, `Links`) because C# single inheritance forces it to extend `SirenSubEntity` (for `rel`) rather than `SirenEntity<T>`. Introducing an interface breaks this constraint.
+
+**Changes:**
+- Add `ISirenSubEntity` interface with three properties mirroring the current abstract class:
+  - `IReadOnlyList<string> Rel { get; set; }` (required contract — no JSON attributes on the interface)
+  - `IReadOnlyList<string>? Class { get; set; }`
+  - `string? Title { get; set; }`
+- `SirenEmbeddedEntity<T> : SirenEntity<T>, ISirenSubEntity` — empty class body; `Rel` declared here as `required`; `Class` and `Title` satisfied by inheritance from `SirenEntity<T>`; `Properties`, `Entities`, `Actions`, `Links` inherited from `SirenEntity<T>` (duplication removed)
+- `SirenLinkedEntity : ISirenSubEntity` — no longer extends `SirenSubEntity`; re-declares `Rel` (`required`), `Class`, `Title`, `Href`, `Type` explicitly
+- Remove `SirenSubEntity` abstract class
+- `SirenEntity<T>.Entities` changes from `IList<SirenSubEntity>` to `IList<ISirenSubEntity>`
+- Update `SirenSubEntityConverter`: `CanConvert` checks `typeToConvert == typeof(ISirenSubEntity)`; move `[JsonConverter(typeof(SirenSubEntityConverter))]` from the removed abstract class to the interface; internal logic unchanged
+- Update all references to `SirenSubEntity` across the codebase (generator, tests, parity tests)
+
+**Benefit for Step 6.9:** `SirenEmbeddedEntity<T>` now derives from `SirenEntity<T>`, so a single named class per HTO (`HypermediaCustomerHtoSiren : SirenEmbeddedEntity<HypermediaCustomerHtoProperties>`) works for both `ToSiren()` (is-a `SirenEntity<T>`) and `ToSirenEmbedded()` (is-a `ISirenSubEntity`).
+
+#### Step 6.9: Named Siren classes per HTO
+
+Generate two named classes per HTO so the Siren POCOs have meaningful type names (better OpenAPI/Swagger output, clearer IDE tooltips):
+
+- `HypermediaCustomerHtoSiren : SirenEntity<HypermediaCustomerHtoProperties>` — returned by `ToSiren()`
+- `HypermediaCustomerHtoSirenEmbedded : SirenEmbeddedEntity<HypermediaCustomerHtoProperties>` — returned by `ToSirenEmbedded()`
+
+**Why two classes:** a single class cannot derive from both `SirenEntity<T>` and `SirenEmbeddedEntity<T>` without leaking `rel` into the root entity JSON. `SirenEmbeddedEntity<T>` carries `Rel`, which must not appear in root entity responses. Two separate classes keep the JSON shapes correct.
+
+**`HypermediaCustomerHtoSirenEmbedded` is internal to the framework:** users never construct it manually — it is created inside the parent HTO's `ToSiren()` when resolving embedded entities. Only `HypermediaCustomerHtoSiren` is visible to controller authors (via `OkSiren()` / `ToSiren()`).
+
+**Changes:**
+- Generator emits both named classes in the Siren source file alongside the extension class
+- `ToSiren()` return type changes from `SirenEntity<T>` to `HypermediaCustomerHtoSiren`
+- `ToSirenEmbedded()` return type changes from `SirenEmbeddedEntity<T>` to `HypermediaCustomerHtoSirenEmbedded`
+- `OkSiren()` return type updated accordingly (`ActionResult<HypermediaCustomerHtoSiren>`)
+- Update parity tests and snapshot tests to reflect new return types
+- Update migration guide
 
 #### Step 6.10: More explicit siren container
 
@@ -714,6 +744,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - evaluate if helper can be refactored (links and entity) to be done in controller by resolving IRouteResolverFactory from http context.
   - Goal would be to replace HypermediaLocationFormatter<T> and related types and retunr types (or deprecate for now)
   - RESTyard.AspNetCore.WebApi.ExtensionMethods.ControllerExtensions.Created
+- create a way to return a 200 result with a location header (e.g. idempotent Post requests). Prompt user with suggestions. maybe an optional parameter in Created() extension method.
 
 #### Step 8.7 Cleaup
 
