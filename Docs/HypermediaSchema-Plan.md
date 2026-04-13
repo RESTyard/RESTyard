@@ -619,7 +619,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Fix in generated `SirenHelper.BuildParameterField`: same descriptive exception on the fallback path.
 - Full migration to minimal API deferred to Step 8.5.
 
-#### Step 6.8.a: Refactor Siren model hierarchy — replace `SirenSubEntity` abstract class with `ISirenSubEntity` interface
+#### Step 6.8.a: ✅ Refactor Siren model hierarchy — replace `SirenSubEntity` abstract class with `ISirenSubEntity` interface
 
 **Motivation:** `SirenEmbeddedEntity<T>` currently duplicates four properties from `SirenEntity<T>` (`Properties`, `Entities`, `Actions`, `Links`) because C# single inheritance forces it to extend `SirenSubEntity` (for `rel`) rather than `SirenEntity<T>`. Introducing an interface breaks this constraint.
 
@@ -637,7 +637,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 **Benefit for Step 6.9:** `SirenEmbeddedEntity<T>` now derives from `SirenEntity<T>`, so a single named class per HTO (`HypermediaCustomerHtoSiren : SirenEmbeddedEntity<HypermediaCustomerHtoProperties>`) works for both `ToSiren()` (is-a `SirenEntity<T>`) and `ToSirenEmbedded()` (is-a `ISirenSubEntity`).
 
-#### Step 6.9: Named Siren classes per HTO
+#### Step 6.9: Named Siren classes per HTO ✅
 
 Generate two named classes per HTO so the Siren POCOs have meaningful type names (better OpenAPI/Swagger output, clearer IDE tooltips):
 

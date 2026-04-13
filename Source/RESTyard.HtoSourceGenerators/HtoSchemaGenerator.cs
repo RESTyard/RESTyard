@@ -1773,22 +1773,38 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         var propertiesType = metadata.Properties.Length > 0
             ? metadata.ClassName + "Properties"
             : SchemaTypeNames.NoProperties;
+        var sirenClassName = metadata.ClassName + "Siren";
+        var sirenEmbeddedClassName = metadata.ClassName + "SirenEmbedded";
+
+        // --- Named Siren classes (Step 6.9) ---
+        // Empty derived classes give the generated POCOs a stable, HTO-specific type name
+        // (better OpenAPI/Swagger output and clearer IDE tooltips than SirenEntity<T>).
+        sb.Append("/// <summary>Named Siren root entity for <see cref=\"").Append(metadata.ClassName)
+            .AppendLine("\"/>. Returned by <c>ToSiren()</c>.</summary>");
+        sb.Append("public sealed class ").Append(sirenClassName)
+            .Append(" : ").Append(SchemaTypeNames.SirenEntity).Append('<').Append(propertiesType).AppendLine("> { }");
+        sb.AppendLine();
+        sb.Append("/// <summary>Named Siren embedded sub-entity for <see cref=\"").Append(metadata.ClassName)
+            .AppendLine("\"/>. Returned by <c>ToSirenEmbedded()</c>; used internally when this HTO appears as an embedded entity.</summary>");
+        sb.Append("public sealed class ").Append(sirenEmbeddedClassName)
+            .Append(" : ").Append(SchemaTypeNames.SirenEmbeddedEntity).Append('<').Append(propertiesType).AppendLine("> { }");
+        sb.AppendLine();
 
         sb.Append("public static class ").Append(metadata.ClassName).AppendLine("SirenExtensions");
         sb.AppendLine("{");
 
         // --- ToSiren() ---
-        EmitToSirenMethod(sb, metadata, propertiesType, isEmbedded: false);
+        EmitToSirenMethod(sb, metadata, propertiesType, sirenClassName, sirenEmbeddedClassName, isEmbedded: false);
 
         sb.AppendLine();
 
         // --- OkSiren() controller convenience extension ---
-        EmitOkSirenExtension(sb, metadata, propertiesType);
+        EmitOkSirenExtension(sb, metadata, sirenClassName);
 
         sb.AppendLine();
 
         // --- ToSirenEmbedded() ---
-        EmitToSirenMethod(sb, metadata, propertiesType, isEmbedded: true);
+        EmitToSirenMethod(sb, metadata, propertiesType, sirenClassName, sirenEmbeddedClassName, isEmbedded: true);
 
         sb.AppendLine("}");
         return sb.ToString();
@@ -1799,12 +1815,12 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     /// calls ToSiren(), sets the Siren content type, and returns OkObjectResult.
     /// </summary>
     private static void EmitOkSirenExtension(
-        StringBuilder sb, HtoMetadata metadata, string propertiesType)
+        StringBuilder sb, HtoMetadata metadata, string sirenClassName)
     {
-        var returnType = $"Microsoft.AspNetCore.Mvc.ActionResult<{SchemaTypeNames.SirenEntity}<{propertiesType}>>";
+        var returnType = $"Microsoft.AspNetCore.Mvc.ActionResult<{sirenClassName}>";
 
         sb.AppendLine("    /// <summary>");
-        sb.Append("    /// Converts the HTO to a <see cref=\"").Append(SchemaTypeNames.SirenEntity).Append("{T}\"/> and returns an ");
+        sb.Append("    /// Converts the HTO to a <see cref=\"").Append(sirenClassName).Append("\"/> and returns an ");
         sb.AppendLine("<see cref=\"Microsoft.AspNetCore.Mvc.ActionResult{T}\"/>");
         sb.AppendLine("    /// with <c>application/vnd.siren+json</c> content type.");
         sb.AppendLine("    /// Resolves route resolver, query string builder, and mapper options from DI.");
@@ -1828,11 +1844,11 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         StringBuilder sb,
         HtoMetadata metadata,
         string propertiesType,
+        string sirenClassName,
+        string sirenEmbeddedClassName,
         bool isEmbedded)
     {
-        var returnType = isEmbedded
-            ? $"{SchemaTypeNames.SirenEmbeddedEntity}<{propertiesType}>"
-            : $"{SchemaTypeNames.SirenEntity}<{propertiesType}>";
+        var returnType = isEmbedded ? sirenEmbeddedClassName : sirenClassName;
         var methodName = isEmbedded ? "ToSirenEmbedded" : "ToSiren";
 
         // EditorBrowsable(Never) for ToSirenEmbedded

@@ -1608,8 +1608,10 @@ public class HtoSchemaGeneratorTests
         result.Diagnostics.Should().BeEmpty();
 
         var sirenSource = GetGeneratedSirenSource(result, "HypermediaCustomerHto");
-        sirenSource.Should().Contain("public static SirenEntity<HypermediaCustomerHtoProperties> ToSiren(");
-        sirenSource.Should().Contain("public static SirenEmbeddedEntity<HypermediaCustomerHtoProperties> ToSirenEmbedded(");
+        sirenSource.Should().Contain("public sealed class HypermediaCustomerHtoSiren : SirenEntity<HypermediaCustomerHtoProperties>");
+        sirenSource.Should().Contain("public sealed class HypermediaCustomerHtoSirenEmbedded : SirenEmbeddedEntity<HypermediaCustomerHtoProperties>");
+        sirenSource.Should().Contain("public static HypermediaCustomerHtoSiren ToSiren(");
+        sirenSource.Should().Contain("public static HypermediaCustomerHtoSirenEmbedded ToSirenEmbedded(");
         sirenSource.Should().Contain("IHypermediaRouteResolver resolver");
         sirenSource.Should().Contain("IQueryStringBuilder queryStringBuilder");
         sirenSource.Should().Contain("SirenMapperOptions? options = null");
@@ -1715,8 +1717,8 @@ public class HtoSchemaGeneratorTests
         var result = GeneratorTestHelper.RunGenerator(TestHtoSources.EmptyHtoWithSiren);
 
         var sirenSource = GetGeneratedSirenSource(result, "HypermediaEmptyHto");
-        sirenSource.Should().Contain("SirenEntity<NoProperties>");
-        sirenSource.Should().Contain("SirenEmbeddedEntity<NoProperties>");
+        sirenSource.Should().Contain("HypermediaEmptyHtoSiren : SirenEntity<NoProperties>");
+        sirenSource.Should().Contain("HypermediaEmptyHtoSirenEmbedded : SirenEmbeddedEntity<NoProperties>");
         sirenSource.Should().NotContain("Properties =");
     }
 
