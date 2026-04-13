@@ -1513,3 +1513,23 @@ dotnet run --project src/MyApi -- --generate-schema --schema-artifacts markdown-
   
   Implement only if users request it.
 - **`[LinkMediaType]` attribute for static media type hints**: Add a `[LinkMediaType("text/html")]` attribute for `ILink<T>` properties where the media type is always the same (e.g., external file downloads). The source generator would read this and populate `LinkDescription.MediaType`, enabling richer client generation — e.g., a generated client method could return `HttpResponseMessage` or `Stream` instead of deserializing Siren when it knows the link serves a non-Siren media type. Only useful for links with a fixed media type; dynamic cases (via `WithAvailableMediaType()`) remain runtime-only. To prevent mismatches between the declared attribute and the runtime `WithAvailableMediaType()` call, consider either: (a) a Roslyn analyzer that warns when a link property has `[LinkMediaType]` but the code also calls `WithAvailableMediaType()` with a different value, or (b) a runtime check in the generated `ToSiren()` method that validates the actual media type matches the declared attribute and throws/logs on mismatch. This must also be supported by the current SirenConverter that uses reflection to be backwards compatible.
+
+## Future Idea: OpenAPI projection from `HypermediaApiSchema`
+
+**Context:** Step 6.10 (typed Siren container per HTO) was rejected because it duplicated the schema. The underlying motivation behind 6.10 — "make the typed surface visible to standard tooling" — remains unaddressed. The schema endpoint solves it for clients that read the RESTyard-specific schema, but most code-gen ecosystems (openapi-generator, NSwag, Kiota, Swagger UI, IDE tooling) read OpenAPI.
+
+**The idea:** add a mechanical projection `HypermediaApiSchema` → OpenAPI document. The schema stays the source of truth; OpenAPI becomes a derivative view that off-the-shelf tools can consume.
+
+- HTOs become OpenAPI schema objects (via the existing JSON Schema for `properties`).
+- Each endpoint discovered by RESTyard becomes an OpenAPI path, with the action's parameter type as request body schema and the action's `ResultType` as response body schema.
+- Links/embedded relationships could optionally be described via OpenAPI `links` or via vendor extensions (`x-restyard-link-rel`, `x-restyard-embedded-of`).
+- Conditional actions (post-`CanExecute()`) can't be expressed in static OpenAPI; document the limitation rather than fight it.
+
+**Why this is interesting:** zero new wire format, zero duplication of the schema model, and it unlocks the broad OpenAPI tool ecosystem without forcing RESTyard's Siren responses to "look typed" in OpenAPI's eyes.
+
+**Open doubt — should we even pursue this?** OpenAPI is a fundamentally request/response shape language; it has no native vocabulary for runtime-discovered actions, conditional availability, link relations, or HATEOAS state transitions. Forcing a HATEOAS API into OpenAPI means either lossy projection (drop what doesn't fit) or pervasive `x-` vendor extensions that defeat the point of using a standard tool. The ecosystem benefit is real, but the impedance mismatch is also real. Concrete cases against:
+- A Swagger UI rendering of a Siren API may *mislead* consumers into thinking they should construct URLs from the OpenAPI paths rather than navigate links from the entry point.
+- Code-gen clients produced from the projected OpenAPI lose hypermedia discipline — they call paths by name, not by following links — so they re-introduce the coupling RESTyard exists to remove.
+- The schema endpoint + a dedicated typed client generator (`RESTyard.Generator` already does this for C# and TypeScript) is the *right* shape for a HATEOAS consumer; OpenAPI is the *familiar* shape, not the right one.
+
+**When this would still be worth doing:** if a real user blocks adoption on "we need Swagger UI / openapi-generator integration," accept the impedance mismatch and ship a lossy projection with clear documentation about what it can and can't express. Until then, lean into the schema as the canonical typed surface and resist the gravitational pull of OpenAPI.

@@ -656,9 +656,13 @@ Generate two named classes per HTO so the Siren POCOs have meaningful type names
 - Update parity tests and snapshot tests to reflect new return types
 - Update migration guide
 
-#### Step 6.10: More explicit siren container
+#### Step 6.10: More explicit siren container ❌ REJECTED
 
-- evaluate: can we generate a SirenEntity object per Hto which contains also information on possible links, actiosn and embedded entities?
+- Original idea: generate a SirenEntity object per HTO which also contains typed information on possible links, actions and embedded entities.
+- **Rejected because it duplicates the schema.** `RESTyard.Schema` already provides the typed, machine-readable description of every HTO (properties, links with target HTO + rel, actions with parameter and result types, embedded entities, classes, deprecation, access groups). Encoding the same information again as C# class shapes on the Siren container would be a second-class derivative with the schema as source of truth.
+- Siren is the runtime state envelope (post-`CanExecute()`, post key resolution) — inherently dynamic and polymorphic. Bolting typed members onto it fights what the format is for.
+- Division of concerns going forward: **schema = typed shape view**, **Siren = runtime state view**. Once the schema is accepted as the typed view, the pressure on Siren to "be typed too" disappears.
+- A related forward-looking idea (OpenAPI-from-schema mapper) is captured in `HypermediaSchema-Design.md` under "Future Idea: OpenAPI projection from `HypermediaApiSchema`" — recorded with its open doubt, not committed work.
 
 ### Phase 7: Generated Siren Output Formatter
 
