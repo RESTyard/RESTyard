@@ -27,7 +27,7 @@
         allLinksWithQuery.FirstOrDefault(l => l.document == document.name);
 
     private static string FormatScopeName(string scope) =>
-        scope.Replace("-", "_").Replace(":", "_").ToUpperInvariant();
+        scope.Replace("-", "_").Replace(":", "_").Replace(".", "_").ToUpperInvariant();
 
 }
 
