@@ -692,8 +692,8 @@ public class HtoSchemaGeneratorTests
 
         result.Diagnostics.Should().HaveCount(2);
         result.Diagnostics.Should().OnlyContain(d => d.Id == "RY0020");
-        result.Diagnostics.Should().Contain(d => d.GetMessage().Contains("MissingRelations"));
-        result.Diagnostics.Should().Contain(d => d.GetMessage().Contains("AlsoMissing"));
+        result.Diagnostics.Should().Contain(d => d.GetMessage(null).Contains("MissingRelations"));
+        result.Diagnostics.Should().Contain(d => d.GetMessage(null).Contains("AlsoMissing"));
     }
 
     [Fact]
