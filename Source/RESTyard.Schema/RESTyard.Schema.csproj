@@ -27,6 +27,7 @@
         <RepositoryUrl>https://github.com/RESTyard/RESTyard.git</RepositoryUrl>
         <RepositoryBranch>$(BranchName)</RepositoryBranch>
         <PackageIcon>Ry-Icon_128x128.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
 
         <!-- Package specific settings -->
         <PackageVersion>$(Version)</PackageVersion>
@@ -39,6 +40,7 @@
     <!-- package image -->
     <ItemGroup>
         <None Include=".\Images\Ry-Icon_128x128.png" Pack="true" PackagePath="\" />
+        <None Include="README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
     <ItemGroup>
