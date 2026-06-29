@@ -34,9 +34,12 @@ namespace RESTyard.Client.Extensions.NewtonsoftJson
         /// <param name="builder"></param>
         /// <param name="formatting"></param>
         /// <returns></returns>
+        [Obsolete("Use " + nameof(WithNewtonsoftJsonObjectParameterSerializer) + " instead. The legacy array-wrapper format is no longer required by the server.")]
         public static IHypermediaResolverBuilder WithSingleNewtonsoftJsonObjectParameterSerializer(this IHypermediaResolverBuilder builder, Formatting formatting = Formatting.None)
         {
+#pragma warning disable CS0618 // intentionally constructing the obsolete serializer for the obsolete builder method
             return builder.WithCustomParameterSerializer(() => new SingleNewtonsoftJsonObjectParameterSerializer(formatting));
+#pragma warning restore CS0618
         }
 
         /// <summary>

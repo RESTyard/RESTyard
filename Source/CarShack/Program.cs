@@ -20,6 +20,15 @@ namespace CarShack
 
             builder.Services.AddControllers();
 
+            // Action parameter bodies are deserialized with System.Text.Json. Register custom converters
+            // here once: RESTyard bridges these into the MVC JsonOptions, so they apply uniformly to
+            // controller [FromBody] action bodies, the file-upload form binder, and minimal-API bodies.
+            // JsonStringEnumConverter lets enum-valued parameters be sent as their string names.
+            builder.Services.ConfigureHttpJsonOptions(o =>
+            {
+                o.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+            });
+
             builder.Services.AddHypermediaExtensions(o =>
             {
                 o.ReturnDefaultRouteForUnknownHto = true;

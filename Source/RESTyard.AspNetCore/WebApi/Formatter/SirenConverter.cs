@@ -6,7 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using RESTyard.AspNetCore.Exceptions;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
@@ -48,17 +49,17 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             return ConvertToJson(hypermediaObject).ToString();
         }
 
-        public JObject ConvertToJson(IHypermediaObject hypermediaObject)
+        public JsonObject ConvertToJson(IHypermediaObject hypermediaObject)
         {
             return CreateSirenInternal(hypermediaObject);
         }
 
-        private JObject CreateSirenInternal(
+        private JsonObject CreateSirenInternal(
             IHypermediaObject hypermediaObject,
             bool isEmbedded = false,
             IReadOnlyCollection<string>? embeddedEntityRelations = null)
         {
-            var sirenJson = new JObject();
+            var sirenJson = new JsonObject();
 
             var hypermediaObjectAttribute = GetHypermediaObjectAttribute(hypermediaObject);
             AddClasses(hypermediaObject, sirenJson, hypermediaObjectAttribute);
@@ -98,7 +99,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             return hypermediaPropertyInfo.GetCustomAttribute<HypermediaPropertyAttribute>();
         }
 
-        private void AddActions(IHypermediaObject hypermediaObject, JObject sirenJson)
+        private void AddActions(IHypermediaObject hypermediaObject, JsonObject sirenJson)
         {
             var properties = hypermediaObject
                 .GetType()
@@ -107,7 +108,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 .Where(property => !PropertyHasIgnoreAttribute(property))
                 .Where(IsHypermediaAction);
 
-            var jActions = new JArray();
+            var jActions = new JsonArray();
 
             foreach (var property in properties)
             {
@@ -126,9 +127,9 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             IHypermediaObject hypermediaObject,
             HypermediaActionBase actionBase,
             PropertyInfo property,
-            JArray jActions)
+            JsonArray jActions)
         {
-            var jAction = new JObject();
+            var jAction = new JsonObject();
             ResolvedRoute resolvedRoute;
             if (actionBase is HypermediaExternalActionBase externalActionBase)
             {
@@ -149,7 +150,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
         }
 
         private void AddGeneralSirenActionProperties(
-            JObject jAction,
+            JsonObject jAction,
             PropertyInfo property,
             ResolvedRoute resolvedRoute)
         {
@@ -174,7 +175,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
             if (hypermediaActionAttribute?.Classes != null)
             {
-                jAction.Add("class", new JArray { hypermediaActionAttribute.Classes });
+                jAction.Add("class", ToStringArray(hypermediaActionAttribute.Classes));
             }
 
             jAction.Add("method", resolvedRoute.HttpMethod ?? "Undefined"); //TODO get method from rout resolver
@@ -187,14 +188,14 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             return hypermediaActionPropertyInfo.GetCustomAttribute<HypermediaActionAttribute>();
         }
 
-        private void AddActionParameters(HypermediaActionBase hypermediaAction, JObject jAction,
+        private void AddActionParameters(HypermediaActionBase hypermediaAction, JsonObject jAction,
             string? acceptedMediaType)
         {
             string classField;
             if (hypermediaAction is IFileUploadConfiguration fileUploadCommand)
             {
                 jAction.Add("type", acceptedMediaType ?? DefaultMediaTypes.MultipartFormData);
-                var fields = new JArray
+                var fields = new JsonArray
                 {
                     GetFileUploadActionDescription(fileUploadCommand.FileUploadConfiguration)
                 };
@@ -216,7 +217,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 {
                     jAction.Add("type", acceptedMediaType ?? DefaultMediaTypes.ApplicationJson);
                     classField = ActionClasses.ParameterActionClass;
-                    jAction.Add("fields", new JArray
+                    jAction.Add("fields", new JsonArray
                     {
                         GetJsonParameterActionDescription(hypermediaAction, parameterType),
                     });
@@ -226,22 +227,22 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                     classField = ActionClasses.ParameterLessActionClass;
                 }
             }
-            
-            // if the HypermediaActionAttribute has classes specified it has already created the array. 
+
+            // if the HypermediaActionAttribute has classes specified it has already created the array.
             var classProperty = jAction["class"];
-            if (classProperty is JArray classPropertyArray)
+            if (classProperty is JsonArray classPropertyArray)
             {
                 classPropertyArray.Add(classField);
             }
             else
             {
-                jAction.Add("class", new JArray { classField });
+                jAction.Add("class", new JsonArray { classField });
             }
         }
 
-        private JObject GetFileUploadActionDescription(FileUploadConfiguration fileUploadConfiguration)
+        private JsonObject GetFileUploadActionDescription(FileUploadConfiguration fileUploadConfiguration)
         {
-            var jField = new JObject
+            var jField = new JsonObject
             {
                 { "name", "UploadFiles" },
                 { "type", "file" },
@@ -249,25 +250,25 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
             if (fileUploadConfiguration.Accept.Any())
             {
-                jField.Add(new JProperty("accept", string.Join(",", fileUploadConfiguration.Accept)));
+                jField.Add("accept", string.Join(",", fileUploadConfiguration.Accept));
             }
 
             if (fileUploadConfiguration.MaxFileSizeBytes >= 0)
             {
-                jField.Add(new JProperty("maxFileSizeBytes", fileUploadConfiguration.MaxFileSizeBytes));
+                jField.Add("maxFileSizeBytes", fileUploadConfiguration.MaxFileSizeBytes);
             }
 
             if (fileUploadConfiguration.AllowMultiple)
             {
-                jField.Add(new JProperty("allowMultiple", true));
+                jField.Add("allowMultiple", true);
             }
 
             return jField;
         }
 
-        private JObject GetJsonParameterActionDescription(HypermediaActionBase hypermediaAction, Type parameterType)
+        private JsonObject GetJsonParameterActionDescription(HypermediaActionBase hypermediaAction, Type parameterType)
         {
-            var jField = new JObject
+            var jField = new JsonObject
             {
                 { "name", parameterType.BeautifulName() },
                 { "type", DefaultMediaTypes.ApplicationJson }
@@ -277,7 +278,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             routeResolver.TryGetRouteByType(parameterType, routeKeysFromAction).Match(
                 some: classRoute =>
                 {
-                    jField.Add("class", new JArray { classRoute.Url });
+                    jField.Add("class", new JsonArray { classRoute.Url });
                 },
                 none: () =>
                 {
@@ -285,7 +286,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                         RouteNames.ActionParameterTypes,
                         new { parameterTypeName = parameterType.BeautifulName() });
                     generatedRouteUrl.Match(
-                        url => jField.Add("class", new JArray { url }),
+                        url => jField.Add("class", new JsonArray { url }),
                         error => throw new HypermediaException(
                             $"No route found for action parameter type '{parameterType.BeautifulName()}'. " +
                             $"Ensure 'AutoDeliverJsonSchemaForActionParameterTypes' is true in HypermediaExtensionsOptions, " +
@@ -307,7 +308,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             return null;
         }
 
-        private void AddPrefilledValue(JObject jField, HypermediaActionBase hypermediaAction)
+        private void AddPrefilledValue(JsonObject jField, HypermediaActionBase hypermediaAction)
         {
             var prefilledParameter = hypermediaAction.GetPrefilledParameter();
             if (prefilledParameter == null)
@@ -317,10 +318,15 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
             if (prefilledParameter is string value)
             {
-                // dynamic actions can pass a a string already. When migrating to system.text.json we can also allow JsonElement here in the future
+                // dynamic actions can pass a string already.
                 try
                 {
-                    jField.Add("value", JObject.Parse(value));
+                    if (JsonNode.Parse(value) is not JsonObject parsed)
+                    {
+                        throw new HypermediaException("Prefilled value must be a JSON object.");
+                    }
+
+                    jField.Add("value", parsed);
                 }
                 catch (Exception e)
                 {
@@ -340,10 +346,10 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             return HypermediaActionBaseType.IsAssignableFrom(property.PropertyType);
         }
 
-        private void SirenAddEntities(IHypermediaObject hypermediaObject, JObject sirenJson)
+        private void SirenAddEntities(IHypermediaObject hypermediaObject, JsonObject sirenJson)
         {
             var embeddedEntities = GetAllEntities<IEmbeddedEntity>(hypermediaObject);
-            var jEntities = new JArray();
+            var jEntities = new JsonArray();
 
             foreach (var (embeddedEntity, relations) in embeddedEntities)
             {
@@ -355,7 +361,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 }
                 else
                 {
-                    var jLink = new JObject();
+                    var jLink = new JsonObject();
 
                     string resolvedAddress;
                     if (embeddedEntity.Reference is HypermediaExternalObjectReference externalReference)
@@ -385,7 +391,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             sirenJson.Add("entities", jEntities);
         }
 
-        private void AddLinks(IHypermediaObject hypermediaObject, JObject sirenJson)
+        private void AddLinks(IHypermediaObject hypermediaObject, JsonObject sirenJson)
         {
             var hypermediaLinks = GetAllEntities<ILink>(hypermediaObject);
             var dictionary = new Dictionary<IReadOnlyCollection<string>, HypermediaObjectReferenceBase>(new StringReadOnlyCollectionComparer());
@@ -393,14 +399,13 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             {
                 dictionary[rel] = link.Reference;
             }
-            var jLinks = new JArray();
+            var jLinks = new JsonArray();
 
             foreach (var hypermediaLink in dictionary)
             {
-                var jLink = new JObject();
+                var jLink = new JsonObject();
 
-                var jRel = new JArray { hypermediaLink.Key };
-                jLink.Add("rel", jRel);
+                jLink.Add("rel", ToStringArray(hypermediaLink.Key));
 
                 var (resolvedRoute, availableMediaTypes) = ResolveReferenceRoute(hypermediaLink.Value);
 
@@ -488,12 +493,12 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             return new Tuple<string, string>(buildRoute, resolvedRouteAvailableMediaTypes);
         }
 
-        private void AddProperties(IHypermediaObject hypermediaObject, JObject sirenJson)
+        private void AddProperties(IHypermediaObject hypermediaObject, JsonObject sirenJson)
         {
             sirenJson.Add("properties", SerializeObjectProperties(hypermediaObject));
         }
 
-        private void AddProperty(object propertyObject, PropertyInfo publicProperty, JObject jProperties)
+        private void AddProperty(object propertyObject, PropertyInfo publicProperty, JsonObject jProperties)
         {
             if (PropertyHasIgnoreAttribute(publicProperty))
             {
@@ -511,14 +516,14 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             var propertyName = GetPropertyName(publicProperty);
             var value = publicProperty.GetValue(propertyObject);
 
-            var jValue = ValueToJToken(value, propertyType, propertyTypeInfo);
+            var jValue = ValueToJsonNode(value, propertyType, propertyTypeInfo);
             if (jValue != null || this.configuration.WriteNullProperties)
             {
                 jProperties.Add(propertyName, jValue);
             }
         }
 
-        private JToken? ValueToJToken(object? value, Type propertyType, TypeInfo propertyTypeInfo)
+        private JsonNode? ValueToJsonNode(object? value, Type propertyType, TypeInfo propertyTypeInfo)
         {
             if (value == null)
             {
@@ -529,45 +534,45 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             if (propertyTypeInfo.IsEnum)
             {
                 var enumAsString = EnumHelper.GetEnumMemberValue(propertyType, value);
-                return new JValue(enumAsString);
+                return JsonValue.Create(enumAsString);
             }
 
             // enum can be wrapped in a nullable
             if (IsNullableEnum(propertyType, out var enumType))
             {
                 var enumAsString = EnumHelper.GetEnumMemberValue(enumType, value);
-                return new JValue(enumAsString);
+                return JsonValue.Create(enumAsString);
             }
 
             if (propertyType == typeof(DateOnly) || propertyType == typeof(DateOnly?))
             {
-                return new JValue(((DateOnly)value).ToString("yyyy-MM-dd"));
+                return JsonValue.Create(((DateOnly)value).ToString("yyyy-MM-dd"));
             }
 
             if (propertyType == typeof(TimeOnly) || propertyType == typeof(TimeOnly?))
             {
-                return new JValue(((TimeOnly)value).ToString("HH:mm:ss"));
+                return JsonValue.Create(((TimeOnly)value).ToString("HH:mm:ss"));
             }
 
             if (propertyTypeInfo.IsValueType)
             {
-                return new JValue(value);
+                return JsonSerializer.SerializeToNode(value, propertyType);
             }
 
             // string is also enumerable so check first
             if (propertyType == typeof(string))
             {
-                return new JValue(string.Format(CultureInfo.InvariantCulture, "{0}", value));
+                return JsonValue.Create(string.Format(CultureInfo.InvariantCulture, "{0}", value));
             }
 
             if (IsTimeType(propertyType))
             {
-                return new JValue(((IFormattable)value).ToString("o", CultureInfo.InvariantCulture));
+                return JsonValue.Create(((IFormattable)value).ToString("o", CultureInfo.InvariantCulture));
             }
 
             if (IsContainerTypeForString(propertyType))
             {
-                return new JValue(value.ToString());
+                return JsonValue.Create(value.ToString());
             }
 
             if (IsIEnumerable(value, propertyType, out var iEnumerable))
@@ -577,7 +582,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
             if (propertyType == typeof(Type))
             {
-                return ((Type)value).FullName;
+                return JsonValue.Create(((Type)value).FullName);
             }
 
             // check last so special types can be handled first
@@ -609,14 +614,14 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             return propertyType == typeof(Uri);
         }
 
-        private JObject SerializeObjectProperties(object propertyObject)
+        private JsonObject SerializeObjectProperties(object propertyObject)
         {
             var type = propertyObject.GetType();
             var publicProperties = type.GetTypeInfo()
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(p => !IsRelatedEntityProperty<IRelatedEntity>(p));
 
-            var jProperties = new JObject();
+            var jProperties = new JsonObject();
             foreach (var publicProperty in publicProperties)
             {
                 AddProperty(propertyObject, publicProperty, jProperties);
@@ -625,7 +630,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             return jProperties;
         }
 
-        private JToken SerializeEnumerable(IEnumerable iEnumerable)
+        private JsonNode SerializeEnumerable(IEnumerable iEnumerable)
         {
             var enumerableType = iEnumerable.GetType();
 
@@ -638,12 +643,12 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             // in this case we need to get the type every time
             var getTypeForEachItem = itemType == typeof(object);
 
-            var result = new JArray();
+            var result = new JsonArray();
             foreach (var item in iEnumerable)
             {
                 if (item == null)
                 {
-                    result.Add(JValue.CreateNull());
+                    result.Add(null);
                     continue;
                 }
 
@@ -653,7 +658,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                     itemTypeInfo = itemType.GetTypeInfo();
                 }
 
-                result.Add(ValueToJToken(item, itemType, itemTypeInfo));
+                result.Add(ValueToJsonNode(item, itemType, itemTypeInfo));
             }
 
             return result;
@@ -699,21 +704,21 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                 a.AttributeType == typeof(FormatterIgnoreHypermediaPropertyAttribute));
         }
 
-        private static void AddClasses(IHypermediaObject hypermediaObject, JObject sirenJson,
+        private static void AddClasses(IHypermediaObject hypermediaObject, JsonObject sirenJson,
             HypermediaObjectAttribute? hypermediaObjectAttribute)
         {
             var hmoType = hypermediaObject.GetType();
             AddClasses(hmoType, sirenJson, hypermediaObjectAttribute);
         }
 
-        static void AddClasses(Type hmoType, JObject sirenJson, HypermediaObjectAttribute? hypermediaObjectAttribute)
+        static void AddClasses(Type hmoType, JsonObject sirenJson, HypermediaObjectAttribute? hypermediaObjectAttribute)
         {
             AddClasses(hmoType.BeautifulName(), sirenJson, hypermediaObjectAttribute?.Classes);
         }
 
-        private static void AddClasses(string defaultClass, JObject sirenJson, IEnumerable<string>? classes)
+        private static void AddClasses(string defaultClass, JsonObject sirenJson, IEnumerable<string>? classes)
         {
-            var sirenClasses = new JArray();
+            var sirenClasses = new JsonArray();
 
             if (classes != null)
             {
@@ -731,10 +736,10 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             sirenJson.Add("class", sirenClasses);
         }
 
-        private static void AddEmbeddedEntityRelations(JObject jEmbeddedEntity,
+        private static void AddEmbeddedEntityRelations(JsonObject jEmbeddedEntity,
             IReadOnlyCollection<string> embeddedEntityRelations)
         {
-            var rels = new JArray();
+            var rels = new JsonArray();
             foreach (var embeddedEntityRelation in embeddedEntityRelations)
             {
                 rels.Add(embeddedEntityRelation);
@@ -743,12 +748,26 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             jEmbeddedEntity.Add("rel", rels);
         }
 
-        private static void AddTitle(JObject sirenJson, HypermediaObjectAttribute? hypermediaObjectAttribute)
+        private static void AddTitle(JsonObject sirenJson, HypermediaObjectAttribute? hypermediaObjectAttribute)
         {
             if (!string.IsNullOrEmpty(hypermediaObjectAttribute?.Title))
             {
                 sirenJson.Add("title", hypermediaObjectAttribute.Title);
             }
+        }
+
+        // Newtonsoft's `new JArray { collection }` flattened an enumerable into a flat array of its
+        // elements. System.Text.Json's collection initializer would instead nest it, so build the
+        // flat array explicitly to preserve the Siren wire format (e.g. "rel": ["self"]).
+        private static JsonArray ToStringArray(IEnumerable<string> values)
+        {
+            var array = new JsonArray();
+            foreach (var value in values)
+            {
+                array.Add(value);
+            }
+
+            return array;
         }
     }
 }

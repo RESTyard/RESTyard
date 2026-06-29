@@ -5,6 +5,7 @@ using RESTyard.Client.ParameterSerializer;
 
 namespace RESTyard.Client.Extensions.NewtonsoftJson
 {
+    [Obsolete("Use " + nameof(NewtonsoftJsonObjectParameterSerializer) + " instead. The legacy array-wrapper format is no longer required by the server.")]
     public class SingleNewtonsoftJsonObjectParameterSerializer : IParameterSerializer
     {
         private readonly Formatting formatting;

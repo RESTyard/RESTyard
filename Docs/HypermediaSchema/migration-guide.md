@@ -184,3 +184,66 @@ public class MyController(
 ```
 
 The manual approach gives full control over serialization and response handling. `SirenMapperOptions` can be injected as an additional parameter if needed (falls back to `SirenMapperOptions.Default` when omitted).
+
+## Action Parameter Deserialization (System.Text.Json)
+
+Hypermedia action parameters are now deserialized with **System.Text.Json**. The Newtonsoft-based custom body binder has been removed and the request body for an action is a **plain JSON object** instead of the legacy Siren array-wrapper `[{ "TypeName": { … } }]`.
+
+### Removed: the custom body binder
+
+`HypermediaParameterFromBodyBinderProvider` / `HypermediaParameterFromBodyBinder` no longer exist. Non-file action parameter bodies bind through the standard framework body path (the System.Text.Json input formatter for controllers, native body binding for minimal APIs). No RESTyard-specific registration is required for action bodies.
+
+### Changed: `[HypermediaActionParameterFromBody]` → `[FromBody]`
+
+`HypermediaActionParameterFromBodyAttribute` is now an obsolete alias for `[FromBody]`.
+
+```csharp
+// Before
+public Task<ActionResult> MarkAsFavorite([HypermediaActionParameterFromBody] MarkAsFavoriteParameters p) { … }
+
+// After
+public Task<ActionResult> MarkAsFavorite([FromBody] MarkAsFavoriteParameters p) { … }
+```
+
+Existing code keeps compiling (with an obsolete warning); update it to `[FromBody]` at your convenience. The code generator now emits `[FromBody]`.
+
+### Custom JSON converters: one place to register them
+
+Register custom `JsonConverter`s via **`ConfigureHttpJsonOptions`**. This single source applies uniformly to:
+
+- minimal-API action bodies (native),
+- the hypermedia **file-upload form binder** and the `JsonDeserializer` (they resolve `Http.Json.JsonOptions` from request services), and
+- controller `[FromBody]` action bodies (RESTyard bridges the converters into `Mvc.JsonOptions`).
+
+```csharp
+builder.Services.ConfigureHttpJsonOptions(o =>
+{
+    o.SerializerOptions.Converters.Add(new MyCustomConverter());
+});
+```
+
+### Behavioral change: enums sent as strings
+
+The old Newtonsoft-based body binder parsed enum **names** out of the box. System.Text.Json does not — an action parameter with an enum property whose clients send the enum's string name (e.g. `"PropertyName": "Age"`) will fail deserialization unless you register `JsonStringEnumConverter`:
+
+```csharp
+builder.Services.ConfigureHttpJsonOptions(o =>
+{
+    o.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+});
+```
+
+This is the most common parity gap when moving off the Newtonsoft body binder. Review your action/query parameter types for enum properties.
+
+### Client: legacy parameter serializers are obsolete
+
+The array-wrapper client serializers and their builder methods are obsolete. Switch to the plain-object equivalents:
+
+| Obsolete | Use instead |
+|---|---|
+| `SingleNewtonsoftJsonObjectParameterSerializer` | `NewtonsoftJsonObjectParameterSerializer` |
+| `SingleSystemTextJsonObjectParameterSerializer` | `SystemTextJsonObjectParameterSerializer` |
+| `WithSingleNewtonsoftJsonObjectParameterSerializer()` | `WithNewtonsoftJsonObjectParameterSerializer()` |
+| `WithSingleSystemTextJsonObjectParameterSerializer()` | `WithSystemTextJsonObjectParameterSerializer()` |
+
+Clients that keep emitting the array-wrapper format will no longer be unwrapped on the action body path — send the plain object.

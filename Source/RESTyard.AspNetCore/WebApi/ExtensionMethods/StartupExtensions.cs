@@ -68,7 +68,38 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
             }
            
             serviceCollection.ConfigureOptions<ConfigureMvcOptionsForHypermediaExtensions>();
+            serviceCollection.ConfigureOptions<BridgeHttpJsonConvertersToMvcJsonOptions>();
             return serviceCollection;
+        }
+
+        /// <summary>
+        /// Bridges the custom <see cref="JsonConverter"/>s configured on
+        /// <see cref="Microsoft.AspNetCore.Http.Json.JsonOptions"/> (via <c>ConfigureHttpJsonOptions</c>) into
+        /// <see cref="Microsoft.AspNetCore.Mvc.JsonOptions"/>. This makes a single configuration entry point
+        /// (<c>ConfigureHttpJsonOptions</c>) apply uniformly to minimal-API action bodies, the hypermedia form
+        /// binder, and controller <c>[FromBody]</c> action bodies.
+        /// </summary>
+        internal class BridgeHttpJsonConvertersToMvcJsonOptions : IConfigureOptions<Microsoft.AspNetCore.Mvc.JsonOptions>
+        {
+            private readonly IOptions<Microsoft.AspNetCore.Http.Json.JsonOptions> httpJsonOptions;
+
+            public BridgeHttpJsonConvertersToMvcJsonOptions(IOptions<Microsoft.AspNetCore.Http.Json.JsonOptions> httpJsonOptions)
+            {
+                this.httpJsonOptions = httpJsonOptions;
+            }
+
+            public void Configure(Microsoft.AspNetCore.Mvc.JsonOptions options)
+            {
+                // Resolving .Value forces all ConfigureHttpJsonOptions actions to run first, so user-registered
+                // converters are present before they are copied into the MVC options.
+                foreach (var converter in this.httpJsonOptions.Value.SerializerOptions.Converters)
+                {
+                    if (!options.JsonSerializerOptions.Converters.Contains(converter))
+                    {
+                        options.JsonSerializerOptions.Converters.Add(converter);
+                    }
+                }
+            }
         }
 
         internal class ConfigureMvcOptionsForHypermediaExtensions : IConfigureOptions<MvcOptions>
@@ -144,8 +175,7 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         {
             var forAttributedActionParametersOnly = !hypermediaOptions.ImplicitHypermediaActionParameterBinders;
 
-            options.ModelBinderProviders.Insert(0, new HypermediaParameterFromBodyBinderProvider(forAttributedActionParametersOnly));
-            options.ModelBinderProviders.Insert(1, new HypermediaParameterFromFormBinderProvider(forAttributedActionParametersOnly));
+            options.ModelBinderProviders.Insert(0, new HypermediaParameterFromFormBinderProvider(forAttributedActionParametersOnly));
 
             return options;
         }

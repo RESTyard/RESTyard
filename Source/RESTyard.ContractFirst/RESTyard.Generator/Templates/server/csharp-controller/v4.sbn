@@ -11,7 +11,7 @@
 
     func renderMethod
 }}
-    public Task<IActionResult> {{ $0 }}Async({{ iff (isNotEmpty $1) ("[HypermediaActionParameterFromBody]" + $1 + " " + ($1 | object.default "" | uncapitalize)) "" }})
+    public Task<IActionResult> {{ $0 }}Async({{ iff (isNotEmpty $1) ("[FromBody]" + $1 + " " + ($1 | object.default "" | uncapitalize)) "" }})
     {
         throw new NotImplementedException();
     }

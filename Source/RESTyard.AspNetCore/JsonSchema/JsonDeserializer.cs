@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace RESTyard.AspNetCore.JsonSchema
 {
@@ -14,24 +14,27 @@ namespace RESTyard.AspNetCore.JsonSchema
             this.type = type;
         }
 
-        public object? Deserialize(Stream stream)
+        /// <summary>
+        /// Deserializes the given stream into the configured type. The provided <paramref name="options"/>
+        /// must be the request's <see cref="JsonSerializerOptions"/> so DI-registered custom converters apply.
+        /// </summary>
+        public object? Deserialize(Stream stream, JsonSerializerOptions options)
         {
-            using (var sr = new StreamReader(stream))
-            using (var jsonTextReader = new JsonTextReader(sr))
-            {
-                var raw = (JObject?)new JsonSerializer().Deserialize(jsonTextReader);
-                return Deserialize(raw);
-            }
+            return JsonSerializer.Deserialize(stream, type, options);
         }
 
-        public object? Deserialize(JObject? raw)
+        /// <summary>
+        /// Deserializes the given parsed JSON node into the configured type. The provided <paramref name="options"/>
+        /// must be the request's <see cref="JsonSerializerOptions"/> so DI-registered custom converters apply.
+        /// </summary>
+        public object? Deserialize(JsonNode? node, JsonSerializerOptions options)
         {
-            if (raw == null)
+            if (node is null)
             {
                 return null;
             }
-            
-            return raw.ToObject(type);
+
+            return JsonSerializer.Deserialize(node, type, options);
         }
     }
 }

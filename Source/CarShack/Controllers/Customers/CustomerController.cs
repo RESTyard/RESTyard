@@ -62,7 +62,7 @@ public class CustomerController : Controller
     [HttpPost("MyFavoriteCustomers"),
      HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.MarkAsFavorite))]
     public async Task<ActionResult> MarkAsFavoriteAction(
-        [HypermediaActionParameterFromBody] MarkAsFavoriteParameters favoriteCustomer)
+        [FromBody] MarkAsFavoriteParameters favoriteCustomer)
     {
         if (favoriteCustomer == null)
         {

@@ -111,7 +111,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
         {
             clientParameter = new MyClientParameter(FormattableString.Invariant($"http://mydomain.com/customers/{GrandParentId}/{WeirdUncleId}/{ParentId}/{Id}"), 3, "http://www.anothersite.com");
             var json = JsonConvert.SerializeObject(clientParameter);
-            deserialized = (MyParameter)new JsonDeserializer(typeof(MyParameter)).Deserialize(json.ToStream());
+            deserialized = (MyParameter)new JsonDeserializer(typeof(MyParameter)).Deserialize(json.ToStream(), new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
         }
 
         [TestMethod]

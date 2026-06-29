@@ -36,9 +36,12 @@ namespace RESTyard.Client.Extensions.SystemTextJson
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
+        [Obsolete("Use " + nameof(WithSystemTextJsonObjectParameterSerializer) + " instead. The legacy array-wrapper format is no longer required by the server.")]
         public static IHypermediaResolverBuilder WithSingleSystemTextJsonObjectParameterSerializer(this IHypermediaResolverBuilder builder, JsonWriterOptions options = default)
         {
+#pragma warning disable CS0618 // intentionally constructing the obsolete serializer for the obsolete builder method
             return builder.WithCustomParameterSerializer(() => new SingleSystemTextJsonObjectParameterSerializer(options));
+#pragma warning restore CS0618
         }
 
         /// <summary>
