@@ -2,6 +2,62 @@
 
 This guide covers behavioral differences and required changes when migrating from the reflection-based `SirenConverter` / `SirenHypermediaFormatter` to the source-generated `ToSiren()` extension methods.
 
+## Required: `[assembly: HypermediaAssembly]`
+
+The source generator only runs for assemblies marked with the assembly-level attribute. Add it once
+per assembly (e.g. in `Program.cs` or a dedicated `AssemblyInfo.cs`):
+
+```csharp
+using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+[assembly: HypermediaAssembly]
+```
+
+**Action required:** Add this attribute to **every** assembly that contains HTOs **and** every
+assembly that contains controllers — even a controller assembly with no HTOs of its own. Without it:
+
+- The generator emits nothing — no `GetSchema()`, no Properties POCO, no `ToSiren()` mappers — even
+  with the NuGet package referenced.
+- `HypermediaAssemblyDiscovery.GetAssemblies()` won't find the assembly.
+- Controller-only assemblies must still carry it so the generator can read controller attributes
+  (e.g. `ResultType` on `[HypermediaActionEndpoint]`).
+
+To enable `ToSiren()` generation (not just schema), set `Siren = true`:
+
+```csharp
+[assembly: HypermediaAssembly(Siren = true)]
+```
+
+## New Build Diagnostics
+
+Turning on source generation can surface **new build errors** on HTOs that compiled fine under the
+reflection-based formatter:
+
+| Diagnostic | Severity | Cause | Fix |
+|---|---|---|---|
+| `RY0020` | Error | `IEmbeddedEntity<T>` property missing `[Relations]` | Add `[Relations(["rel"])]` to the property |
+| `RY0021` | Error | `ILink<T>` property missing `[Relations]` | Add `[Relations(["rel"])]` to the property |
+| `RY0030` | Error | `Siren = true` combined with `Schema = false` | Remove `Schema = false` (Siren needs the Properties POCO) |
+| `RY0032` | Warning | `ResultType` on an action endpoint is not a `[HypermediaObject]` | Remove `ResultType`, or suppress if the result is intentionally non-hypermedia |
+
+**Action required:** The old formatter tolerated `ILink`/`IEmbeddedEntity` properties without
+`[Relations]`; the generator does not. Add `[Relations]` to any such property, or the build will fail.
+
+## Assembly Discovery
+
+Manual assembly lists can be replaced with auto-discovery (relies on the `[HypermediaAssembly]`
+attribute above):
+
+```csharp
+builder.Services.AddHypermediaExtensions(o =>
+{
+    o.ControllerAndHypermediaAssemblies = HypermediaAssemblyDiscovery.GetAssemblies();
+});
+```
+
+**Action required:** Optional. If you keep an explicit assembly list, no change is needed — but every
+listed assembly still requires `[assembly: HypermediaAssembly]` for generation to run.
+
 ## New Namespaces
 
 When using `ToSiren()` directly in controllers or consuming the Siren POCO types, add these namespaces:
