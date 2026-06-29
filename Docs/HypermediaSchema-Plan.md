@@ -780,6 +780,8 @@ Generate two named classes per HTO so the Siren POCOs have meaningful type names
 - **Mermaid customization** — filtering by reachability from entry point
 - For each: implement if justified, otherwise document the decision to defer in the spec
 
+#### Step 9.4: Raise version of RESTyard  -> 7.0.0-rc
+
 ### Phase 10: Documentation
 
 **Goal:** User-facing documentation for all schema and source generation features.
