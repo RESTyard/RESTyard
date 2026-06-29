@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using System.Text.Json.Nodes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json.Linq;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 {
@@ -56,7 +56,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 
             var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
-            Assert.AreEqual(propertiesObject.Properties().Count(), 0);
+            Assert.AreEqual(propertiesObject.Count, 0);
         }
 
         [TestMethod]
@@ -123,20 +123,21 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             AssertListOfDownCastObjects(ho, siren);
         }
 
-        private static void AssertListOfLists(HypermediaObjectWithListProperties ho, JObject siren)
+        private static void AssertListOfLists(HypermediaObjectWithListProperties ho, JsonObject siren)
         {
-            Assert.AreEqual(ho.ListOfLists.Count(), siren["properties"]["ListOfLists"].Count());
+            var listOfLists = siren["properties"]!["ListOfLists"]!.AsArray();
+            Assert.AreEqual(ho.ListOfLists.Count(), listOfLists.Count);
             var index = 0;
             foreach (var nested in ho.ListOfLists)
             {
                 var nestedList = nested.ToList();
-                var innerJArray = siren["properties"]["ListOfLists"][index].Value<JArray>();
+                var innerJArray = listOfLists[index]!.AsArray();
                 Assert.AreEqual(nestedList.Count(), innerJArray.Count);
 
                 var innerIndex = 0;
                 foreach (var value in nestedList)
                 {
-                    Assert.AreEqual(value, innerJArray[innerIndex].Value<int>());
+                    Assert.AreEqual(value, innerJArray[innerIndex]!.GetValue<int>());
                     innerIndex++;
                 }
 
@@ -144,25 +145,26 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             }
         }
 
-        private static void AssertObjectList(HypermediaObjectWithListProperties ho, JObject siren)
+        private static void AssertObjectList(HypermediaObjectWithListProperties ho, JsonObject siren)
         {
-            Assert.AreEqual(ho.AObjectList.Count(), siren["properties"]["AObjectList"].Count());
+            var objectList = siren["properties"]!["AObjectList"]!.AsArray();
+            Assert.AreEqual(ho.AObjectList.Count(), objectList.Count);
             var index = 0;
             foreach (var nested in ho.AObjectList)
             {
-                Assert.AreEqual(nested.AInt, siren["properties"]["AObjectList"][index].Value<JObject>()[nameof(Nested.AInt)].Value<int>());
+                Assert.AreEqual(nested.AInt, objectList[index]![nameof(Nested.AInt)]!.GetValue<int>());
                 index++;
             }
         }
-       
-        private static void AssertListOfDownCastObjects(HypermediaObjectWithListProperties ho, JObject siren)
+
+        private static void AssertListOfDownCastObjects(HypermediaObjectWithListProperties ho, JsonObject siren)
         {
-            Assert.AreEqual(ho.ListOfDownCastObjects.Count(), siren["properties"]["ListOfDownCastObjects"].Count());
-            var index = 0;
-            
-            Assert.AreEqual("Text", siren["properties"]["ListOfDownCastObjects"][0].Value<string>());
-            Assert.AreEqual(5, siren["properties"]["ListOfDownCastObjects"][1].Value<int>());
-            Assert.AreEqual(3, siren["properties"]["ListOfDownCastObjects"][2].Value<JObject>()[nameof(Nested.AInt)].Value<int>());
+            var downCastList = siren["properties"]!["ListOfDownCastObjects"]!.AsArray();
+            Assert.AreEqual(ho.ListOfDownCastObjects.Count(), downCastList.Count);
+
+            Assert.AreEqual("Text", downCastList[0]!.GetValue<string>());
+            Assert.AreEqual(5, downCastList[1]!.GetValue<int>());
+            Assert.AreEqual(3, downCastList[2]![nameof(Nested.AInt)]!.GetValue<int>());
         }
     }
     

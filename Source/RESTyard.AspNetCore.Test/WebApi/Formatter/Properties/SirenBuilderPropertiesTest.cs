@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.Test.Helpers;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
@@ -48,15 +49,15 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             var siren = SirenConverter.ConvertToJson(ho);
 
             // class
-            Assert.IsTrue(siren["class"].Type == JTokenType.Array);
-            var classArray = (JArray)siren["class"];
+            Assert.IsTrue(siren["class"] is JsonArray);
+            var classArray = siren["class"]!.AsArray();
             Assert.AreEqual(classArray.Count, 2);
-            Assert.IsTrue(siren["class"][0].ToString() == "CustomClass1");
-            Assert.IsTrue(siren["class"][1].ToString() == "CustomClass2");
+            Assert.IsTrue(classArray[0]!.ToString() == "CustomClass1");
+            Assert.IsTrue(classArray[1]!.ToString() == "CustomClass2");
 
             // title
-            Assert.IsTrue(siren["title"].Type == JTokenType.String);
-            Assert.AreEqual(siren["title"], "A Title");
+            Assert.IsTrue(siren["title"]!.GetValueKind() == JsonValueKind.String);
+            Assert.AreEqual("A Title", siren["title"]!.GetValue<string>());
 
             AssertEmptyProperties(siren);
             AssertEmptyEntities(siren);
@@ -97,7 +98,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
                     && p.Name != "Entities"
                     && p.Name != "Links")
                 .ToList();
-            Assert.AreEqual(propertiesObject.Properties().Count(), propertyInfos.Count);
+            Assert.AreEqual(propertiesObject.Count, propertyInfos.Count);
 
             foreach (var property in propertyInfos)
             {

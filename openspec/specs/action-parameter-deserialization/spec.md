@@ -85,6 +85,12 @@ The reflection-based `SirenConverter` SHALL produce Siren JSON using System.Text
 - **WHEN** a hypermedia object with links/classes is converted
 - **THEN** `rel` and `class` are emitted as flat arrays of strings (not nested arrays)
 
+#### Scenario: Formatter unit tests assert the output using System.Text.Json
+
+- **WHEN** the `SirenConverter` output is asserted in the formatter unit test suite
+- **THEN** the assertions consume the `JsonObject` returned by `ConvertToJson` via System.Text.Json node types
+- **AND** no Newtonsoft.Json type is used in those tests
+
 ### Requirement: Legacy array-wrapper client serializers are obsolete
 
 The client-side `SingleNewtonsoftJsonObjectParameterSerializer` and `SingleSystemTextJsonObjectParameterSerializer`, together with their registration extension methods `WithSingleNewtonsoftJsonObjectParameterSerializer` and `WithSingleSystemTextJsonObjectParameterSerializer`, SHALL be marked `[Obsolete]`. The obsolete message MUST name the plain-object replacement (`WithNewtonsoftJsonObjectParameterSerializer` / `WithSystemTextJsonObjectParameterSerializer` respectively). They emit the legacy `[{ "TypeName": {…} }]` array-wrapper that the server no longer unwraps; the plain-object parameter serializers are the supported replacements.

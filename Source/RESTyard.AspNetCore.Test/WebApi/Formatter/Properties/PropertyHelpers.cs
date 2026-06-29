@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json.Nodes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.Test.Helpers;
 using RESTyard.AspNetCore.Util.Enum;
 
@@ -11,54 +11,55 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 {
     public class PropertyHelpers
     {
-        public static JObject GetPropertiesJObject(JObject siren)
+        public static JsonObject GetPropertiesJObject(JsonObject siren)
         {
-            Assert.IsTrue(siren["properties"].Type == JTokenType.Object);
-            var propertiesObject = (JObject)siren["properties"];
+            Assert.IsTrue(siren["properties"] is JsonObject);
+            var propertiesObject = siren["properties"]!.AsObject();
             return propertiesObject;
         }
 
-        public static void CompareHypermediaPropertiesAndJson(JObject propertiesObject, PropertyHypermediaObject ho)
+        public static void CompareHypermediaPropertiesAndJson(JsonObject propertiesObject, PropertyHypermediaObject ho)
         {
             var propertyInfos = ho.GetType().GetProperties()
                 .Where(p => p.Name != "Entities" && p.Name != "Links")
                 .ToList();
-            Assert.AreEqual(propertiesObject.Properties().Count(), propertyInfos.Count);
+            Assert.AreEqual(propertiesObject.Count, propertyInfos.Count);
 
             CompareNotNullProperties(propertiesObject, ho);
 
-            Assert.AreEqual(ho.AnUri?.ToString(), propertiesObject[nameof(PropertyHypermediaObject.AnUri)].Value<string>());
-            Assert.AreEqual(ho.AType?.FullName, propertiesObject[nameof(PropertyHypermediaObject.AType)].Value<string>());
-            Assert.AreEqual(ho.AString, propertiesObject[nameof(PropertyHypermediaObject.AString)].Value<string>());
-            Assert.AreEqual(ho.ANullableInt, propertiesObject[nameof(PropertyHypermediaObject.ANullableInt)]);
-            Assert.AreEqual(ho.ANullableEnum?.ToString(), propertiesObject[nameof(PropertyHypermediaObject.ANullableEnum)].Value<string>());
+            Assert.AreEqual(ho.AnUri?.ToString(), propertiesObject[nameof(PropertyHypermediaObject.AnUri)]?.GetValue<string>());
+            Assert.AreEqual(ho.AType?.FullName, propertiesObject[nameof(PropertyHypermediaObject.AType)]?.GetValue<string>());
+            Assert.AreEqual(ho.AString, propertiesObject[nameof(PropertyHypermediaObject.AString)]?.GetValue<string>());
+            Assert.AreEqual(ho.ANullableInt, propertiesObject[nameof(PropertyHypermediaObject.ANullableInt)]?.GetValue<int>());
+            Assert.AreEqual(ho.ANullableEnum?.ToString(), propertiesObject[nameof(PropertyHypermediaObject.ANullableEnum)]?.GetValue<string>());
 
         }
 
-        public static void CompareNotNullProperties(JObject propertiesObject, PropertyHypermediaObject ho)
+        public static void CompareNotNullProperties(JsonObject propertiesObject, PropertyHypermediaObject ho)
         {
-            Assert.AreEqual(ho.ABool.ToString(), propertiesObject[nameof(PropertyHypermediaObject.ABool)].ToString());
+            Assert.AreEqual(ho.ABool, propertiesObject[nameof(PropertyHypermediaObject.ABool)]!.GetValue<bool>());
 
-            Assert.AreEqual(ho.AnInt.ToInvariantString(), propertiesObject[nameof(PropertyHypermediaObject.AnInt)].ToString());
-            Assert.AreEqual(ho.ALong.ToInvariantString(), propertiesObject[nameof(PropertyHypermediaObject.ALong)].ToString());
-            Assert.AreEqual(ho.AFloat.ToInvariantString(), ((float)propertiesObject[nameof(PropertyHypermediaObject.AFloat)]).ToInvariantString());
-            Assert.AreEqual(ho.ADouble.ToInvariantString(), ((double)propertiesObject[nameof(PropertyHypermediaObject.ADouble)]).ToInvariantString());
+            Assert.AreEqual(ho.AnInt, propertiesObject[nameof(PropertyHypermediaObject.AnInt)]!.GetValue<int>());
+            Assert.AreEqual(ho.ALong, propertiesObject[nameof(PropertyHypermediaObject.ALong)]!.GetValue<long>());
+            Assert.AreEqual(ho.AFloat, propertiesObject[nameof(PropertyHypermediaObject.AFloat)]!.GetValue<float>());
+            Assert.AreEqual(ho.ADouble, propertiesObject[nameof(PropertyHypermediaObject.ADouble)]!.GetValue<double>());
 
-            Assert.AreEqual(EnumHelper.GetEnumMemberValue(ho.AnEnum), propertiesObject[nameof(PropertyHypermediaObject.AnEnum)].ToString());
-            Assert.AreEqual(EnumHelper.GetEnumMemberValue(ho.AnEnumWithNames), propertiesObject[nameof(PropertyHypermediaObject.AnEnumWithNames)].ToString());
+            Assert.AreEqual(EnumHelper.GetEnumMemberValue(ho.AnEnum), propertiesObject[nameof(PropertyHypermediaObject.AnEnum)]!.GetValue<string>());
+            Assert.AreEqual(EnumHelper.GetEnumMemberValue(ho.AnEnumWithNames), propertiesObject[nameof(PropertyHypermediaObject.AnEnumWithNames)]!.GetValue<string>());
 
-            Assert.AreEqual(ho.ADateTime.ToStringZNotation(), ((IFormattable)propertiesObject[nameof(PropertyHypermediaObject.ADateTime)]).ToStringZNotation());
-            Assert.AreEqual(ho.ADateTimeOffset.ToStringZNotation(), ((IFormattable)propertiesObject[nameof(PropertyHypermediaObject.ADateTimeOffset)]).ToStringZNotation());
-            Assert.AreEqual(ho.ATimeSpan.ToInvariantString(), propertiesObject[nameof(PropertyHypermediaObject.ATimeSpan)].ToString());
-            Assert.AreEqual(ho.ADecimal.ToInvariantString(), propertiesObject[nameof(PropertyHypermediaObject.ADecimal)].ToString());
+            Assert.AreEqual(ho.ADateTime, propertiesObject[nameof(PropertyHypermediaObject.ADateTime)]!.GetValue<DateTime>());
+            Assert.AreEqual(ho.ADateTimeOffset, propertiesObject[nameof(PropertyHypermediaObject.ADateTimeOffset)]!.GetValue<DateTimeOffset>());
+            // System.Text.Json serializes TimeSpan as a string and GetValue<TimeSpan>() cannot convert it back, so compare the string form.
+            Assert.AreEqual(ho.ATimeSpan.ToInvariantString(), propertiesObject[nameof(PropertyHypermediaObject.ATimeSpan)]!.GetValue<string>());
+            Assert.AreEqual(ho.ADecimal, propertiesObject[nameof(PropertyHypermediaObject.ADecimal)]!.GetValue<decimal>());
         }
 
-        public static void CompareHypermediaPropertiesAndJsonNoNullProperties(JObject propertiesObject, PropertyHypermediaObject ho)
+        public static void CompareHypermediaPropertiesAndJsonNoNullProperties(JsonObject propertiesObject, PropertyHypermediaObject ho)
         {
             var propertyInfos = typeof(PropertyHypermediaObject).GetProperties()
                 .Where(p => p.Name != "Entities" && p.Name != "Links")
                 .ToList();
-            Assert.AreEqual(propertiesObject.Properties().Count(), propertyInfos.Count - 5);
+            Assert.AreEqual(propertiesObject.Count, propertyInfos.Count - 5);
 
             CompareNotNullProperties(propertiesObject, ho);
 
@@ -69,25 +70,25 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             Assert.IsNull(propertiesObject[nameof(PropertyHypermediaObject.ANullableEnum)]);
         }
 
-        public static void CompareHypermediaListPropertiesAndJson(JObject propertiesObject, HypermediaObjectWithListProperties ho)
+        public static void CompareHypermediaListPropertiesAndJson(JsonObject propertiesObject, HypermediaObjectWithListProperties ho)
         {
             var propertyInfos = ho.GetType().GetProperties()
                 .Where(p => p.Name != "Entities" && p.Name != "Links")
                 .ToList();
-            Assert.AreEqual(propertiesObject.Properties().Count(), propertyInfos.Count);
+            Assert.AreEqual(propertiesObject.Count, propertyInfos.Count);
 
 
-            foreach (var property in propertiesObject.Properties())
+            foreach (var property in propertiesObject)
             {
-                var htoProperty = propertyInfos.Single(p => p.Name == property.Name);
+                var htoProperty = propertyInfos.Single(p => p.Name == property.Key);
                 var hoValue = (IEnumerable)htoProperty.GetValue(ho);
-                if (hoValue == null) { 
-                    Assert.AreEqual(JTokenType.Null, property.Value.Type);
+                if (hoValue == null) {
+                    Assert.IsNull(property.Value);
                 }
                 else
                 {
-                    Assert.AreEqual(JTokenType.Array, property.Value.Type);
-                    var jarray = (JArray)property.Value;
+                    Assert.IsTrue(property.Value is JsonArray);
+                    var jarray = property.Value!.AsArray();
 
 
                     var index = 0;
@@ -95,7 +96,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
                     {
                         if (value == null)
                         {
-                            Assert.IsTrue(jarray[index].Type == JTokenType.Null);
+                            Assert.IsNull(jarray[index]);
                         }
                         else
                         {
@@ -103,7 +104,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
                             var valueTypeInfo = valueType.GetTypeInfo();
                             if (IsNestedList(valueTypeInfo, valueType))
                             {
-                                Assert.AreEqual(value.ToString(), jarray[index].Value<object>().ToString());
+                                Assert.AreEqual(value.ToString(), jarray[index]!.ToString());
                             }
                         }
 
