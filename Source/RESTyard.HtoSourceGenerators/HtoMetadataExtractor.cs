@@ -57,12 +57,8 @@ internal static class HtoMetadataExtractor
 
         var classes = GetNamedArgumentStringArray(attribute, "Classes");
         var accessGroups = GetAccessGroups(symbol);
-        var properties = ExtractProperties(symbol);
-        var links = ExtractLinks(symbol);
-        var actions = ExtractActions(symbol);
-        var embeddedEntities = ExtractEmbeddedEntities(symbol);
-        var embeddedWithoutRelations = FindEmbeddedEntityPropertiesWithoutRelations(symbol);
-        var linksWithoutRelations = FindLinkPropertiesWithoutRelations(symbol);
+        var (properties, links, actions, embeddedEntities, embeddedWithoutRelations, linksWithoutRelations) =
+            ClassifyProperties(symbol);
 
         var ns = symbol.ContainingNamespace.IsGlobalNamespace
             ? string.Empty
@@ -86,9 +82,81 @@ internal static class HtoMetadataExtractor
             linksWithoutRelations);
     }
 
-    private static EquatableArray<PropertyMetadata> ExtractProperties(INamedTypeSymbol symbol)
+    /// <summary>
+    /// The single category a property is bucketed into by <see cref="Classify"/>.
+    /// </summary>
+    private enum PropertyCategory
+    {
+        Excluded,
+        Data,
+        Link,
+        LinkMissingRelations,
+        EmbeddedEntity,
+        EmbeddedEntityMissingRelations,
+        Action,
+    }
+
+    /// <summary>
+    /// Walks all public instance properties once (derived class first, then base types)
+    /// and buckets each property into exactly one category.
+    /// </summary>
+    private static (
+        EquatableArray<PropertyMetadata> Properties,
+        EquatableArray<LinkMetadata> Links,
+        EquatableArray<ActionMetadata> Actions,
+        EquatableArray<EmbeddedEntityMetadata> EmbeddedEntities,
+        EquatableArray<string> EmbeddedEntitiesWithoutRelations,
+        EquatableArray<string> LinksWithoutRelations)
+        ClassifyProperties(INamedTypeSymbol symbol)
     {
         var properties = new List<PropertyMetadata>();
+        var links = new List<LinkMetadata>();
+        var actions = new List<ActionMetadata>();
+        var embeddedEntities = new List<EmbeddedEntityMetadata>();
+        var embeddedWithoutRelations = new List<string>();
+        var linksWithoutRelations = new List<string>();
+
+        foreach (var member in EnumerateInstanceProperties(symbol))
+        {
+            switch (Classify(member))
+            {
+                case PropertyCategory.Data:
+                    properties.Add(CreatePropertyMetadata(member));
+                    break;
+                case PropertyCategory.Link:
+                    links.Add(CreateLinkMetadata(member));
+                    break;
+                case PropertyCategory.LinkMissingRelations:
+                    linksWithoutRelations.Add(member.Name);
+                    break;
+                case PropertyCategory.EmbeddedEntity:
+                    embeddedEntities.Add(CreateEmbeddedEntityMetadata(member));
+                    break;
+                case PropertyCategory.EmbeddedEntityMissingRelations:
+                    embeddedWithoutRelations.Add(member.Name);
+                    break;
+                case PropertyCategory.Action:
+                    actions.Add(CreateActionMetadata(member));
+                    break;
+            }
+        }
+
+        return (
+            new EquatableArray<PropertyMetadata>(properties.ToImmutableArray()),
+            new EquatableArray<LinkMetadata>(links.ToImmutableArray()),
+            new EquatableArray<ActionMetadata>(actions.ToImmutableArray()),
+            new EquatableArray<EmbeddedEntityMetadata>(embeddedEntities.ToImmutableArray()),
+            new EquatableArray<string>(embeddedWithoutRelations.ToImmutableArray()),
+            new EquatableArray<string>(linksWithoutRelations.ToImmutableArray()));
+    }
+
+    /// <summary>
+    /// Enumerates public instance (non-indexer) properties of the type and its base types,
+    /// derived class first. Each property name is yielded only once — a declaration in a
+    /// derived class shadows/overrides the base one.
+    /// </summary>
+    private static IEnumerable<IPropertySymbol> EnumerateInstanceProperties(INamedTypeSymbol symbol)
+    {
         var seen = new HashSet<string>();
 
         var current = symbol;
@@ -108,235 +176,161 @@ internal static class HtoMetadataExtractor
                     continue; // Already seen in derived class (override)
                 }
 
-                if (ShouldExcludeProperty(member))
-                {
-                    continue;
-                }
-
-                var name = GetPropertySerializationName(member);
-                var typeFullName = member.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-                var forwardedAttributes = GetForwardedAttributes(member);
-                var xmlDocComment = GetXmlDocComment(member);
-                properties.Add(new PropertyMetadata(name, member.Name, typeFullName, forwardedAttributes, xmlDocComment));
+                yield return member;
             }
 
             current = current.BaseType;
         }
-
-        return new EquatableArray<PropertyMetadata>(properties.ToImmutableArray());
     }
 
-    private static EquatableArray<LinkMetadata> ExtractLinks(INamedTypeSymbol symbol)
+    /// <summary>
+    /// Buckets a property into exactly one category.
+    /// Precedence: link > embedded entity > action > data — a property matching two
+    /// categories (e.g. an <c>ILink&lt;T&gt;</c>-typed property that also carries
+    /// <c>[HypermediaAction]</c>) is claimed by the first matching category.
+    /// </summary>
+    private static PropertyCategory Classify(IPropertySymbol member)
     {
-        var links = new List<LinkMetadata>();
-        var seen = new HashSet<string>();
+        var attributes = member.GetAttributes();
+        var hasRelations = HasAttribute(attributes, WellKnownTypeNames.RelationsAttributeFullName);
 
-        var current = symbol;
-        while (current != null && current.SpecialType != SpecialType.System_Object)
+        if (GetLinkTargetType(member) != null)
         {
-            foreach (var member in current.GetMembers().OfType<IPropertySymbol>())
-            {
-                if (member.DeclaredAccessibility != Accessibility.Public
-                    || member.IsStatic
-                    || member.IsIndexer)
-                {
-                    continue;
-                }
-
-                if (!seen.Add(member.Name))
-                {
-                    continue;
-                }
-
-                var targetType = GetLinkTargetType(member);
-                if (targetType == null)
-                {
-                    continue;
-                }
-
-                var relationsAttr = member.GetAttributes()
-                    .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.RelationsAttributeFullName);
-                if (relationsAttr == null)
-                {
-                    continue;
-                }
-
-                var relations = GetRelationsFromAttribute(relationsAttr);
-                var targetSchemaName = DeriveSchemaName(targetType.Name);
-                var targetClasses = GetTargetClasses(targetType);
-                var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
-
-                // Title: [Title] attribute > XML doc <summary>
-                var linkTitle = GetAttributeStringArgument(member, WellKnownTypeNames.TitleAttributeFullName)
-                                ?? GetXmlDocElement(member, "summary");
-
-                // Description: [Description] attribute > XML doc <remarks>
-                var linkDescription = GetAttributeStringArgument(member, WellKnownTypeNames.DescriptionAttributeFullName)
-                                      ?? GetXmlDocElement(member, "remarks");
-
-                var (linkIsDeprecated, linkDeprecationMessage) = GetDeprecation(member);
-                var linkAccessGroups = GetAccessGroups(member);
-
-                links.Add(new LinkMetadata(
-                    member.Name,
-                    new EquatableArray<string>(relations),
-                    targetSchemaName,
-                    new EquatableArray<string>(targetClasses),
-                    linkTitle,
-                    linkDescription,
-                    linkIsDeprecated,
-                    linkDeprecationMessage,
-                    isMandatory,
-                    new EquatableArray<string>(linkAccessGroups)));
-            }
-
-            current = current.BaseType;
+            return hasRelations ? PropertyCategory.Link : PropertyCategory.LinkMissingRelations;
         }
 
-        return new EquatableArray<LinkMetadata>(links.ToImmutableArray());
+        if (IsEmbeddedEntityType(member.Type))
+        {
+            return hasRelations ? PropertyCategory.EmbeddedEntity : PropertyCategory.EmbeddedEntityMissingRelations;
+        }
+
+        var hasActionAttribute = HasAttribute(attributes, WellKnownTypeNames.HypermediaActionAttributeFullName);
+        if (hasActionAttribute && IsActionType(member.Type))
+        {
+            return PropertyCategory.Action;
+        }
+
+        // [HypermediaAction] on a non-action type, [Relations] on a non-link/non-embedded type,
+        // and [FormatterIgnore] all exclude the property from the data properties.
+        if (hasActionAttribute
+            || hasRelations
+            || HasAttribute(attributes, WellKnownTypeNames.FormatterIgnoreAttributeFullName))
+        {
+            return PropertyCategory.Excluded;
+        }
+
+        return PropertyCategory.Data;
     }
 
-    private static EquatableArray<ActionMetadata> ExtractActions(INamedTypeSymbol symbol)
+    private static PropertyMetadata CreatePropertyMetadata(IPropertySymbol member)
     {
-        var actions = new List<ActionMetadata>();
-        var seen = new HashSet<string>();
-
-        var current = symbol;
-        while (current != null && current.SpecialType != SpecialType.System_Object)
-        {
-            foreach (var member in current.GetMembers().OfType<IPropertySymbol>())
-            {
-                if (member.DeclaredAccessibility != Accessibility.Public
-                    || member.IsStatic
-                    || member.IsIndexer)
-                {
-                    continue;
-                }
-
-                if (!seen.Add(member.Name))
-                {
-                    continue;
-                }
-
-                var actionAttr = member.GetAttributes()
-                    .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.HypermediaActionAttributeFullName);
-                if (actionAttr == null)
-                {
-                    continue;
-                }
-
-                if (!IsActionType(member.Type))
-                {
-                    continue;
-                }
-
-                var name = GetNamedArgumentString(actionAttr, "Name") ?? member.Name;
-
-                // Title: [HypermediaAction(Title)] > [Title] attribute > XML doc <summary>
-                var actionTitle = GetNamedArgumentString(actionAttr, "Title")
-                                  ?? GetAttributeStringArgument(member, WellKnownTypeNames.TitleAttributeFullName)
-                                  ?? GetXmlDocElement(member, "summary");
-
-                // Description: [Description] attribute > XML doc <remarks>
-                var actionDescription = GetAttributeStringArgument(member, WellKnownTypeNames.DescriptionAttributeFullName)
-                                        ?? GetXmlDocElement(member, "remarks");
-
-                var (actionIsDeprecated, actionDeprecationMessage) = GetDeprecation(member);
-
-                var parameterTypeFullName = GetActionParameterType(member.Type);
-                var isFileUpload = IsFileUploadAction(member.Type);
-                var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
-                var actionAccessGroups = GetAccessGroups(member);
-
-                // User-defined classes from [HypermediaAction(Classes = [...])]
-                var userClasses = GetNamedArgumentStringArray(actionAttr, "Classes");
-
-                actions.Add(new ActionMetadata(member.Name, name, actionTitle, actionDescription, parameterTypeFullName, isFileUpload, actionIsDeprecated, actionDeprecationMessage, isMandatory, null, null, new EquatableArray<string>(userClasses), new EquatableArray<string>(actionAccessGroups)));
-            }
-
-            current = current.BaseType;
-        }
-
-        return new EquatableArray<ActionMetadata>(actions.ToImmutableArray());
+        var name = GetPropertySerializationName(member);
+        var typeFullName = member.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var forwardedAttributes = GetForwardedAttributes(member);
+        var xmlDocComment = GetXmlDocComment(member);
+        return new PropertyMetadata(name, member.Name, typeFullName, forwardedAttributes, xmlDocComment);
     }
 
-    private static EquatableArray<EmbeddedEntityMetadata> ExtractEmbeddedEntities(INamedTypeSymbol symbol)
+    private static LinkMetadata CreateLinkMetadata(IPropertySymbol member)
     {
-        var embeddedEntities = new List<EmbeddedEntityMetadata>();
-        var seen = new HashSet<string>();
+        var targetType = GetLinkTargetType(member)!;
+        var relationsAttr = member.GetAttributes()
+            .First(a => a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.RelationsAttributeFullName);
 
-        var current = symbol;
-        while (current != null && current.SpecialType != SpecialType.System_Object)
-        {
-            foreach (var member in current.GetMembers().OfType<IPropertySymbol>())
-            {
-                if (member.DeclaredAccessibility != Accessibility.Public
-                    || member.IsStatic
-                    || member.IsIndexer)
-                {
-                    continue;
-                }
+        var relations = GetRelationsFromAttribute(relationsAttr);
+        var targetSchemaName = DeriveSchemaName(targetType.Name);
+        var targetClasses = GetTargetClasses(targetType);
+        var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
 
-                if (!seen.Add(member.Name))
-                {
-                    continue;
-                }
+        // Title: [Title] attribute > XML doc <summary>
+        var linkTitle = GetAttributeStringArgument(member, WellKnownTypeNames.TitleAttributeFullName)
+                        ?? GetXmlDocElement(member, "summary");
 
-                var relationsAttr = member.GetAttributes()
-                    .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.RelationsAttributeFullName);
-                if (relationsAttr == null)
-                {
-                    continue;
-                }
+        // Description: [Description] attribute > XML doc <remarks>
+        var linkDescription = GetAttributeStringArgument(member, WellKnownTypeNames.DescriptionAttributeFullName)
+                              ?? GetXmlDocElement(member, "remarks");
 
-                // Skip link properties — those are handled by ExtractLinks
-                if (GetLinkTargetType(member) != null)
-                {
-                    continue;
-                }
+        var (linkIsDeprecated, linkDeprecationMessage) = GetDeprecation(member);
+        var linkAccessGroups = GetAccessGroups(member);
 
-                // Try single embedded entity: IEmbeddedEntity<THto>
-                var (targetType, isCollection) = GetEmbeddedEntityTargetType(member);
-                if (targetType == null)
-                {
-                    continue;
-                }
+        return new LinkMetadata(
+            member.Name,
+            new EquatableArray<string>(relations),
+            targetSchemaName,
+            new EquatableArray<string>(targetClasses),
+            linkTitle,
+            linkDescription,
+            linkIsDeprecated,
+            linkDeprecationMessage,
+            isMandatory,
+            new EquatableArray<string>(linkAccessGroups));
+    }
 
-                var relations = GetRelationsFromAttribute(relationsAttr);
-                var targetSchemaName = DeriveSchemaName(targetType.Name);
-                var targetClasses = GetTargetClasses(targetType);
-                var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
+    private static ActionMetadata CreateActionMetadata(IPropertySymbol member)
+    {
+        var actionAttr = member.GetAttributes()
+            .First(a => a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.HypermediaActionAttributeFullName);
 
-                // Title: [Title] attribute > XML doc <summary>
-                var embeddedTitle = GetAttributeStringArgument(member, WellKnownTypeNames.TitleAttributeFullName)
-                                    ?? GetXmlDocElement(member, "summary");
+        var name = GetNamedArgumentString(actionAttr, "Name") ?? member.Name;
 
-                // Description: [Description] attribute > XML doc <remarks>
-                var embeddedDescription = GetAttributeStringArgument(member, WellKnownTypeNames.DescriptionAttributeFullName)
-                                          ?? GetXmlDocElement(member, "remarks");
+        // Title: [HypermediaAction(Title)] > [Title] attribute > XML doc <summary>
+        var actionTitle = GetNamedArgumentString(actionAttr, "Title")
+                          ?? GetAttributeStringArgument(member, WellKnownTypeNames.TitleAttributeFullName)
+                          ?? GetXmlDocElement(member, "summary");
 
-                var (embeddedIsDeprecated, embeddedDeprecationMessage) = GetDeprecation(member);
-                var embeddedAccessGroups = GetAccessGroups(member);
+        // Description: [Description] attribute > XML doc <remarks>
+        var actionDescription = GetAttributeStringArgument(member, WellKnownTypeNames.DescriptionAttributeFullName)
+                                ?? GetXmlDocElement(member, "remarks");
 
-                embeddedEntities.Add(new EmbeddedEntityMetadata(
-                    member.Name,
-                    new EquatableArray<string>(relations),
-                    targetSchemaName,
-                    targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-                    new EquatableArray<string>(targetClasses),
-                    isCollection,
-                    embeddedTitle,
-                    embeddedDescription,
-                    embeddedIsDeprecated,
-                    embeddedDeprecationMessage,
-                    isMandatory,
-                    new EquatableArray<string>(embeddedAccessGroups)));
-            }
+        var (actionIsDeprecated, actionDeprecationMessage) = GetDeprecation(member);
 
-            current = current.BaseType;
-        }
+        var parameterTypeFullName = GetActionParameterType(member.Type);
+        var isFileUpload = IsFileUploadAction(member.Type);
+        var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
+        var actionAccessGroups = GetAccessGroups(member);
 
-        return new EquatableArray<EmbeddedEntityMetadata>(embeddedEntities.ToImmutableArray());
+        // User-defined classes from [HypermediaAction(Classes = [...])]
+        var userClasses = GetNamedArgumentStringArray(actionAttr, "Classes");
+
+        return new ActionMetadata(member.Name, name, actionTitle, actionDescription, parameterTypeFullName, isFileUpload, actionIsDeprecated, actionDeprecationMessage, isMandatory, null, null, new EquatableArray<string>(userClasses), new EquatableArray<string>(actionAccessGroups));
+    }
+
+    private static EmbeddedEntityMetadata CreateEmbeddedEntityMetadata(IPropertySymbol member)
+    {
+        // Classify already established the property is embedded-entity-typed — target is non-null.
+        var (targetType, isCollection) = GetEmbeddedEntityTargetType(member);
+        var relationsAttr = member.GetAttributes()
+            .First(a => a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.RelationsAttributeFullName);
+
+        var relations = GetRelationsFromAttribute(relationsAttr);
+        var targetSchemaName = DeriveSchemaName(targetType!.Name);
+        var targetClasses = GetTargetClasses(targetType);
+        var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
+
+        // Title: [Title] attribute > XML doc <summary>
+        var embeddedTitle = GetAttributeStringArgument(member, WellKnownTypeNames.TitleAttributeFullName)
+                            ?? GetXmlDocElement(member, "summary");
+
+        // Description: [Description] attribute > XML doc <remarks>
+        var embeddedDescription = GetAttributeStringArgument(member, WellKnownTypeNames.DescriptionAttributeFullName)
+                                  ?? GetXmlDocElement(member, "remarks");
+
+        var (embeddedIsDeprecated, embeddedDeprecationMessage) = GetDeprecation(member);
+        var embeddedAccessGroups = GetAccessGroups(member);
+
+        return new EmbeddedEntityMetadata(
+            member.Name,
+            new EquatableArray<string>(relations),
+            targetSchemaName,
+            targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+            new EquatableArray<string>(targetClasses),
+            isCollection,
+            embeddedTitle,
+            embeddedDescription,
+            embeddedIsDeprecated,
+            embeddedDeprecationMessage,
+            isMandatory,
+            new EquatableArray<string>(embeddedAccessGroups));
     }
 
     /// <summary>
@@ -532,32 +526,6 @@ internal static class HtoMetadataExtractor
         return ImmutableArray<string>.Empty;
     }
 
-    private static bool ShouldExcludeProperty(IPropertySymbol property)
-    {
-        var attributes = property.GetAttributes();
-        return HasAttribute(attributes, WellKnownTypeNames.FormatterIgnoreAttributeFullName)
-               || HasAttribute(attributes, WellKnownTypeNames.RelationsAttributeFullName)
-               || HasAttribute(attributes, WellKnownTypeNames.HypermediaActionAttributeFullName)
-               || IsEmbeddedEntityType(property.Type)
-               || IsLinkType(property.Type);
-    }
-
-    /// <summary>
-    /// Checks whether a type is <c>ILink&lt;T&gt;</c>.
-    /// Used to exclude link properties from the data properties schema
-    /// even when they are missing the <c>[Relations]</c> attribute.
-    /// </summary>
-    private static bool IsLinkType(ITypeSymbol type)
-    {
-        // Unwrap nullable
-        if (type is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } nullable)
-        {
-            type = nullable.TypeArguments[0];
-        }
-
-        return GetLinkTargetType(type) != null;
-    }
-
     /// <summary>
     /// Overload of <see cref="GetLinkTargetType(IPropertySymbol)"/> that works on the type directly.
     /// </summary>
@@ -608,96 +576,6 @@ internal static class HtoMetadataExtractor
         }
 
         return false;
-    }
-
-    /// <summary>
-    /// Finds embedded entity properties (IEmbeddedEntity or collections thereof) that are
-    /// missing <c>[Relations]</c>. These are reported as RY0020 warnings.
-    /// </summary>
-    private static EquatableArray<string> FindEmbeddedEntityPropertiesWithoutRelations(INamedTypeSymbol symbol)
-    {
-        var names = new List<string>();
-        var seen = new HashSet<string>();
-
-        var current = symbol;
-        while (current != null && current.SpecialType != SpecialType.System_Object)
-        {
-            foreach (var member in current.GetMembers().OfType<IPropertySymbol>())
-            {
-                if (member.DeclaredAccessibility != Accessibility.Public
-                    || member.IsStatic
-                    || member.IsIndexer)
-                {
-                    continue;
-                }
-
-                if (!seen.Add(member.Name))
-                {
-                    continue;
-                }
-
-                if (!IsEmbeddedEntityType(member.Type))
-                {
-                    continue;
-                }
-
-                var hasRelations = member.GetAttributes()
-                    .Any(a => a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.RelationsAttributeFullName);
-                if (!hasRelations)
-                {
-                    names.Add(member.Name);
-                }
-            }
-
-            current = current.BaseType;
-        }
-
-        return new EquatableArray<string>(names.ToImmutableArray());
-    }
-
-    /// <summary>
-    /// Finds link properties (ILink&lt;T&gt;) that are missing <c>[Relations]</c>.
-    /// These are reported as RY0021 warnings.
-    /// </summary>
-    private static EquatableArray<string> FindLinkPropertiesWithoutRelations(INamedTypeSymbol symbol)
-    {
-        var names = new List<string>();
-        var seen = new HashSet<string>();
-
-        var current = symbol;
-        while (current != null && current.SpecialType != SpecialType.System_Object)
-        {
-            foreach (var member in current.GetMembers().OfType<IPropertySymbol>())
-            {
-                if (member.DeclaredAccessibility != Accessibility.Public
-                    || member.IsStatic
-                    || member.IsIndexer)
-                {
-                    continue;
-                }
-
-                if (!seen.Add(member.Name))
-                {
-                    continue;
-                }
-
-                if (!IsLinkType(member.Type))
-                {
-                    continue;
-                }
-
-                var hasRelations = member.GetAttributes()
-                    .Any(a => a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.RelationsAttributeFullName);
-                if (!hasRelations)
-                {
-                    names.Add(member.Name);
-                }
-            }
-
-            current = current.BaseType;
-        }
-
-        return new EquatableArray<string>(names.ToImmutableArray());
     }
 
     private static string GetPropertySerializationName(IPropertySymbol property)

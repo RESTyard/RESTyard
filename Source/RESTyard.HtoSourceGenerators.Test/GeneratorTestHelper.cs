@@ -206,11 +206,15 @@ internal static class GeneratorTestHelper
         return Assembly.Load(ms.ToArray());
     }
 
-    private static (Compilation OutputCompilation, GeneratorDriverRunResult DriverResult) RunGeneratorCore(
-        string[] sources)
+    internal static readonly CSharpParseOptions ParseOptions =
+        new(documentationMode: DocumentationMode.Diagnose);
+
+    /// <summary>
+    /// Creates the input compilation from the given sources and asserts it has no errors.
+    /// </summary>
+    internal static CSharpCompilation CreateCompilation(params string[] sources)
     {
-        var parseOptions = new CSharpParseOptions(documentationMode: DocumentationMode.Diagnose);
-        var syntaxTrees = sources.Select(s => CSharpSyntaxTree.ParseText(s, parseOptions)).ToArray();
+        var syntaxTrees = sources.Select(s => CSharpSyntaxTree.ParseText(s, ParseOptions)).ToArray();
 
         var compilation = CSharpCompilation.Create(
             assemblyName: "TestAssembly",
@@ -229,6 +233,14 @@ internal static class GeneratorTestHelper
             throw new System.InvalidOperationException(
                 $"Test source has compilation errors:\n{errors}");
         }
+
+        return compilation;
+    }
+
+    private static (Compilation OutputCompilation, GeneratorDriverRunResult DriverResult) RunGeneratorCore(
+        string[] sources)
+    {
+        var compilation = CreateCompilation(sources);
 
         var generator = new HtoSchemaGenerator();
         var driver = CSharpGeneratorDriver.Create(generator);

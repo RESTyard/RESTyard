@@ -21,33 +21,9 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     {
         // Extract [assembly: HypermediaAssembly] configuration from the compilation.
         // Returns null if the attribute is absent (no generation), or the Schema/Siren settings.
-        var assemblyConfig = context.CompilationProvider.Select(static (compilation, _) =>
-        {
-            var attr = compilation.Assembly.GetAttributes()
-                .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.HypermediaAssemblyAttributeFullName);
-
-            if (attr == null)
-            {
-                return ((bool Schema, bool Siren)?)null;
-            }
-
-            var schema = true;
-            var siren = false;
-
-            foreach (var named in attr.NamedArguments)
-            {
-                if (named.Key == "Schema" && named.Value.Value is bool s)
-                {
-                    schema = s;
-                }
-                else if (named.Key == "Siren" && named.Value.Value is bool si)
-                {
-                    siren = si;
-                }
-            }
-
-            return (schema, siren);
-        });
+        var assemblyConfig = context.CompilationProvider
+            .Select(static (compilation, _) => AssemblyConfig.FromCompilation(compilation))
+            .WithTrackingName(TrackingNames.AssemblyConfig);
 
         var htoTypes = context.SyntaxProvider
             .ForAttributeWithMetadataName(
@@ -55,11 +31,15 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 predicate: static (node, _) => node is ClassDeclarationSyntax,
                 transform: static (ctx, _) => HtoMetadataExtractor.ExtractHtoMetadata(ctx))
             .Where(static m => m.HasValue)
-            .Select(static (m, _) => m!.Value);
+            .Select(static (m, _) => m!.Value)
+            .WithTrackingName(TrackingNames.HtoTypes);
 
-        // Extract action result mappings from controller [HypermediaActionEndpoint] attributes with ResultType
-        var actionResultMappings = context.CompilationProvider.Select(static (compilation, _) =>
-            ActionResultMappingExtractor.ExtractActionResultMappings(compilation));
+        // Extract action result mappings from controller [HypermediaActionEndpoint] attributes with ResultType.
+        // NOTE (GEN-04): this recomputes on every compilation change and defeats output-level caching.
+        var actionResultMappings = context.CompilationProvider
+            .Select(static (compilation, _) =>
+                ActionResultMappingExtractor.ExtractActionResultMappings(compilation))
+            .WithTrackingName(TrackingNames.ActionResultMappings);
 
         // Combine each HTO with the assembly configuration and action result mappings
         var htosWithConfig = htoTypes.Combine(assemblyConfig).Combine(actionResultMappings);
@@ -93,23 +73,21 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 return;
             }
 
-            var schema = config.Value.Schema;
-            var siren = config.Value.Siren;
-
-            // Siren = true forces Schema = true
-            if (siren && !schema)
+            var (effectiveConfig, warnSirenRequiresSchema) = config.Value.Normalize();
+            if (warnSirenRequiresSchema)
             {
                 spc.ReportDiagnostic(Diagnostic.Create(
                     GeneratorDiagnostics.SirenRequiresSchema,
                     Location.None));
-                schema = true;
             }
 
             // Schema = false — emit nothing (safety hatch)
-            if (!schema)
+            if (!effectiveConfig.Schema)
             {
                 return;
             }
+
+            var siren = effectiveConfig.Siren;
 
             // Enrich actions with ResultType from controller endpoint attributes
             metadata = ActionResultMappingExtractor.EnrichActionsWithResultMappings(metadata, resultMappings);
@@ -173,8 +151,9 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         });
 
         // Collect all HTOs and emit a per-assembly registry + assembly attribute.
-        var assemblyName = context.CompilationProvider.Select(
-            static (compilation, _) => SanitizeAssemblyName(compilation.AssemblyName ?? "Unknown"));
+        var assemblyName = context.CompilationProvider
+            .Select(static (compilation, _) => SanitizeAssemblyName(compilation.AssemblyName ?? "Unknown"))
+            .WithTrackingName(TrackingNames.AssemblyName);
 
         var allHtosWithConfig = htoTypes.Collect().Combine(assemblyConfig).Combine(assemblyName).Combine(actionResultMappings);
 
@@ -182,23 +161,20 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         {
             var (((allHtos, config), assemblyNameSafe), resultData) = combined;
 
-            // No [HypermediaAssembly] or Schema = false — no registry
+            // No [HypermediaAssembly] or Schema = false — no registry.
+            // RY0030 for the Siren-forces-Schema override is reported in the per-HTO output above.
             if (config == null)
             {
                 return;
             }
 
-            var schema = config.Value.Schema;
-            var siren = config.Value.Siren;
-            if (siren && !schema)
-            {
-                schema = true;
-            }
-
-            if (!schema || allHtos.IsEmpty)
+            var (effectiveConfig, _) = config.Value.Normalize();
+            if (!effectiveConfig.Schema || allHtos.IsEmpty)
             {
                 return;
             }
+
+            var siren = effectiveConfig.Siren;
 
             spc.AddSource(
                 $"HypermediaSchemaRegistry.g.cs",

@@ -34,11 +34,22 @@ emission in `SchemaEmitter` / `PropertiesPocoEmitter` / `SirenEmitter` / `SirenH
 | REF-01 | Split 2745-line god class into extractor + emitters + pipeline           | Refactoring | L    | —      | ✅ Done                 |
 | REF-02 | Replace indentation-string emission with a `CodeWriter`                  | Refactoring | M    | —      | ✅ Done                 |
 | REF-03 | `GenerateSirenHelper` emits fully static text via `AppendLine` calls     | Refactoring | S    | —      | ✅ Done                 |
-| REF-04 | Unify six duplicated base-type property walks into one classification    | Refactoring | M    | —      | Yes                     |
-| REF-05 | Deduplicate assembly-config normalization (`Siren`→`Schema` rule)        | Refactoring | S    | —      | Yes                     |
-| REF-06 | Add `.WithTrackingName()` + cacheability tests                           | Test gap    | S–M  | —      | Yes — guards GEN-04     |
+| REF-04 | Unify six duplicated base-type property walks into one classification    | Refactoring | M    | —      | ✅ Done                 |
+| REF-05 | Deduplicate assembly-config normalization (`Siren`→`Schema` rule)        | Refactoring | S    | —      | ✅ Done                 |
+| REF-06 | Add `.WithTrackingName()` + cacheability tests                           | Test gap    | S–M  | —      | ✅ Done (metadata stages) |
 
 Size: S ≈ hours, M ≈ a day, L ≈ multiple days. Risk = impact of leaving it unfixed.
+
+## Suggested fix order
+
+1. ✅ **REF-01 + REF-02 + REF-03** — restructure first; every later fix lands in a smaller, testable unit.
+2. ✅ (partly) **GEN-04 + REF-06** — incrementality fix with its regression guard.
+   REF-06 done for the metadata stages; GEN-04 itself and the output-level cache assertions still open.
+3. **GEN-01, GEN-02, GEN-03, GEN-17** — the action-result feature cluster (fix or cut together).
+4. **GEN-05, GEN-07** — generation robustness (crash + invalid code).
+5. **GEN-06, GEN-08, GEN-09, GEN-10, GEN-12, GEN-13, GEN-16, GEN-18** — behavior gaps and DX
+   (GEN-16/18 unblock schema-driven client generation).
+6. **GEN-11, GEN-14, GEN-15, ✅ REF-04, ✅ REF-05** — opportunistic / later (REF-04/05 pulled forward and done).
 
 ## Bugs and gaps
 
@@ -280,7 +291,7 @@ the generator source.
 calls — zero interpolation. Make it a single verbatim string constant (or embedded resource). Same for
 most of `EmitOkSirenExtension`. Cheapest readability win in the file.
 
-### REF-04 — One property walk + classification pass
+### ✅ REF-04 — One property walk + classification pass
 
 `ExtractProperties`, `ExtractLinks`, `ExtractActions`, `ExtractEmbeddedEntities`,
 `FindEmbeddedEntityPropertiesWithoutRelations`, and `FindLinkPropertiesWithoutRelations` each repeat the
@@ -291,25 +302,27 @@ each property once (Data / Link / Action / Embedded / MissingRelations). One wal
 forces explicit precedence when a property matches two categories (e.g. an `ILink<T>` property that also
 carries `[HypermediaAction]` — currently the outcome depends on which extractor claims it).
 
-### REF-05 — Deduplicate assembly-config normalization
+**Done:** `HtoMetadataExtractor.ClassifyProperties` walks once via `EnumerateInstanceProperties()` and
+buckets each property via `Classify()` with explicit precedence link > embedded entity > action > data.
+
+### ✅ REF-05 — Deduplicate assembly-config normalization
 
 The `siren && !schema → schema = true` rule appears in both `RegisterSourceOutput` blocks (lines ~228 and
 ~321) and only one reports RY0030. Extract an `AssemblyConfig` record with a `Normalize()` returning the
 effective config plus whether to warn.
 
-### REF-06 — Tracking names + cacheability tests
+**Done:** `AssemblyConfig` record struct with `FromCompilation()` and `Normalize()`; RY0030 is still
+reported only from the per-HTO output block (unchanged behavior).
+
+### ✅ REF-06 — Tracking names + cacheability tests
 
 Add `.WithTrackingName()` to pipeline stages and write tests asserting
 `IncrementalStepRunReason.Cached` on an unchanged re-run via `GeneratorDriver`. Given GEN-04 there is
 currently no regression guard for incrementality; this is the standard way to get one. Do together with
 or immediately after GEN-04.
 
-## Suggested fix order
-
-1. **REF-01 + REF-02 + REF-03** — restructure first; every later fix lands in a smaller, testable unit.
-2. **GEN-04 + REF-06** — incrementality fix with its regression guard.
-3. **GEN-01, GEN-02, GEN-03, GEN-17** — the action-result feature cluster (fix or cut together).
-4. **GEN-05, GEN-07** — generation robustness (crash + invalid code).
-5. **GEN-06, GEN-08, GEN-09, GEN-10, GEN-12, GEN-13, GEN-16, GEN-18** — behavior gaps and DX
-   (GEN-16/18 unblock schema-driven client generation).
-6. **GEN-11, GEN-14, GEN-15, REF-04, REF-05** — opportunistic / later.
+**Done (metadata stages):** all four pipeline stages carry tracking names (`TrackingNames`), and
+`IncrementalCacheabilityTests` asserts Cached/Unchanged for the HTO-metadata, assembly-config, and
+assembly-name stages on a re-run with an unrelated source change. Output-level assertions are still
+blocked by GEN-04 (`ActionResultMappings` recomputes non-equatable results per compilation change) —
+extend the tests to the output nodes when GEN-04 lands.
