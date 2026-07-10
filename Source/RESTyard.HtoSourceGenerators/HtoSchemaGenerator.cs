@@ -56,33 +56,12 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             .Select(static (combined, _) => ActionResultMappingExtractor.Merge(combined.Left, combined.Right))
             .WithTrackingName(TrackingNames.ActionResultMappings);
 
-        // Combine each HTO with the assembly configuration and action result mappings
-        var htosWithConfig = htoTypes.Combine(assemblyConfig).Combine(actionResultMappings);
-
-        context.RegisterSourceOutput(htosWithConfig, static (spc, combined) =>
+        // Compilation-level diagnostics: reported once, not per HTO, and also in assemblies
+        // without any HTO (e.g. controller-only assemblies). No [HypermediaAssembly] → nothing.
+        context.RegisterSourceOutput(actionResultMappings.Combine(assemblyConfig), static (spc, combined) =>
         {
-            var ((metadata, config), resultData) = combined;
-            var resultMappings = resultData.Mappings;
+            var (resultData, config) = combined;
 
-            // Emit warnings for ResultType not being a HypermediaObject
-            foreach (var warning in resultData.NotHtoWarnings)
-            {
-                spc.ReportDiagnostic(Diagnostic.Create(
-                    GeneratorDiagnostics.ResultTypeNotHypermediaObject,
-                    Location.None,
-                    warning.ResultTypeName, warning.HtoClassName, warning.ActionPropertyName));
-            }
-
-            // Emit warnings for 201 response without ResultType
-            foreach (var warning in resultData.Missing201Warnings)
-            {
-                spc.ReportDiagnostic(Diagnostic.Create(
-                    GeneratorDiagnostics.MissingResultTypeWith201,
-                    Location.None,
-                    warning.ControllerName, warning.MethodName, warning.ActionPropertyName));
-            }
-
-            // No [HypermediaAssembly] attribute — emit nothing
             if (config == null)
             {
                 return;
@@ -95,6 +74,46 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                     GeneratorDiagnostics.SirenRequiresSchema,
                     Location.None));
             }
+
+            if (!effectiveConfig.Schema)
+            {
+                return;
+            }
+
+            foreach (var warning in resultData.NotHtoWarnings)
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(
+                    GeneratorDiagnostics.ResultTypeNotHypermediaObject,
+                    Location.None,
+                    warning.ResultTypeName, warning.HtoClassName, warning.ActionPropertyName));
+            }
+
+            foreach (var warning in resultData.Missing201Warnings)
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(
+                    GeneratorDiagnostics.MissingResultTypeWith201,
+                    Location.None,
+                    warning.ControllerName, warning.MethodName, warning.ActionPropertyName));
+            }
+        });
+
+        // Combine each HTO with the assembly configuration and action result mappings
+        var htosWithConfig = htoTypes.Combine(assemblyConfig).Combine(actionResultMappings);
+
+        context.RegisterSourceOutput(htosWithConfig, static (spc, combined) =>
+        {
+            var ((metadata, config), resultData) = combined;
+            var resultMappings = resultData.Mappings;
+
+            // No [HypermediaAssembly] attribute — emit nothing
+            if (config == null)
+            {
+                return;
+            }
+
+            // RY0030 for the Siren-forces-Schema override is reported once in the
+            // compilation-level diagnostics output above.
+            var (effectiveConfig, _) = config.Value.Normalize();
 
             // Schema = false — emit nothing (safety hatch)
             if (!effectiveConfig.Schema)
@@ -177,14 +196,30 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             var (((allHtos, config), assemblyNameSafe), resultData) = combined;
 
             // No [HypermediaAssembly] or Schema = false — no registry.
-            // RY0030 for the Siren-forces-Schema override is reported in the per-HTO output above.
+            // RY0030 for the Siren-forces-Schema override is reported in the
+            // compilation-level diagnostics output.
             if (config == null)
             {
                 return;
             }
 
             var (effectiveConfig, _) = config.Value.Normalize();
-            if (!effectiveConfig.Schema || allHtos.IsEmpty)
+            if (!effectiveConfig.Schema)
+            {
+                return;
+            }
+
+            // Action result registry for multi-assembly support — emitted before the HTO check
+            // because its main use case is controller-only assemblies with zero HTOs (the HTOs
+            // live in a referenced assembly and are enriched at runtime).
+            if (!resultData.Mappings.IsEmpty)
+            {
+                spc.AddSource(
+                    $"HypermediaActionResultRegistry.g.cs",
+                    RegistryEmitter.GenerateActionResultRegistrySource(resultData.Mappings, assemblyNameSafe));
+            }
+
+            if (allHtos.IsEmpty)
             {
                 return;
             }
@@ -201,14 +236,6 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 spc.AddSource(
                     "SirenHelper.g.cs",
                     SirenHelperEmitter.GenerateSirenHelper());
-            }
-
-            // Emit action result registry for multi-assembly support
-            if (!resultData.Mappings.IsEmpty)
-            {
-                spc.AddSource(
-                    $"HypermediaActionResultRegistry.g.cs",
-                    RegistryEmitter.GenerateActionResultRegistrySource(resultData.Mappings, assemblyNameSafe));
             }
         });
     }

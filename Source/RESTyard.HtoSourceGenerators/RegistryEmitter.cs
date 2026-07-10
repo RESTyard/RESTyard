@@ -58,8 +58,9 @@ internal static class RegistryEmitter
 
     /// <summary>
     /// Generates an action result registry for multi-assembly support.
-    /// Emits a static class with action-to-result mappings that <c>HypermediaSchemaBuilder</c>
-    /// can discover and merge into the schema.
+    /// Emits a static class with action-to-result mappings (keyed by schema entity/action
+    /// names) plus a discovery assembly attribute, so <c>HypermediaSchemaBuilder</c> can find
+    /// the registry at runtime and merge the mappings into <c>ActionDescription</c>s.
     /// </summary>
     internal static string GenerateActionResultRegistrySource(
         EquatableArray<ActionResultMapping> mappings,
@@ -74,6 +75,10 @@ internal static class RegistryEmitter
         w.Line($"using {SchemaTypeNames.SchemaModelNamespace};");
         w.Line();
 
+        // Assembly attribute for runtime discovery
+        w.Line($"[assembly: global::RESTyard.Schema.Model.HypermediaActionResultRegistryAttribute(typeof({registryClassName}))]");
+        w.Line();
+
         w.Line($"public static class {registryClassName}");
         using (w.Block())
         {
@@ -85,7 +90,7 @@ internal static class RegistryEmitter
                 {
                     foreach (var mapping in mappings)
                     {
-                        w.Line($"new ActionResultMapping {{ EntityName = \"{EscapeString(mapping.HtoClassName)}\", ActionName = \"{EscapeString(mapping.ActionPropertyName)}\", ResultName = \"{EscapeString(mapping.ResultSchemaName)}\", ResultClasses = new[] {{ {QuotedList(mapping.ResultClasses)} }} }},");
+                        w.Line($"new ActionResultMapping {{ EntityName = \"{EscapeString(mapping.HtoSchemaName)}\", ActionName = \"{EscapeString(mapping.ActionName)}\", ResultName = \"{EscapeString(mapping.ResultSchemaName)}\", ResultClasses = new[] {{ {QuotedList(mapping.ResultClasses)} }} }},");
                     }
                 }
             }

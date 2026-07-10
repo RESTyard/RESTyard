@@ -292,7 +292,7 @@ internal static class HtoMetadataExtractor
         // User-defined classes from [HypermediaAction(Classes = [...])]
         var userClasses = GetNamedArgumentStringArray(actionAttr, "Classes");
 
-        return new ActionMetadata(member.Name, name, actionTitle, actionDescription, parameterTypeFullName, isFileUpload, actionIsDeprecated, actionDeprecationMessage, isMandatory, null, null, new EquatableArray<string>(userClasses), new EquatableArray<string>(actionAccessGroups));
+        return new ActionMetadata(member.Name, member.ContainingType.Name, name, actionTitle, actionDescription, parameterTypeFullName, isFileUpload, actionIsDeprecated, actionDeprecationMessage, isMandatory, null, null, new EquatableArray<string>(userClasses), new EquatableArray<string>(actionAccessGroups));
     }
 
     private static EmbeddedEntityMetadata CreateEmbeddedEntityMetadata(IPropertySymbol member)
@@ -606,7 +606,7 @@ internal static class HtoMetadataExtractor
         return symbol.AllInterfaces.Any(i => i.ToDisplayString() == fullInterfaceName);
     }
 
-    private static string? GetNamedArgumentString(AttributeData attribute, string name)
+    internal static string? GetNamedArgumentString(AttributeData attribute, string name)
     {
         var arg = attribute.NamedArguments.FirstOrDefault(a => a.Key == name);
         return arg.Key == name && arg.Value.Value is string s ? s : null;

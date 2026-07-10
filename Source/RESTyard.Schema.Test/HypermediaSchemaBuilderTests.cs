@@ -92,6 +92,86 @@ public class HypermediaSchemaBuilderTests
     }
 
     [Fact]
+    public void ComposeSchema_applies_action_result_mappings()
+    {
+        var entityTypes = new List<EntityTypeSchema>
+        {
+            new()
+            {
+                Name = "Root",
+                Classes = ["Root"],
+                Actions = [new ActionDescription { Name = "CreateQuery" }],
+            },
+        };
+
+        var mappings = new List<ActionResultMapping>
+        {
+            new()
+            {
+                EntityName = "Root",
+                ActionName = "CreateQuery",
+                ResultName = "QueryResult",
+                ResultClasses = ["QueryResult"],
+            },
+        };
+
+        var schema = HypermediaSchemaBuilder.ComposeSchema(entityTypes, mappings, null, null);
+
+        var action = schema.EntityTypes[0].Actions[0];
+        action.ResultName.Should().Be("QueryResult");
+        action.ResultClasses.Should().BeEquivalentTo(["QueryResult"]);
+    }
+
+    [Fact]
+    public void ComposeSchema_does_not_overwrite_existing_result_information()
+    {
+        var entityTypes = new List<EntityTypeSchema>
+        {
+            new()
+            {
+                Name = "Root",
+                Classes = ["Root"],
+                Actions =
+                [
+                    new ActionDescription
+                    {
+                        Name = "CreateQuery",
+                        ResultName = "LocalResult",
+                        ResultClasses = ["LocalResult"],
+                    },
+                ],
+            },
+        };
+
+        var mappings = new List<ActionResultMapping>
+        {
+            new() { EntityName = "Root", ActionName = "CreateQuery", ResultName = "OtherResult" },
+        };
+
+        var schema = HypermediaSchemaBuilder.ComposeSchema(entityTypes, mappings, null, null);
+
+        schema.EntityTypes[0].Actions[0].ResultName.Should().Be("LocalResult");
+    }
+
+    [Fact]
+    public void ComposeSchema_ignores_unmatched_action_result_mappings()
+    {
+        var entityTypes = new List<EntityTypeSchema>
+        {
+            new() { Name = "Root", Classes = ["Root"] },
+        };
+
+        var mappings = new List<ActionResultMapping>
+        {
+            new() { EntityName = "Missing", ActionName = "Nope", ResultName = "QueryResult" },
+        };
+
+        var schema = HypermediaSchemaBuilder.ComposeSchema(entityTypes, mappings, null, null);
+
+        schema.EntityTypes.Should().ContainSingle();
+    }
+
+    [Fact]
     public void ComposeSchema_collects_DeclaredAccessGroups_from_all_levels()
     {
         var entityTypes = new List<EntityTypeSchema>

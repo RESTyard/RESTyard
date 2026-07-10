@@ -35,7 +35,8 @@ public static class HypermediaSchemaBuilder
         ILogger? logger = null)
     {
         var entityTypes = DiscoverEntityTypes(factory, logger);
-        return ComposeSchema(entityTypes, options, logger);
+        var actionResultMappings = DiscoverActionResultMappings(logger);
+        return ComposeSchema(entityTypes, actionResultMappings, options, logger);
     }
 
     /// <summary>
@@ -107,6 +108,64 @@ public static class HypermediaSchemaBuilder
     }
 
     /// <summary>
+    /// Scans all loaded assemblies for <see cref="HypermediaActionResultRegistryAttribute"/> and invokes
+    /// each registry's <c>GetMappings</c> method to collect all <see cref="ActionResultMapping"/> instances.
+    /// These come from assemblies whose controllers declare <c>ResultType</c> for actions on HTOs
+    /// defined in a different assembly.
+    /// </summary>
+    public static List<ActionResultMapping> DiscoverActionResultMappings(ILogger? logger = null)
+    {
+        var allMappings = new List<ActionResultMapping>();
+
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            HypermediaActionResultRegistryAttribute? attr;
+            try
+            {
+                attr = assembly.GetCustomAttribute<HypermediaActionResultRegistryAttribute>();
+            }
+            catch
+            {
+                // Some dynamic assemblies throw on GetCustomAttribute — skip them
+                continue;
+            }
+
+            if (attr == null)
+            {
+                continue;
+            }
+
+            var registryType = attr.RegistryType;
+
+            var getMappings = registryType.GetMethod("GetMappings", BindingFlags.Public | BindingFlags.Static);
+            if (getMappings == null)
+            {
+                logger?.LogWarning(
+                    "Action result registry type '{RegistryType}' in assembly '{Assembly}' has no public static GetMappings method",
+                    registryType.FullName, assembly.GetName().Name);
+                continue;
+            }
+
+            try
+            {
+                var result = getMappings.Invoke(null, []);
+                if (result is IReadOnlyList<ActionResultMapping> mappings)
+                {
+                    allMappings.AddRange(mappings);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError(ex,
+                    "Failed to invoke GetMappings on action result registry type '{RegistryType}' in assembly '{Assembly}'",
+                    registryType.FullName, assembly.GetName().Name);
+            }
+        }
+
+        return allMappings;
+    }
+
+    /// <summary>
     /// Composes a <see cref="HypermediaApiSchema"/> from a list of entity types and options.
     /// Applies defaults for unset option fields (title from entry assembly, version, entry point detection).
     /// </summary>
@@ -114,7 +173,20 @@ public static class HypermediaSchemaBuilder
         List<EntityTypeSchema> entityTypes,
         HypermediaSchemaOptions? options,
         ILogger? logger)
+        => ComposeSchema(entityTypes, [], options, logger);
+
+    /// <summary>
+    /// Composes a <see cref="HypermediaApiSchema"/> from a list of entity types and options,
+    /// first merging discovered <see cref="ActionResultMapping"/>s into the matching
+    /// <see cref="ActionDescription"/>s (multi-assembly <c>ResultType</c> support).
+    /// </summary>
+    public static HypermediaApiSchema ComposeSchema(
+        List<EntityTypeSchema> entityTypes,
+        IReadOnlyList<ActionResultMapping> actionResultMappings,
+        HypermediaSchemaOptions? options,
+        ILogger? logger)
     {
+        ApplyActionResultMappings(entityTypes, actionResultMappings, logger);
         var entryAssembly = Assembly.GetEntryAssembly();
 
         var title = options?.Title
@@ -145,6 +217,40 @@ public static class HypermediaSchemaBuilder
             Definitions = definitions,
             DeclaredAccessGroups = declaredAccessGroups,
         };
+    }
+
+    /// <summary>
+    /// Fills <see cref="ActionDescription.ResultName"/>/<see cref="ActionDescription.ResultClasses"/>
+    /// from mappings collected in other assemblies. Result information already present (from
+    /// compile-time enrichment in the HTO's own assembly) is left untouched.
+    /// </summary>
+    private static void ApplyActionResultMappings(
+        List<EntityTypeSchema> entityTypes,
+        IReadOnlyList<ActionResultMapping> mappings,
+        ILogger? logger)
+    {
+        foreach (var mapping in mappings)
+        {
+            var action = entityTypes
+                .FirstOrDefault(e => e.Name == mapping.EntityName)
+                ?.Actions.FirstOrDefault(a => a.Name == mapping.ActionName);
+
+            if (action == null)
+            {
+                logger?.LogWarning(
+                    "Action result mapping targets '{EntityName}.{ActionName}' but no such entity type action was discovered",
+                    mapping.EntityName, mapping.ActionName);
+                continue;
+            }
+
+            if (action.ResultName != null)
+            {
+                continue;
+            }
+
+            action.ResultName = mapping.ResultName;
+            action.ResultClasses = mapping.ResultClasses;
+        }
     }
 
     /// <summary>

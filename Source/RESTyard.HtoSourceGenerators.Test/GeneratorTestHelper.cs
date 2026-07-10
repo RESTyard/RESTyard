@@ -55,6 +55,45 @@ internal static class GeneratorTestHelper
     }
 
     /// <summary>
+    /// Runs the generator on sources compiled with additional metadata references —
+    /// for multi-assembly scenarios (e.g. a controller-only assembly referencing an HTO assembly).
+    /// </summary>
+    internal static GeneratorDriverRunResult RunGenerator(
+        MetadataReference[] extraReferences, params string[] sources)
+    {
+        var (_, driverResult) = RunGeneratorCore(sources, extraReferences);
+        return driverResult;
+    }
+
+    /// <summary>
+    /// Compiles sources into a separate assembly (without running the generator) and returns
+    /// a metadata reference to it — used to simulate a referenced HTO assembly.
+    /// </summary>
+    internal static MetadataReference CompileToMetadataReference(string assemblyName, params string[] sources)
+    {
+        var syntaxTrees = sources.Select(s => CSharpSyntaxTree.ParseText(s, ParseOptions)).ToArray();
+
+        var compilation = CSharpCompilation.Create(
+            assemblyName,
+            syntaxTrees,
+            References,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+                .WithNullableContextOptions(NullableContextOptions.Enable));
+
+        using var ms = new MemoryStream();
+        var emitResult = compilation.Emit(ms);
+        if (!emitResult.Success)
+        {
+            var errors = string.Join("\n", emitResult.Diagnostics
+                .Where(d => d.Severity == DiagnosticSeverity.Error)
+                .Select(d => d.ToString()));
+            throw new InvalidOperationException($"Referenced assembly emit failed:\n{errors}");
+        }
+
+        return MetadataReference.CreateFromImage(ms.ToArray());
+    }
+
+    /// <summary>
     /// Runs the generator and asserts the combined compilation (input + generated) has no errors.
     /// </summary>
     internal static void AssertOutputCompiles(params string[] sources)
@@ -213,13 +252,16 @@ internal static class GeneratorTestHelper
     /// Creates the input compilation from the given sources and asserts it has no errors.
     /// </summary>
     internal static CSharpCompilation CreateCompilation(params string[] sources)
+        => CreateCompilation(sources, extraReferences: null);
+
+    private static CSharpCompilation CreateCompilation(string[] sources, MetadataReference[]? extraReferences)
     {
         var syntaxTrees = sources.Select(s => CSharpSyntaxTree.ParseText(s, ParseOptions)).ToArray();
 
         var compilation = CSharpCompilation.Create(
             assemblyName: "TestAssembly",
             syntaxTrees: syntaxTrees,
-            references: References,
+            references: extraReferences == null ? References : References.Concat(extraReferences),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithNullableContextOptions(NullableContextOptions.Enable));
 
@@ -238,9 +280,9 @@ internal static class GeneratorTestHelper
     }
 
     private static (Compilation OutputCompilation, GeneratorDriverRunResult DriverResult) RunGeneratorCore(
-        string[] sources)
+        string[] sources, MetadataReference[]? extraReferences = null)
     {
-        var compilation = CreateCompilation(sources);
+        var compilation = CreateCompilation(sources, extraReferences);
 
         var generator = new HtoSchemaGenerator();
         var driver = CSharpGeneratorDriver.Create(generator);

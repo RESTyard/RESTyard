@@ -69,7 +69,12 @@ internal static class ActionResultMappingExtractor
                     var resultSchemaName = HtoMetadataExtractor.DeriveSchemaName(resultType.Name);
                     var resultClasses = HtoMetadataExtractor.GetTargetClasses(resultType);
                     mappings.Add(new ActionResultMapping(
-                        htoClassName, actionPropName, resultSchemaName, new EquatableArray<string>(resultClasses)));
+                        htoClassName,
+                        actionPropName,
+                        HtoMetadataExtractor.DeriveSchemaName(htoClassName),
+                        ResolveActionName(htoType, actionPropName),
+                        resultSchemaName,
+                        new EquatableArray<string>(resultClasses)));
                 }
             }
             else
@@ -141,7 +146,12 @@ internal static class ActionResultMappingExtractor
                         var resultSchemaName = HtoMetadataExtractor.DeriveSchemaName(resultType.Name);
                         var resultClasses = HtoMetadataExtractor.GetTargetClasses(resultType);
                         mappings.Add(new ActionResultMapping(
-                            htoClassName, actionName, resultSchemaName, new EquatableArray<string>(resultClasses)));
+                            htoClassName,
+                            actionName,
+                            HtoMetadataExtractor.DeriveSchemaName(htoClassName),
+                            ResolveActionName(declaringType, actionName),
+                            resultSchemaName,
+                            new EquatableArray<string>(resultClasses)));
                     }
                 }
             }
@@ -204,10 +214,7 @@ internal static class ActionResultMappingExtractor
 
         foreach (var action in metadata.Actions)
         {
-            // Try to find a result mapping for this action.
-            // The action's Name may differ from the property name (via [HypermediaAction(Name)]),
-            // so we try both the action Name and look through all mappings for this HTO.
-            if (TryFindResultMapping(metadata.ClassName, action.Name, resultMappings, out var mapping))
+            if (TryFindResultMapping(metadata.ClassName, action, resultMappings, out var mapping))
             {
                 enrichedActions.Add(action with { ResultSchemaName = mapping.ResultSchemaName, ResultClasses = mapping.ResultClasses });
                 changed = true;
@@ -224,15 +231,27 @@ internal static class ActionResultMappingExtractor
     }
 
     private static bool TryFindResultMapping(
-        string htoClassName, string actionName,
+        string htoClassName, ActionMetadata action,
         EquatableArray<ActionResultMapping> mappings,
         out ActionResultMapping mapping)
     {
-        // The mapping key uses the property name on the HTO, which is the action's C# property name.
-        // The action's Name might be overridden via [HypermediaAction(Name)], so also check by Name.
+        // Modern endpoint attributes key mappings by the action's C# property name; the attribute
+        // may name a base HTO for inherited actions, so the declaring class is tried as well.
+        // Legacy attributes key by the Op-type-derived action name — hence the Name fallbacks.
+        return TryFindByKey(htoClassName, action.PropertyName, mappings, out mapping)
+               || TryFindByKey(action.DeclaringClassName, action.PropertyName, mappings, out mapping)
+               || TryFindByKey(htoClassName, action.Name, mappings, out mapping)
+               || TryFindByKey(action.DeclaringClassName, action.Name, mappings, out mapping);
+    }
+
+    private static bool TryFindByKey(
+        string htoClassName, string actionKey,
+        EquatableArray<ActionResultMapping> mappings,
+        out ActionResultMapping mapping)
+    {
         foreach (var candidate in mappings)
         {
-            if (candidate.HtoClassName == htoClassName && candidate.ActionPropertyName == actionName)
+            if (candidate.HtoClassName == htoClassName && candidate.ActionPropertyName == actionKey)
             {
                 mapping = candidate;
                 return true;
@@ -241,6 +260,33 @@ internal static class ActionResultMappingExtractor
 
         mapping = null!;
         return false;
+    }
+
+    /// <summary>
+    /// Resolves the effective schema action name for a property on an HTO: the
+    /// <c>[HypermediaAction(Name)]</c> override when present, else the property name.
+    /// Walks base types since the property may be inherited.
+    /// </summary>
+    private static string ResolveActionName(INamedTypeSymbol htoType, string actionPropertyName)
+    {
+        for (var current = htoType;
+             current != null && current.SpecialType != SpecialType.System_Object;
+             current = current.BaseType)
+        {
+            var property = current.GetMembers(actionPropertyName).OfType<IPropertySymbol>().FirstOrDefault();
+            if (property == null)
+            {
+                continue;
+            }
+
+            var actionAttr = property.GetAttributes().FirstOrDefault(a =>
+                a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.HypermediaActionAttributeFullName);
+
+            return (actionAttr != null ? HtoMetadataExtractor.GetNamedArgumentString(actionAttr, "Name") : null)
+                   ?? actionPropertyName;
+        }
+
+        return actionPropertyName;
     }
 
     private static bool InheritsFrom(INamedTypeSymbol type, string baseFullName)

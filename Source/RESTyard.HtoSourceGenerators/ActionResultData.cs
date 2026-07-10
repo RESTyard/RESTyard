@@ -6,10 +6,16 @@ namespace RESTyard.HtoSourceGenerators;
 /// A controller-declared <c>ResultType</c> mapping for an HTO action:
 /// executing <c>HtoClassName.ActionPropertyName</c> yields an entity of schema
 /// <c>ResultSchemaName</c> with the given Siren classes.
+/// <c>HtoSchemaName</c>/<c>ActionName</c> are the schema-level keys (derived schema name and
+/// effective action name including a <c>[HypermediaAction(Name)]</c> override) — these are what
+/// the emitted action-result registry carries, since the runtime merge in another assembly
+/// only sees schema names, not C# class/property names.
 /// </summary>
 internal sealed record ActionResultMapping(
     string HtoClassName,
     string ActionPropertyName,
+    string HtoSchemaName,
+    string ActionName,
     string ResultSchemaName,
     EquatableArray<string> ResultClasses);
 

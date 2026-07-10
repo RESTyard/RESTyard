@@ -1161,6 +1161,340 @@ public class HtoSchemaGeneratorTests
         }
     }
 
+    [Fact]
+    public void Action_with_renamed_action_and_ResultType_populates_ResultName()
+    {
+        // GEN-02: the endpoint attribute names the C# property ("CreateQuery"), while the
+        // schema action name is overridden via [HypermediaAction(Name = "startQuery")].
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Actions;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+            using Microsoft.AspNetCore.Mvc;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "QueryResult", Classes = ["QueryResult"])]
+            public class HypermediaQueryResultHto : HypermediaObject
+            {
+                public string ResultData { get; set; } = string.Empty;
+            }
+
+            public class CreateQueryAction : HypermediaAction
+            {
+                public CreateQueryAction() : base(() => true) { }
+            }
+
+            [HypermediaObject(Title = "Root", Classes = ["Root"])]
+            public class HypermediaRootHto : HypermediaObject
+            {
+                [HypermediaAction(Name = "startQuery")]
+                public CreateQueryAction? CreateQuery { get; set; }
+            }
+
+            [ApiController]
+            [Route("api")]
+            public class RootController : ControllerBase
+            {
+                [HttpPost("query")]
+                [HypermediaActionEndpoint<HypermediaRootHto>("CreateQuery",
+                    ResultType = typeof(HypermediaQueryResultHto))]
+                public IActionResult CreateQuery() => Ok();
+            }
+            """;
+
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema("HypermediaRootHto", source);
+
+        schema.Actions.Should().ContainSingle();
+        var action = schema.Actions[0];
+        action.Name.Should().Be("startQuery");
+        action.ResultName.Should().Be("QueryResult");
+        action.ResultClasses.Should().BeEquivalentTo("QueryResult");
+    }
+
+    [Fact]
+    public void Inherited_action_on_derived_hto_gets_ResultName()
+    {
+        // GEN-17: the endpoint attribute names the base HTO; derived HTOs inherit the
+        // action property and must carry the same result information.
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Actions;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+            using Microsoft.AspNetCore.Mvc;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "QueryResult", Classes = ["QueryResult"])]
+            public class HypermediaQueryResultHto : HypermediaObject
+            {
+                public string ResultData { get; set; } = string.Empty;
+            }
+
+            public class CreateQueryAction : HypermediaAction
+            {
+                public CreateQueryAction() : base(() => true) { }
+            }
+
+            [HypermediaObject(Title = "Base", Classes = ["Base"])]
+            public class HypermediaBaseHto : HypermediaObject
+            {
+                [HypermediaAction(Name = "CreateQuery")]
+                public CreateQueryAction? CreateQuery { get; set; }
+            }
+
+            [HypermediaObject(Title = "Derived", Classes = ["Derived"])]
+            public class HypermediaDerivedHto : HypermediaBaseHto
+            {
+            }
+
+            [HypermediaObject(Title = "NextLevel", Classes = ["NextLevel"])]
+            public class HypermediaNextLevelHto : HypermediaDerivedHto
+            {
+            }
+
+            [ApiController]
+            [Route("api")]
+            public class BaseController : ControllerBase
+            {
+                [HttpPost("query")]
+                [HypermediaActionEndpoint<HypermediaBaseHto>("CreateQuery",
+                    ResultType = typeof(HypermediaQueryResultHto))]
+                public IActionResult CreateQuery() => Ok();
+            }
+            """;
+
+        foreach (var htoClassName in new[] { "HypermediaBaseHto", "HypermediaDerivedHto", "HypermediaNextLevelHto" })
+        {
+            var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(htoClassName, source);
+
+            schema.Actions.Should().ContainSingle();
+            schema.Actions[0].ResultName.Should().Be("QueryResult",
+                $"the inherited action on {htoClassName} should resolve the mapping declared for the base HTO");
+            schema.Actions[0].ResultClasses.Should().BeEquivalentTo("QueryResult");
+        }
+    }
+
+    [Fact]
+    public void ResultType_warnings_are_reported_once_regardless_of_hto_count()
+    {
+        // GEN-03: RY0031/RY0032 come from a compilation-level diagnostics output,
+        // not the per-HTO output — multiple HTOs must not duplicate them.
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Actions;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+            using Microsoft.AspNetCore.Mvc;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            public class NotAnHto
+            {
+                public string Data { get; set; } = string.Empty;
+            }
+
+            public class SomeAction : HypermediaAction
+            {
+                public SomeAction() : base(() => true) { }
+            }
+
+            [HypermediaObject(Title = "First", Classes = ["First"])]
+            public class HypermediaFirstHto : HypermediaObject
+            {
+                [HypermediaAction(Name = "DoStuff")]
+                public SomeAction? DoStuff { get; set; }
+            }
+
+            [HypermediaObject(Title = "Second", Classes = ["Second"])]
+            public class HypermediaSecondHto : HypermediaObject
+            {
+                public string Value { get; set; } = string.Empty;
+            }
+
+            [HypermediaObject(Title = "Third", Classes = ["Third"])]
+            public class HypermediaThirdHto : HypermediaObject
+            {
+                public string Value { get; set; } = string.Empty;
+            }
+
+            [ApiController]
+            [Route("api")]
+            public class FirstController : ControllerBase
+            {
+                [HttpPost("do")]
+                [HypermediaActionEndpoint<HypermediaFirstHto>("DoStuff",
+                    ResultType = typeof(NotAnHto))]
+                public IActionResult Do() => Ok();
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        result.Diagnostics.Where(d => d.Id == "RY0032").Should().ContainSingle();
+    }
+
+    [Fact]
+    public void ResultType_warnings_are_not_reported_without_HypermediaAssembly()
+    {
+        // GEN-03: no [assembly: HypermediaAssembly] → the generator emits nothing,
+        // including schema diagnostics.
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Actions;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+            using Microsoft.AspNetCore.Mvc;
+
+            namespace TestHtos;
+
+            public class NotAnHto
+            {
+                public string Data { get; set; } = string.Empty;
+            }
+
+            public class SomeAction : HypermediaAction
+            {
+                public SomeAction() : base(() => true) { }
+            }
+
+            [HypermediaObject(Title = "Root", Classes = ["Root"])]
+            public class HypermediaRootHto : HypermediaObject
+            {
+                [HypermediaAction(Name = "DoStuff")]
+                public SomeAction? DoStuff { get; set; }
+            }
+
+            [ApiController]
+            [Route("api")]
+            public class RootController : ControllerBase
+            {
+                [HttpPost("do")]
+                [ProducesResponseType(201)]
+                [HypermediaActionEndpoint<HypermediaRootHto>("DoStuff",
+                    ResultType = typeof(NotAnHto))]
+                public IActionResult Do() => Ok();
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        result.Diagnostics.Should().NotContain(d => d.Id == "RY0031" || d.Id == "RY0032");
+        result.GeneratedTrees.Should().BeEmpty();
+    }
+
+    // --- Multi-assembly ResultType support (GEN-01) ---
+
+    private const string ReferencedHtoAssemblySource = """
+        using RESTyard.AspNetCore.Hypermedia;
+        using RESTyard.AspNetCore.Hypermedia.Actions;
+        using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+        namespace ReferencedHtos;
+
+        [HypermediaObject(Title = "QueryResult", Classes = ["QueryResult"])]
+        public class HypermediaQueryResultHto : HypermediaObject
+        {
+            public string ResultData { get; set; } = string.Empty;
+        }
+
+        public class CreateQueryAction : HypermediaAction
+        {
+            public CreateQueryAction() : base(() => true) { }
+        }
+
+        [HypermediaObject(Title = "Root", Classes = ["Root"])]
+        public class HypermediaRootHto : HypermediaObject
+        {
+            [HypermediaAction(Name = "startQuery")]
+            public CreateQueryAction? CreateQuery { get; set; }
+        }
+        """;
+
+    [Fact]
+    public void Controller_only_assembly_emits_action_result_registry()
+    {
+        // GEN-01: controllers here, HTOs in a referenced assembly — the exact scenario
+        // the action-result registry exists for. It must be emitted despite zero local HTOs,
+        // carry the runtime discovery attribute, and use schema-level names
+        // (derived entity name, [HypermediaAction(Name)] override resolved from metadata).
+        const string controllerSource = """
+            using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+            using ReferencedHtos;
+            using Microsoft.AspNetCore.Mvc;
+
+            [assembly: RESTyard.AspNetCore.Hypermedia.Attributes.HypermediaAssembly]
+
+            namespace Controllers;
+
+            [ApiController]
+            [Route("api")]
+            public class RootController : ControllerBase
+            {
+                [HttpPost("query")]
+                [HypermediaActionEndpoint<HypermediaRootHto>("CreateQuery",
+                    ResultType = typeof(HypermediaQueryResultHto))]
+                public IActionResult CreateQuery() => Ok();
+            }
+            """;
+
+        var htoAssembly = GeneratorTestHelper.CompileToMetadataReference(
+            "ReferencedHtoAssembly", ReferencedHtoAssemblySource);
+
+        var result = GeneratorTestHelper.RunGenerator([htoAssembly], controllerSource);
+
+        var registry = result.GeneratedTrees
+            .Should().ContainSingle(t => t.FilePath.EndsWith("HypermediaActionResultRegistry.g.cs"))
+            .Which.ToString();
+
+        registry.Should().Contain(
+            "[assembly: global::RESTyard.Schema.Model.HypermediaActionResultRegistryAttribute(typeof(HypermediaActionResultRegistry_TestAssembly))]");
+        registry.Should().Contain("EntityName = \"Root\"");
+        registry.Should().Contain("ActionName = \"startQuery\"");
+        registry.Should().Contain("ResultName = \"QueryResult\"");
+        registry.Should().Contain("\"QueryResult\"");
+    }
+
+    [Fact]
+    public void Controller_only_assembly_reports_ResultType_warnings()
+    {
+        // GEN-03: schema diagnostics must also fire in assemblies without any HTO.
+        const string controllerSource = """
+            using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+            using ReferencedHtos;
+            using Microsoft.AspNetCore.Mvc;
+
+            [assembly: RESTyard.AspNetCore.Hypermedia.Attributes.HypermediaAssembly]
+
+            namespace Controllers;
+
+            [ApiController]
+            [Route("api")]
+            public class RootController : ControllerBase
+            {
+                [HttpPost("query")]
+                [ProducesResponseType(201)]
+                [HypermediaActionEndpoint<HypermediaRootHto>("CreateQuery")]
+                public IActionResult CreateQuery() => Ok();
+            }
+            """;
+
+        var htoAssembly = GeneratorTestHelper.CompileToMetadataReference(
+            "ReferencedHtoAssembly", ReferencedHtoAssemblySource);
+
+        var result = GeneratorTestHelper.RunGenerator([htoAssembly], controllerSource);
+
+        result.Diagnostics.Where(d => d.Id == "RY0031").Should().ContainSingle();
+    }
+
     // --- Legacy attribute existence check ---
     // If this test fails, the legacy HttpMethodHypermediaAction was removed.
     // Remove ActionResultMappingExtractor.ExtractLegacyActionResults (and its InheritsFrom

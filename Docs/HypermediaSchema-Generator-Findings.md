@@ -11,32 +11,33 @@ emission in `SchemaEmitter` / `PropertiesPocoEmitter` / `SirenEmitter` / `SirenH
 
 ## Overview
 
-| ID     | Finding                                                                  | Type        | Size | Risk   | Worth fixing            |
-|--------|--------------------------------------------------------------------------|-------------|------|--------|-------------------------|
-| GEN-01 | Multi-assembly action-result feature dead end-to-end                     | Bug         | M    | High   | Yes — or cut feature    |
-| GEN-02 | `ResultType` enrichment breaks with `[HypermediaAction(Name = ...)]`     | Bug         | S    | High   | Yes                     |
-| GEN-03 | RY0031/RY0032 diagnostics duplicated once per HTO; wrong gating          | Bug         | S    | Medium | Yes                     |
-| GEN-04 | Incrementality defeated by compilation-wide controller scan              | Perf bug    | M–L  | High   | ✅ Done                 |
-| GEN-05 | Same HTO class name in two namespaces crashes generator (hint names)     | Bug         | S    | Medium | Yes                     |
-| GEN-06 | Silent schema-name collisions; `[HypermediaSchemaName]` not implemented  | Gap         | M    | Medium | Yes                     |
-| GEN-07 | Generated code can fail to compile (escaping, culture, identifiers)      | Bug         | M    | High   | Yes                     |
-| GEN-08 | `record` HTOs silently ignored                                           | Gap         | S    | Medium | Yes (or diagnostic)     |
-| GEN-09 | Embedded-collection detection too loose and too tight (arrays leak)      | Bug         | S–M  | Medium | Yes                     |
-| GEN-10 | Null mandatory action silently omitted; links/embedded throw             | Inconsist.  | S    | Low    | Yes — decide + document |
-| GEN-11 | No diagnostic for zero/multiple endpoints per HTO/action (design says)   | Gap         | M    | Medium | Later                   |
-| GEN-12 | Diagnostic severity vs. wording mismatch (RY0020/21/30)                  | Inconsist.  | S    | Low    | Yes — cheap             |
-| GEN-13 | All diagnostics use `Location.None`                                      | DX gap      | M    | Low    | Yes — big DX win        |
-| GEN-14 | Startup validation of dangling `TargetName` refs not implemented         | Gap         | M    | Medium | Later                   |
-| GEN-15 | Minor issues (201 named args, embedded dup-relations, name sanitizing)   | Nits        | S    | Low    | Opportunistic           |
-| GEN-16 | `required` never emitted in properties/parameter schemas                 | Gap         | M    | Medium | Yes — client fidelity   |
-| GEN-17 | Inherited actions on derived HTOs lose `resultName`/`resultClasses`      | Bug         | S    | Medium | Yes                     |
-| GEN-18 | `ExternalLink` properties silently absent; `mediaType` never emitted     | Gap         | M    | Medium | Yes                     |
-| REF-01 | Split 2745-line god class into extractor + emitters + pipeline           | Refactoring | L    | —      | ✅ Done                 |
-| REF-02 | Replace indentation-string emission with a `CodeWriter`                  | Refactoring | M    | —      | ✅ Done                 |
-| REF-03 | `GenerateSirenHelper` emits fully static text via `AppendLine` calls     | Refactoring | S    | —      | ✅ Done                 |
-| REF-04 | Unify six duplicated base-type property walks into one classification    | Refactoring | M    | —      | ✅ Done                 |
-| REF-05 | Deduplicate assembly-config normalization (`Siren`→`Schema` rule)        | Refactoring | S    | —      | ✅ Done                 |
-| REF-06 | Add `.WithTrackingName()` + cacheability tests                           | Test gap    | S–M  | —      | ✅ Done                 |
+| ID     | Finding                                                                                                                   | Type          | Size | Risk   | Worth fixing            |
+|--------|---------------------------------------------------------------------------------------------------------------------------|---------------|------|--------|-------------------------|
+| GEN-01 | Multi-assembly action-result feature dead end-to-end                                                                      | Bug           | M    | High   | ✅ Done                  |
+| GEN-02 | `ResultType` enrichment breaks with `[HypermediaAction(Name = ...)]`                                                      | Bug           | S    | High   | ✅ Done                  |
+| GEN-03 | RY0031/RY0032 diagnostics duplicated once per HTO; wrong gating                                                           | Bug           | S    | Medium | ✅ Done                  |
+| GEN-04 | Incrementality defeated by compilation-wide controller scan                                                               | Perf bug      | M–L  | High   | ✅ Done                  |
+| GEN-05 | Same HTO class name in two namespaces crashes generator (hint names)                                                      | Bug           | S    | Medium | Yes                     |
+| GEN-06 | Silent schema-name collisions; `[HypermediaSchemaName]` not implemented                                                   | Gap           | M    | Medium | Yes                     |
+| GEN-07 | Generated code can fail to compile (escaping, culture, identifiers)                                                       | Bug           | M    | High   | Yes                     |
+| GEN-08 | `record` HTOs silently ignored                                                                                            | Gap           | S    | Medium | Yes (or diagnostic)     |
+| GEN-09 | Embedded-collection detection too loose and too tight (arrays leak)                                                       | Bug           | S–M  | Medium | Yes                     |
+| GEN-10 | Null mandatory action silently omitted; links/embedded throw                                                              | Inconsist.    | S    | Low    | Yes — decide + document |
+| GEN-11 | No diagnostic for zero/multiple endpoints per HTO/action (design says)                                                    | Gap           | M    | Medium | Later                   |
+| GEN-12 | Diagnostic severity vs. wording mismatch (RY0020/21/30)                                                                   | Inconsist.    | S    | Low    | Yes — cheap             |
+| GEN-13 | All diagnostics use `Location.None`                                                                                       | DX gap        | M    | Low    | Yes — big DX win        |
+| GEN-14 | Startup validation of dangling `TargetName` refs not implemented                                                          | Gap           | M    | Medium | Later                   |
+| GEN-15 | Minor issues (201 named args, embedded dup-relations, name sanitizing)                                                    | Nits          | S    | Low    | Opportunistic           |
+| GEN-16 | `required` never emitted in properties/parameter schemas                                                                  | Gap           | M    | Medium | Yes — client fidelity   |
+| GEN-17 | Inherited actions on derived HTOs lose `resultName`/`resultClasses`                                                       | Bug           | S    | Medium | ✅ Done                  |
+| GEN-18 | `ExternalLink` properties silently absent; `mediaType` never emitted                                                      | Gap           | M    | Medium | Yes                     |
+| REF-01 | Split 2745-line god class into extractor + emitters + pipeline                                                            | Refactoring   | L    | —      | ✅ Done                  |
+| REF-02 | Replace indentation-string emission with a `CodeWriter`                                                                   | Refactoring   | M    | —      | ✅ Done                  |
+| REF-03 | `GenerateSirenHelper` emits fully static text via `AppendLine` calls                                                      | Refactoring   | S    | —      | ✅ Done                  |
+| REF-04 | Unify six duplicated base-type property walks into one classification                                                     | Refactoring   | M    | —      | ✅ Done                  |
+| REF-05 | Deduplicate assembly-config normalization (`Siren`→`Schema` rule)                                                         | Refactoring   | S    | —      | ✅ Done                  |
+| REF-06 | Add `.WithTrackingName()` + cacheability tests                                                                            | Test gap      | S–M  | —      | ✅ Done                  |
+| DOC-01 | Review docs (migration-guide.md, HypermediaApiSchema.md, SourceGenerator.md, readme.md) incorporate changes from done issues | Documentation | S  | —      | yes                     |
 
 Size: S ≈ hours, M ≈ a day, L ≈ multiple days. Risk = impact of leaving it unfixed.
 
@@ -44,15 +45,16 @@ Size: S ≈ hours, M ≈ a day, L ≈ multiple days. Risk = impact of leaving it
 
 1. ✅ **REF-01 + REF-02 + REF-03** — restructure first; every later fix lands in a smaller, testable unit.
 2. ✅ **GEN-04 + REF-06** — incrementality fix with its regression guard.
-3. **GEN-01, GEN-02, GEN-03, GEN-17** — the action-result feature cluster (fix or cut together).
+3. ✅ **GEN-01, GEN-02, GEN-03, GEN-17** — the action-result feature cluster (fix or cut together).
 4. **GEN-05, GEN-07** — generation robustness (crash + invalid code).
 5. **GEN-06, GEN-08, GEN-09, GEN-10, GEN-12, GEN-13, GEN-16, GEN-18** — behavior gaps and DX
    (GEN-16/18 unblock schema-driven client generation).
 6. **GEN-11, GEN-14, GEN-15, ✅ REF-04, ✅ REF-05** — opportunistic / later (REF-04/05 pulled forward and done).
+7. **DOC-01** — documentation update.
 
 ## Bugs and gaps
 
-### GEN-01 — Multi-assembly action-result feature dead end-to-end
+### ✅ GEN-01 — Multi-assembly action-result feature dead end-to-end
 
 The `ResultType` merge across assemblies (plan Step 2.13, multi-assembly support) is broken twice,
 independently:
@@ -71,7 +73,22 @@ independently:
 `HypermediaSchemaBuilder.ComposeSchema()`. Add a multi-assembly integration test.
 Alternatively: explicitly cut multi-assembly `ResultType` support and delete the dead registry emission.
 
-### GEN-02 — `ResultType` enrichment breaks with `[HypermediaAction(Name = ...)]`
+**Done:** the registry is now emitted before the `allHtos.IsEmpty` gate, so controller-only
+assemblies (with `[assembly: HypermediaAssembly]`) get it. It carries a new discovery attribute
+`[assembly: HypermediaActionResultRegistryAttribute(typeof(...))]` (mirroring the schema registry
+attribute), and its mappings now use **schema-level keys** — derived entity name plus the effective
+action name with any `[HypermediaAction(Name)]` override resolved from the referenced HTO's
+metadata — since the runtime merge never sees C# class/property names.
+`HypermediaSchemaBuilder.Build()` discovers the registries (`DiscoverActionResultMappings`) and a
+new `ComposeSchema` overload fills `ResultName`/`ResultClasses` on matching actions (existing
+values from compile-time enrichment win; unmatched mappings log a warning). Covered by a
+two-compilation generator test (controller-only assembly referencing an HTO assembly) and
+`ComposeSchema` merge tests. Known limitation: the runtime merge matches entities by exact schema
+name, so inherited actions on *derived* HTOs in another assembly are not enriched (the schema
+model has no inheritance information); single-assembly inheritance is handled at compile time
+(GEN-17).
+
+### ✅ GEN-02 — `ResultType` enrichment breaks with `[HypermediaAction(Name = ...)]`
 
 The result-mapping dictionary is keyed by the action **property** name (the controller attribute's
 constructor argument), but `EnrichActionsWithResultMappings` looks up with `action.Name` (line ~2647) —
@@ -82,7 +99,13 @@ Result: `ResultName`/`ResultClasses` silently missing for renamed actions.
 **Fix:** look up by `action.PropertyName` (optionally fall back to `action.Name`). Add a test with a
 renamed action + `ResultType`.
 
-### GEN-03 — RY0031/RY0032 diagnostics duplicated per HTO; wrong gating
+**Done:** `TryFindResultMapping` now takes the full `ActionMetadata` and probes keys in order:
+`(HtoClassName, PropertyName)`, `(DeclaringClassName, PropertyName)` (GEN-17), then the same two
+with `action.Name` as fallback (legacy attributes key by the Op-type-derived name). Regression
+test: renamed action (`[HypermediaAction(Name = "startQuery")]` + endpoint naming the property)
+gets `ResultName` populated.
+
+### ✅ GEN-03 — RY0031/RY0032 diagnostics duplicated per HTO; wrong gating
 
 The warning loops (lines ~201–216) run inside the **per-HTO** `RegisterSourceOutput`:
 
@@ -93,6 +116,12 @@ The warning loops (lines ~201–216) run inside the **per-HTO** `RegisterSourceO
   exactly where they matter (see GEN-01).
 
 **Fix:** register a dedicated diagnostics output keyed on `actionResultMappings` (+ assembly config) alone.
+
+**Done:** RY0031/RY0032 (and RY0030, which had the same per-HTO duplication) moved to a dedicated
+compilation-level output keyed on `actionResultMappings.Combine(assemblyConfig)`: reported once,
+gated on `[HypermediaAssembly]` presence (RY0031/32 additionally on `Schema = true`), and firing
+even in assemblies with zero HTOs. Tests: single occurrence with multiple HTOs, nothing without
+the assembly attribute, RY0031 in a controller-only assembly.
 
 ### ✅ GEN-04 — Incrementality defeated by compilation-wide controller scan
 
@@ -244,7 +273,7 @@ mappers) must treat every field as optional. Fix candidates: enable the JsonSche
 DataAnnotations add-on, or derive `required` from non-nullable properties (matches C# semantics
 better, but changes meaning for consumers — decide and document).
 
-### GEN-17 — Inherited actions on derived HTOs lose `resultName`/`resultClasses`
+### ✅ GEN-17 — Inherited actions on derived HTOs lose `resultName`/`resultClasses`
 
 Reported externally by a client-generator design review (2026-07-10).
 Verified in the CarShack sample: `Car.UpdateInspection` has `resultName: "Car"`, but the inherited
@@ -254,6 +283,12 @@ which names the *base* HTO. `EnrichActionsWithResultMappings` (~line 2632) looks
 *derived* class name → never matches for inherited actions. Fix: resolve the mapping against the
 declaring type of the action property (walk base types during lookup), or key by the declaring
 HTO. Related to GEN-01/GEN-02 (same enrichment path) — fix together.
+
+**Done:** `ActionMetadata` gained `DeclaringClassName` (`ContainingType.Name` of the action
+property — the base HTO for inherited actions), and the mapping lookup tries it after the HTO's
+own class name (see GEN-02 for the full key order). Regression test covers a two-level
+inheritance chain — base, derived, and next-level derived all get `resultName`/`resultClasses`.
+Multi-assembly caveat: see the GEN-01 known limitation.
 
 ### GEN-18 — `ExternalLink` properties silently absent from the schema; `mediaType` never emitted
 
@@ -320,8 +355,8 @@ The `siren && !schema → schema = true` rule appears in both `RegisterSourceOut
 ~321) and only one reports RY0030. Extract an `AssemblyConfig` record with a `Normalize()` returning the
 effective config plus whether to warn.
 
-**Done:** `AssemblyConfig` record struct with `FromCompilation()` and `Normalize()`; RY0030 is still
-reported only from the per-HTO output block (unchanged behavior).
+**Done:** `AssemblyConfig` record struct with `FromCompilation()` and `Normalize()`; RY0030 has
+since moved to the compilation-level diagnostics output (GEN-03) and is reported once.
 
 ### ✅ REF-06 — Tracking names + cacheability tests
 
