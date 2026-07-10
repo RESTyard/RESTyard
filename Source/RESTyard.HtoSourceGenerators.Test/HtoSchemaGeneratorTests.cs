@@ -271,7 +271,7 @@ public class HtoSchemaGeneratorTests
     [InlineData("HypermediaCarsRootHto", "CarsRoot")]
     public void DeriveSchemaName_produces_expected_name(string className, string expected)
     {
-        HtoSchemaGenerator.DeriveSchemaName(className).Should().Be(expected);
+        HtoMetadataExtractor.DeriveSchemaName(className).Should().Be(expected);
     }
 
     [Fact]
@@ -1111,7 +1111,7 @@ public class HtoSchemaGeneratorTests
 
     // --- Legacy attribute existence check ---
     // If this test fails, the legacy HttpMethodHypermediaAction was removed.
-    // Remove the legacy scan in HtoSchemaGenerator.ExtractActionResultMappings and
+    // Remove the legacy scan in ActionResultMappingExtractor.ExtractActionResultMappings and
     // the InheritsFrom check, and delete this test.
     [Fact]
     public void Legacy_HttpMethodHypermediaAction_type_exists()

@@ -5,6 +5,9 @@ against [HypermediaSchema-Design.md](HypermediaSchema-Design.md) and [Hypermedia
 Review date: 2026-07-10. Referenced from **Phase 6B** in the plan.
 
 Line numbers refer to `HtoSchemaGenerator.cs` at the time of review and will drift.
+Since REF-01 the code is split: analysis in `HtoMetadataExtractor` / `ActionResultMappingExtractor`,
+emission in `SchemaEmitter` / `PropertiesPocoEmitter` / `SirenEmitter` / `SirenHelperEmitter` /
+`RegistryEmitter`, diagnostics in `GeneratorDiagnostics`, pipeline wiring in `HtoSchemaGenerator`.
 
 ## Overview
 
@@ -28,9 +31,9 @@ Line numbers refer to `HtoSchemaGenerator.cs` at the time of review and will dri
 | GEN-16 | `required` never emitted in properties/parameter schemas                 | Gap         | M    | Medium | Yes — client fidelity   |
 | GEN-17 | Inherited actions on derived HTOs lose `resultName`/`resultClasses`      | Bug         | S    | Medium | Yes                     |
 | GEN-18 | `ExternalLink` properties silently absent; `mediaType` never emitted     | Gap         | M    | Medium | Yes                     |
-| REF-01 | Split 2745-line god class into extractor + emitters + pipeline           | Refactoring | L    | —      | Yes — enables the rest  |
-| REF-02 | Replace indentation-string emission with a `CodeWriter`                  | Refactoring | M    | —      | Yes                     |
-| REF-03 | `GenerateSirenHelper` emits fully static text via `AppendLine` calls     | Refactoring | S    | —      | Yes — cheapest win      |
+| REF-01 | Split 2745-line god class into extractor + emitters + pipeline           | Refactoring | L    | —      | ✅ Done                 |
+| REF-02 | Replace indentation-string emission with a `CodeWriter`                  | Refactoring | M    | —      | ✅ Done                 |
+| REF-03 | `GenerateSirenHelper` emits fully static text via `AppendLine` calls     | Refactoring | S    | —      | ✅ Done                 |
 | REF-04 | Unify six duplicated base-type property walks into one classification    | Refactoring | M    | —      | Yes                     |
 | REF-05 | Deduplicate assembly-config normalization (`Siren`→`Schema` rule)        | Refactoring | S    | —      | Yes                     |
 | REF-06 | Add `.WithTrackingName()` + cacheability tests                           | Test gap    | S–M  | —      | Yes — guards GEN-04     |
@@ -162,8 +165,9 @@ The doc comment already claims the stricter behavior — make the code match it.
 ### GEN-10 — Inconsistent null handling for mandatory members
 
 A null non-nullable link or embedded entity throws `InvalidOperationException` at runtime; a null
-non-nullable **action** is silently omitted. The if/else in `EmitActionResolution` (lines ~1976–1997)
-has two identical branches — dead duplication that hides the missing decision.
+non-nullable **action** is silently omitted. The if/else in `EmitActionResolution` had two identical
+branches — that dead duplication was removed during REF-01/REF-02 (now a single branch in
+`SirenEmitter.EmitActionResolution`), but the policy decision below is still open.
 
 **Fix:** pick one policy (probably: mandatory action null → throw, matching links/embedded), simplify the
 emitter, and document the behavior in the migration guide. Also document that in `#nullable disable`
@@ -248,7 +252,7 @@ diagnostic.
 
 Overlaps with plan Step 8.7 (Cleanup) — Phase 6B supersedes/concretizes that step for the generator.
 
-### REF-01 — Split the god class
+### ✅ REF-01 — Split the god class
 
 `HtoSchemaGenerator` mixes three separable concerns in 2745 lines. All members are already `static`,
 so the split is mostly mechanical:
@@ -263,14 +267,14 @@ so the split is mostly mechanical:
 Debugging payoff: any bad output can be reproduced by feeding the captured `HtoMetadata` straight into
 the emitter in a test.
 
-### REF-02 — `CodeWriter` instead of indentation strings
+### ✅ REF-02 — `CodeWriter` instead of indentation strings
 
 Hundreds of `sb.Append("                    ")` calls make the emitters hard to read and fragile.
 `System.CodeDom.Compiler.IndentedTextWriter` is available on netstandard2.0; a thin `CodeWriter` with
 `using (w.Block())` scopes shrinks the emitters substantially and makes the generated shape visible in
 the generator source.
 
-### REF-03 — `GenerateSirenHelper` as a constant
+### ✅ REF-03 — `GenerateSirenHelper` as a constant
 
 `GenerateSirenHelper` (lines ~2201–2384) emits ~180 lines of **completely static** text via `AppendLine`
 calls — zero interpolation. Make it a single verbatim string constant (or embedded resource). Same for
