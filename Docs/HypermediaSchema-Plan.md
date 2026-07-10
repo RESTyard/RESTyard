@@ -793,6 +793,17 @@ to keep the plan readable; check off IDs in the findings document as they are fi
 - **Example values** — would CarShack benefit from examples in the schema?
 - **Tag groups** — is there a grouping need beyond the entity graph?
 - **Mermaid customization** — filtering by reachability from entry point
+- **Schema HTO query endpoint** — not designed yet, to be explored after basic filtering is stable
+  (deferred in Step 4.8: the `HypermediaSchema.Link()` helper lets users build their own for now):
+  - Serve the schema as `HypermediaSchemaHto` — a proper RESTyard hypermedia resource
+  - Query action accepts `accessGroups` / `excludeAccessGroups` as parameters, returns filtered schema
+  - `AvailableAccessGroups` property lists only the groups the current user can query (post-sanitization via `ISchemaAccessGroupSanitizer`)
+  - Query action parameter is a string list — client selects from `AvailableAccessGroups`
+  - Stays within RESTyard's hypermedia design: client discovers filtering via the HTO's actions
+  - Trade-off: more complex (controller, route registration, Siren serialization) vs. the simple JSON endpoint
+  - Both query parameters and `AvailableAccessGroups` are sanitized by `ISchemaAccessGroupSanitizer`
+  - Schema is still a JSON download link (not rendered as Siren) — the HTO wraps the query/filtering, not the schema content
+  - Consider making this a default endpoint (auto-registered like action parameter schema endpoints)
 - For each: implement if justified, otherwise document the decision to defer in the spec
 
 #### Step 9.4: Raise version of RESTyard  -> 7.0.0-rc
@@ -815,16 +826,6 @@ to keep the plan readable; check off IDs in the findings document as they are fi
 - Explain the generated Siren POCOs (`SirenEntity<TProperties>`) and how attribute forwarding works (serializer attributes, `[HypermediaProperty(Name)]` applied structurally)
 - List known behavioral differences (if any discovered during Phase 8 parity testing)
 - Provide a checklist for migrating a full project: enable generator → migrate controllers one by one → run parity tests → deprecate formatter
-- **Not designed yet** — to be explored after basic filtering is stable
-- Serve the schema as `HypermediaSchemaHto` — a proper RESTyard hypermedia resource
-- Query action accepts `accessGroups` / `excludeAccessGroups` as parameters, returns filtered schema
-- `AvailableAccessGroups` property lists only the groups the current user can query (post-sanitization via `ISchemaAccessGroupSanitizer`)
-- Query action parameter is a string list — client selects from `AvailableAccessGroups`
-- Stays within RESTyard's hypermedia design: client discovers filtering via the HTO's actions
-- Trade-off: more complex (controller, route registration, Siren serialization) vs. the simple JSON endpoint
-- Both query parameters and `AvailableAccessGroups` are sanitized by `ISchemaAccessGroupSanitizer`
-- Schema is still a JSON download link (not rendered as Siren) — the HTO wraps the query/filtering, not the schema content
-- Consider making this a default endpoint (auto-registered like action parameter schema endpoints)
 
 #### Step 10.3: Agent skill — "Using RESTyard" (agentskills.io format)
 - Create a skill in the [agentskills.io](https://agentskills.io) format (`SKILL.md` with name/description
