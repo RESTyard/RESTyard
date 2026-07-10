@@ -66,6 +66,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.HtoSourceGenerator
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.HtoSourceGenerators.TestHtos", "RESTyard.HtoSourceGenerators.TestHtos\RESTyard.HtoSourceGenerators.TestHtos.csproj", "{F0DD1BF1-CCC7-454D-871F-A6556215B1D1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{3CB6FE53-5A3D-42F4-98B3-21614B38DBA4}"
+	ProjectSection(SolutionItems) = preProject
+		..\Docs\HypermediaSchema\HypermediaApiSchema.md = ..\Docs\HypermediaSchema\HypermediaApiSchema.md
+		..\Docs\HypermediaSchema\migration-guide.md = ..\Docs\HypermediaSchema\migration-guide.md
+		..\Docs\HypermediaSchema\SourceGenerator.md = ..\Docs\HypermediaSchema\SourceGenerator.md
+		..\Docs\HypermediaSchema-Design.md = ..\Docs\HypermediaSchema-Design.md
+		..\Docs\HypermediaSchema-Generator-Findings.md = ..\Docs\HypermediaSchema-Generator-Findings.md
+		..\Docs\HypermediaSchema-Plan.md = ..\Docs\HypermediaSchema-Plan.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -184,6 +194,7 @@ Global
 		{8E09E37D-B6F2-4523-BD16-EBE605A7B5B3} = {68F696D4-A692-4750-9915-90A2BBED2C89}
 		{8361CD7D-397D-43E3-A09F-7FCB1B6F47A8} = {68F696D4-A692-4750-9915-90A2BBED2C89}
 		{BDBCD45B-05DA-4D5D-9637-D0585F61642E} = {68F696D4-A692-4750-9915-90A2BBED2C89}
+		{3CB6FE53-5A3D-42F4-98B3-21614B38DBA4} = {0AA2CDA8-ACC0-434D-B560-94B7081A77FE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D610FDC6-5F2C-4F0C-9727-BDEBAC07EE58}

@@ -113,7 +113,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Tests for options (TOC on/off, diagram on/off)
 - Tests for cycle handling in BFS ordering
 
-### Phase 2: Source Generator — Project Setup and Schema Generation
+### Phase 2: ✅ Source Generator — Project Setup and Schema Generation
 
 **Goal:** Set up the generator project and generate `GetSchema()` methods that produce `EntityTypeSchema` per HTO.
 
@@ -357,7 +357,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 #### Step 2.13.1: Deferred → Phase 8, Step 8.4
 
-### Phase 3: Schema Endpoint
+### Phase 3: ✅ Schema Endpoint
 
 **Goal:** Serve the schema at runtime via `/hypermedia-schema`. DI integration (singleton `HypermediaApiSchema`) is already done in Step 2.9.2.
 
@@ -374,7 +374,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - **Reason:** `ResultType` can legitimately be a non-HTO type. Without a meaningful generic constraint (`where TResult : IHypermediaObject`), the generic provides no compile-time safety advantage over `typeof()`. The only remaining benefit (shorter syntax) is offset by needing two attribute classes and worse readability (`<THto, TResult>` with two long type names).
 - **Decision:** Keep `ResultType = typeof(...)` property syntax. RY0032 warning is sufficient for the HTO case.
 
-### Phase 4 (Optional): Access Groups
+### Phase 4: ✅ (Optional) Access Groups
 
 > **Optional.** See the "Future Idea: Access Groups" section in `HypermediaSchema-Design.md` for the full design. Placed here (before ToSiren) because it's a schema concern that naturally extends Phases 2–3.
 
@@ -492,7 +492,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Integration test: entrypoint link resolves to filtered schema
 - No convenience schema HTO/action endpoint built — the link helper enables users to build their own if needed
 
-### Phase 5: Source Generator — Siren POCOs
+### Phase 5: ✅ Source Generator — Siren POCOs
 
 **Goal:** Add the Siren POCO types to `RESTyard.AspNetCore`.
 
@@ -506,7 +506,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 - Use `[JsonPropertyName("class")]` on `Class` properties since `class` is a C# keyword
 - Unit tests: verify JSON round-trip serialization of Siren POCOs (serialize → deserialize → assert equality)
 
-### Phase 6: Source Generator — ToSiren() Emission
+### Phase 6: ✅ Source Generator — ToSiren() Emission
 
 **Goal:** Generate `ToSiren()` extension methods replacing the reflection-based `SirenConverter`.
 
@@ -637,7 +637,7 @@ During migration, compare the JSON output of the existing `SirenConverter` again
 
 **Benefit for Step 6.9:** `SirenEmbeddedEntity<T>` now derives from `SirenEntity<T>`, so a single named class per HTO (`HypermediaCustomerHtoSiren : SirenEmbeddedEntity<HypermediaCustomerHtoProperties>`) works for both `ToSiren()` (is-a `SirenEntity<T>`) and `ToSirenEmbedded()` (is-a `ISirenSubEntity`).
 
-#### Step 6.9: Named Siren classes per HTO ✅
+#### Step 6.9: ✅ Named Siren classes per HTO
 
 Generate two named classes per HTO so the Siren POCOs have meaningful type names (better OpenAPI/Swagger output, clearer IDE tooltips):
 
@@ -663,6 +663,21 @@ Generate two named classes per HTO so the Siren POCOs have meaningful type names
 - Siren is the runtime state envelope (post-`CanExecute()`, post key resolution) — inherently dynamic and polymorphic. Bolting typed members onto it fights what the format is for.
 - Division of concerns going forward: **schema = typed shape view**, **Siren = runtime state view**. Once the schema is accepted as the typed view, the pressure on Siren to "be typed too" disappears.
 - A related forward-looking idea (OpenAPI-from-schema mapper) is captured in `HypermediaSchema-Design.md` under "Future Idea: OpenAPI projection from `HypermediaApiSchema`" — recorded with its open doubt, not committed work.
+
+### Phase 6B: Source Generator Cleanup — Review Findings
+
+**Goal:** Address the issues found in the 2026-07-10 code review of `RESTyard.HtoSourceGenerators`.
+
+All findings, severity/effort ratings, and the suggested fix order are tracked in
+[HypermediaSchema-Generator-Findings.md](HypermediaSchema-Generator-Findings.md) — reference issues
+by ID (`GEN-xx` for bugs/gaps, `REF-xx` for refactorings). This phase intentionally stays small here
+to keep the plan readable; check off IDs in the findings document as they are fixed.
+
+- Highlights: multi-assembly `ResultType` feature is dead end-to-end (GEN-01), incrementality broken
+  by the compilation-wide controller scan (GEN-04), generated code can fail to compile on edge-case
+  input (GEN-07), god-class split for testability (REF-01).
+- Overlaps with and supersedes the generator part of Step 8.7 (Cleanup).
+- Recommended: do the structural refactorings (REF-01..03) first, then fix bugs in the smaller units.
 
 ### Phase 7: Generated Siren Output Formatter
 
