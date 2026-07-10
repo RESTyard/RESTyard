@@ -53,12 +53,13 @@ internal static class WellKnownTypeNames
     internal const string ObsoleteAttributeFullName =
         "System.ObsoleteAttribute";
 
-    internal const string HypermediaActionEndpointAttributePrefix =
-        "RESTyard.AspNetCore.WebApi.AttributedRoutes.HypermediaActionEndpointAttribute<";
+    /// <summary>Metadata name of the generic endpoint attribute for <c>ForAttributeWithMetadataName</c>.</summary>
+    internal const string HypermediaActionEndpointAttributeMetadataName =
+        "RESTyard.AspNetCore.WebApi.AttributedRoutes.HypermediaActionEndpointAttribute`1";
 
     // Legacy attribute support — remove this block when HttpMethodHypermediaAction is removed.
-    // If you remove the legacy attribute, also remove the InheritsFrom scan in
-    // ActionResultMappingExtractor.ExtractActionResultMappings
+    // If you remove the legacy attribute, also remove
+    // ActionResultMappingExtractor.ExtractLegacyActionResults (and its InheritsFrom scan)
     // and the Has201ResponseAttribute check for legacy patterns.
     internal const string HttpMethodHypermediaActionBaseFullName =
         "RESTyard.AspNetCore.WebApi.AttributedRoutes.HttpMethodHypermediaAction";

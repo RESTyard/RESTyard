@@ -34,11 +34,26 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             .Select(static (m, _) => m!.Value)
             .WithTrackingName(TrackingNames.HtoTypes);
 
-        // Extract action result mappings from controller [HypermediaActionEndpoint] attributes with ResultType.
-        // NOTE (GEN-04): this recomputes on every compilation change and defeats output-level caching.
-        var actionResultMappings = context.CompilationProvider
+        // Extract action result mappings from controller [HypermediaActionEndpoint<THto>] attributes
+        // with ResultType — incrementally, per attributed method (GEN-04).
+        var endpointResultMappings = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                WellKnownTypeNames.HypermediaActionEndpointAttributeMetadataName,
+                predicate: static (node, _) => node is MethodDeclarationSyntax,
+                transform: static (ctx, _) => ActionResultMappingExtractor.ExtractFromEndpointAttributes(ctx))
+            .WithTrackingName(TrackingNames.EndpointResultMappings);
+
+        // Legacy HttpMethodHypermediaAction-derived attributes are matched by base type, which
+        // ForAttributeWithMetadataName cannot express — scan the source assembly per compilation.
+        // The scan re-runs on every edit, but its output is equatable so downstream caching survives.
+        var legacyResultMappings = context.CompilationProvider
             .Select(static (compilation, _) =>
-                ActionResultMappingExtractor.ExtractActionResultMappings(compilation))
+                ActionResultMappingExtractor.ExtractLegacyActionResults(compilation))
+            .WithTrackingName(TrackingNames.LegacyResultMappings);
+
+        var actionResultMappings = endpointResultMappings.Collect()
+            .Combine(legacyResultMappings)
+            .Select(static (combined, _) => ActionResultMappingExtractor.Merge(combined.Left, combined.Right))
             .WithTrackingName(TrackingNames.ActionResultMappings);
 
         // Combine each HTO with the assembly configuration and action result mappings
@@ -50,21 +65,21 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             var resultMappings = resultData.Mappings;
 
             // Emit warnings for ResultType not being a HypermediaObject
-            foreach (var (resultTypeName, htoClassName, actionPropName) in resultData.NotHtoWarnings)
+            foreach (var warning in resultData.NotHtoWarnings)
             {
                 spc.ReportDiagnostic(Diagnostic.Create(
                     GeneratorDiagnostics.ResultTypeNotHypermediaObject,
                     Location.None,
-                    resultTypeName, htoClassName, actionPropName));
+                    warning.ResultTypeName, warning.HtoClassName, warning.ActionPropertyName));
             }
 
             // Emit warnings for 201 response without ResultType
-            foreach (var (controllerName, methodName, actionPropName) in resultData.Missing201Warnings)
+            foreach (var warning in resultData.Missing201Warnings)
             {
                 spc.ReportDiagnostic(Diagnostic.Create(
                     GeneratorDiagnostics.MissingResultTypeWith201,
                     Location.None,
-                    controllerName, methodName, actionPropName));
+                    warning.ControllerName, warning.MethodName, warning.ActionPropertyName));
             }
 
             // No [HypermediaAssembly] attribute — emit nothing

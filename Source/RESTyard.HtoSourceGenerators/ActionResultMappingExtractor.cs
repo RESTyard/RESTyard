@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -6,87 +7,97 @@ using Microsoft.CodeAnalysis;
 namespace RESTyard.HtoSourceGenerators;
 
 /// <summary>
-/// Scans controller endpoint attributes for <c>ResultType</c> declarations and
+/// Extracts <c>ResultType</c> declarations from controller endpoint attributes and
 /// enriches extracted HTO action metadata with the resulting schema names/classes.
+/// Modern <c>[HypermediaActionEndpoint&lt;THto&gt;]</c> attributes are matched incrementally via
+/// <c>ForAttributeWithMetadataName</c>; legacy <c>HttpMethodHypermediaAction</c>-derived attributes
+/// are found by a scan restricted to the source assembly (they are matched by base type,
+/// which <c>ForAttributeWithMetadataName</c> cannot express).
 /// </summary>
 internal static class ActionResultMappingExtractor
 {
     /// <summary>
-    /// Scans all types in the compilation for methods with [HypermediaActionEndpoint] that have ResultType set.
-    /// Returns a dictionary keyed by (HtoClassName, ActionPropertyName) → (ResultSchemaName, ResultClasses).
+    /// Extracts action-result data from the <c>[HypermediaActionEndpoint&lt;THto&gt;]</c> attributes
+    /// on a single method (the <c>ForAttributeWithMetadataName</c> transform).
     /// </summary>
-    internal static (
-        ImmutableDictionary<(string HtoClassName, string ActionPropertyName), (string ResultSchemaName, ImmutableArray<string> ResultClasses)> Mappings,
-        ImmutableArray<(string ResultTypeName, string HtoClassName, string ActionPropertyName)> NotHtoWarnings,
-        ImmutableArray<(string ControllerName, string MethodName, string ActionPropertyName)> Missing201Warnings)
-        ExtractActionResultMappings(Compilation compilation)
+    internal static ActionResultData ExtractFromEndpointAttributes(GeneratorAttributeSyntaxContext context)
     {
-        var builder = ImmutableDictionary.CreateBuilder<(string, string), (string, ImmutableArray<string>)>();
-        var notHtoWarnings = ImmutableArray.CreateBuilder<(string, string, string)>();
-        var missing201Warnings = ImmutableArray.CreateBuilder<(string, string, string)>();
-
-        foreach (var type in GetAllTypes(compilation))
+        if (context.TargetSymbol is not IMethodSymbol method)
         {
-            foreach (var member in type.GetMembers().OfType<IMethodSymbol>())
+            return ActionResultData.Empty;
+        }
+
+        var mappings = ImmutableArray.CreateBuilder<ActionResultMapping>();
+        var notHtoWarnings = ImmutableArray.CreateBuilder<ResultTypeNotHtoWarning>();
+        var missing201Warnings = ImmutableArray.CreateBuilder<Missing201Warning>();
+
+        foreach (var attr in context.Attributes)
+        {
+            var attrClass = attr.AttributeClass;
+            if (attrClass == null || !attrClass.IsGenericType)
+                continue;
+
+            // Get the HTO type argument
+            var htoType = attrClass.TypeArguments[0] as INamedTypeSymbol;
+            if (htoType == null)
+                continue;
+
+            // Get the action property name (first constructor arg)
+            if (attr.ConstructorArguments.Length == 0 || attr.ConstructorArguments[0].Value is not string actionPropName)
+                continue;
+
+            // Get ResultType (named argument)
+            var resultTypeArg = attr.NamedArguments.FirstOrDefault(a => a.Key == "ResultType");
+            var hasResultType = resultTypeArg.Key == "ResultType" && resultTypeArg.Value.Value is INamedTypeSymbol;
+
+            var htoClassName = htoType.Name;
+
+            if (hasResultType)
             {
-                foreach (var attr in member.GetAttributes())
+                var resultType = (INamedTypeSymbol)resultTypeArg.Value.Value!;
+
+                // Check if ResultType has [HypermediaObject]
+                var hasHypermediaObject = resultType.GetAttributes()
+                    .Any(a => a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.HypermediaObjectAttributeFullName);
+
+                if (!hasHypermediaObject)
                 {
-                    var attrClass = attr.AttributeClass;
-                    if (attrClass == null || !attrClass.IsGenericType)
-                        continue;
-
-                    var originalDef = attrClass.OriginalDefinition.ToDisplayString();
-                    if (!originalDef.StartsWith(WellKnownTypeNames.HypermediaActionEndpointAttributePrefix))
-                        continue;
-
-                    // Get the HTO type argument
-                    var htoType = attrClass.TypeArguments[0] as INamedTypeSymbol;
-                    if (htoType == null)
-                        continue;
-
-                    // Get the action property name (first constructor arg)
-                    if (attr.ConstructorArguments.Length == 0 || attr.ConstructorArguments[0].Value is not string actionPropName)
-                        continue;
-
-                    // Get ResultType (named argument)
-                    var resultTypeArg = attr.NamedArguments.FirstOrDefault(a => a.Key == "ResultType");
-                    var hasResultType = resultTypeArg.Key == "ResultType" && resultTypeArg.Value.Value is INamedTypeSymbol;
-
-                    var htoClassName = htoType.Name;
-
-                    if (hasResultType)
-                    {
-                        var resultType = (INamedTypeSymbol)resultTypeArg.Value.Value!;
-
-                        // Check if ResultType has [HypermediaObject]
-                        var hasHypermediaObject = resultType.GetAttributes()
-                            .Any(a => a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.HypermediaObjectAttributeFullName);
-
-                        if (!hasHypermediaObject)
-                        {
-                            notHtoWarnings.Add((resultType.ToDisplayString(), htoClassName, actionPropName));
-                        }
-                        else
-                        {
-                            var resultSchemaName = HtoMetadataExtractor.DeriveSchemaName(resultType.Name);
-                            var resultClasses = HtoMetadataExtractor.GetTargetClasses(resultType);
-                            builder[(htoClassName, actionPropName)] = (resultSchemaName, resultClasses);
-                        }
-                    }
-                    else
-                    {
-                        // No ResultType — check if method has 201-related attributes
-                        if (Has201ResponseAttribute(member))
-                        {
-                            missing201Warnings.Add((type.Name, member.Name, actionPropName));
-                        }
-                    }
+                    notHtoWarnings.Add(new ResultTypeNotHtoWarning(resultType.ToDisplayString(), htoClassName, actionPropName));
+                }
+                else
+                {
+                    var resultSchemaName = HtoMetadataExtractor.DeriveSchemaName(resultType.Name);
+                    var resultClasses = HtoMetadataExtractor.GetTargetClasses(resultType);
+                    mappings.Add(new ActionResultMapping(
+                        htoClassName, actionPropName, resultSchemaName, new EquatableArray<string>(resultClasses)));
+                }
+            }
+            else
+            {
+                // No ResultType — check if method has 201-related attributes
+                if (Has201ResponseAttribute(method))
+                {
+                    missing201Warnings.Add(new Missing201Warning(method.ContainingType.Name, method.Name, actionPropName));
                 }
             }
         }
 
-        // Also scan legacy HttpMethodHypermediaAction attributes for ResultType
-        foreach (var type in GetAllTypes(compilation))
+        return new ActionResultData(
+            new EquatableArray<ActionResultMapping>(mappings.ToImmutable()),
+            new EquatableArray<ResultTypeNotHtoWarning>(notHtoWarnings.ToImmutable()),
+            new EquatableArray<Missing201Warning>(missing201Warnings.ToImmutable()));
+    }
+
+    /// <summary>
+    /// Scans the source assembly for legacy <c>HttpMethodHypermediaAction</c>-derived attributes
+    /// with <c>ResultType</c> set. Referenced assemblies are deliberately not scanned.
+    /// </summary>
+    internal static ActionResultData ExtractLegacyActionResults(Compilation compilation)
+    {
+        var mappings = ImmutableArray.CreateBuilder<ActionResultMapping>();
+        var notHtoWarnings = ImmutableArray.CreateBuilder<ResultTypeNotHtoWarning>();
+
+        foreach (var type in GetAllTypes(compilation.Assembly.GlobalNamespace))
         {
             foreach (var member in type.GetMembers().OfType<IMethodSymbol>())
             {
@@ -123,19 +134,59 @@ internal static class ActionResultMappingExtractor
 
                     if (!hasHypermediaObject)
                     {
-                        notHtoWarnings.Add((resultType.ToDisplayString(), htoClassName, actionName));
+                        notHtoWarnings.Add(new ResultTypeNotHtoWarning(resultType.ToDisplayString(), htoClassName, actionName));
                     }
                     else
                     {
                         var resultSchemaName = HtoMetadataExtractor.DeriveSchemaName(resultType.Name);
                         var resultClasses = HtoMetadataExtractor.GetTargetClasses(resultType);
-                        builder[(htoClassName, actionName)] = (resultSchemaName, resultClasses);
+                        mappings.Add(new ActionResultMapping(
+                            htoClassName, actionName, resultSchemaName, new EquatableArray<string>(resultClasses)));
                     }
                 }
             }
         }
 
-        return (builder.ToImmutable(), notHtoWarnings.ToImmutable(), missing201Warnings.ToImmutable());
+        return new ActionResultData(
+            new EquatableArray<ActionResultMapping>(mappings.ToImmutable()),
+            new EquatableArray<ResultTypeNotHtoWarning>(notHtoWarnings.ToImmutable()),
+            new EquatableArray<Missing201Warning>(ImmutableArray<Missing201Warning>.Empty));
+    }
+
+    /// <summary>
+    /// Merges the per-method endpoint fragments with the legacy scan result into one
+    /// deterministic <see cref="ActionResultData"/>. Duplicate (HTO, action) keys are
+    /// last-wins with legacy mappings applied after modern ones (preserving the previous
+    /// single-dictionary behavior); mappings are sorted for stable output ordering.
+    /// </summary>
+    internal static ActionResultData Merge(ImmutableArray<ActionResultData> endpointFragments, ActionResultData legacy)
+    {
+        var mappingsByKey = new Dictionary<(string HtoClassName, string ActionPropertyName), ActionResultMapping>();
+        var notHtoWarnings = ImmutableArray.CreateBuilder<ResultTypeNotHtoWarning>();
+        var missing201Warnings = ImmutableArray.CreateBuilder<Missing201Warning>();
+
+        foreach (var fragment in endpointFragments)
+        {
+            foreach (var mapping in fragment.Mappings)
+                mappingsByKey[(mapping.HtoClassName, mapping.ActionPropertyName)] = mapping;
+            notHtoWarnings.AddRange(fragment.NotHtoWarnings);
+            missing201Warnings.AddRange(fragment.Missing201Warnings);
+        }
+
+        foreach (var mapping in legacy.Mappings)
+            mappingsByKey[(mapping.HtoClassName, mapping.ActionPropertyName)] = mapping;
+        notHtoWarnings.AddRange(legacy.NotHtoWarnings);
+        missing201Warnings.AddRange(legacy.Missing201Warnings);
+
+        var orderedMappings = mappingsByKey.Values
+            .OrderBy(m => m.HtoClassName, StringComparer.Ordinal)
+            .ThenBy(m => m.ActionPropertyName, StringComparer.Ordinal)
+            .ToImmutableArray();
+
+        return new ActionResultData(
+            new EquatableArray<ActionResultMapping>(orderedMappings),
+            new EquatableArray<ResultTypeNotHtoWarning>(notHtoWarnings.ToImmutable()),
+            new EquatableArray<Missing201Warning>(missing201Warnings.ToImmutable()));
     }
 
     /// <summary>
@@ -143,7 +194,7 @@ internal static class ActionResultMappingExtractor
     /// </summary>
     internal static HtoMetadata EnrichActionsWithResultMappings(
         HtoMetadata metadata,
-        ImmutableDictionary<(string HtoClassName, string ActionPropertyName), (string ResultSchemaName, ImmutableArray<string> ResultClasses)> resultMappings)
+        EquatableArray<ActionResultMapping> resultMappings)
     {
         if (resultMappings.IsEmpty)
             return metadata;
@@ -156,9 +207,9 @@ internal static class ActionResultMappingExtractor
             // Try to find a result mapping for this action.
             // The action's Name may differ from the property name (via [HypermediaAction(Name)]),
             // so we try both the action Name and look through all mappings for this HTO.
-            if (TryFindResultMapping(metadata.ClassName, action.Name, resultMappings, out var resultSchemaName, out var resultClasses))
+            if (TryFindResultMapping(metadata.ClassName, action.Name, resultMappings, out var mapping))
             {
-                enrichedActions.Add(action with { ResultSchemaName = resultSchemaName, ResultClasses = new EquatableArray<string>(resultClasses) });
+                enrichedActions.Add(action with { ResultSchemaName = mapping.ResultSchemaName, ResultClasses = mapping.ResultClasses });
                 changed = true;
             }
             else
@@ -174,23 +225,21 @@ internal static class ActionResultMappingExtractor
 
     private static bool TryFindResultMapping(
         string htoClassName, string actionName,
-        ImmutableDictionary<(string HtoClassName, string ActionPropertyName), (string ResultSchemaName, ImmutableArray<string> ResultClasses)> mappings,
-        out string resultSchemaName, out ImmutableArray<string> resultClasses)
+        EquatableArray<ActionResultMapping> mappings,
+        out ActionResultMapping mapping)
     {
         // The mapping key uses the property name on the HTO, which is the action's C# property name.
         // The action's Name might be overridden via [HypermediaAction(Name)], so also check by Name.
-        foreach (var kvp in mappings)
+        foreach (var candidate in mappings)
         {
-            if (kvp.Key.HtoClassName == htoClassName && kvp.Key.ActionPropertyName == actionName)
+            if (candidate.HtoClassName == htoClassName && candidate.ActionPropertyName == actionName)
             {
-                resultSchemaName = kvp.Value.ResultSchemaName;
-                resultClasses = kvp.Value.ResultClasses;
+                mapping = candidate;
                 return true;
             }
         }
 
-        resultSchemaName = "";
-        resultClasses = ImmutableArray<string>.Empty;
+        mapping = null!;
         return false;
     }
 
@@ -232,22 +281,36 @@ internal static class ActionResultMappingExtractor
         return false;
     }
 
-    private static IEnumerable<INamedTypeSymbol> GetAllTypes(Compilation compilation)
+    private static IEnumerable<INamedTypeSymbol> GetAllTypes(INamespaceSymbol root)
     {
-        var stack = new Stack<INamespaceSymbol>();
-        stack.Push(compilation.GlobalNamespace);
+        var namespaces = new Stack<INamespaceSymbol>();
+        namespaces.Push(root);
 
-        while (stack.Count > 0)
+        var nestedTypes = new Stack<INamedTypeSymbol>();
+
+        while (namespaces.Count > 0)
         {
-            var ns = stack.Pop();
+            var ns = namespaces.Pop();
             foreach (var type in ns.GetTypeMembers())
             {
-                yield return type;
+                nestedTypes.Push(type);
             }
 
             foreach (var childNs in ns.GetNamespaceMembers())
             {
-                stack.Push(childNs);
+                namespaces.Push(childNs);
+            }
+
+            // Recurse into nested types (e.g. controllers declared as nested classes)
+            while (nestedTypes.Count > 0)
+            {
+                var type = nestedTypes.Pop();
+                yield return type;
+
+                foreach (var nested in type.GetTypeMembers())
+                {
+                    nestedTypes.Push(nested);
+                }
             }
         }
     }

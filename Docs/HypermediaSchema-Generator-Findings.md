@@ -16,7 +16,7 @@ emission in `SchemaEmitter` / `PropertiesPocoEmitter` / `SirenEmitter` / `SirenH
 | GEN-01 | Multi-assembly action-result feature dead end-to-end                     | Bug         | M    | High   | Yes — or cut feature    |
 | GEN-02 | `ResultType` enrichment breaks with `[HypermediaAction(Name = ...)]`     | Bug         | S    | High   | Yes                     |
 | GEN-03 | RY0031/RY0032 diagnostics duplicated once per HTO; wrong gating          | Bug         | S    | Medium | Yes                     |
-| GEN-04 | Incrementality defeated by compilation-wide controller scan              | Perf bug    | M–L  | High   | Yes                     |
+| GEN-04 | Incrementality defeated by compilation-wide controller scan              | Perf bug    | M–L  | High   | ✅ Done                 |
 | GEN-05 | Same HTO class name in two namespaces crashes generator (hint names)     | Bug         | S    | Medium | Yes                     |
 | GEN-06 | Silent schema-name collisions; `[HypermediaSchemaName]` not implemented  | Gap         | M    | Medium | Yes                     |
 | GEN-07 | Generated code can fail to compile (escaping, culture, identifiers)      | Bug         | M    | High   | Yes                     |
@@ -36,15 +36,14 @@ emission in `SchemaEmitter` / `PropertiesPocoEmitter` / `SirenEmitter` / `SirenH
 | REF-03 | `GenerateSirenHelper` emits fully static text via `AppendLine` calls     | Refactoring | S    | —      | ✅ Done                 |
 | REF-04 | Unify six duplicated base-type property walks into one classification    | Refactoring | M    | —      | ✅ Done                 |
 | REF-05 | Deduplicate assembly-config normalization (`Siren`→`Schema` rule)        | Refactoring | S    | —      | ✅ Done                 |
-| REF-06 | Add `.WithTrackingName()` + cacheability tests                           | Test gap    | S–M  | —      | ✅ Done (metadata stages) |
+| REF-06 | Add `.WithTrackingName()` + cacheability tests                           | Test gap    | S–M  | —      | ✅ Done                 |
 
 Size: S ≈ hours, M ≈ a day, L ≈ multiple days. Risk = impact of leaving it unfixed.
 
 ## Suggested fix order
 
 1. ✅ **REF-01 + REF-02 + REF-03** — restructure first; every later fix lands in a smaller, testable unit.
-2. ✅ (partly) **GEN-04 + REF-06** — incrementality fix with its regression guard.
-   REF-06 done for the metadata stages; GEN-04 itself and the output-level cache assertions still open.
+2. ✅ **GEN-04 + REF-06** — incrementality fix with its regression guard.
 3. **GEN-01, GEN-02, GEN-03, GEN-17** — the action-result feature cluster (fix or cut together).
 4. **GEN-05, GEN-07** — generation robustness (crash + invalid code).
 5. **GEN-06, GEN-08, GEN-09, GEN-10, GEN-12, GEN-13, GEN-16, GEN-18** — behavior gaps and DX
@@ -95,7 +94,7 @@ The warning loops (lines ~201–216) run inside the **per-HTO** `RegisterSourceO
 
 **Fix:** register a dedicated diagnostics output keyed on `actionResultMappings` (+ assembly config) alone.
 
-### GEN-04 — Incrementality defeated by compilation-wide controller scan
+### ✅ GEN-04 — Incrementality defeated by compilation-wide controller scan
 
 `actionResultMappings` comes from `context.CompilationProvider.Select(...)` (line ~189) and is `Combine`d
 into every HTO output. Consequences:
@@ -112,6 +111,16 @@ into every HTO output. Consequences:
 are supported via the `` `1 `` metadata name); restrict the legacy `HttpMethodHypermediaAction` scan to
 `compilation.Assembly.GlobalNamespace` (source assembly only); make the provider output an
 `EquatableArray` of records; recurse into nested types. See REF-06 for the regression guard.
+
+**Done:** modern `[HypermediaActionEndpoint<THto>]` attributes are now matched per method via
+`ForAttributeWithMetadataName`; the legacy `HttpMethodHypermediaAction` scan is restricted to the
+source assembly and recurses into nested types; both feed equatable records
+(`ActionResultData` / `ActionResultMapping` in `ActionResultData.cs`) merged deterministically in
+`ActionResultMappingExtractor.Merge` (legacy wins on duplicate keys, preserving the old
+single-dictionary behavior; mappings sorted for stable registry output).
+`IncrementalCacheabilityTests` now asserts the output nodes stay cached, plus a behavioral test for
+a `ResultType` endpoint on a nested controller. Note: legacy-scan restriction means `ResultType` on
+legacy attributes in *referenced* assemblies is no longer picked up — intentional, per this finding.
 
 ### GEN-05 — Same HTO class name in two namespaces crashes the generator
 
@@ -321,8 +330,8 @@ Add `.WithTrackingName()` to pipeline stages and write tests asserting
 currently no regression guard for incrementality; this is the standard way to get one. Do together with
 or immediately after GEN-04.
 
-**Done (metadata stages):** all four pipeline stages carry tracking names (`TrackingNames`), and
-`IncrementalCacheabilityTests` asserts Cached/Unchanged for the HTO-metadata, assembly-config, and
-assembly-name stages on a re-run with an unrelated source change. Output-level assertions are still
-blocked by GEN-04 (`ActionResultMappings` recomputes non-equatable results per compilation change) —
-extend the tests to the output nodes when GEN-04 lands.
+**Done:** all pipeline stages carry tracking names (`TrackingNames`), and
+`IncrementalCacheabilityTests` asserts Cached/Unchanged for the HTO-metadata, assembly-config,
+assembly-name, and action-result-mapping stages on a re-run with an unrelated source change.
+With GEN-04 fixed, the tests also assert via `TrackedOutputSteps` that no `RegisterSourceOutput`
+block re-runs — the end-to-end incrementality guarantee.

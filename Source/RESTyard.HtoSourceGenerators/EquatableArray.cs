@@ -21,6 +21,8 @@ internal readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnu
 
     public int Length => _array.Length;
 
+    public bool IsEmpty => _array.IsDefaultOrEmpty;
+
     public T this[int index] => _array[index];
 
     public bool Equals(EquatableArray<T> other)

@@ -62,7 +62,7 @@ internal static class RegistryEmitter
     /// can discover and merge into the schema.
     /// </summary>
     internal static string GenerateActionResultRegistrySource(
-        ImmutableDictionary<(string HtoClassName, string ActionPropertyName), (string ResultSchemaName, ImmutableArray<string> ResultClasses)> mappings,
+        EquatableArray<ActionResultMapping> mappings,
         string assemblyNameSafe)
     {
         var registryClassName = "HypermediaActionResultRegistry_" + assemblyNameSafe;
@@ -83,9 +83,9 @@ internal static class RegistryEmitter
                 w.Line("return new ActionResultMapping[]");
                 using (w.Block(close: "};"))
                 {
-                    foreach (var kvp in mappings)
+                    foreach (var mapping in mappings)
                     {
-                        w.Line($"new ActionResultMapping {{ EntityName = \"{EscapeString(kvp.Key.HtoClassName)}\", ActionName = \"{EscapeString(kvp.Key.ActionPropertyName)}\", ResultName = \"{EscapeString(kvp.Value.ResultSchemaName)}\", ResultClasses = new[] {{ {QuotedList(kvp.Value.ResultClasses)} }} }},");
+                        w.Line($"new ActionResultMapping {{ EntityName = \"{EscapeString(mapping.HtoClassName)}\", ActionName = \"{EscapeString(mapping.ActionPropertyName)}\", ResultName = \"{EscapeString(mapping.ResultSchemaName)}\", ResultClasses = new[] {{ {QuotedList(mapping.ResultClasses)} }} }},");
                     }
                 }
             }

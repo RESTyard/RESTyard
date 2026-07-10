@@ -1010,6 +1010,58 @@ public class HtoSchemaGeneratorTests
     }
 
     [Fact]
+    public void Action_with_ResultType_on_nested_controller_populates_ResultName()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Actions;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+            using Microsoft.AspNetCore.Mvc;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "QueryResult", Classes = ["QueryResult"])]
+            public class HypermediaQueryResultHto : HypermediaObject
+            {
+                public string ResultData { get; set; } = string.Empty;
+            }
+
+            public class CreateQueryAction : HypermediaAction
+            {
+                public CreateQueryAction() : base(() => true) { }
+            }
+
+            [HypermediaObject(Title = "Root", Classes = ["Root"])]
+            public class HypermediaRootHto : HypermediaObject
+            {
+                [HypermediaAction(Name = "CreateQuery")]
+                public CreateQueryAction? CreateQuery { get; set; }
+            }
+
+            public static class Endpoints
+            {
+                [ApiController]
+                [Route("api")]
+                public class RootController : ControllerBase
+                {
+                    [HttpPost("query")]
+                    [HypermediaActionEndpoint<HypermediaRootHto>("CreateQuery",
+                        ResultType = typeof(HypermediaQueryResultHto))]
+                    public IActionResult CreateQuery() => Ok();
+                }
+            }
+            """;
+
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema("HypermediaRootHto", source);
+
+        schema.Actions.Should().ContainSingle();
+        schema.Actions[0].ResultName.Should().Be("QueryResult");
+    }
+
+    [Fact]
     public void Action_with_ResultType_not_HypermediaObject_emits_RY0032_warning()
     {
         const string source = """
@@ -1111,8 +1163,8 @@ public class HtoSchemaGeneratorTests
 
     // --- Legacy attribute existence check ---
     // If this test fails, the legacy HttpMethodHypermediaAction was removed.
-    // Remove the legacy scan in ActionResultMappingExtractor.ExtractActionResultMappings and
-    // the InheritsFrom check, and delete this test.
+    // Remove ActionResultMappingExtractor.ExtractLegacyActionResults (and its InheritsFrom
+    // check), and delete this test.
     [Fact]
     public void Legacy_HttpMethodHypermediaAction_type_exists()
     {
