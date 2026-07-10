@@ -825,3 +825,26 @@ to keep the plan readable; check off IDs in the findings document as they are fi
 - Both query parameters and `AvailableAccessGroups` are sanitized by `ISchemaAccessGroupSanitizer`
 - Schema is still a JSON download link (not rendered as Siren) — the HTO wraps the query/filtering, not the schema content
 - Consider making this a default endpoint (auto-registered like action parameter schema endpoints)
+
+#### Step 10.3: Agent skill — "Using RESTyard" (agentskills.io format)
+- Create a skill in the [agentskills.io](https://agentskills.io) format (`SKILL.md` with name/description
+  frontmatter, optional supporting files) that teaches AI agents how to build APIs with RESTyard
+- Store the skill in this repo (e.g. `skills/restyard-usage/SKILL.md`) so agents working on consumer
+  projects can load it
+- Content: HTO authoring (links, actions, embedded entities), controller endpoint attributes, route key
+  producers, DI setup, contract-first generator usage
+- Include **pitfalls and edge-case solutions**, e.g.: missing `[Relations]` (RY0020/RY0021),
+  `ExternalLink` invisibility in schema (GEN-18), schema-name collisions from `Hypermedia*/…Hto`
+  stripping (GEN-06), `record` HTOs not supported by the generator (GEN-08), nullable vs. mandatory
+  member semantics (GEN-10), action `Name` override vs. property name (GEN-02)
+- Keep findings-doc references out of the final skill text — describe symptom → cause → fix directly
+
+#### Step 10.4: Agent skill — "Migrating a RESTyard v6 code base"
+- Second skill in the same format and repo location (e.g. `skills/restyard-v6-migration/SKILL.md`)
+- Content: step-by-step migration from RESTyard v6 to v7 — replace `HypermediaObject` base class with
+  `IHypermediaObject`, legacy `HttpGetHypermediaObject`-style attributes → `HypermediaObjectEndpoint<T>`
+  (RY0010–RY0015 analyzer guidance), explicit link/embedded-entity properties, `[HypermediaAssembly]`
+  opt-in for schema/Siren generation
+- Cover the `ToSiren()` migration path from Step 10.2 (formatter → generated extension methods)
+- Include a verification checklist: build with analyzers enabled, run existing integration tests,
+  compare Siren output before/after per endpoint
