@@ -35,7 +35,7 @@ internal static class PropertiesPocoEmitter
                     w.Line(attr);
                 }
 
-                w.Line($"public {prop.TypeFullName} {prop.Name} {{ get; set; }} = default!;");
+                w.Line($"public {prop.TypeFullName} {EmitHelpers.EscapeIdentifier(prop.Name)} {{ get; set; }} = default!;");
             }
         }
 

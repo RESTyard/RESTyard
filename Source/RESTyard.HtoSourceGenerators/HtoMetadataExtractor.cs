@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Xml;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace RESTyard.HtoSourceGenerators;
 
@@ -57,7 +59,7 @@ internal static class HtoMetadataExtractor
 
         var classes = GetNamedArgumentStringArray(attribute, "Classes");
         var accessGroups = GetAccessGroups(symbol);
-        var (properties, links, actions, embeddedEntities, embeddedWithoutRelations, linksWithoutRelations) =
+        var (properties, links, actions, embeddedEntities, embeddedWithoutRelations, linksWithoutRelations, invalidPropertyNameOverrides) =
             ClassifyProperties(symbol);
 
         var ns = symbol.ContainingNamespace.IsGlobalNamespace
@@ -79,8 +81,29 @@ internal static class HtoMetadataExtractor
             actions,
             embeddedEntities,
             embeddedWithoutRelations,
-            linksWithoutRelations);
+            linksWithoutRelations,
+            invalidPropertyNameOverrides,
+            HasUserDefinedTypeInNamespace(symbol, symbol.Name + "Properties"),
+            HasUserDefinedTypeInNamespace(symbol, symbol.Name + "SirenExtensions"));
     }
+
+    /// <summary>
+    /// The namespace-qualified name of a type — the key format shared by HTO metadata
+    /// (<see cref="HtoMetadata.FullClassName"/>) and action-result mappings, so that
+    /// same-named HTOs in different namespaces cannot receive each other's ResultType.
+    /// </summary>
+    internal static string GetNamespaceQualifiedName(INamedTypeSymbol type)
+        => type.ContainingNamespace.IsGlobalNamespace
+            ? type.Name
+            : type.ContainingNamespace.ToDisplayString() + "." + type.Name;
+
+    /// <summary>
+    /// Whether the HTO's namespace already contains a user-defined (source) type with the
+    /// given name that would collide with a type the generator emits.
+    /// </summary>
+    private static bool HasUserDefinedTypeInNamespace(INamedTypeSymbol htoSymbol, string typeName)
+        => htoSymbol.ContainingNamespace.GetTypeMembers(typeName)
+            .Any(t => t.Locations.Any(l => l.IsInSource));
 
     /// <summary>
     /// The single category a property is bucketed into by <see cref="Classify"/>.
@@ -106,7 +129,8 @@ internal static class HtoMetadataExtractor
         EquatableArray<ActionMetadata> Actions,
         EquatableArray<EmbeddedEntityMetadata> EmbeddedEntities,
         EquatableArray<string> EmbeddedEntitiesWithoutRelations,
-        EquatableArray<string> LinksWithoutRelations)
+        EquatableArray<string> LinksWithoutRelations,
+        EquatableArray<InvalidPropertyNameOverride> InvalidPropertyNameOverrides)
         ClassifyProperties(INamedTypeSymbol symbol)
     {
         var properties = new List<PropertyMetadata>();
@@ -115,13 +139,14 @@ internal static class HtoMetadataExtractor
         var embeddedEntities = new List<EmbeddedEntityMetadata>();
         var embeddedWithoutRelations = new List<string>();
         var linksWithoutRelations = new List<string>();
+        var invalidNameOverrides = new List<InvalidPropertyNameOverride>();
 
         foreach (var member in EnumerateInstanceProperties(symbol))
         {
             switch (Classify(member))
             {
                 case PropertyCategory.Data:
-                    properties.Add(CreatePropertyMetadata(member));
+                    properties.Add(CreatePropertyMetadata(member, invalidNameOverrides));
                     break;
                 case PropertyCategory.Link:
                     links.Add(CreateLinkMetadata(member));
@@ -147,7 +172,8 @@ internal static class HtoMetadataExtractor
             new EquatableArray<ActionMetadata>(actions.ToImmutableArray()),
             new EquatableArray<EmbeddedEntityMetadata>(embeddedEntities.ToImmutableArray()),
             new EquatableArray<string>(embeddedWithoutRelations.ToImmutableArray()),
-            new EquatableArray<string>(linksWithoutRelations.ToImmutableArray()));
+            new EquatableArray<string>(linksWithoutRelations.ToImmutableArray()),
+            new EquatableArray<InvalidPropertyNameOverride>(invalidNameOverrides.ToImmutableArray()));
     }
 
     /// <summary>
@@ -222,14 +248,29 @@ internal static class HtoMetadataExtractor
         return PropertyCategory.Data;
     }
 
-    private static PropertyMetadata CreatePropertyMetadata(IPropertySymbol member)
+    private static PropertyMetadata CreatePropertyMetadata(
+        IPropertySymbol member,
+        List<InvalidPropertyNameOverride> invalidNameOverrides)
     {
         var name = GetPropertySerializationName(member);
+
+        // The override is used structurally as the POCO property name — a non-identifier
+        // ("full-name") would not compile. Keywords are fine (they are @-escaped on emission).
+        if (name != member.Name && !IsUsableIdentifier(name))
+        {
+            invalidNameOverrides.Add(new InvalidPropertyNameOverride(member.Name, name));
+            name = member.Name;
+        }
+
         var typeFullName = member.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         var forwardedAttributes = GetForwardedAttributes(member);
         var xmlDocComment = GetXmlDocComment(member);
         return new PropertyMetadata(name, member.Name, typeFullName, forwardedAttributes, xmlDocComment);
     }
+
+    private static bool IsUsableIdentifier(string name)
+        => SyntaxFacts.IsValidIdentifier(name)
+           || SyntaxFacts.GetKeywordKind(name) != SyntaxKind.None;
 
     private static LinkMetadata CreateLinkMetadata(IPropertySymbol member)
     {
@@ -292,7 +333,7 @@ internal static class HtoMetadataExtractor
         // User-defined classes from [HypermediaAction(Classes = [...])]
         var userClasses = GetNamedArgumentStringArray(actionAttr, "Classes");
 
-        return new ActionMetadata(member.Name, member.ContainingType.Name, name, actionTitle, actionDescription, parameterTypeFullName, isFileUpload, actionIsDeprecated, actionDeprecationMessage, isMandatory, null, null, new EquatableArray<string>(userClasses), new EquatableArray<string>(actionAccessGroups));
+        return new ActionMetadata(member.Name, GetNamespaceQualifiedName(member.ContainingType), name, actionTitle, actionDescription, parameterTypeFullName, isFileUpload, actionIsDeprecated, actionDeprecationMessage, isMandatory, null, null, new EquatableArray<string>(userClasses), new EquatableArray<string>(actionAccessGroups));
     }
 
     private static EmbeddedEntityMetadata CreateEmbeddedEntityMetadata(IPropertySymbol member)
@@ -844,26 +885,58 @@ internal static class HtoMetadataExtractor
             var enumType = constant.Type;
             if (enumType != null)
             {
-                return $"({enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){constant.Value}";
+                // Parenthesize the value — "(E)(-1)" is a cast, "(E)-1" would parse as subtraction.
+                var underlying = System.Convert.ToString(constant.Value, CultureInfo.InvariantCulture);
+                return $"({enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})({underlying})";
             }
         }
 
-        if (constant.Value is string s)
+        // Literals must round-trip as C# source: invariant culture (a de-DE build machine
+        // would otherwise emit "1,5"), type suffixes so overload resolution picks the
+        // original attribute constructor, and proper char quoting.
+        return constant.Value switch
         {
-            return $"\"{EmitHelpers.EscapeString(s)}\"";
-        }
+            string s => $"\"{EmitHelpers.EscapeString(s)}\"",
+            bool b => b ? "true" : "false",
+            char c => FormatCharLiteral(c),
+            float f => FormatFloatLiteral(f),
+            double d => FormatDoubleLiteral(d),
+            long l => l.ToString(CultureInfo.InvariantCulture) + "L",
+            ulong ul => ul.ToString(CultureInfo.InvariantCulture) + "UL",
+            uint ui => ui.ToString(CultureInfo.InvariantCulture) + "U",
+            null => "null",
+            System.IFormattable f => f.ToString(null, CultureInfo.InvariantCulture),
+            var other => other.ToString(),
+        };
+    }
 
-        if (constant.Value is bool b)
+    private static string FormatCharLiteral(char c)
+        => c switch
         {
-            return b ? "true" : "false";
-        }
+            '\\' => @"'\\'",
+            '\'' => @"'\''",
+            '\n' => @"'\n'",
+            '\r' => @"'\r'",
+            '\t' => @"'\t'",
+            '\0' => @"'\0'",
+            _ when char.IsControl(c) => $@"'\u{(int)c:x4}'",
+            _ => $"'{c}'",
+        };
 
-        if (constant.Value == null)
-        {
-            return "null";
-        }
+    private static string FormatFloatLiteral(float f)
+    {
+        if (float.IsNaN(f)) return "float.NaN";
+        if (float.IsPositiveInfinity(f)) return "float.PositiveInfinity";
+        if (float.IsNegativeInfinity(f)) return "float.NegativeInfinity";
+        return f.ToString("R", CultureInfo.InvariantCulture) + "f";
+    }
 
-        return constant.Value.ToString();
+    private static string FormatDoubleLiteral(double d)
+    {
+        if (double.IsNaN(d)) return "double.NaN";
+        if (double.IsPositiveInfinity(d)) return "double.PositiveInfinity";
+        if (double.IsNegativeInfinity(d)) return "double.NegativeInfinity";
+        return d.ToString("R", CultureInfo.InvariantCulture) + "d";
     }
 
     /// <summary>

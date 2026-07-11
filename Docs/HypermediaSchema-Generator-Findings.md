@@ -17,9 +17,9 @@ emission in `SchemaEmitter` / `PropertiesPocoEmitter` / `SirenEmitter` / `SirenH
 | GEN-02 | `ResultType` enrichment breaks with `[HypermediaAction(Name = ...)]`                                                      | Bug           | S    | High   | ✅ Done                  |
 | GEN-03 | RY0031/RY0032 diagnostics duplicated once per HTO; wrong gating                                                           | Bug           | S    | Medium | ✅ Done                  |
 | GEN-04 | Incrementality defeated by compilation-wide controller scan                                                               | Perf bug      | M–L  | High   | ✅ Done                  |
-| GEN-05 | Same HTO class name in two namespaces crashes generator (hint names)                                                      | Bug           | S    | Medium | Yes                     |
+| GEN-05 | Same HTO class name in two namespaces crashes generator (hint names)                                                      | Bug           | S    | Medium | ✅ Done                  |
 | GEN-06 | Silent schema-name collisions; `[HypermediaSchemaName]` not implemented                                                   | Gap           | M    | Medium | Yes                     |
-| GEN-07 | Generated code can fail to compile (escaping, culture, identifiers)                                                       | Bug           | M    | High   | Yes                     |
+| GEN-07 | Generated code can fail to compile (escaping, culture, identifiers)                                                       | Bug           | M    | High   | ✅ Done                  |
 | GEN-08 | `record` HTOs silently ignored                                                                                            | Gap           | S    | Medium | Yes (or diagnostic)     |
 | GEN-09 | Embedded-collection detection too loose and too tight (arrays leak)                                                       | Bug           | S–M  | Medium | Yes                     |
 | GEN-10 | Null mandatory action silently omitted; links/embedded throw                                                              | Inconsist.    | S    | Low    | Yes — decide + document |
@@ -46,7 +46,7 @@ Size: S ≈ hours, M ≈ a day, L ≈ multiple days. Risk = impact of leaving it
 1. ✅ **REF-01 + REF-02 + REF-03** — restructure first; every later fix lands in a smaller, testable unit.
 2. ✅ **GEN-04 + REF-06** — incrementality fix with its regression guard.
 3. ✅ **GEN-01, GEN-02, GEN-03, GEN-17** — the action-result feature cluster (fix or cut together).
-4. **GEN-05, GEN-07** — generation robustness (crash + invalid code).
+4. ✅ **GEN-05, GEN-07** — generation robustness (crash + invalid code).
 5. **GEN-06, GEN-08, GEN-09, GEN-10, GEN-12, GEN-13, GEN-16, GEN-18** — behavior gaps and DX
    (GEN-16/18 unblock schema-driven client generation).
 6. **GEN-11, GEN-14, GEN-15, ✅ REF-04, ✅ REF-05** — opportunistic / later (REF-04/05 pulled forward and done).
@@ -151,7 +151,7 @@ single-dictionary behavior; mappings sorted for stable registry output).
 a `ResultType` endpoint on a nested controller. Note: legacy-scan restriction means `ResultType` on
 legacy attributes in *referenced* assemblies is no longer picked up — intentional, per this finding.
 
-### GEN-05 — Same HTO class name in two namespaces crashes the generator
+### ✅ GEN-05 — Same HTO class name in two namespaces crashes the generator
 
 Hint names are `$"{metadata.ClassName}Schema.g.cs"` (line ~284, same pattern for Properties and
 SirenExtensions). Two HTOs with the same class name in different namespaces produce a duplicate
@@ -162,6 +162,15 @@ namespaces can receive each other's `ResultType`.
 
 **Fix:** include the namespace (dot-sanitized) or a stable hash in hint names; key result mappings by
 fully qualified name.
+
+**Done:** Hint names for the per-HTO artifacts are namespace-qualified via a new
+`HtoMetadata.FullClassName` (e.g. `MyApp.HypermediaFooHtoSchema.g.cs`). Result mappings are keyed
+by the namespace-qualified HTO class name on both sides: `ActionResultMapping.HtoClassName` and
+`ActionMetadata.DeclaringClassName` now carry the qualified name
+(`HtoMetadataExtractor.GetNamespaceQualifiedName` is the shared key format), and the enrichment
+lookup passes `metadata.FullClassName`. Tests cover generation succeeding with two same-named HTOs
+and `ResultType` not leaking across namespaces. Note: derived schema names can still collide
+("Customer" from both) — that is GEN-06, unchanged here.
 
 ### GEN-06 — Silent schema-name collisions; `[HypermediaSchemaName]` missing
 
@@ -177,7 +186,7 @@ in the codebase** (no attribute type, no generator support).
 an assembly (cross-assembly collisions can only be caught at compose time — log there).
 Alternatively update the design doc if the attribute is deliberately dropped.
 
-### GEN-07 — Generated code can fail to compile
+### ✅ GEN-07 — Generated code can fail to compile
 
 Several emission paths produce invalid C# without any diagnostic:
 
@@ -193,6 +202,24 @@ Several emission paths produce invalid C# without any diagnostic:
   for invalid names.
 - **Type-name clash:** if the user already has a `{ClassName}Properties` (or `...Siren`,
   `...SirenEmbedded`, `SirenHelper`) type in that namespace, generation collides with no diagnostic.
+
+**Done:** All four paths fixed:
+
+- `EmitHelpers.EscapeString` escapes `\n`, `\r`, `\t`, `\0` and all other control characters
+  (`\uXXXX`); round-trip tested with a newline/tab title.
+- `FormatTypedConstant` formats with `CultureInfo.InvariantCulture` and emits type suffixes
+  (`1.5d`, `2.5f`, `5L`, `UL`, `U`), quoted/escaped char literals, `float.NaN`-style specials,
+  and parenthesized enum casts (`(E)(-1)` — `(E)-1` would parse as subtraction).
+- New `EmitHelpers.EscapeIdentifier` `@`-escapes keyword names at every identifier emission site
+  (POCO property declarations and all `hto.X` member accesses in the Siren mapper — a C# property
+  declared `@class` also needs this). Non-identifier `[HypermediaProperty(Name)]` overrides are
+  rejected at extraction (`SyntaxFacts.IsValidIdentifier`), reported as **RY0022** (warning), and
+  fall back to the C# property name.
+- Type-name collisions are detected: `{ClassName}Properties`/`{ClassName}SirenExtensions` against
+  source types in the HTO's namespace (during extraction), the global-namespace `SirenHelper` via a
+  dedicated compilation provider. Each reports **RY0023** (error) naming the colliding type, and the
+  colliding artifact is skipped so the user sees the real cause instead of CS0101 on generated code
+  (a Properties collision also skips the Siren mapper, which would otherwise bind the user's type).
 
 ### GEN-08 — `record` HTOs silently ignored
 

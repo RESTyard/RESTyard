@@ -16,3 +16,14 @@ internal readonly record struct PropertyMetadata(
     string TypeFullName,
     EquatableArray<string> ForwardedAttributes,
     string? XmlDocComment);
+
+/// <summary>
+/// A <c>[HypermediaProperty(Name)]</c> override that is not a valid C# identifier —
+/// the generated POCO uses the name structurally, so the override is ignored and
+/// reported as an RY0022 warning.
+/// </summary>
+/// <param name="PropertyName">The original C# property name on the HTO class.</param>
+/// <param name="InvalidName">The rejected override value.</param>
+internal readonly record struct InvalidPropertyNameOverride(
+    string PropertyName,
+    string InvalidName);

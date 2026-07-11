@@ -21,6 +21,9 @@ namespace RESTyard.HtoSourceGenerators;
 /// <param name="EmbeddedEntities">Embedded entity properties metadata.</param>
 /// <param name="EmbeddedEntityPropertiesWithoutRelations">Property names of type <c>IEmbeddedEntity</c> but missing <c>[Relations]</c>. Used to emit RY0020 warnings.</param>
 /// <param name="LinkPropertiesWithoutRelations">Property names of type <c>ILink</c> but missing <c>[Relations]</c>. Used to emit RY0021 warnings.</param>
+/// <param name="InvalidPropertyNameOverrides">Properties whose <c>[HypermediaProperty(Name)]</c> override is not a valid C# identifier. Used to emit RY0022 warnings; the override is ignored.</param>
+/// <param name="HasPropertiesTypeCollision">Whether a user-defined type named <c>{ClassName}Properties</c> already exists in the HTO's namespace. Used to emit RY0023 and skip POCO emission.</param>
+/// <param name="HasSirenExtensionsTypeCollision">Whether a user-defined type named <c>{ClassName}SirenExtensions</c> already exists in the HTO's namespace. Used to emit RY0023 and skip mapper emission.</param>
 internal readonly record struct HtoMetadata(
     string Namespace,
     string ClassName,
@@ -36,8 +39,18 @@ internal readonly record struct HtoMetadata(
     EquatableArray<ActionMetadata> Actions,
     EquatableArray<EmbeddedEntityMetadata> EmbeddedEntities,
     EquatableArray<string> EmbeddedEntityPropertiesWithoutRelations,
-    EquatableArray<string> LinkPropertiesWithoutRelations)
+    EquatableArray<string> LinkPropertiesWithoutRelations,
+    EquatableArray<InvalidPropertyNameOverride> InvalidPropertyNameOverrides,
+    bool HasPropertiesTypeCollision,
+    bool HasSirenExtensionsTypeCollision)
 {
+    /// <summary>
+    /// The namespace-qualified HTO class name. Disambiguates same-named HTOs in different
+    /// namespaces — used for hint names and as the action-result mapping key.
+    /// </summary>
+    public string FullClassName
+        => string.IsNullOrEmpty(Namespace) ? ClassName : Namespace + "." + ClassName;
+
     /// <summary>
     /// Whether GetSchema() needs an <c>IJsonSchemaFactory</c> parameter
     /// (true when there are data properties or parameterized actions).

@@ -157,7 +157,7 @@ internal static class SirenEmitter
                     {
                         foreach (var prop in metadata.Properties)
                         {
-                            w.Line($"{prop.Name} = hto.{prop.OriginalName},");
+                            w.Line($"{EscapeIdentifier(prop.Name)} = hto.{EscapeIdentifier(prop.OriginalName)},");
                         }
                     }
                 }
@@ -222,7 +222,7 @@ internal static class SirenEmitter
 
             if (!link.IsMandatory)
             {
-                w.Line($"if (hto.{link.PropertyName} is {{ }} {link.PropertyName}Link)");
+                w.Line($"if (hto.{EscapeIdentifier(link.PropertyName)} is {{ }} {link.PropertyName}Link)");
                 using (w.Block())
                 {
                     w.Line($"SirenHelper.AddLink(entity.Links, {link.PropertyName}Link, {relArray}, \"{EscapeString(link.PropertyName)}\", resolver, queryStringBuilder);");
@@ -230,7 +230,7 @@ internal static class SirenEmitter
             }
             else
             {
-                w.Line($"SirenHelper.AddLink(entity.Links, hto.{link.PropertyName}, {relArray}, \"{EscapeString(link.PropertyName)}\", resolver, queryStringBuilder);");
+                w.Line($"SirenHelper.AddLink(entity.Links, hto.{EscapeIdentifier(link.PropertyName)}, {relArray}, \"{EscapeString(link.PropertyName)}\", resolver, queryStringBuilder);");
             }
 
             w.Line();
@@ -250,11 +250,11 @@ internal static class SirenEmitter
 
             // Both mandatory and nullable actions gate on CanExecute(); a null mandatory action
             // is currently silently omitted (see GEN-10 in the findings — decision pending).
-            w.Line($"if (hto.{action.PropertyName}?.CanExecute() == true)");
+            w.Line($"if (hto.{EscapeIdentifier(action.PropertyName)}?.CanExecute() == true)");
             using (w.Block())
             {
                 var title = action.Title != null ? $"\"{EscapeString(action.Title)}\"" : "null";
-                w.Line($"SirenHelper.AddAction(entity.Actions, hto, hto.{action.PropertyName}, \"{EscapeString(action.Name)}\", {title}, {classesArray}, resolver);");
+                w.Line($"SirenHelper.AddAction(entity.Actions, hto, hto.{EscapeIdentifier(action.PropertyName)}, \"{EscapeString(action.Name)}\", {title}, {classesArray}, resolver);");
             }
 
             w.Line();
@@ -297,7 +297,7 @@ internal static class SirenEmitter
         if (!embedded.IsMandatory)
         {
             // Nullable single — skip when null
-            w.Line($"if (hto.{embedded.PropertyName} is {{ }} {embedded.PropertyName}Value)");
+            w.Line($"if (hto.{EscapeIdentifier(embedded.PropertyName)} is {{ }} {embedded.PropertyName}Value)");
             using (w.Block())
             {
                 EmitEmbeddedEntityBody(w, embedded.PropertyName + "Value", relArray, embedded, targetFqn);
@@ -306,13 +306,13 @@ internal static class SirenEmitter
         else
         {
             // Mandatory single — null guard
-            w.Line($"if (hto.{embedded.PropertyName} is null)");
+            w.Line($"if (hto.{EscapeIdentifier(embedded.PropertyName)} is null)");
             using (w.Block())
             {
                 w.Line($"throw new System.InvalidOperationException(\"Mandatory embedded entity '{EscapeString(embedded.PropertyName)}' on '{EscapeString(parentFqn)}' is null.\");");
             }
 
-            EmitEmbeddedEntityBody(w, "hto." + embedded.PropertyName, relArray, embedded, targetFqn);
+            EmitEmbeddedEntityBody(w, "hto." + EscapeIdentifier(embedded.PropertyName), relArray, embedded, targetFqn);
         }
     }
 
@@ -322,7 +322,7 @@ internal static class SirenEmitter
         if (!embedded.IsMandatory)
         {
             // Nullable collection — skip when null
-            w.Line($"if (hto.{embedded.PropertyName} is {{ }} {embedded.PropertyName}List)");
+            w.Line($"if (hto.{EscapeIdentifier(embedded.PropertyName)} is {{ }} {embedded.PropertyName}List)");
             using (w.Block())
             {
                 w.Line($"foreach (var item in {embedded.PropertyName}List)");
@@ -335,13 +335,13 @@ internal static class SirenEmitter
         else
         {
             // Mandatory collection — null guard
-            w.Line($"if (hto.{embedded.PropertyName} is null)");
+            w.Line($"if (hto.{EscapeIdentifier(embedded.PropertyName)} is null)");
             using (w.Block())
             {
                 w.Line($"throw new System.InvalidOperationException(\"Mandatory embedded entity '{EscapeString(embedded.PropertyName)}' on '{EscapeString(parentFqn)}' is null.\");");
             }
 
-            w.Line($"foreach (var item in hto.{embedded.PropertyName})");
+            w.Line($"foreach (var item in hto.{EscapeIdentifier(embedded.PropertyName)})");
             using (w.Block())
             {
                 EmitEmbeddedEntityBody(w, "item", relArray, embedded, targetFqn);

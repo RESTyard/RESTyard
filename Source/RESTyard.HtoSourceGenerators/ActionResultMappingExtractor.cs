@@ -69,7 +69,7 @@ internal static class ActionResultMappingExtractor
                     var resultSchemaName = HtoMetadataExtractor.DeriveSchemaName(resultType.Name);
                     var resultClasses = HtoMetadataExtractor.GetTargetClasses(resultType);
                     mappings.Add(new ActionResultMapping(
-                        htoClassName,
+                        HtoMetadataExtractor.GetNamespaceQualifiedName(htoType),
                         actionPropName,
                         HtoMetadataExtractor.DeriveSchemaName(htoClassName),
                         ResolveActionName(htoType, actionPropName),
@@ -146,7 +146,7 @@ internal static class ActionResultMappingExtractor
                         var resultSchemaName = HtoMetadataExtractor.DeriveSchemaName(resultType.Name);
                         var resultClasses = HtoMetadataExtractor.GetTargetClasses(resultType);
                         mappings.Add(new ActionResultMapping(
-                            htoClassName,
+                            HtoMetadataExtractor.GetNamespaceQualifiedName(declaringType),
                             actionName,
                             HtoMetadataExtractor.DeriveSchemaName(htoClassName),
                             ResolveActionName(declaringType, actionName),
@@ -214,7 +214,7 @@ internal static class ActionResultMappingExtractor
 
         foreach (var action in metadata.Actions)
         {
-            if (TryFindResultMapping(metadata.ClassName, action, resultMappings, out var mapping))
+            if (TryFindResultMapping(metadata.FullClassName, action, resultMappings, out var mapping))
             {
                 enrichedActions.Add(action with { ResultSchemaName = mapping.ResultSchemaName, ResultClasses = mapping.ResultClasses });
                 changed = true;
@@ -235,8 +235,9 @@ internal static class ActionResultMappingExtractor
         EquatableArray<ActionResultMapping> mappings,
         out ActionResultMapping mapping)
     {
-        // Modern endpoint attributes key mappings by the action's C# property name; the attribute
-        // may name a base HTO for inherited actions, so the declaring class is tried as well.
+        // Class keys are namespace-qualified (GEN-05). Modern endpoint attributes key mappings by
+        // the action's C# property name; the attribute may name a base HTO for inherited actions,
+        // so the declaring class is tried as well.
         // Legacy attributes key by the Op-type-derived action name — hence the Name fallbacks.
         return TryFindByKey(htoClassName, action.PropertyName, mappings, out mapping)
                || TryFindByKey(action.DeclaringClassName, action.PropertyName, mappings, out mapping)

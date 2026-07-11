@@ -46,10 +46,10 @@ public class HtoSchemaGeneratorTests
             .ToArray();
 
         fileNames.Should().BeEquivalentTo(
-            "HypermediaAddressHtoProperties.g.cs",
-            "HypermediaAddressHtoSchema.g.cs",
-            "HypermediaCustomerHtoProperties.g.cs",
-            "HypermediaCustomerHtoSchema.g.cs",
+            "TestHtos.HypermediaAddressHtoProperties.g.cs",
+            "TestHtos.HypermediaAddressHtoSchema.g.cs",
+            "TestHtos.HypermediaCustomerHtoProperties.g.cs",
+            "TestHtos.HypermediaCustomerHtoSchema.g.cs",
             "HypermediaSchemaRegistry.g.cs");
 
         GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.FullHto);
@@ -1493,6 +1493,277 @@ public class HtoSchemaGeneratorTests
         var result = GeneratorTestHelper.RunGenerator([htoAssembly], controllerSource);
 
         result.Diagnostics.Where(d => d.Id == "RY0031").Should().ContainSingle();
+    }
+
+    // --- Same class name in two namespaces (GEN-05) ---
+
+    private const string SameClassNameInTwoNamespacesSource = """
+        using RESTyard.AspNetCore.Hypermedia;
+        using RESTyard.AspNetCore.Hypermedia.Actions;
+        using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+        using Microsoft.AspNetCore.Mvc;
+
+        [assembly: HypermediaAssembly]
+
+        namespace NsA
+        {
+            [HypermediaObject(Title = "QueryResult", Classes = ["QueryResult"])]
+            public class HypermediaQueryResultHto : HypermediaObject
+            {
+                public string ResultData { get; set; } = string.Empty;
+            }
+
+            public class DoStuffAction : HypermediaAction
+            {
+                public DoStuffAction() : base(() => true) { }
+            }
+
+            [HypermediaObject(Title = "Item A", Classes = ["ItemA"])]
+            public class HypermediaItemHto : HypermediaObject
+            {
+                public string Value { get; set; } = string.Empty;
+
+                [HypermediaAction(Name = "DoStuff")]
+                public DoStuffAction? DoStuff { get; set; }
+            }
+
+            [ApiController]
+            [Route("api")]
+            public class ItemController : ControllerBase
+            {
+                [HttpPost("do")]
+                [HypermediaActionEndpoint<NsA.HypermediaItemHto>("DoStuff",
+                    ResultType = typeof(HypermediaQueryResultHto))]
+                public IActionResult Do() => Ok();
+            }
+        }
+
+        namespace NsB
+        {
+            [HypermediaObject(Title = "Item B", Classes = ["ItemB"])]
+            public class HypermediaItemHto : HypermediaObject
+            {
+                public string Value { get; set; } = string.Empty;
+
+                [HypermediaAction(Name = "DoStuff")]
+                public NsA.DoStuffAction? DoStuff { get; set; }
+            }
+        }
+        """;
+
+    [Fact]
+    public void Same_class_name_in_two_namespaces_generates_both()
+    {
+        // GEN-05: hint names were keyed on the bare class name — the second HTO
+        // crashed the whole generation with a duplicate-hint-name ArgumentException.
+        var result = GeneratorTestHelper.RunGenerator(SameClassNameInTwoNamespacesSource);
+
+        result.Diagnostics.Should().BeEmpty();
+        result.GeneratedTrees.Should().ContainSingle(t => t.FilePath.Contains("NsA.HypermediaItemHtoSchema.g.cs"));
+        result.GeneratedTrees.Should().ContainSingle(t => t.FilePath.Contains("NsB.HypermediaItemHtoSchema.g.cs"));
+
+        GeneratorTestHelper.AssertOutputCompiles(SameClassNameInTwoNamespacesSource);
+    }
+
+    [Fact]
+    public void ResultType_does_not_leak_to_same_named_hto_in_other_namespace()
+    {
+        // GEN-05: result mappings were keyed on the bare class name — the HTO in NsB
+        // received the ResultType declared for the one in NsA.
+        var result = GeneratorTestHelper.RunGenerator(SameClassNameInTwoNamespacesSource);
+
+        GetGeneratedSource(result, "NsA.HypermediaItemHto").Should().Contain("ResultName");
+        GetGeneratedSource(result, "NsB.HypermediaItemHto").Should().NotContain("ResultName");
+    }
+
+    // --- Generated code robustness (GEN-07) ---
+
+    [Fact]
+    public void Title_with_control_characters_round_trips()
+    {
+        // GEN-07: EscapeString only handled backslash and quote — a literal newline
+        // in a title broke the emitted string literal.
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Line1\nLine2\tEnd", Classes = ["Truck"])]
+            public class HypermediaTruckHto : HypermediaObject
+            {
+                public string Value { get; set; } = string.Empty;
+            }
+            """;
+
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema("HypermediaTruckHto", source);
+
+        schema.Title.Should().Be("Line1\nLine2\tEnd");
+    }
+
+    [Fact]
+    public void Forwarded_attribute_arguments_use_invariant_literals_with_type_suffixes()
+    {
+        // GEN-07: FormatTypedConstant fell through to Value.ToString() — culture-sensitive
+        // for floating point ("1,5" on a de-DE machine), no suffixes (a float/long attribute
+        // constructor would not re-resolve), chars emitted unquoted.
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            public class NumericAttribute : System.Attribute
+            {
+                public NumericAttribute(double d, float f, long l, char c) { }
+            }
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                [Numeric(1.5, 2.5f, 5L, 'x')]
+                public string Value { get; set; } = string.Empty;
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+        var poco = GetGeneratedPoco(result, "HypermediaCustomerHto");
+
+        poco.Should().Contain("1.5d");
+        poco.Should().Contain("2.5f");
+        poco.Should().Contain("5L");
+        poco.Should().Contain("'x'");
+
+        GeneratorTestHelper.AssertOutputCompiles(source);
+    }
+
+    [Fact]
+    public void Keyword_property_name_override_is_escaped()
+    {
+        // GEN-07: a [HypermediaProperty(Name = "class")] override is applied structurally
+        // as the POCO property name — keywords must be @-escaped to compile.
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                [HypermediaProperty(Name = "class")]
+                public string Kind { get; set; } = string.Empty;
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        result.Diagnostics.Should().BeEmpty();
+        GetGeneratedPoco(result, "HypermediaCustomerHto").Should().Contain("public string @class");
+
+        GeneratorTestHelper.AssertOutputCompiles(source);
+    }
+
+    [Fact]
+    public void Invalid_property_name_override_reports_RY0022_and_falls_back()
+    {
+        // GEN-07: "full-name" cannot be a C# property name — report it and use the
+        // original property name instead of emitting code that does not compile.
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                [HypermediaProperty(Name = "full-name")]
+                public string FullName { get; set; } = string.Empty;
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        result.Diagnostics.Where(d => d.Id == "RY0022").Should().ContainSingle()
+            .Which.GetMessage().Should().Contain("full-name");
+        GetGeneratedPoco(result, "HypermediaCustomerHto").Should().Contain("public string FullName");
+
+        GeneratorTestHelper.AssertOutputCompiles(source);
+    }
+
+    [Fact]
+    public void User_defined_Properties_type_reports_RY0023_and_skips_poco()
+    {
+        // GEN-07: a user type named {ClassName}Properties collided with the generated
+        // POCO as an unexplained CS0101 — report the real cause instead.
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            public class HypermediaCustomerHtoProperties
+            {
+            }
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                public string Name { get; set; } = string.Empty;
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        result.Diagnostics.Where(d => d.Id == "RY0023").Should().ContainSingle()
+            .Which.GetMessage().Should().Contain("HypermediaCustomerHtoProperties");
+        result.GeneratedTrees.Should().NotContain(t => t.FilePath.Contains("Properties.g.cs"));
+
+        GeneratorTestHelper.AssertOutputCompiles(source);
+    }
+
+    [Fact]
+    public void User_defined_SirenHelper_type_reports_RY0023_and_skips_helper()
+    {
+        // GEN-07: the shared SirenHelper is emitted in the global namespace — a
+        // user-defined global SirenHelper would collide.
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly(Siren = true)]
+
+            public class SirenHelper
+            {
+            }
+
+            namespace TestHtos
+            {
+                [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+                public class HypermediaCustomerHto : HypermediaObject
+                {
+                    public string Name { get; set; } = string.Empty;
+                }
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        result.Diagnostics.Where(d => d.Id == "RY0023").Should().ContainSingle()
+            .Which.GetMessage().Should().Contain("SirenHelper");
+        result.GeneratedTrees.Should().NotContain(t => t.FilePath.EndsWith("SirenHelper.g.cs"));
     }
 
     // --- Legacy attribute existence check ---

@@ -4,8 +4,10 @@ namespace RESTyard.HtoSourceGenerators;
 /// Compile-time metadata for a single action property on an HTO.
 /// </summary>
 /// <param name="PropertyName">The C# property name on the HTO class, used to emit <c>hto.PropertyName</c>.</param>
-/// <param name="DeclaringClassName">Name of the class that declares the action property — the base HTO
-/// for inherited actions. Used to resolve controller <c>ResultType</c> mappings keyed by the base HTO.</param>
+/// <param name="DeclaringClassName">Namespace-qualified name of the class that declares the action
+/// property — the base HTO for inherited actions. Used to resolve controller <c>ResultType</c>
+/// mappings keyed by the base HTO (fully qualified so same-named HTOs in different namespaces
+/// cannot receive each other's mapping).</param>
 /// <param name="Name">Action name from <c>[HypermediaAction(Name)]</c>, falling back to C# property name.</param>
 /// <param name="Title">Action title from <c>[HypermediaAction(Title)]</c>, <c>[Title]</c> attribute, or XML doc summary.</param>
 /// <param name="Description">Description from <c>[Description]</c> attribute or XML doc remarks.</param>

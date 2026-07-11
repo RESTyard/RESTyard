@@ -164,22 +164,59 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 }
             }
 
+            foreach (var invalidName in metadata.InvalidPropertyNameOverrides)
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(
+                    GeneratorDiagnostics.InvalidPropertyNameOverride,
+                    Location.None,
+                    invalidName.InvalidName,
+                    invalidName.PropertyName,
+                    metadata.ClassName));
+            }
+
+            // A user-defined type with a generated type's name would produce a CS0101
+            // duplicate-definition error on generated code — report RY0023 with the real
+            // cause instead and skip the colliding artifact.
+            var propertiesCollision = metadata.Properties.Length > 0 && metadata.HasPropertiesTypeCollision;
+            if (propertiesCollision)
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(
+                    GeneratorDiagnostics.GeneratedTypeNameCollision,
+                    Location.None,
+                    $"{metadata.FullClassName}Properties",
+                    $"the data-properties POCO for '{metadata.ClassName}'"));
+            }
+
+            var sirenExtensionsCollision = siren && metadata.HasSirenExtensionsTypeCollision;
+            if (sirenExtensionsCollision)
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(
+                    GeneratorDiagnostics.GeneratedTypeNameCollision,
+                    Location.None,
+                    $"{metadata.FullClassName}SirenExtensions",
+                    $"the Siren mapper for '{metadata.ClassName}'"));
+            }
+
+            // Hint names are namespace-qualified — same-named HTOs in different namespaces
+            // would otherwise produce duplicate hint names and crash the whole generation.
             spc.AddSource(
-                $"{metadata.ClassName}Schema.g.cs",
+                $"{metadata.FullClassName}Schema.g.cs",
                 SchemaEmitter.GenerateSchemaSource(metadata));
 
-            if (metadata.Properties.Length > 0)
+            if (metadata.Properties.Length > 0 && !propertiesCollision)
             {
                 spc.AddSource(
-                    $"{metadata.ClassName}Properties.g.cs",
+                    $"{metadata.FullClassName}Properties.g.cs",
                     PropertiesPocoEmitter.GeneratePropertiesPoco(metadata));
             }
 
-            // Siren = true — emit ToSiren() and ToSirenEmbedded() extension methods
-            if (siren)
+            // Siren = true — emit ToSiren() and ToSirenEmbedded() extension methods.
+            // Skipped on collisions: the mapper itself would collide, or it would bind
+            // against the user's Properties type instead of the (skipped) generated POCO.
+            if (siren && !sirenExtensionsCollision && !propertiesCollision)
             {
                 spc.AddSource(
-                    $"{metadata.ClassName}SirenExtensions.g.cs",
+                    $"{metadata.FullClassName}SirenExtensions.g.cs",
                     SirenEmitter.GenerateSirenSource(metadata));
             }
         });
@@ -189,11 +226,17 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             .Select(static (compilation, _) => SanitizeAssemblyName(compilation.AssemblyName ?? "Unknown"))
             .WithTrackingName(TrackingNames.AssemblyName);
 
-        var allHtosWithConfig = htoTypes.Collect().Combine(assemblyConfig).Combine(assemblyName).Combine(actionResultMappings);
+        // A user-defined global-namespace SirenHelper type would collide with the generated one.
+        var sirenHelperCollision = context.CompilationProvider
+            .Select(static (compilation, _) => compilation.Assembly.GetTypeByMetadataName("SirenHelper") != null)
+            .WithTrackingName(TrackingNames.SirenHelperCollision);
+
+        var allHtosWithConfig = htoTypes.Collect().Combine(assemblyConfig).Combine(assemblyName)
+            .Combine(actionResultMappings).Combine(sirenHelperCollision);
 
         context.RegisterSourceOutput(allHtosWithConfig, static (spc, combined) =>
         {
-            var (((allHtos, config), assemblyNameSafe), resultData) = combined;
+            var ((((allHtos, config), assemblyNameSafe), resultData), hasSirenHelperCollision) = combined;
 
             // No [HypermediaAssembly] or Schema = false — no registry.
             // RY0030 for the Siren-forces-Schema override is reported in the
@@ -233,9 +276,20 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             // Siren = true — emit shared SirenHelper class with AddLink, AddAction, etc.
             if (siren)
             {
-                spc.AddSource(
-                    "SirenHelper.g.cs",
-                    SirenHelperEmitter.GenerateSirenHelper());
+                if (hasSirenHelperCollision)
+                {
+                    spc.ReportDiagnostic(Diagnostic.Create(
+                        GeneratorDiagnostics.GeneratedTypeNameCollision,
+                        Location.None,
+                        "SirenHelper",
+                        "the shared Siren helper emitted for Siren = true"));
+                }
+                else
+                {
+                    spc.AddSource(
+                        "SirenHelper.g.cs",
+                        SirenHelperEmitter.GenerateSirenHelper());
+                }
             }
         });
     }

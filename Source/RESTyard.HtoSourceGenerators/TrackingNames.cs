@@ -13,4 +13,5 @@ internal static class TrackingNames
     public const string LegacyResultMappings = "LegacyResultMappings";
     public const string ActionResultMappings = "ActionResultMappings";
     public const string AssemblyName = "AssemblyName";
+    public const string SirenHelperCollision = "SirenHelperCollision";
 }

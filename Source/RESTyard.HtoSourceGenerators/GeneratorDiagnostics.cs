@@ -48,6 +48,22 @@ internal static class GeneratorDiagnostics
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    internal static readonly DiagnosticDescriptor InvalidPropertyNameOverride = new(
+        id: "RY0022",
+        title: "Property name override is not a valid identifier",
+        messageFormat: "[HypermediaProperty(Name = \"{0}\")] on property '{1}' of '{2}' is not a valid C# identifier — the generated properties POCO uses the name structurally, so the override is ignored and the property name '{1}' is used instead",
+        category: "RESTyard.Schema",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
+    internal static readonly DiagnosticDescriptor GeneratedTypeNameCollision = new(
+        id: "RY0023",
+        title: "Existing type collides with a generated type",
+        messageFormat: "A type named '{0}' is already defined in this assembly and collides with {1} the schema generator emits — rename the existing type",
+        category: "RESTyard.Schema",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     internal static readonly DiagnosticDescriptor DuplicateLinkRelations = new(
         id: "RY0040",
         title: "Duplicate link relations",
