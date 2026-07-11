@@ -560,6 +560,69 @@ Returns JSON. Content type: `application/vnd.restyard.hypermedia-schema+json`.
 
 The schema intentionally does not contain resolved URLs or route templates. Clients discover URLs at runtime by navigating the hypermedia API starting from the entry point — this is a core principle of hypermedia. The schema describes the *shape* of the API (entities, relations, actions, properties) not the *location* of resources.
 
+## API Guide Endpoint
+
+> **Status:** design. New sibling to the schema endpoint, driven by the `guide` verb in
+> `HypermediaAgentInterface-Design.md`. Same *serving mechanic* as the schema endpoint; different content
+> *layer* — the guide is **authored** (human-written intent/glossary Markdown), not **generated** from
+> types. Keep the two layers separate (see the "three knowledge layers" rule in the agent-interface design).
+
+Same concept as serving an OpenAPI spec (or the schema endpoint above): a well-known, discoverable HTTP
+endpoint that serves a description document. Both files follow the identical pattern:
+
+| | Schema endpoint (done) | Guide endpoint (new) |
+|---|---|---|
+| Mapping call | `app.MapHypermediaSchema()` | `app.MapHypermediaGuide()` |
+| Default route | `/hypermedia-schema` | `/hypermedia-guide` |
+| Route overridable | yes (`o => o.Route = ...`) | yes (`o => o.Route = ...`) |
+| Content | generated `HypermediaApiSchema` JSON | authored Markdown |
+| Media type | `application/vnd.restyard.hypermedia-schema+json` | `text/vnd.restyard.hypermedia-guide+markdown` |
+| Link helper (advertise on any HTO) | `HypermediaSchema.Link()` | `HypermediaGuide.Link()` |
+| Typical rel | `schema` | `apiGuide` |
+
+```csharp
+app.MapHypermediaGuide();                          // default: /hypermedia-guide
+app.MapHypermediaGuide(o => o.Route = "/api/guide"); // or configure a custom route
+```
+
+- **Opt-in, like the schema endpoint** — omit the call and the guide isn't exposed. No guide is registered
+  by default (an API without an authored guide simply doesn't map it).
+- **Advertise via a link on any HTO** — `HypermediaGuide.Link()` mirrors `HypermediaSchema.Link()`
+  (an `ExternalLink`/`InternalReference` to the named guide route with the correct media type). Normally
+  placed on the **entry point** under the `apiGuide` rel so the CLI's `guide` verb can discover it by
+  following the rel — never a hardcoded path.
+- **Degrades gracefully** — when no guide endpoint/rel exists, the `guide` verb falls back to pure
+  navigation (per the agent-interface design).
+
+**Media type — settled:** `text/vnd.restyard.hypermedia-guide+markdown`. A **custom vendor subtype whose
+body is raw Markdown**:
+- `text/` is the correct top-level for Markdown (RFC 7763 registers `text/markdown`) — gives `charset`
+  semantics and signals human-readable text the `guide` verb consumes raw.
+- `vnd.restyard.…` marks it vendor-specific, consistent with `SchemaMediaTypes.HypermediaApiSchema`.
+- `+markdown` names the concrete serialization. **Not** an IANA-registered structured syntax suffix
+  (RFC 6839 lists `+json`/`+xml`/`+cbor`/…) — a deliberate RESTyard-internal convention, matched as a plain
+  string. A `+json` envelope was rejected: wrapping Markdown in JSON forces the agent to unwrap a string
+  before reading, defeating "Markdown is what LLMs read fluently."
+- Constant home is **`DefaultMediaTypes.HypermediaGuide`** (`Source/Shared/DefaultMediaTypes.cs`,
+  namespace `RESTyard.MediaTypes`) — **not** `SchemaMediaTypes`. The guide is not a schema concept; it sits
+  with `Siren` / `JsonSchema` / `ProblemJson`.
+
+**Content source — settled:** **file path + optional provider**, exposed as overloads:
+- File-path overload for the common case (`MapHypermediaGuide("api-guide.md")` / `o.FilePath`).
+- Provider overload for dynamic/per-user/localized content — `IHypermediaGuideProvider` (receives
+  `HttpContext`, returns the Markdown), supplied directly or resolved from DI.
+- Embedded resource / raw string are just convenience wrappers over the file-path/provider forms if wanted.
+
+**Project placement — settled:** the guide is **not schema-related** — it's a runtime ASP.NET Core delivery
+feature with no dependency on the source generator or schema model. Placement:
+- Endpoint machinery (`MapHypermediaGuide`, `HypermediaGuideEndpointOptions`, `IHypermediaGuideProvider`,
+  `HypermediaGuide.Link()`) → **`RESTyard.AspNetCore`**, beside `HypermediaSchemaEndpointExtensions.cs`.
+- Media-type constant → **`Source/Shared/DefaultMediaTypes.cs`** (`DefaultMediaTypes.HypermediaGuide`).
+- `apiGuide` rel → **`Source/Shared/DefaultHypermediaRelations.cs`** (`DefaultHypermediaRelations.ApiGuide`).
+- *Note:* this section documents the feature; the implementation work is tracked in the plan (Phase 6C) but
+  the code does not land in `RESTyard.Schema`. The endpoint is **optional/opt-in** and is built here as
+  forward-looking groundwork for the agent interface — nothing else in this effort depends on it.
+
 ## Mermaid Diagram Mapper
 
 Converts `HypermediaApiSchema` to Mermaid diagram strings. Two diagram types:
@@ -1493,7 +1556,8 @@ dotnet run --project src/MyApi -- --generate-schema --schema-artifacts markdown-
 - **Example values**: Add support for example values on entity properties and action parameters in the schema (similar to OpenAPI's `example` keyword). Useful for documentation UIs to show realistic sample data and for client generators to emit test fixtures. Could be expressed as JSON Schema `examples` keyword or as a separate field on `EntityTypeSchema`/`ActionDescription`. To be designed in a future iteration.
 - **Tag groups**: Allow grouping entity types by tags for documentation UIs (e.g., "Admin", "Public", "Billing"). The entity graph already provides natural grouping, but cross-cutting concerns that span multiple entities may benefit from explicit tags. To be designed if a concrete use case arises.
 - **Target framework**: `RESTyard.Schema` currently targets `netstandard2.0` for broad compatibility (e.g., `RESTyard.Client` multi-targets `netstandard2.0;net8.0`). Reconsider moving to `net10` once all consuming projects have dropped `netstandard2.0` support.
-- **Authorization for auto-registered endpoints — minimal API and configurable policy**: The new `/hypermedia-schema` endpoint (and potential `SchemaRootHto`) should be implemented as **minimal API endpoints**, not MVC controllers. Reason: RESTyard's `HypermediaApiExplorer` uses `IApiDescriptionGroupCollectionProvider` which scans `EndpointMetadata` — this works for both MVC controllers and minimal API endpoints (via `.WithMetadata()`). Minimal API makes authorization trivial via `.RequireAuthorization()` and avoids the complexity of applying policies dynamically to controllers.
+- **Authorization for auto-registered endpoints — minimal API and configurable policy** — **Largely resolved.** Delivery endpoints are **minimal API** and return `IEndpointConventionBuilder`, so users attach their own auth/permissions by chaining `.RequireAuthorization()` / `.RequireCors()` — no RESTyard-owned policy abstraction. Already realized for `MapHypermediaSchema` / `MapHypermediaSchemaAccessGroups` (Step 3.1 / 4.3.1) and applied to the new guide endpoint (Phase 6C). The `EndpointAuthorizationPolicy` string option below remains an *optional* convenience, not the primary mechanism. `ActionParameterTypes` migration to this pattern is tracked in Step 8.5. Original notes retained below:
+  - The new `/hypermedia-schema` endpoint (and potential `SchemaRootHto`) should be implemented as **minimal API endpoints**, not MVC controllers. Reason: RESTyard's `HypermediaApiExplorer` uses `IApiDescriptionGroupCollectionProvider` which scans `EndpointMetadata` — this works for both MVC controllers and minimal API endpoints (via `.WithMetadata()`). Minimal API makes authorization trivial via `.RequireAuthorization()` and avoids the complexity of applying policies dynamically to controllers.
   - **Configurable authorization**: `HypermediaExtensionsOptions` should expose an `EndpointAuthorizationPolicy` (string, nullable). When set, RESTyard applies it to all auto-registered endpoints via `.RequireAuthorization(policy)`. When null (default), endpoints are anonymous — backwards compatible.
   - **`ActionParameterTypes` migration**: The existing `ActionParameterTypes` controller has no `[Authorize]` attribute and relies on global MVC filters for auth (if any). Consider migrating it to minimal API for consistency with the new schema endpoints and to enable the configurable authorization policy. **This is a breaking change** for users who rely on global MVC filters (`options.Filters.Add(new AuthorizeFilter())`) — those filters don't apply to minimal API endpoints. The migration should be documented, and the configurable `EndpointAuthorizationPolicy` provides the replacement mechanism. Evaluate whether to do this in the same release as the schema endpoint or defer to a major version bump.
   - **Analysis**: RESTyard's route discovery (`AttributedRoutesRegister`) scans `ActionDescriptor.EndpointMetadata` for `IHypermediaEndpointMetadata`. Since `IEndpointNameMetadata` (which `IHypermediaEndpointMetadata` extends) is an ASP.NET Core routing interface that works at the endpoint level (not controller level), minimal API endpoints with `.WithMetadata(new HypermediaObjectEndpointAttribute<THto>())` are discovered by the same scanning code. No changes needed to the route resolver.

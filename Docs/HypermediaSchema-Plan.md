@@ -679,28 +679,138 @@ to keep the plan readable; check off IDs in the findings document as they are fi
 - Overlaps with and supersedes the generator part of Step 8.7 (Cleanup).
 - Recommended: do the structural refactorings (REF-01..03) first, then fix bugs in the smaller units.
 
+### Phase 6C: Guide (API Manual) Delivery Endpoint
+
+**Goal:** Serve the authored API **guide/manual** (Markdown) from a well-known, configurable **minimal-API**
+endpoint — a sibling to `MapHypermediaSchema()`. Same delivery mechanic as the schema endpoint; different
+content *layer* (authored, not generated — see the "API Guide Endpoint" section and "three knowledge layers"
+rule in the design docs).
+
+**Scope note:** This is an **optional, opt-in** feature (like the schema endpoint) and is **forward-looking
+groundwork** — the primary consumer is the future agent interface (`guide` verb → `apiGuide` rel, see
+`HypermediaAgentInterface-Design.md`). It is implemented here and left in place for later; no other part of
+this plan depends on it. Placement is decoupled from the schema project (endpoint in `RESTyard.AspNetCore`,
+constants in `Source/Shared`), so it can move to a dedicated agent-interface plan later without code churn.
+
+**Settled context (why this phase exists now):**
+- The *static/auto-registered endpoint delivery + auth* open question (design "Open Questions" →
+  "Authorization for auto-registered endpoints") is **resolved**: endpoints are **minimal API** and return
+  `IEndpointConventionBuilder`, so users attach their own auth/permissions by chaining
+  `.RequireAuthorization()` / `.RequireCors()`. No RESTyard-owned policy abstraction.
+- The **schema** delivery endpoint already follows this pattern and is **done** (`MapHypermediaSchema`
+  returns `IEndpointConventionBuilder`, Step 3.1). This phase applies the same pattern to the guide — it does
+  **not** touch the schema endpoint.
+
+#### Step 6C.1: Media-type + rel constants (in Shared, not Schema)
+- **Media type — settled:** add `DefaultMediaTypes.HypermediaGuide = "text/vnd.restyard.hypermedia-guide+markdown"`
+  to `Source/Shared/DefaultMediaTypes.cs` (namespace `RESTyard.MediaTypes`, beside `Siren`/`JsonSchema`/
+  `ProblemJson`) — **not** `SchemaMediaTypes`, since the guide is not a schema concept. Custom vendor subtype
+  whose body is raw Markdown (`text/` for Markdown per RFC 7763; `+markdown` is a deliberate
+  RESTyard-internal suffix, not IANA-registered; see design "API Guide Endpoint").
+- **Rel — settled:** add `DefaultHypermediaRelations.ApiGuide = "apiGuide"` to
+  `Source/Shared/DefaultHypermediaRelations.cs` (namespace `RESTyard.Relations`).
+
+#### Step 6C.2: `MapHypermediaGuide()` minimal-API endpoint (in `RESTyard.AspNetCore`)
+- Lives in `RESTyard.AspNetCore` beside `HypermediaSchemaEndpointExtensions.cs` — **no dependency on
+  `RESTyard.Schema` or the source generator.**
+- **Content source — settled: file path + optional provider, via overloads**, all
+  **returning `IEndpointConventionBuilder`** (mirror `MapHypermediaSchema`) so users chain
+  `.RequireAuthorization()` / `.RequireCors()`:
+  - `MapHypermediaGuide(string filePath, Action<HypermediaGuideEndpointOptions>? configure = null)` — common case.
+  - `MapHypermediaGuide(IHypermediaGuideProvider provider, Action<…>? configure = null)` — dynamic/per-user/
+    localized content; provider receives `HttpContext` and returns the Markdown. May also be resolved from DI.
+- `HypermediaGuideEndpointOptions`: `Route` (default `/hypermedia-guide`).
+- `IHypermediaGuideProvider`: `Task<string> GetGuideAsync(HttpContext context)` (or sync variant).
+- Serves the authored Markdown with `DefaultMediaTypes.HypermediaGuide`. Opt-in — not registered unless mapped.
+- Integration test: `GET /hypermedia-guide` returns content + correct content type; file-path and provider
+  overloads both work; `.RequireAuthorization()` chaining compiles and enforces.
+
+#### Step 6C.3: `HypermediaGuide.Link()` helper
+- Mirror `HypermediaSchema.Link()` — an `ExternalLink`/`InternalReference` to the named guide route with
+  `DefaultMediaTypes.HypermediaGuide`, so any HTO can advertise the guide (typically the entry point under
+  the `DefaultHypermediaRelations.ApiGuide` rel the agent-interface `guide` verb follows).
+- Unit/integration test: an entry-point `apiGuide` link resolves to the guide endpoint.
+
+#### Step 6C.4: CarShack demo + docs
+- Author a small `api-guide.md` for CarShack, call `MapHypermediaGuide()` in `Program.cs`, add an `apiGuide`
+  link on the entry-point HTO.
+- Document setup, content source, media type, and auth chaining in `Docs/HypermediaSchema/`.
+
 ### Phase 7: Generated Siren Output Formatter
 
 **Goal:** Provide a drop-in replacement output formatter that uses the generated `ToSiren()` internally, for existing APIs that want the performance benefit without rewriting controllers.
 
+**Formatter policy (decided):** exactly **one** Siren formatter is active per app. `GeneratedSirenFormatter`
+is a separate implementation, not a wrapper. The existing `SirenHypermediaFormatter` stays only for
+compatibility and gets deprecated (Step 8.3). There is **no runtime fallback** to `SirenConverter`:
+if the new formatter finds no mapper for the HTO's runtime type, it throws an exception naming the
+missing generated Siren target class (e.g. "`HypermediaCustomerHtoSiren` not found — is
+`[assembly: HypermediaAssembly(Siren = true)]` set on the HTO's assembly?"). Fail loudly instead of
+silently producing subtly different JSON via the reflection path.
+
+#### Step 7.0: Generated Siren mapper registry (generator work)
+- **Why:** `ToSiren()` / `ToSirenEmbedded()` are extension methods — compile-time dispatch. A formatter
+  only has `context.Object` at runtime and cannot call them without a runtime type → method bridge.
+- When `Siren = true`, the generator additionally emits per assembly (same pattern as
+  `HypermediaSchemaRegistry_*` / `HypermediaActionResultRegistry_*` in `RegistryEmitter`):
+  - `[assembly: HypermediaSirenMapperRegistryAttribute(typeof(HypermediaSirenMapperRegistry_<AssemblyNameSafe>))]`
+  - a static registry class with `GetMappers()` returning one `SirenMapperRegistration` per HTO:
+    `new(typeof(HypermediaCustomerHto), static (hto, resolver, qsb, options) => ((HypermediaCustomerHto)hto).ToSiren(resolver, qsb, options))`
+- `SirenMapperRegistration` (runtime type, lives next to the registry attribute):
+  `Type HtoType` + a `Func<IHypermediaObject, IHypermediaRouteResolver, IQueryStringBuilder, SirenMapperOptions?, object>` delegate.
+  The downcast is written by the generator, so runtime dispatch is dictionary lookup + delegate call —
+  no `MethodInfo.Invoke`, no expression compilation, AOT-compatible.
+- Reflection budget: one `GetCustomAttribute` + one static `GetMappers()` call per assembly at startup; zero per request.
+
 #### Step 7.1: `GeneratedSirenFormatter` implementation
-- Implement `GeneratedSirenFormatter` as an alternative to `SirenHypermediaFormatter` that uses `ToSiren()` instead of reflection-based `SirenConverter`
-- Must be configurable: register via `AddHypermediaSirenMapper()` DI method (separate from `AddHypermediaExtensions()`, consistent with `AddHypermediaSchema()`)
-- When registered, replaces the existing `SirenHypermediaFormatter` for HTOs that have generated `ToSiren()` methods; falls back to `SirenConverter` for HTOs without generated mappers (allows incremental migration)
-- Discover available `ToSiren()` mappers at startup — similar to registry pattern from schema generation
+- Implement `GeneratedSirenFormatter` as a separate output formatter (reuse `HypermediaOutputFormatter`
+  base if it fits) that maps HTO → generated Siren POCO via the mapper registry, then serializes the POCO
+- Startup: build a `FrozenDictionary<Type, SirenMapperRegistration>` from the discovered registries;
+  per request: look up `context.Object.GetType()` (exact-type match) and invoke the delegate
+- **No mapper found → throw** (see formatter policy above); message names the expected generated Siren
+  class and hints at the `Siren = true` opt-in. Note: derived HTO types not seen by the generator also
+  land here — exact-type lookup is intentional, the exception is the diagnosis
+- Serialize the resulting POCO with the app's `JsonOptions.SerializerOptions` (same options MVC's
+  `SystemTextJsonOutputFormatter` uses for the `OkSiren()` path) so both paths produce identical JSON
+- `CanWriteResult`: same shape as `SirenHypermediaFormatter` — HTO type check + Siren/empty content type
 
 #### Step 7.2: Formatter configuration and registration
-- `AddHypermediaSirenMapper()` registers the `GeneratedSirenFormatter` and replaces or wraps the existing output formatter
+- `AddHypermediaSirenMapper()` (separate from `AddHypermediaExtensions()`, consistent with
+  `AddHypermediaSchema()`) discovers the mapper registries and registers `GeneratedSirenFormatter`
+  **instead of** `SirenHypermediaFormatter` — one active Siren formatter, no coexistence
+- Discovery scans `ControllerAndHypermediaAssemblies` for `HypermediaSirenMapperRegistryAttribute`
+  (explicit assembly list, **not** `AppDomain.CurrentDomain.GetAssemblies()` — avoids the
+  lazy-loaded-assembly gap noted for the action-result registry)
+- Formatter swap must be order-independent w.r.t. `AddHypermediaExtensions()` — do the
+  remove/insert in a `PostConfigure<MvcOptions>` rather than relying on call order
+- RESTyard config exposes an explicit formatter choice (e.g. `HypermediaExtensionsOptions.SirenFormatter`
+  enum: `Reflection` (default, legacy `SirenHypermediaFormatter`) / `Generated`) so the active formatter
+  is visible in configuration, not implied solely by calling `AddHypermediaSirenMapper()`
+- **Misconfiguration handling (decided):**
+  - `Reflection` active but mapper registries discovered → **startup warning** (`ILogger`): generated
+    mappers present but unused. Never an error — legacy mode is a legitimate staged-rollout state
+  - `Generated` active with missing mappings → **startup exception**, and it is *complete*: cross-check
+    every non-abstract `[HypermediaObject]` type from the `ControllerAndHypermediaAssemblies` scan
+    (the route-registry scan already enumerates them) against the mapper dictionary and throw one
+    exception listing **all** unmapped HTOs with the `Siren = true` fix hint — fail fast on
+    `dotnet run` instead of one 500 at a time in production
+  - The per-request no-mapper exception (Step 7.1) remains only as a backstop for types the startup
+    scan cannot see (dynamically loaded assemblies, runtime-created HTO subclasses)
 - Configuration: opt-in per assembly via `[HypermediaAssembly(Siren = true)]` (already designed)
-- Must work alongside existing `SirenHypermediaFormatter` for assemblies without `Siren = true`
-- Respect `ControllerAndHypermediaAssemblies` for formatter scope
 
 #### Step 7.3: Documentation — alternative formatter and migration path
 - Document the two approaches for using `ToSiren()`:
-  - **Option 1 (recommended for new APIs):** Direct return via `this.ToSiren(hto)` controller extension — explicit, OpenAPI-compatible, full serialization control
+  - **Option 1 (recommended for new APIs):** Direct return via `this.OkSiren(hto)` controller extension — explicit, OpenAPI-compatible, full serialization control
   - **Option 2 (migration path for existing APIs):** `GeneratedSirenFormatter` — drop-in replacement, no controller changes, transparent performance improvement
-- Document migration path: existing API → add `[HypermediaAssembly(Siren = true)]` + `AddHypermediaSirenMapper()` → formatter handles `ToSiren()` automatically → optionally migrate controllers to `this.ToSiren(hto)` one by one → remove formatter when fully migrated
-- Document trade-offs: Option 2 has same OpenAPI limitation as current formatter (Swagger sees HTO type, not Siren shape); Option 1 fixes this
+- Document migration path: existing API → add `[HypermediaAssembly(Siren = true)]` + `AddHypermediaSirenMapper()` → formatter handles `ToSiren()` automatically → optionally migrate controllers to `this.OkSiren(hto)` one by one → formatter becomes redundant when fully migrated
+- **Migration granularity is the object graph, not the single HTO:** generated `ToSiren()` calls
+  `ToSirenEmbedded()` on embedded entities at compile time, so every assembly contributing HTOs to a
+  served graph needs `Siren = true` (enforced by the compiler — missing extension method = build error).
+  Spell this out in the migration guide
+- Since there is no fallback, migration is all-or-nothing per app once `AddHypermediaSirenMapper()` is
+  called — the exception on unmapped HTOs is the safety net; document this switch semantics
+- Document trade-offs: Option 2 has same OpenAPI limitation as current formatter (Swagger sees HTO type, not Siren shape); Option 1 fixes this;
+  known minor JSON deviations between `SirenConverter` and `ToSiren()` output are tracked in the migration guide
 
 ### Phase 8 (Optional): Migration and Parity
 
