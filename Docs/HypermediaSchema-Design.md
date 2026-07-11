@@ -623,6 +623,21 @@ feature with no dependency on the source generator or schema model. Placement:
   the code does not land in `RESTyard.Schema`. The endpoint is **optional/opt-in** and is built here as
   forward-looking groundwork for the agent interface — nothing else in this effort depends on it.
 
+**Cache headers (both endpoints — schema and guide):** both documents change only on deploy, and the
+agent-interface caching policy is strictly server-driven — clients cache only what the server declares. So
+both endpoints emit `Cache-Control` with a configurable **`CacheMaxAge`** (`TimeSpan?`, sensible default,
+**`null` opts out** directly in the map call: `app.MapHypermediaSchema(o => o.CacheMaxAge = null)`).
+- **Per-caller variation → `private`, determined structurally from the configured mode** (never by content
+  inspection), via a `CacheVisibility` option (`Public`/`Private`) auto-defaulted per mode: plain schema
+  singleton and guide file-path → `Public`; schema under access-group filtering → **forced `private`** (the
+  framework knows it varies — no override); guide provider overload → **default `Private`** as the one case
+  the framework can't judge (provider receives `HttpContext`), overridable to `Public` as an explicit
+  author assertion that the output is caller-independent. Conservative default because the risk is
+  asymmetric: unnecessary `private` costs cache efficiency, wrong `public` leaks data.
+- **ETag/`304` deliberately deferred** — the documents are small, so revalidation's payoff doesn't justify
+  content-hashing and validator handling now; can be added later as an opt-in enhancement.
+- Tracked as plan Step 6C.5 (includes retrofitting the already-implemented schema endpoints).
+
 ## Mermaid Diagram Mapper
 
 Converts `HypermediaApiSchema` to Mermaid diagram strings. Two diagram types:

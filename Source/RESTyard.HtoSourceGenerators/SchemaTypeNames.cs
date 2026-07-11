@@ -28,7 +28,8 @@ internal static class SchemaTypeNames
     internal const string LinkDescription_Relations = "Relations";
     internal const string LinkDescription_TargetName = "TargetName";
     internal const string LinkDescription_TargetClasses = "TargetClasses";
-    internal const string LinkDescription_MediaType = "MediaType";
+    internal const string LinkDescription_MediaTypes = "MediaTypes";
+    internal const string LinkDescription_IsExternal = "IsExternal";
     internal const string LinkDescription_Title = "Title";
     internal const string LinkDescription_Description = "Description";
     internal const string LinkDescription_AccessGroups = "AccessGroups";
@@ -69,6 +70,7 @@ internal static class SchemaTypeNames
     // RESTyard.Schema
     internal const string JsonSchemaFactoryNamespace = "RESTyard.Schema.SchemaGeneration";
     internal const string IJsonSchemaFactory = "IJsonSchemaFactory";
+    internal const string SirenMediaTypeConstant = "RESTyard.Schema.SchemaMediaTypes.Siren";
 
     // Registry
     internal const string HypermediaSchemaRegistryAttributeFullName =

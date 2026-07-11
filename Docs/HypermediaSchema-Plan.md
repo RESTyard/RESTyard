@@ -736,6 +736,36 @@ constants in `Source/Shared`), so it can move to a dedicated agent-interface pla
   link on the entry-point HTO.
 - Document setup, content source, media type, and auth chaining in `Docs/HypermediaSchema/`.
 
+#### Step 6C.5: Cache headers on schema + guide endpoints
+- **Why:** both documents change only on API deploy, and the agent-interface caching policy
+  (`HypermediaAgentInterface-Design.md` → "Caching") is strictly server-driven for resources — clients
+  cache **only** what the server declares. Emitting a cache header by default makes these endpoints
+  cache-friendly out of the box.
+- **Scope kept deliberately small: `Cache-Control` with `max-age` only.** ETag + `304 Not Modified`
+  handling was considered and **deferred** — these documents are small, so the 304's payoff (skipped body)
+  doesn't justify the implementation cost (content hashing, validator correctness, provider edge cases).
+  Can be added later as an opt-in enhancement without breaking anything.
+- Applies to **both** `MapHypermediaGuide()` (new, Step 6C.2) and `MapHypermediaSchema()` /
+  `MapHypermediaSchemaAccessGroups()` (retrofit of the done Phase 3/4 endpoints):
+  - New option on both options classes: `CacheMaxAge` (`TimeSpan?`) — sensible default (e.g. 5 min);
+    **`null` opts out** (no cache header emitted), set directly in the map call:
+    `app.MapHypermediaSchema(o => o.CacheMaxAge = null);`
+- **Per-caller variation → `private` — determined structurally from the configured mode, not by content
+  inspection.** New option `CacheVisibility` (enum `Public`/`Private`) on both options classes,
+  **auto-defaulted per mode**:
+  - Schema, plain singleton `HypermediaApiSchema` → `Public` automatically (one shared object for all).
+  - Schema **with access-group filtering** (Phase 4) → **forced `private`** — the framework *knows* the
+    response varies per caller; a `Public` override is ignored (or not offered) here.
+  - Guide, file-path overload → `Public` automatically (static file, same bytes for all).
+  - Guide, `IHypermediaGuideProvider` overload → the **only ambiguous case** (provider receives
+    `HttpContext` and may or may not vary output; the framework can't see inside). **Default `Private`**
+    (safe: an unnecessary `private` costs shared-cache efficiency; a wrong `public` leaks data —
+    asymmetric risk → conservative default). Author may override:
+    `app.MapHypermediaGuide(provider, o => o.CacheVisibility = CacheVisibility.Public);` — this is an
+    **assertion** that the provider output is caller-independent, document it as such.
+- Integration tests: `Cache-Control` present with configured `max-age`; `private` on the access-group and
+  default-provider variants; `public` after provider override; header absent when `CacheMaxAge = null`.
+
 ### Phase 7: Generated Siren Output Formatter
 
 **Goal:** Provide a drop-in replacement output formatter that uses the generated `ToSiren()` internally, for existing APIs that want the performance benefit without rewriting controllers.
@@ -947,7 +977,7 @@ silently producing subtly different JSON via the reflection path.
 - Include **pitfalls and edge-case solutions**, e.g.: missing `[Relations]` (RY0020/RY0021),
   `ExternalLink` invisibility in schema (GEN-18), schema-name collisions from `Hypermedia*/…Hto`
   stripping (GEN-06), `record` HTOs not supported by the generator (GEN-08), nullable vs. mandatory
-  member semantics (GEN-10), action `Name` override vs. property name (GEN-02)
+  member semantics (GEN-10), action `Name` override vs. property name (GEN-02), media types (attribute vs builder pattern at runtime)
 - Keep findings-doc references out of the final skill text — describe symptom → cause → fix directly
 
 #### Step 10.4: Agent skill — "Migrating a RESTyard v6 code base"

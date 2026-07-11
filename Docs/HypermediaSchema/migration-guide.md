@@ -160,14 +160,42 @@ Notes:
 
 Previously, `ExternalLink` properties were silently absent from the generated schema.
 
-**New:** `ExternalLink` properties with `[Relations]` appear in the entity's `links` array **without**
-`targetName`/`targetClasses` (there is no target entity type in the API). The expected media type can
-be declared with `[HypermediaMediaType("application/pdf")]` on the property and is emitted as `mediaType`.
+**New:** `ExternalLink` properties with `[Relations]` appear in the entity's `links` array marked
+`isExternal: true`, **without** `targetName`/`targetClasses` (there is no target entity type in the
+API). The expected media type(s) can be declared with
+`[HypermediaMediaType("application/pdf", "text/html")]` on the property and are emitted as
+`mediaTypes` (a string array).
 `ExternalLink` properties **without** `[Relations]` now trigger the RY0021 warning (previously silent).
 
 **Action required:** none for servers — the Siren wire format is unchanged (external links were always
-rendered there). Schema consumers should treat a link without `targetName` as external
+rendered there). Schema consumers should treat links with `isExternal: true` as external
 (dereferencing yields a non-Siren resource).
+
+## Link Media Types: Schema `mediaTypes` and Siren `type` Fallback (new behavior)
+
+Every schema link now carries `mediaTypes: string[]` — the declared `[HypermediaMediaType]` values,
+or `["application/vnd.siren+json"]` when the attribute is absent. Entity links always target Siren
+resources, so the default is accurate there; for external links to non-Siren resources, declare the
+attribute.
+
+The generated `ToSiren()` mapper emits the link `type` with this precedence:
+
+1. Runtime media types set on the reference (`WithAvailableMediaType(s)`) — unchanged, always win.
+2. Declared `[HypermediaMediaType]` values (comma-joined, as before for multiple types).
+3. Neither → `type` omitted (unchanged). Plain navigation links stay type-less on the wire —
+   Siren is the baseline, and the schema states the default once via `mediaTypes`.
+
+**Behavior change:** only case 2 is new — links with a declared `[HypermediaMediaType]` now carry
+a `type` even when the runtime sets none. The legacy reflection-based `SirenConverter` is
+unchanged — it only emits runtime media types.
+
+**Mismatch validation:** when a property declares media types and the runtime reference returns one
+outside the declared list, the mapper warns by default (`SirenMapperOptions.MediaTypeMismatch`,
+`Warn`/`Throw`/`Ignore`; warning sink `MediaTypeMismatchWarningHandler`, default
+`Trace.TraceWarning`). Links without the attribute are never validated.
+
+**Action required:** none for servers. To silence mismatch warnings, either fix the declaration or
+set `MediaTypeMismatch = MediaTypeMismatchBehavior.Ignore`.
 
 ## Controller Usage Pattern
 

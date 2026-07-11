@@ -219,18 +219,23 @@ internal static class SirenEmitter
         foreach (var link in metadata.Links)
         {
             var relArray = StringArrayLiteral(link.Relations);
+            // Media types from [HypermediaMediaType] — null when not declared
+            // (AddLink then omits the link type unless the runtime sets one)
+            var mediaTypesArray = link.MediaTypes.Length > 0
+                ? StringArrayLiteral(link.MediaTypes)
+                : "null";
 
             if (!link.IsMandatory)
             {
                 w.Line($"if (hto.{EscapeIdentifier(link.PropertyName)} is {{ }} {link.PropertyName}Link)");
                 using (w.Block())
                 {
-                    w.Line($"SirenHelper.AddLink(entity.Links, {link.PropertyName}Link, {relArray}, \"{EscapeString(link.PropertyName)}\", resolver, queryStringBuilder);");
+                    w.Line($"SirenHelper.AddLink(entity.Links, {link.PropertyName}Link, {relArray}, \"{EscapeString(link.PropertyName)}\", {mediaTypesArray}, resolver, queryStringBuilder, effectiveOptions);");
                 }
             }
             else
             {
-                w.Line($"SirenHelper.AddLink(entity.Links, hto.{EscapeIdentifier(link.PropertyName)}, {relArray}, \"{EscapeString(link.PropertyName)}\", resolver, queryStringBuilder);");
+                w.Line($"SirenHelper.AddLink(entity.Links, hto.{EscapeIdentifier(link.PropertyName)}, {relArray}, \"{EscapeString(link.PropertyName)}\", {mediaTypesArray}, resolver, queryStringBuilder, effectiveOptions);");
             }
 
             w.Line();

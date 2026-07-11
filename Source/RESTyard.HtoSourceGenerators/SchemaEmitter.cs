@@ -119,10 +119,19 @@ internal static class SchemaEmitter
                         w.Line($"{SchemaTypeNames.LinkDescription_TargetName} = \"{EscapeString(link.TargetSchemaName)}\",");
                         w.Line($"{SchemaTypeNames.LinkDescription_TargetClasses} = new[] {{ {QuotedList(link.TargetClasses)} }},");
                     }
-
-                    if (link.MediaType != null)
+                    else
                     {
-                        w.Line($"{SchemaTypeNames.LinkDescription_MediaType} = \"{EscapeString(link.MediaType)}\",");
+                        w.Line($"{SchemaTypeNames.LinkDescription_IsExternal} = true,");
+                    }
+
+                    // Declared media types, or the Siren default when none are declared
+                    if (link.MediaTypes.Length > 0)
+                    {
+                        w.Line($"{SchemaTypeNames.LinkDescription_MediaTypes} = new[] {{ {QuotedList(link.MediaTypes)} }},");
+                    }
+                    else
+                    {
+                        w.Line($"{SchemaTypeNames.LinkDescription_MediaTypes} = new[] {{ {SchemaTypeNames.SirenMediaTypeConstant} }},");
                     }
 
                     if (link.Title != null)

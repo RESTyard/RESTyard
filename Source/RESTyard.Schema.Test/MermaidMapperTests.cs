@@ -92,6 +92,60 @@ public class MermaidMapperTests() : VerifyBase()
         return Verify(markdown, extension: "md");
     }
 
+    private static HypermediaApiSchema CreateSchemaWithExternalLink()
+        => new()
+        {
+            SchemaVersion = "1.0",
+            EntryPointName = "EntryPoint",
+            EntityTypes = new[]
+            {
+                new EntityTypeSchema
+                {
+                    Name = "EntryPoint",
+                    Classes = new[] { "EntryPoint" },
+                    Links = new[]
+                    {
+                        new LinkDescription
+                        {
+                            Relations = new[] { "invoice-pdf" },
+                            IsExternal = true,
+                            MediaTypes = new[] { "application/pdf" },
+                        },
+                    },
+                    Actions = Array.Empty<ActionDescription>(),
+                    EmbeddedEntities = Array.Empty<EmbeddedEntityDescription>(),
+                },
+            },
+            Definitions = new Dictionary<string, JsonDocument>(),
+        };
+
+    [Fact]
+    public void ToApiMap_ExternalLink_RendersSharedExternalNode()
+    {
+        var result = CreateSchemaWithExternalLink().ToApiMap();
+
+        result.Should().Contain("_external[/\"External\"/]");
+        result.Should().Contain("EntryPoint -- \"invoice-pdf\" --> _external");
+    }
+
+    [Fact]
+    public void ToApiMap_WithoutExternalLinks_HasNoExternalNode()
+    {
+        var result = TestSchemaFactory.CreateMultiEntitySchema().ToApiMap();
+
+        result.Should().NotContain("_external");
+    }
+
+    [Fact]
+    public void ToClassDiagram_ExternalLink_RendersSharedExternalNode()
+    {
+        var result = CreateSchemaWithExternalLink().ToClassDiagram();
+
+        result.Should().Contain("class _external[\"External\"]");
+        result.Should().Contain("<<external>>");
+        result.Should().Contain("EntryPoint --> _external : invoice-pdf");
+    }
+
     [Fact]
     public Task ToClassDiagram_NoProperties()
     {

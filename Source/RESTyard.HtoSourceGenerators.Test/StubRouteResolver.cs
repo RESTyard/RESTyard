@@ -46,6 +46,13 @@ internal class StubRouteResolver : IHypermediaRouteResolver
 
     public ResolvedRoute ReferenceToRoute(HypermediaObjectReferenceBase reference)
     {
+        // Mirror RegisterRouteResolver: ExternalReference carries its own URI and media types
+        if (reference.GetInstance() is ExternalReference externalReference)
+        {
+            return new ResolvedRoute(
+                externalReference.ExternalUri.ToString(), "GET", externalReference.AvailableMediaTypes);
+        }
+
         var htoType = reference.GetHypermediaType();
         return objectRoutes.GetValueOrDefault(htoType) ?? fallbackRoute;
     }

@@ -40,6 +40,13 @@ public static class MermaidMapper
             sb.AppendLine($"    {entity.Name}[\"{label}\"]");
         }
 
+        // Shared node for all external links — "_external" avoids clashing with a real
+        // entity named "External"; trapezoid shape marks it as not-an-entity-type
+        if (HasExternalLinks(schema))
+        {
+            sb.AppendLine($"    {ExternalNodeId}[/\"External\"/]");
+        }
+
         var hasEdges = false;
         foreach (var entity in schema.EntityTypes)
         {
@@ -49,12 +56,9 @@ public static class MermaidMapper
                 if (string.Equals(rel, "self", StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                // External links have no target entity in the API — nothing to draw an edge to
-                if (link.TargetName == null)
-                    continue;
-
+                var target = link.TargetName ?? ExternalNodeId;
                 AppendEdgeSeparatorOnce(sb, ref hasEdges);
-                sb.AppendLine($"    {entity.Name} -- \"{rel}\" --> {link.TargetName}");
+                sb.AppendLine($"    {entity.Name} -- \"{rel}\" --> {target}");
             }
 
             foreach (var embedded in entity.EmbeddedEntities)
@@ -137,6 +141,13 @@ public static class MermaidMapper
             sb.AppendLine("    }");
         }
 
+        if (HasExternalLinks(schema))
+        {
+            sb.AppendLine($"    class {ExternalNodeId}[\"External\"] {{");
+            sb.AppendLine("        <<external>>");
+            sb.AppendLine("    }");
+        }
+
         foreach (var entity in schema.EntityTypes)
         {
             foreach (var link in entity.Links)
@@ -145,11 +156,8 @@ public static class MermaidMapper
                 if (string.Equals(rel, "self", StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                // External links have no target entity in the API — nothing to draw an edge to
-                if (link.TargetName == null)
-                    continue;
-
-                sb.AppendLine($"    {entity.Name} --> {link.TargetName} : {rel}");
+                var target = link.TargetName ?? ExternalNodeId;
+                sb.AppendLine($"    {entity.Name} --> {target} : {rel}");
             }
 
             foreach (var embedded in entity.EmbeddedEntities)
@@ -160,6 +168,29 @@ public static class MermaidMapper
         }
 
         return sb.ToString().TrimEnd();
+    }
+
+    /// <summary>
+    /// Node id for the shared "External" node all external links point to.
+    /// Underscore prefix avoids clashing with a real entity type named "External".
+    /// </summary>
+    private const string ExternalNodeId = "_external";
+
+    private static bool HasExternalLinks(HypermediaApiSchema schema)
+    {
+        foreach (var entity in schema.EntityTypes)
+        {
+            foreach (var link in entity.Links)
+            {
+                if (link.TargetName == null
+                    && !string.Equals(GetFirstRelation(link.Relations), "self", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     internal static string GetFirstRelation(System.Collections.Generic.IReadOnlyList<string> relations)

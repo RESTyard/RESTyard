@@ -27,8 +27,10 @@ internal static class SirenHelper
         ILink? link,
         string[] rel,
         string propertyName,
+        string[]? declaredMediaTypes,
         IHypermediaRouteResolver resolver,
-        IQueryStringBuilder queryStringBuilder)
+        IQueryStringBuilder queryStringBuilder,
+        {{SchemaTypeNames.SirenNamespace}}.{{SchemaTypeNames.SirenMapperOptions}} options)
     {
         if (link is null)
         {
@@ -40,13 +42,49 @@ internal static class SirenHelper
         var route = resolver.ReferenceToRoute(link.Reference);
         var query = link.Reference.GetQuery();
         var href = route.Url + queryStringBuilder.CreateQueryString(query);
+
+        // Media type precedence: runtime (WithAvailableMediaTypes) > declared
+        // ([HypermediaMediaType]) > omitted. Plain navigation links carry no type —
+        // Siren is the baseline; the schema states the default once via mediaTypes.
+        string? type;
+        if (route.AvailableMediaTypes.Count > 0)
+        {
+            type = string.Join(",", route.AvailableMediaTypes);
+            if (declaredMediaTypes is { Length: > 0 }
+                && options.MediaTypeMismatch != {{SchemaTypeNames.SirenNamespace}}.MediaTypeMismatchBehavior.Ignore)
+            {
+                var undeclared = route.AvailableMediaTypes
+                    .Where(m => !declaredMediaTypes.Contains(m))
+                    .ToList();
+                if (undeclared.Count > 0)
+                {
+                    var message =
+                        $"Link property '{propertyName}' returned media type(s) " +
+                        $"'{string.Join(", ", undeclared)}' not declared via [HypermediaMediaType] " +
+                        $"(declared: '{string.Join(", ", declaredMediaTypes)}').";
+                    if (options.MediaTypeMismatch == {{SchemaTypeNames.SirenNamespace}}.MediaTypeMismatchBehavior.Throw)
+                    {
+                        throw new System.InvalidOperationException(message);
+                    }
+
+                    options.MediaTypeMismatchWarningHandler(message);
+                }
+            }
+        }
+        else if (declaredMediaTypes is { Length: > 0 })
+        {
+            type = string.Join(",", declaredMediaTypes);
+        }
+        else
+        {
+            type = null;
+        }
+
         links.Add(new SirenLink
         {
             Rel = rel,
             Href = href,
-            Type = route.AvailableMediaTypes.Count > 0
-                ? string.Join(",", route.AvailableMediaTypes)
-                : null,
+            Type = type,
         });
     }
 

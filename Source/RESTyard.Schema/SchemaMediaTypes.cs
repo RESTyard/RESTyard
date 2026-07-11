@@ -14,4 +14,10 @@ public static class SchemaMediaTypes
     /// Media type for the access groups discovery endpoint: <c>application/vnd.restyard.hypermedia-schema-access-groups+json</c>.
     /// </summary>
     public const string HypermediaSchemaAccessGroups = "application/vnd.restyard.hypermedia-schema-access-groups+json";
+
+    /// <summary>
+    /// Siren media type: <c>application/vnd.siren+json</c>. Default for link
+    /// <c>mediaTypes</c> when no <c>[HypermediaMediaType]</c> is declared.
+    /// </summary>
+    public const string Siren = "application/vnd.siren+json";
 }

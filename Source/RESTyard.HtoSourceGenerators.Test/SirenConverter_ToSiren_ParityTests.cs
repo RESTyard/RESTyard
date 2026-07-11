@@ -65,8 +65,8 @@ public class SirenConverter_ToSiren_ParityTests
             AssertElementEqual(genTitle, convTitle, "$.title");
         }
 
-        // Links
-        AssertElementEqual(gen.GetProperty("links"), conv.GetProperty("links"), "$.links");
+        // Links — compared with special handling for 'type' (see helper)
+        AssertLinksEqual(gen.GetProperty("links"), conv.GetProperty("links"));
 
         // Actions
         AssertElementEqual(gen.GetProperty("actions"), conv.GetProperty("actions"), "$.actions");
@@ -76,15 +76,31 @@ public class SirenConverter_ToSiren_ParityTests
     }
 
     /// <summary>
-    /// Full structural comparison including properties section.
-    /// Use only when properties don't contain enums or other types with
-    /// known serialization differences.
+    /// Compares link arrays with intended divergence on 'type': the generated mapper emits
+    /// declared [HypermediaMediaType] values as a fallback when the runtime sets none, while
+    /// the legacy SirenConverter only emits runtime media types. rel and href must match
+    /// exactly; when the converter has a type (runtime media types), it must match too.
     /// </summary>
-    private static void AssertJsonEqual(string generated, string converter)
+    private static void AssertLinksEqual(JsonElement generated, JsonElement converter)
     {
-        using var genDoc = JsonDocument.Parse(generated);
-        using var convDoc = JsonDocument.Parse(converter);
-        AssertElementEqual(genDoc.RootElement, convDoc.RootElement, "$");
+        var genLinks = generated.EnumerateArray().ToList();
+        var convLinks = converter.EnumerateArray().ToList();
+        genLinks.Count.Should().Be(convLinks.Count, "link count differs at $.links");
+
+        for (var i = 0; i < genLinks.Count; i++)
+        {
+            AssertElementEqual(genLinks[i].GetProperty("rel"), convLinks[i].GetProperty("rel"), $"$.links[{i}].rel");
+            AssertElementEqual(genLinks[i].GetProperty("href"), convLinks[i].GetProperty("href"), $"$.links[{i}].href");
+
+            if (convLinks[i].TryGetProperty("type", out var convType))
+            {
+                genLinks[i].TryGetProperty("type", out var genType)
+                    .Should().BeTrue($"generated link at $.links[{i}] should have the runtime media type");
+                genType.GetString().Should().Be(convType.GetString(), $"$.links[{i}].type (runtime media types)");
+            }
+            // A generated type without a converter type can only come from a declared
+            // [HypermediaMediaType] fallback — allowed divergence.
+        }
     }
 
     private static void AssertElementEqual(JsonElement generated, JsonElement converter, string path)
@@ -112,7 +128,16 @@ public class SirenConverter_ToSiren_ParityTests
 
                 foreach (var key in genProps.Keys)
                 {
-                    AssertElementEqual(genProps[key], convProps[key], $"{path}.{key}");
+                    // Nested link arrays (e.g. on embedded entities) get the same
+                    // lenient 'type' handling as top-level links
+                    if (key == "links" && genProps[key].ValueKind == JsonValueKind.Array)
+                    {
+                        AssertLinksEqual(genProps[key], convProps[key]);
+                    }
+                    else
+                    {
+                        AssertElementEqual(genProps[key], convProps[key], $"{path}.{key}");
+                    }
                 }
                 break;
 
@@ -143,7 +168,18 @@ public class SirenConverter_ToSiren_ParityTests
 
         var hto = new SimpleCustomerHto { Name = "John", Age = 30 };
 
-        AssertJsonEqual(SerializeToSirenJson(hto.ToSiren(resolver, QueryStringBuilder)), ConverterJson(hto, resolver));
+        var generated = SerializeToSirenJson(hto.ToSiren(resolver, QueryStringBuilder));
+        var converterJson = ConverterJson(hto, resolver);
+
+        AssertSirenStructureEqual(generated, converterJson);
+
+        // Full properties comparison on top of the structure check
+        using var genDoc = JsonDocument.Parse(generated);
+        using var convDoc = JsonDocument.Parse(converterJson);
+        AssertElementEqual(
+            genDoc.RootElement.GetProperty("properties"),
+            convDoc.RootElement.GetProperty("properties"),
+            "$.properties");
     }
 
     // Tests below use AssertSirenStructureEqual because property serialization differs

@@ -100,11 +100,12 @@ Describes a hypermedia link from one entity type to another.
 | `relations` | `string[]` | Siren relation types from `[Relations]` (e.g., `["self"]`, `["bestFriend"]`). |
 | `targetName` | `string?` | Name of the target entity type (references another `EntityTypeSchema.Name`). **Absent for external links** — the link points outside the API and has no entity type in the schema. |
 | `targetClasses` | `string[]` | Siren classes of the target entity type. Empty for external links. |
+| `isExternal` | `bool` | `true` for external links (`ExternalLink` properties). Explicit marker — consumers don't need to infer externality from a missing `targetName`. Omitted (false) for entity links. |
 | `title` | `string?` | From `[Title]` attribute or XML doc `<summary>`. |
 | `description` | `string?` | From `[Description]` attribute or XML doc `<remarks>`. |
 | `accessGroups` | `string[]?` | Access groups from `[HypermediaAccessGroup]`. Null = public. |
 | `isMandatory` | `bool` | `true` when the link property is non-nullable — always present on the entity. |
-| `mediaType` | `string?` | Declared media type hint from `[HypermediaMediaType]` (e.g., `"application/pdf"`). Null when not declared. |
+| `mediaTypes` | `string[]` | Media types the linked resource may be served as, from `[HypermediaMediaType]` (e.g., `["application/pdf", "text/html"]`). Defaults to `["application/vnd.siren+json"]` when not declared. |
 | `isDeprecated` | `bool` | `true` when the link property has `[Obsolete]`. |
 | `deprecationMessage` | `string?` | The message from `[Obsolete("message")]`. |
 
@@ -115,6 +116,7 @@ Describes a hypermedia link from one entity type to another.
   "relations": ["PurchaseHistory"],
   "targetName": "CustomerPurchaseHistory",
   "targetClasses": ["CustomerPurchaseHistory"],
+  "mediaTypes": ["application/vnd.siren+json"],
   "isMandatory": true,
   "isDeprecated": false
 }
@@ -123,24 +125,32 @@ Describes a hypermedia link from one entity type to another.
 ### External Links
 
 `ExternalLink` properties (resources outside the API, e.g. downloads or third-party pages) appear
-as links **without** `targetName`/`targetClasses`. Consumers should treat a missing `targetName`
-as "dereferencing yields a non-Siren resource". The expected media type can be declared with
+as links with `isExternal: true` and **without** `targetName`/`targetClasses`. Dereferencing an
+external link usually yields a non-Siren resource. The expected media type(s) can be declared with
 `[HypermediaMediaType]` on the link property:
 
 ```csharp
-[Relations(["invoice-pdf"])]
-[HypermediaMediaType("application/pdf")]
+[Relations(["invoice-document"])]
+[HypermediaMediaType("application/pdf", "text/html")]
 public ExternalLink Invoice { get; init; }
 ```
 
 ```json
 {
-  "relations": ["invoice-pdf"],
-  "mediaType": "application/pdf",
+  "relations": ["invoice-document"],
+  "isExternal": true,
+  "mediaTypes": ["application/pdf", "text/html"],
   "isMandatory": true,
   "isDeprecated": false
 }
 ```
+
+Without the attribute, `mediaTypes` defaults to `["application/vnd.siren+json"]` — correct for
+entity links (targets are Siren resources), a placeholder for external links. Declare
+`[HypermediaMediaType]` on external links whenever the target is not a Siren API.
+
+In the Mermaid API map and class diagram, all external links point to a shared `External` node
+(id `_external`) — external targets are visible in the graph but are not entity types.
 
 ## Actions: `ActionDescription`
 

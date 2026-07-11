@@ -253,8 +253,8 @@ public static class MarkdownMapper
             var relDisplay = FormatRelation(rel, link.IsMandatory, link.IsDeprecated);
             var target = link.TargetName != null
                 ? $"[{link.TargetName}](#{ToAnchor(link.TargetName)})"
-                : link.MediaType != null
-                    ? $"*external* (`{link.MediaType}`)"
+                : link.MediaTypes.Count > 0
+                    ? $"*external* (`{string.Join("`, `", link.MediaTypes)}`)"
                     : "*external*";
             var accessGroups = FormatAccessGroupsInline(link.AccessGroups);
             var description = link.Description ?? "";

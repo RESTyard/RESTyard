@@ -9,7 +9,8 @@ namespace RESTyard.HtoSourceGenerators;
 /// <param name="TargetSchemaName">Schema name of the target HTO (derived via <c>DeriveSchemaName</c>).
 /// Null for external links (non-generic <c>ILink</c>, e.g. <c>ExternalLink</c>) — no HTO target.</param>
 /// <param name="TargetClasses">Siren classes of the target HTO from <c>[HypermediaObject(Classes)]</c>.</param>
-/// <param name="MediaType">Media type from <c>[HypermediaMediaType]</c>. Null if not declared.</param>
+/// <param name="MediaTypes">Media types from <c>[HypermediaMediaType]</c>. Empty if not declared
+/// (schema and Siren mapper then default to the Siren media type).</param>
 /// <param name="Title">Title from <c>[Title]</c> attribute or XML doc summary.</param>
 /// <param name="Description">Description from <c>[Description]</c> attribute or XML doc remarks.</param>
 /// <param name="IsDeprecated">Whether the link is marked as deprecated.</param>
@@ -22,7 +23,7 @@ internal readonly record struct LinkMetadata(
     EquatableArray<string> Relations,
     string? TargetSchemaName,
     EquatableArray<string> TargetClasses,
-    string? MediaType,
+    EquatableArray<string> MediaTypes,
     string? Title,
     string? Description,
     bool IsDeprecated,

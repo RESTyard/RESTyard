@@ -303,7 +303,7 @@ internal static class HtoMetadataExtractor
         var relations = GetRelationsFromAttribute(relationsAttr);
         var targetSchemaName = targetType != null ? DeriveSchemaName(targetType.Name) : null;
         var targetClasses = targetType != null ? GetTargetClasses(targetType) : ImmutableArray<string>.Empty;
-        var mediaType = GetAttributeStringArgument(member, WellKnownTypeNames.HypermediaMediaTypeAttributeFullName);
+        var mediaTypes = GetMediaTypes(member);
         var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
 
         // Title: [Title] attribute > XML doc <summary>
@@ -322,7 +322,7 @@ internal static class HtoMetadataExtractor
             new EquatableArray<string>(relations),
             targetSchemaName,
             new EquatableArray<string>(targetClasses),
-            mediaType,
+            new EquatableArray<string>(mediaTypes),
             linkTitle,
             linkDescription,
             linkIsDeprecated,
@@ -766,6 +766,23 @@ internal static class HtoMetadataExtractor
     /// Returns the access group names as an immutable array, or empty if not present.
     /// The attribute uses a <c>params string[]</c> constructor argument.
     /// </summary>
+    private static ImmutableArray<string> GetMediaTypes(ISymbol symbol)
+    {
+        var attr = symbol.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.HypermediaMediaTypeAttributeFullName);
+
+        // params string[] is passed as a single constructor argument containing an array of TypedConstants
+        if (attr?.ConstructorArguments.Length > 0 && attr.ConstructorArguments[0].Kind == TypedConstantKind.Array)
+        {
+            return attr.ConstructorArguments[0].Values
+                .Where(v => v.Value is string)
+                .Select(v => (string)v.Value!)
+                .ToImmutableArray();
+        }
+
+        return ImmutableArray<string>.Empty;
+    }
+
     private static ImmutableArray<string> GetAccessGroups(ISymbol symbol)
     {
         var attr = symbol.GetAttributes()

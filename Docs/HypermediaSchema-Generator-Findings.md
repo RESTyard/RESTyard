@@ -382,13 +382,28 @@ diagnostic.
 
 **Done:** the classifier now also matches the non-generic `ILink` (implemented by `ExternalLink`),
 so external links land in the links bucket: with `[Relations]` they are emitted as
-`LinkDescription` without `targetName`/`targetClasses` (`LinkDescription.TargetName` is now nullable
-and omitted from JSON when null), without `[Relations]` they trigger RY0021. New
-`[HypermediaMediaType("...")]` attribute (`RESTyard.Schema.Model`) populates `mediaType` on any link.
-The generated Siren mapper needed no change — `SirenHelper.AddLink` already takes the non-generic
-`ILink` and the runtime resolver handles `ExternalReference`. Doc mappers handle target-less links
-(Markdown renders "*external*" with the media type; Mermaid skips the edge). Documented in
-HypermediaApiSchema.md, SourceGenerator.md, and the migration guide.
+`LinkDescription` with `isExternal: true` and without `targetName`/`targetClasses`
+(`LinkDescription.TargetName` is now nullable and omitted from JSON when null),
+without `[Relations]` they trigger RY0021. New
+`[HypermediaMediaType(params string[])]` attribute (`RESTyard.Schema.Model`) populates
+`mediaTypes: string[]` on any link; links without the attribute default to
+`["application/vnd.siren+json"]` (constant `SchemaMediaTypes.Siren`).
+Doc mappers handle target-less links
+(Markdown renders "*external*" with the media types; Mermaid draws the edge to a shared
+`_external["External"]` node). Documented in HypermediaApiSchema.md, SourceGenerator.md, and the
+migration guide.
+
+Follow-up (media-type dual-source): runtime media types come from the reference builder
+(`WithAvailableMediaType(s)`), which the generator cannot see, so declared and runtime values could
+drift. Resolved by unifying in the generated Siren mapper: link `type` precedence is runtime →
+declared `[HypermediaMediaType]` → omitted (plain navigation links stay type-less on the wire —
+Siren is the baseline; only the schema states the default via `mediaTypes`). Optional mismatch
+validation via
+`SirenMapperOptions.MediaTypeMismatch` (`Warn` default with pluggable
+`MediaTypeMismatchWarningHandler`, `Throw` for tests, `Ignore`) flags runtime media types outside
+the declared list; links without the attribute are never validated. The legacy `SirenConverter`
+is unchanged (runtime media types only); the parity tests compare link `type` leniently and assert
+the documented divergence instead.
 
 ## Refactorings (structure, testability, debuggability)
 

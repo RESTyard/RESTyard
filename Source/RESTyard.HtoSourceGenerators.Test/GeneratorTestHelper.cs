@@ -163,6 +163,7 @@ internal static class GeneratorTestHelper
         string htoClassName,
         IHypermediaRouteResolver resolver,
         Action<object>? configureHto = null,
+        RESTyard.AspNetCore.Hypermedia.Siren.SirenMapperOptions? options = null,
         params string[] sources)
     {
         var (outputCompilation, _) = RunGeneratorCore(sources);
@@ -196,7 +197,7 @@ internal static class GeneratorTestHelper
                             ?? throw new InvalidOperationException($"Method 'ToSiren' not found on '{extensionsTypeName}'");
 
         var queryStringBuilder = new RESTyard.AspNetCore.Query.QueryStringBuilder();
-        var sirenResult = toSirenMethod.Invoke(null, [hto, resolver, queryStringBuilder, null]);
+        var sirenResult = toSirenMethod.Invoke(null, [hto, resolver, queryStringBuilder, options]);
         if (sirenResult == null)
         {
             throw new InvalidOperationException("ToSiren returned null");

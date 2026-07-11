@@ -188,16 +188,38 @@ All discovered group names are collected into `HypermediaApiSchema.DeclaredAcces
 
 `ExternalLink` properties (resources outside the API) are included in the schema as links without
 `targetName`/`targetClasses`. Like HTO-targeted links they need `[Relations]` (RY0021 warns otherwise).
-The expected media type of the linked resource can be declared with `[HypermediaMediaType]`
-(`RESTyard.Schema.Model`) and is emitted as `mediaType`:
+The expected media type(s) of the linked resource can be declared with `[HypermediaMediaType]`
+(`RESTyard.Schema.Model`) and are emitted as `mediaTypes`:
 
 ```csharp
-[Relations(["invoice-pdf"])]
-[HypermediaMediaType("application/pdf")]
+[Relations(["invoice-document"])]
+[HypermediaMediaType("application/pdf", "text/html")]
 public ExternalLink Invoice { get; init; }
 ```
 
-The attribute is descriptive metadata for clients and tooling — it is not enforced at runtime.
+Links without the attribute get `mediaTypes: ["application/vnd.siren+json"]` in the schema —
+the correct default for entity links.
+
+**Interaction with the generated Siren mapper.** The generated `ToSiren()` uses the declared media
+types as the link `type` when the reference sets none at runtime. Precedence:
+
+1. Runtime media types (`WithAvailableMediaType(s)` on the reference) — always win.
+2. Declared `[HypermediaMediaType]` values.
+3. Neither → `type` is omitted. Plain navigation links carry no `type` on the wire — Siren is the
+   baseline, and the schema states the default once via `mediaTypes`.
+
+When a link property declares media types and the runtime reference returns a media type outside
+that list, the mapper reacts per `SirenMapperOptions.MediaTypeMismatch`:
+
+| Behavior | Effect |
+|---|---|
+| `Warn` (default) | Calls `SirenMapperOptions.MediaTypeMismatchWarningHandler` (defaults to `Trace.TraceWarning`); response is unchanged. |
+| `Throw` | Throws `InvalidOperationException` — useful in integration tests. |
+| `Ignore` | No check. |
+
+Links without `[HypermediaMediaType]` are never validated. Route the warning into your logging
+with `options.MediaTypeMismatchWarningHandler = msg => logger.LogWarning(msg);`.
+The legacy reflection-based `SirenConverter` is unchanged: it only emits runtime media types.
 
 ### Property Handling
 

@@ -409,6 +409,7 @@ public class HtoSchemaGeneratorTests
         var selfLink = schema.Links.Single(l => l.Relations.Contains("self"));
         selfLink.TargetName.Should().Be("Customer");
         selfLink.TargetClasses.Should().BeEquivalentTo("Customer");
+        selfLink.IsExternal.Should().BeFalse();
         selfLink.IsMandatory.Should().BeTrue();
 
         var bestFriendLink = schema.Links.Single(l => l.Relations.Contains("bestFriend"));
@@ -481,7 +482,7 @@ public class HtoSchemaGeneratorTests
             public string Name { get; set; } = string.Empty;
 
             [Relations(["invoice-pdf"])]
-            [HypermediaMediaType("application/pdf")]
+            [HypermediaMediaType("application/pdf", "text/html")]
             public ExternalLink Invoice { get; set; } = Link.External(
                 new HypermediaObjectReference(new ExternalReference(new Uri("https://example.com/invoice.pdf"))));
 
@@ -501,12 +502,15 @@ public class HtoSchemaGeneratorTests
         var invoiceLink = schema.Links.Single(l => l.Relations.Contains("invoice-pdf"));
         invoiceLink.TargetName.Should().BeNull();
         invoiceLink.TargetClasses.Should().BeEmpty();
-        invoiceLink.MediaType.Should().Be("application/pdf");
+        invoiceLink.IsExternal.Should().BeTrue();
+        invoiceLink.MediaTypes.Should().BeEquivalentTo("application/pdf", "text/html");
         invoiceLink.IsMandatory.Should().BeTrue();
 
         var websiteLink = schema.Links.Single(l => l.Relations.Contains("website"));
         websiteLink.TargetName.Should().BeNull();
-        websiteLink.MediaType.Should().BeNull();
+        websiteLink.IsExternal.Should().BeTrue();
+        // No [HypermediaMediaType] declared — defaults to the Siren media type
+        websiteLink.MediaTypes.Should().BeEquivalentTo("application/vnd.siren+json");
         websiteLink.IsMandatory.Should().BeFalse();
     }
 
@@ -567,11 +571,161 @@ public class HtoSchemaGeneratorTests
             new RESTyard.AspNetCore.WebApi.RouteResolver.ResolvedRoute("http://test/self", "GET"));
 
         var json = GeneratorTestHelper.RunGeneratorAndGetSirenJson(
-            "HypermediaCustomerHto", resolver, configureHto: null, HtoWithExternalLinks);
+            "HypermediaCustomerHto", resolver, configureHto: null, options: null, HtoWithExternalLinks);
 
         json.Should().Contain("invoice-pdf");
         // Nullable external link left null is omitted
         json.Should().NotContain("website");
+    }
+
+    [Fact]
+    public void Link_type_falls_back_to_declared_media_types_and_is_omitted_otherwise()
+    {
+        var resolver = new StubRouteResolver(
+            new RESTyard.AspNetCore.WebApi.RouteResolver.ResolvedRoute("http://test/self", "GET"));
+
+        var json = GeneratorTestHelper.RunGeneratorAndGetSirenJson(
+            "HypermediaCustomerHto", resolver, configureHto: null, options: null, HtoWithExternalLinks);
+
+        using var doc = JsonDocument.Parse(json);
+        var links = doc.RootElement.GetProperty("links").EnumerateArray().ToList();
+
+        // No runtime media types on the reference → declared [HypermediaMediaType] is used
+        var invoice = links.Single(l => l.GetProperty("rel")[0].GetString() == "invoice-pdf");
+        invoice.GetProperty("type").GetString().Should().Be("application/pdf,text/html");
+
+        // Plain link without runtime or declared media types → no type on the wire
+        // (Siren is the baseline; the schema states the default via mediaTypes)
+        var self = links.Single(l => l.GetProperty("rel")[0].GetString() == "self");
+        self.TryGetProperty("type", out _).Should().BeFalse();
+    }
+
+    private const string HtoWithRuntimeMediaType = """
+        using System;
+        using RESTyard.AspNetCore.Hypermedia;
+        using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using RESTyard.AspNetCore.Hypermedia.Links;
+        using RESTyard.Schema.Model;
+
+        [assembly: HypermediaAssembly(Siren = true)]
+
+        namespace TestHtos;
+
+        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+        public class HypermediaCustomerHto : HypermediaObject
+        {
+            [Relations(["invoice-pdf"])]
+            [HypermediaMediaType("application/pdf")]
+            public ExternalLink Invoice { get; set; } = Link.External(
+                new HypermediaObjectReference(
+                    new ExternalReference(new Uri("https://example.com/invoice.pdf"))
+                        .WithAvailableMediaType("text/csv")));
+        }
+        """;
+
+    [Fact]
+    public void Runtime_media_type_wins_over_declared_and_mismatch_warns_by_default()
+    {
+        var resolver = new StubRouteResolver(
+            new RESTyard.AspNetCore.WebApi.RouteResolver.ResolvedRoute("http://test/self", "GET"));
+        var warnings = new System.Collections.Generic.List<string>();
+        var options = new RESTyard.AspNetCore.Hypermedia.Siren.SirenMapperOptions
+        {
+            MediaTypeMismatchWarningHandler = warnings.Add,
+        };
+
+        var json = GeneratorTestHelper.RunGeneratorAndGetSirenJson(
+            "HypermediaCustomerHto", resolver, configureHto: null, options, HtoWithRuntimeMediaType);
+
+        using var doc = JsonDocument.Parse(json);
+        var invoice = doc.RootElement.GetProperty("links").EnumerateArray()
+            .Single(l => l.GetProperty("rel")[0].GetString() == "invoice-pdf");
+        invoice.GetProperty("type").GetString().Should().Be("text/csv");
+
+        warnings.Should().ContainSingle();
+        warnings[0].Should().Contain("Invoice").And.Contain("text/csv").And.Contain("application/pdf");
+    }
+
+    [Fact]
+    public void Media_type_mismatch_with_Throw_behavior_throws()
+    {
+        var resolver = new StubRouteResolver(
+            new RESTyard.AspNetCore.WebApi.RouteResolver.ResolvedRoute("http://test/self", "GET"));
+        var options = new RESTyard.AspNetCore.Hypermedia.Siren.SirenMapperOptions
+        {
+            MediaTypeMismatch = RESTyard.AspNetCore.Hypermedia.Siren.MediaTypeMismatchBehavior.Throw,
+        };
+
+        var act = () => GeneratorTestHelper.RunGeneratorAndGetSirenJson(
+            "HypermediaCustomerHto", resolver, configureHto: null, options, HtoWithRuntimeMediaType);
+
+        // Reflection invoke wraps the InvalidOperationException from the generated mapper
+        act.Should().Throw<System.Reflection.TargetInvocationException>()
+            .WithInnerException<InvalidOperationException>()
+            .WithMessage("*Invoice*text/csv*");
+    }
+
+    [Fact]
+    public void Media_type_mismatch_with_Ignore_behavior_is_silent()
+    {
+        var resolver = new StubRouteResolver(
+            new RESTyard.AspNetCore.WebApi.RouteResolver.ResolvedRoute("http://test/self", "GET"));
+        var warnings = new System.Collections.Generic.List<string>();
+        var options = new RESTyard.AspNetCore.Hypermedia.Siren.SirenMapperOptions
+        {
+            MediaTypeMismatch = RESTyard.AspNetCore.Hypermedia.Siren.MediaTypeMismatchBehavior.Ignore,
+            MediaTypeMismatchWarningHandler = warnings.Add,
+        };
+
+        GeneratorTestHelper.RunGeneratorAndGetSirenJson(
+            "HypermediaCustomerHto", resolver, configureHto: null, options, HtoWithRuntimeMediaType);
+
+        warnings.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Runtime_media_type_within_declared_list_does_not_warn()
+    {
+        const string source = """
+            using System;
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using RESTyard.AspNetCore.Hypermedia.Links;
+            using RESTyard.Schema.Model;
+
+            [assembly: HypermediaAssembly(Siren = true)]
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                [Relations(["invoice-pdf"])]
+                [HypermediaMediaType("application/pdf", "text/html")]
+                public ExternalLink Invoice { get; set; } = Link.External(
+                    new HypermediaObjectReference(
+                        new ExternalReference(new Uri("https://example.com/invoice.pdf"))
+                            .WithAvailableMediaType("application/pdf")));
+            }
+            """;
+
+        var resolver = new StubRouteResolver(
+            new RESTyard.AspNetCore.WebApi.RouteResolver.ResolvedRoute("http://test/self", "GET"));
+        var warnings = new System.Collections.Generic.List<string>();
+        var options = new RESTyard.AspNetCore.Hypermedia.Siren.SirenMapperOptions
+        {
+            MediaTypeMismatchWarningHandler = warnings.Add,
+        };
+
+        var json = GeneratorTestHelper.RunGeneratorAndGetSirenJson(
+            "HypermediaCustomerHto", resolver, configureHto: null, options, source);
+
+        using var doc = JsonDocument.Parse(json);
+        var invoice = doc.RootElement.GetProperty("links").EnumerateArray()
+            .Single(l => l.GetProperty("rel")[0].GetString() == "invoice-pdf");
+        invoice.GetProperty("type").GetString().Should().Be("application/pdf");
+
+        warnings.Should().BeEmpty();
     }
 
     [Fact]
@@ -2818,6 +2972,7 @@ public class HtoSchemaGeneratorTests
                 hto.GetType().GetProperty("Name")!.SetValue(hto, "John");
                 hto.GetType().GetProperty("Age")!.SetValue(hto, 30);
             },
+            options: null,
             TestHtoSources.SimpleHtoWithSiren);
 
         // Reflection-based SirenConverter

@@ -24,17 +24,27 @@ public class LinkDescription
     public string? TargetName { get; set; }
 
     /// <summary>
+    /// True for external links (resources outside the API, no target entity type).
+    /// Explicit marker so consumers do not have to infer externality from a missing
+    /// <see cref="TargetName"/>. Omitted from JSON for regular entity links.
+    /// </summary>
+    [JsonPropertyName("isExternal")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool IsExternal { get; set; }
+
+    /// <summary>
     /// Siren classes of the target entity type.
     /// </summary>
     [JsonPropertyName("targetClasses")]
     public IReadOnlyList<string> TargetClasses { get; set; } = Array.Empty<string>();
 
     /// <summary>
-    /// Media type of the linked resource.
+    /// Media types the linked resource may be served as. Populated from
+    /// <c>[HypermediaMediaType]</c>; links without the attribute default to
+    /// the Siren media type (<see cref="SchemaMediaTypes.Siren"/>).
     /// </summary>
-    [JsonPropertyName("mediaType")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? MediaType { get; set; }
+    [JsonPropertyName("mediaTypes")]
+    public IReadOnlyList<string> MediaTypes { get; set; } = Array.Empty<string>();
 
     /// <summary>
     /// Human-readable title.

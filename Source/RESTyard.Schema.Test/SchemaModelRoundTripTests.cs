@@ -38,7 +38,7 @@ public class SchemaModelRoundTripTests
                             Relations = new[] { "self" },
                             TargetName = "Car",
                             TargetClasses = new[] { "Car" },
-                            MediaType = "application/vnd.siren+json",
+                            MediaTypes = new[] { "application/vnd.siren+json" },
                             Title = "Self link",
                             Description = "Link to itself",
                             IsMandatory = true,
@@ -121,7 +121,7 @@ public class SchemaModelRoundTripTests
         link.Relations.Should().BeEquivalentTo(new[] { "self" });
         link.TargetName.Should().Be("Car");
         link.TargetClasses.Should().BeEquivalentTo(new[] { "Car" });
-        link.MediaType.Should().Be("application/vnd.siren+json");
+        link.MediaTypes.Should().BeEquivalentTo(new[] { "application/vnd.siren+json" });
         link.Title.Should().Be("Self link");
         link.IsMandatory.Should().BeTrue();
         link.IsDeprecated.Should().BeFalse();
@@ -163,19 +163,34 @@ public class SchemaModelRoundTripTests
         {
             Relations = new[] { "invoice-pdf" },
             TargetName = null,
-            MediaType = "application/pdf",
+            IsExternal = true,
+            MediaTypes = new[] { "application/pdf", "text/html" },
             IsMandatory = true,
         };
 
         var json = JsonSerializer.Serialize(link);
         json.Should().NotContain("targetName");
-        json.Should().Contain("\"mediaType\":\"application/pdf\"");
+        json.Should().Contain("\"isExternal\":true");
+        json.Should().Contain("\"mediaTypes\":[\"application/pdf\",\"text/html\"]");
 
         var deserialized = JsonSerializer.Deserialize<LinkDescription>(json);
         deserialized.Should().NotBeNull();
         deserialized!.TargetName.Should().BeNull();
-        deserialized.MediaType.Should().Be("application/pdf");
+        deserialized.IsExternal.Should().BeTrue();
+        deserialized.MediaTypes.Should().BeEquivalentTo(new[] { "application/pdf", "text/html" });
         deserialized.Relations.Should().BeEquivalentTo(new[] { "invoice-pdf" });
+    }
+
+    [Fact]
+    public void InternalLink_OmitsIsExternalInJson()
+    {
+        var link = new LinkDescription
+        {
+            Relations = new[] { "self" },
+            TargetName = "Car",
+        };
+
+        JsonSerializer.Serialize(link).Should().NotContain("isExternal");
     }
 
     [Fact]
@@ -193,7 +208,7 @@ public class SchemaModelRoundTripTests
         json.Should().Contain("\"embeddedEntities\"");
         json.Should().Contain("\"targetName\"");
         json.Should().Contain("\"targetClasses\"");
-        json.Should().Contain("\"mediaType\"");
+        json.Should().Contain("\"mediaTypes\"");
         json.Should().Contain("\"isMandatory\"");
         json.Should().Contain("\"isDeprecated\"");
         json.Should().Contain("\"deprecationMessage\"");
