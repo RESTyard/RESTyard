@@ -157,6 +157,28 @@ public class SchemaModelRoundTripTests
     }
 
     [Fact]
+    public void ExternalLink_WithoutTargetName_RoundTripsAndOmitsTargetNameInJson()
+    {
+        var link = new LinkDescription
+        {
+            Relations = new[] { "invoice-pdf" },
+            TargetName = null,
+            MediaType = "application/pdf",
+            IsMandatory = true,
+        };
+
+        var json = JsonSerializer.Serialize(link);
+        json.Should().NotContain("targetName");
+        json.Should().Contain("\"mediaType\":\"application/pdf\"");
+
+        var deserialized = JsonSerializer.Deserialize<LinkDescription>(json);
+        deserialized.Should().NotBeNull();
+        deserialized!.TargetName.Should().BeNull();
+        deserialized.MediaType.Should().Be("application/pdf");
+        deserialized.Relations.Should().BeEquivalentTo(new[] { "invoice-pdf" });
+    }
+
+    [Fact]
     public void Serialization_UsesCamelCasePropertyNames()
     {
         var schema = CreateFullSchema();

@@ -8,10 +8,9 @@ using Json.Schema.Generation.Intents;
 
 namespace RESTyard.Schema.SchemaGeneration
 {
-    // DataAnnotations like [Required] not handled. 'required' keyword works
-    // required to support e.g. [Required] but this is an own class by the lib
-    // using Json.Schema.Generation.DataAnnotations;
-    // DataAnnotationsSupport.AddDataAnnotations();
+    // DataAnnotations like [Required] not handled — 'required' is derived from
+    // C# nullability instead (RequiredFromNonNullableRefiner); the C# 'required'
+    // keyword also works via the library.
     public class JsonSchemaFactory : IJsonSchemaFactory
     {
         private static readonly object AttributeHandlerLock = new();
@@ -28,7 +27,12 @@ namespace RESTyard.Schema.SchemaGeneration
         /// instead of being inlined. This enables mappers and tooling to display type names
         /// instead of <c>object</c>. Set to false to get the default <c>JsonSchema.Net</c> inline behavior.
         /// </param>
-        public JsonSchemaFactory(bool extractComplexTypesToDefs = true)
+        /// <param name="deriveRequiredFromNonNullable">
+        /// When true (default), non-nullable properties are emitted in the schema's <c>required</c>
+        /// list — matching C# semantics (<c>string</c> is required, <c>string?</c> is optional).
+        /// Set to false to omit <c>required</c> except for C# <c>required</c> members.
+        /// </param>
+        public JsonSchemaFactory(bool extractComplexTypesToDefs = true, bool deriveRequiredFromNonNullable = true)
         {
             config = new SchemaGeneratorConfiguration()
             {
@@ -46,6 +50,11 @@ namespace RESTyard.Schema.SchemaGeneration
             if (extractComplexTypesToDefs)
             {
                 config.Refiners.Add(new ComplexTypeDefinitionRefiner());
+            }
+
+            if (deriveRequiredFromNonNullable)
+            {
+                config.Refiners.Add(new RequiredFromNonNullableRefiner(config));
             }
 
             RegisterAttributeHandlersOnce();

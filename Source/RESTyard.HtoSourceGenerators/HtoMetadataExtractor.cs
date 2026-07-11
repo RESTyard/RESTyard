@@ -16,6 +16,15 @@ namespace RESTyard.HtoSourceGenerators;
 /// </summary>
 internal static class HtoMetadataExtractor
 {
+    /// <summary>
+    /// <see cref="SymbolDisplayFormat.FullyQualifiedFormat"/> plus the nullable reference
+    /// type modifier — property types in the generated POCO must keep their <c>?</c>
+    /// annotation so schema generation can derive optionality from it.
+    /// </summary>
+    private static readonly SymbolDisplayFormat PropertyTypeDisplayFormat =
+        SymbolDisplayFormat.FullyQualifiedFormat.AddMiscellaneousOptions(
+            SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
+
     internal static HtoMetadata? ExtractHtoMetadata(GeneratorAttributeSyntaxContext context)
     {
         if (context.TargetSymbol is not INamedTypeSymbol symbol)
@@ -222,7 +231,9 @@ internal static class HtoMetadataExtractor
         var attributes = member.GetAttributes();
         var hasRelations = HasAttribute(attributes, WellKnownTypeNames.RelationsAttributeFullName);
 
-        if (GetLinkTargetType(member) != null)
+        // ILink<T> (HTO-targeted) and non-generic ILink (ExternalLink) are both links;
+        // external links just have no target entity in the schema.
+        if (GetLinkTargetType(member) != null || IsNonGenericLinkType(member.Type))
         {
             return hasRelations ? PropertyCategory.Link : PropertyCategory.LinkMissingRelations;
         }
@@ -270,7 +281,9 @@ internal static class HtoMetadataExtractor
             name = member.Name;
         }
 
-        var typeFullName = member.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        // Keep the nullable reference annotation ("string?") — the POCO is emitted under
+        // #nullable enable, and schema generation derives optionality/required from it.
+        var typeFullName = member.Type.ToDisplayString(PropertyTypeDisplayFormat);
         var forwardedAttributes = GetForwardedAttributes(member);
         var xmlDocComment = GetXmlDocComment(member);
         return new PropertyMetadata(name, member.Name, typeFullName, forwardedAttributes, xmlDocComment);
@@ -282,13 +295,15 @@ internal static class HtoMetadataExtractor
 
     private static LinkMetadata CreateLinkMetadata(IPropertySymbol member)
     {
-        var targetType = GetLinkTargetType(member)!;
+        // Null for external links (non-generic ILink) — they have no HTO target
+        var targetType = GetLinkTargetType(member);
         var relationsAttr = member.GetAttributes()
             .First(a => a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.RelationsAttributeFullName);
 
         var relations = GetRelationsFromAttribute(relationsAttr);
-        var targetSchemaName = DeriveSchemaName(targetType.Name);
-        var targetClasses = GetTargetClasses(targetType);
+        var targetSchemaName = targetType != null ? DeriveSchemaName(targetType.Name) : null;
+        var targetClasses = targetType != null ? GetTargetClasses(targetType) : ImmutableArray<string>.Empty;
+        var mediaType = GetAttributeStringArgument(member, WellKnownTypeNames.HypermediaMediaTypeAttributeFullName);
         var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
 
         // Title: [Title] attribute > XML doc <summary>
@@ -307,6 +322,7 @@ internal static class HtoMetadataExtractor
             new EquatableArray<string>(relations),
             targetSchemaName,
             new EquatableArray<string>(targetClasses),
+            mediaType,
             linkTitle,
             linkDescription,
             linkIsDeprecated,
@@ -545,6 +561,34 @@ internal static class HtoMetadataExtractor
     {
         return type.IsGenericType
                && type.OriginalDefinition.ToDisplayString() == WellKnownTypeNames.ILinkFullName;
+    }
+
+    /// <summary>
+    /// Checks whether a type is or implements the non-generic <c>ILink</c>
+    /// (e.g. <c>ExternalLink</c>). <c>ILink&lt;T&gt;</c> types also match — callers must
+    /// check <see cref="GetLinkTargetType(IPropertySymbol)"/> first to distinguish.
+    /// </summary>
+    private static bool IsNonGenericLinkType(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol named)
+        {
+            return false;
+        }
+
+        if (!named.IsGenericType && named.ToDisplayString() == WellKnownTypeNames.ILinkNonGenericFullName)
+        {
+            return true;
+        }
+
+        foreach (var iface in named.AllInterfaces)
+        {
+            if (!iface.IsGenericType && iface.ToDisplayString() == WellKnownTypeNames.ILinkNonGenericFullName)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static ImmutableArray<string> GetRelationsFromAttribute(AttributeData relationsAttr)

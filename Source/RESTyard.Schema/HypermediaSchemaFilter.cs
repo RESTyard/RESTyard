@@ -185,7 +185,10 @@ public static class HypermediaSchemaFilter
         {
             foreach (var link in entity.Links)
             {
-                referencedNames.Add(link.TargetName);
+                if (link.TargetName != null)
+                {
+                    referencedNames.Add(link.TargetName);
+                }
             }
 
             foreach (var embedded in entity.EmbeddedEntities)

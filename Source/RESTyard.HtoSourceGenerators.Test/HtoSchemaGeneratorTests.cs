@@ -186,6 +186,69 @@ public class HtoSchemaGeneratorTests
     }
 
     [Fact]
+    public void Nullable_reference_annotation_is_preserved_in_poco()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                public string Name { get; set; } = string.Empty;
+
+                public string? Nickname { get; set; }
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+        var pocoTree = result.GeneratedTrees
+            .SingleOrDefault(t => t.FilePath.Contains("HypermediaCustomerHtoProperties.g.cs"));
+        pocoTree.Should().NotBeNull();
+        var poco = pocoTree!.GetText().ToString();
+
+        poco.Should().Contain("public string Name");
+        poco.Should().Contain("public string? Nickname");
+    }
+
+    [Fact]
+    public void Non_nullable_properties_are_required_in_generated_schema()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                public string Name { get; set; } = string.Empty;
+
+                public string? Nickname { get; set; }
+
+                public int Age { get; set; }
+
+                public int? ShoeSize { get; set; }
+            }
+            """;
+
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema("HypermediaCustomerHto", source);
+
+        schema.PropertiesSchema.Should().NotBeNull();
+        var root = schema.PropertiesSchema!.RootElement;
+        root.TryGetProperty("required", out var required).Should().BeTrue();
+        var requiredNames = required.EnumerateArray().Select(e => e.GetString()).ToArray();
+        requiredNames.Should().BeEquivalentTo("Name", "Age");
+    }
+
+    [Fact]
     public void Enum_properties_generate_poco_and_compile()
     {
         GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithEnumProperties);
@@ -399,6 +462,116 @@ public class HtoSchemaGeneratorTests
             "HypermediaCustomerHto", TestHtoSources.SimpleHto);
 
         schema.Links.Should().BeEmpty();
+    }
+
+    private const string HtoWithExternalLinks = """
+        using System;
+        using RESTyard.AspNetCore.Hypermedia;
+        using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using RESTyard.AspNetCore.Hypermedia.Links;
+        using RESTyard.Schema.Model;
+
+        [assembly: HypermediaAssembly(Siren = true)]
+
+        namespace TestHtos;
+
+        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+        public class HypermediaCustomerHto : HypermediaObject
+        {
+            public string Name { get; set; } = string.Empty;
+
+            [Relations(["invoice-pdf"])]
+            [HypermediaMediaType("application/pdf")]
+            public ExternalLink Invoice { get; set; } = Link.External(
+                new HypermediaObjectReference(new ExternalReference(new Uri("https://example.com/invoice.pdf"))));
+
+            [Relations(["website"])]
+            public ExternalLink? Website { get; set; }
+        }
+        """;
+
+    [Fact]
+    public void ExternalLink_with_relations_is_included_in_schema_links()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", HtoWithExternalLinks);
+
+        schema.Links.Should().HaveCount(2);
+
+        var invoiceLink = schema.Links.Single(l => l.Relations.Contains("invoice-pdf"));
+        invoiceLink.TargetName.Should().BeNull();
+        invoiceLink.TargetClasses.Should().BeEmpty();
+        invoiceLink.MediaType.Should().Be("application/pdf");
+        invoiceLink.IsMandatory.Should().BeTrue();
+
+        var websiteLink = schema.Links.Single(l => l.Relations.Contains("website"));
+        websiteLink.TargetName.Should().BeNull();
+        websiteLink.MediaType.Should().BeNull();
+        websiteLink.IsMandatory.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ExternalLink_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(HtoWithExternalLinks);
+    }
+
+    [Fact]
+    public void ExternalLink_is_excluded_from_properties_poco()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", HtoWithExternalLinks);
+
+        schema.PropertiesSchema.Should().NotBeNull();
+        var props = schema.PropertiesSchema!.RootElement.GetProperty("properties");
+        props.TryGetProperty("Name", out _).Should().BeTrue();
+        props.TryGetProperty("Invoice", out _).Should().BeFalse();
+        props.TryGetProperty("Website", out _).Should().BeFalse();
+    }
+
+    [Fact]
+    public void ExternalLink_without_relations_emits_RY0021_warning()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                public string Name { get; set; } = string.Empty;
+
+                public ExternalLink? MissingRelExternalLink { get; set; }
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        var customerDiags = result.Diagnostics
+            .Where(d => d.GetMessage().Contains("HypermediaCustomerHto"))
+            .ToArray();
+        customerDiags.Should().ContainSingle();
+        customerDiags[0].Id.Should().Be("RY0021");
+        customerDiags[0].GetMessage().Should().Contain("MissingRelExternalLink");
+        customerDiags[0].Severity.Should().Be(DiagnosticSeverity.Warning);
+    }
+
+    [Fact]
+    public void ExternalLink_appears_in_generated_siren_output()
+    {
+        var resolver = new StubRouteResolver(
+            new RESTyard.AspNetCore.WebApi.RouteResolver.ResolvedRoute("http://test/self", "GET"));
+
+        var json = GeneratorTestHelper.RunGeneratorAndGetSirenJson(
+            "HypermediaCustomerHto", resolver, configureHto: null, HtoWithExternalLinks);
+
+        json.Should().Contain("invoice-pdf");
+        // Nullable external link left null is omitted
+        json.Should().NotContain("website");
     }
 
     [Fact]

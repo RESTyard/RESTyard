@@ -16,10 +16,12 @@ public class LinkDescription
     public IReadOnlyList<string> Relations { get; set; } = Array.Empty<string>();
 
     /// <summary>
-    /// Name of the target entity type.
+    /// Name of the target entity type. Null for external links —
+    /// resources outside the API that have no entity type in the schema.
     /// </summary>
     [JsonPropertyName("targetName")]
-    public string TargetName { get; set; } = string.Empty;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? TargetName { get; set; }
 
     /// <summary>
     /// Siren classes of the target entity type.

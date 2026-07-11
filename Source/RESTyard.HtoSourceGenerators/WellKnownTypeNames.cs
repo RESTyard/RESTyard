@@ -29,6 +29,10 @@ internal static class WellKnownTypeNames
     internal const string ILinkFullName =
         "RESTyard.AspNetCore.Hypermedia.ILink<THto>";
 
+    /// <summary>Non-generic <c>ILink</c> — implemented by <c>ExternalLink</c> (no HTO target).</summary>
+    internal const string ILinkNonGenericFullName =
+        "RESTyard.AspNetCore.Hypermedia.ILink";
+
     internal const string HypermediaActionBaseFullName =
         "RESTyard.AspNetCore.Hypermedia.Actions.HypermediaActionBase";
 
@@ -49,6 +53,9 @@ internal static class WellKnownTypeNames
 
     internal const string HypermediaAccessGroupAttributeFullName =
         "RESTyard.Schema.Model.HypermediaAccessGroupAttribute";
+
+    internal const string HypermediaMediaTypeAttributeFullName =
+        "RESTyard.Schema.Model.HypermediaMediaTypeAttribute";
 
     internal const string ObsoleteAttributeFullName =
         "System.ObsoleteAttribute";

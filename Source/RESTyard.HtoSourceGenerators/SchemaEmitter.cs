@@ -112,8 +112,18 @@ internal static class SchemaEmitter
                 using (w.Block(close: "},"))
                 {
                     w.Line($"{SchemaTypeNames.LinkDescription_Relations} = new[] {{ {QuotedList(link.Relations)} }},");
-                    w.Line($"{SchemaTypeNames.LinkDescription_TargetName} = \"{EscapeString(link.TargetSchemaName)}\",");
-                    w.Line($"{SchemaTypeNames.LinkDescription_TargetClasses} = new[] {{ {QuotedList(link.TargetClasses)} }},");
+
+                    // External links (non-generic ILink) have no target entity in the schema
+                    if (link.TargetSchemaName != null)
+                    {
+                        w.Line($"{SchemaTypeNames.LinkDescription_TargetName} = \"{EscapeString(link.TargetSchemaName)}\",");
+                        w.Line($"{SchemaTypeNames.LinkDescription_TargetClasses} = new[] {{ {QuotedList(link.TargetClasses)} }},");
+                    }
+
+                    if (link.MediaType != null)
+                    {
+                        w.Line($"{SchemaTypeNames.LinkDescription_MediaType} = \"{EscapeString(link.MediaType)}\",");
+                    }
 
                     if (link.Title != null)
                     {

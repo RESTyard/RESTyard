@@ -28,6 +28,7 @@ internal static class SchemaTypeNames
     internal const string LinkDescription_Relations = "Relations";
     internal const string LinkDescription_TargetName = "TargetName";
     internal const string LinkDescription_TargetClasses = "TargetClasses";
+    internal const string LinkDescription_MediaType = "MediaType";
     internal const string LinkDescription_Title = "Title";
     internal const string LinkDescription_Description = "Description";
     internal const string LinkDescription_AccessGroups = "AccessGroups";

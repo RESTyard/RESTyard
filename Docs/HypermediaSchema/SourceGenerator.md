@@ -184,6 +184,21 @@ public class HypermediaAdminHto : HypermediaObject
 
 All discovered group names are collected into `HypermediaApiSchema.DeclaredAccessGroups` automatically.
 
+### External Links and `[HypermediaMediaType]`
+
+`ExternalLink` properties (resources outside the API) are included in the schema as links without
+`targetName`/`targetClasses`. Like HTO-targeted links they need `[Relations]` (RY0021 warns otherwise).
+The expected media type of the linked resource can be declared with `[HypermediaMediaType]`
+(`RESTyard.Schema.Model`) and is emitted as `mediaType`:
+
+```csharp
+[Relations(["invoice-pdf"])]
+[HypermediaMediaType("application/pdf")]
+public ExternalLink Invoice { get; init; }
+```
+
+The attribute is descriptive metadata for clients and tooling — it is not enforced at runtime.
+
 ### Property Handling
 
 | Attribute | Effect in generated POCO |
@@ -206,6 +221,11 @@ The following attributes on data properties and action parameter members are pic
 | `[DisplayName("...")]` (`System.ComponentModel`) | `title` |
 | `[Description("...")]` (`System.ComponentModel`) | `description` |
 | `[Obsolete]` | `deprecated: true` |
+
+**Nullability → `required`:** non-nullable properties are listed in the schema's `required` keyword
+(`string Name` is required, `string? Nickname` is optional). Nullable reference annotations from the
+HTO are preserved in the generated POCO, so `required` reflects your HTO declarations. The C# `required`
+keyword is merged in. Opt out with `new JsonSchemaFactory(deriveRequiredFromNonNullable: false)`.
 
 ## Assembly Discovery
 

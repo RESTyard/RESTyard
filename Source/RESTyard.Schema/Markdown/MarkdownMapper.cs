@@ -251,7 +251,11 @@ public static class MarkdownMapper
         {
             var rel = MermaidMapper.GetFirstRelation(link.Relations);
             var relDisplay = FormatRelation(rel, link.IsMandatory, link.IsDeprecated);
-            var target = $"[{link.TargetName}](#{ToAnchor(link.TargetName)})";
+            var target = link.TargetName != null
+                ? $"[{link.TargetName}](#{ToAnchor(link.TargetName)})"
+                : link.MediaType != null
+                    ? $"*external* (`{link.MediaType}`)"
+                    : "*external*";
             var accessGroups = FormatAccessGroupsInline(link.AccessGroups);
             var description = link.Description ?? "";
             sb.AppendLine($"| {relDisplay} | {target} | {accessGroups} | {description} |");
@@ -403,6 +407,9 @@ public static class MarkdownMapper
             {
                 var rel = MermaidMapper.GetFirstRelation(link.Relations);
                 if (string.Equals(rel, "self", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (link.TargetName == null)
                     continue;
 
                 AddUsage(incoming, link.TargetName,
@@ -721,7 +728,7 @@ public static class MarkdownMapper
 
             foreach (var link in entity.Links)
             {
-                if (!visited.Contains(link.TargetName))
+                if (link.TargetName != null && !visited.Contains(link.TargetName))
                 {
                     visited.Add(link.TargetName);
                     queue.Enqueue(link.TargetName);

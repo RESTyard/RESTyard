@@ -49,6 +49,10 @@ public static class MermaidMapper
                 if (string.Equals(rel, "self", StringComparison.OrdinalIgnoreCase))
                     continue;
 
+                // External links have no target entity in the API — nothing to draw an edge to
+                if (link.TargetName == null)
+                    continue;
+
                 AppendEdgeSeparatorOnce(sb, ref hasEdges);
                 sb.AppendLine($"    {entity.Name} -- \"{rel}\" --> {link.TargetName}");
             }
@@ -139,6 +143,10 @@ public static class MermaidMapper
             {
                 var rel = GetFirstRelation(link.Relations);
                 if (string.Equals(rel, "self", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                // External links have no target entity in the API — nothing to draw an edge to
+                if (link.TargetName == null)
                     continue;
 
                 sb.AppendLine($"    {entity.Name} --> {link.TargetName} : {rel}");

@@ -136,6 +136,39 @@ var options = new JsonSerializerOptions
 
 **Action required:** If clients depend on null properties being present in the JSON, do NOT set `DefaultIgnoreCondition = WhenWritingNull`, or set it only at the serializer level and not on the properties POCO. Note that `WhenWritingNull` applies globally — it also omits null Siren structural properties (`class`, `title`, etc.), which is typically desirable.
 
+## Schema: `required` Derived from Non-Nullability (new behavior)
+
+Previously, generated JSON Schemas (entity properties and action parameters) never contained the
+`required` keyword — every field looked optional to schema consumers.
+
+**New:** `JsonSchemaFactory` emits `required` for every **non-nullable** property, matching C# semantics:
+`string Name` is required, `string? Nickname` is optional. This applies to entity `propertiesSchema`,
+action `parameterSchema`, and nested types in `$defs`. The C# `required` keyword continues to work
+and is merged with the derived list.
+
+Notes:
+
+- Nullable reference annotations from the HTO are now preserved in the generated properties POCO
+  (previously `string?` degraded to `string`), so the derived `required` reflects your HTO declarations.
+- Properties without nullability information (`#nullable disable` contexts) are treated as optional —
+  `required` is only derived where the compiler recorded an annotation.
+- **Opt-out:** `new JsonSchemaFactory(deriveRequiredFromNonNullable: false)` restores the old output.
+- **Action required:** none for servers. Schema consumers (client generators, validators) that assumed
+  "everything optional" will now see accurate `required` lists — regenerate clients after upgrading.
+
+## Schema: External Links Now Included (new behavior)
+
+Previously, `ExternalLink` properties were silently absent from the generated schema.
+
+**New:** `ExternalLink` properties with `[Relations]` appear in the entity's `links` array **without**
+`targetName`/`targetClasses` (there is no target entity type in the API). The expected media type can
+be declared with `[HypermediaMediaType("application/pdf")]` on the property and is emitted as `mediaType`.
+`ExternalLink` properties **without** `[Relations]` now trigger the RY0021 warning (previously silent).
+
+**Action required:** none for servers — the Siren wire format is unchanged (external links were always
+rendered there). Schema consumers should treat a link without `targetName` as external
+(dereferencing yields a non-Siren resource).
+
 ## Controller Usage Pattern
 
 **`SirenConverter` (old):** Controllers return HTO objects directly; the formatter converts them automatically and sets the content type:

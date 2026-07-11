@@ -98,13 +98,13 @@ Describes a hypermedia link from one entity type to another.
 | Field | Type | Description |
 |---|---|---|
 | `relations` | `string[]` | Siren relation types from `[Relations]` (e.g., `["self"]`, `["bestFriend"]`). |
-| `targetName` | `string` | Name of the target entity type (references another `EntityTypeSchema.Name`). |
-| `targetClasses` | `string[]` | Siren classes of the target entity type. |
+| `targetName` | `string?` | Name of the target entity type (references another `EntityTypeSchema.Name`). **Absent for external links** — the link points outside the API and has no entity type in the schema. |
+| `targetClasses` | `string[]` | Siren classes of the target entity type. Empty for external links. |
 | `title` | `string?` | From `[Title]` attribute or XML doc `<summary>`. |
 | `description` | `string?` | From `[Description]` attribute or XML doc `<remarks>`. |
 | `accessGroups` | `string[]?` | Access groups from `[HypermediaAccessGroup]`. Null = public. |
 | `isMandatory` | `bool` | `true` when the link property is non-nullable — always present on the entity. |
-| `mediaType` | `string?` | Declared media type hint (e.g., `"text/html"` for external links). Null for standard Siren links. |
+| `mediaType` | `string?` | Declared media type hint from `[HypermediaMediaType]` (e.g., `"application/pdf"`). Null when not declared. |
 | `isDeprecated` | `bool` | `true` when the link property has `[Obsolete]`. |
 | `deprecationMessage` | `string?` | The message from `[Obsolete("message")]`. |
 
@@ -115,6 +115,28 @@ Describes a hypermedia link from one entity type to another.
   "relations": ["PurchaseHistory"],
   "targetName": "CustomerPurchaseHistory",
   "targetClasses": ["CustomerPurchaseHistory"],
+  "isMandatory": true,
+  "isDeprecated": false
+}
+```
+
+### External Links
+
+`ExternalLink` properties (resources outside the API, e.g. downloads or third-party pages) appear
+as links **without** `targetName`/`targetClasses`. Consumers should treat a missing `targetName`
+as "dereferencing yields a non-Siren resource". The expected media type can be declared with
+`[HypermediaMediaType]` on the link property:
+
+```csharp
+[Relations(["invoice-pdf"])]
+[HypermediaMediaType("application/pdf")]
+public ExternalLink Invoice { get; init; }
+```
+
+```json
+{
+  "relations": ["invoice-pdf"],
+  "mediaType": "application/pdf",
   "isMandatory": true,
   "isDeprecated": false
 }
@@ -216,6 +238,8 @@ The JSON Schema is generated at runtime by `IJsonSchemaFactory`, which supports:
 - `[Title]` / `[Description]` attributes → JSON Schema `title` / `description` keywords
 - `[DisplayName]` / `[Description]` from `System.ComponentModel` → `title` / `description`
 - `[Obsolete]` → JSON Schema `deprecated: true`
+- Non-nullable properties → listed in the `required` keyword (C# semantics: `string` is required,
+  `string?` is optional; opt-out via `new JsonSchemaFactory(deriveRequiredFromNonNullable: false)`)
 - Complex types → extracted to `$defs` with `$ref` (opt-out via `new JsonSchemaFactory(extractComplexTypesToDefs: false)`)
 - Custom temporal type handling (`DateOnly`, `TimeOnly`, `DateTimeOffset`, `TimeSpan`)
 - User-extensible via `IAttributeHandler` registration

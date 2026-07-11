@@ -28,9 +28,9 @@ emission in `SchemaEmitter` / `PropertiesPocoEmitter` / `SirenEmitter` / `SirenH
 | GEN-13 | All diagnostics use `Location.None`                                                                                       | DX gap        | M    | Low    | ✅ Done                  |
 | GEN-14 | Startup validation of dangling `TargetName` refs not implemented                                                          | Gap           | M    | Medium | Later                   |
 | GEN-15 | Minor issues (201 named args, embedded dup-relations, name sanitizing)                                                    | Nits          | S    | Low    | ✅ Done                  |
-| GEN-16 | `required` never emitted in properties/parameter schemas                                                                  | Gap           | M    | Medium | Yes — client fidelity   |
+| GEN-16 | `required` never emitted in properties/parameter schemas                                                                  | Gap           | M    | Medium | ✅ Done                  |
 | GEN-17 | Inherited actions on derived HTOs lose `resultName`/`resultClasses`                                                       | Bug           | S    | Medium | ✅ Done                  |
-| GEN-18 | `ExternalLink` properties silently absent; `mediaType` never emitted                                                      | Gap           | M    | Medium | Yes                     |
+| GEN-18 | `ExternalLink` properties silently absent; `mediaType` never emitted                                                      | Gap           | M    | Medium | ✅ Done                  |
 | REF-01 | Split 2745-line god class into extractor + emitters + pipeline                                                            | Refactoring   | L    | —      | ✅ Done                  |
 | REF-02 | Replace indentation-string emission with a `CodeWriter`                                                                   | Refactoring   | M    | —      | ✅ Done                  |
 | REF-03 | `GenerateSirenHelper` emits fully static text via `AppendLine` calls                                                      | Refactoring   | S    | —      | ✅ Done                  |
@@ -47,7 +47,7 @@ Size: S ≈ hours, M ≈ a day, L ≈ multiple days. Risk = impact of leaving it
 2. ✅ **GEN-04 + REF-06** — incrementality fix with its regression guard.
 3. ✅ **GEN-01, GEN-02, GEN-03, GEN-17** — the action-result feature cluster (fix or cut together).
 4. ✅ **GEN-05, GEN-07** — generation robustness (crash + invalid code).
-5. **GEN-06, GEN-08, GEN-09, GEN-10, ✅ GEN-12, ✅ GEN-13, GEN-16, GEN-18** — behavior gaps and DX
+5. **GEN-06, GEN-08, GEN-09, GEN-10, ✅ GEN-12, ✅ GEN-13, ✅ GEN-16, ✅ GEN-18** — behavior gaps and DX
    (GEN-16/18 unblock schema-driven client generation; GEN-12/13 pulled forward and done).
 6. **GEN-11, GEN-14, ✅ GEN-15, ✅ REF-04, ✅ REF-05** — opportunistic / later (GEN-15, REF-04/05 pulled forward and done).
 7. **DOC-01** — documentation update.
@@ -327,7 +327,7 @@ none of this. Becomes more important once GEN-06 collisions are possible.
 - `<inheritdoc/>` is no longer copied verbatim to the POCO: it is resolved against the overridden
   property's doc where possible, otherwise dropped.
 
-### GEN-16 — `required` never emitted in properties/parameter schemas
+### ✅ GEN-16 — `required` never emitted in properties/parameter schemas
 
 Reported externally by a client-generator design review (2026-07-10).
 `JsonSchemaFactory` (RESTyard.Schema, not the source generator) does not handle `[Required]` — the
@@ -337,6 +337,18 @@ deliberately. Verified: zero `"required"` occurrences in the CarShack sample sch
 mappers) must treat every field as optional. Fix candidates: enable the JsonSchema.Net
 DataAnnotations add-on, or derive `required` from non-nullable properties (matches C# semantics
 better, but changes meaning for consumers — decide and document).
+
+**Done (option: derive from non-nullability):** new `RequiredFromNonNullableRefiner`
+(`ISchemaRefiner`) adds every non-nullable property to `required`, cross-checked against the
+`PropertiesIntent` keys ([`JsonPropertyName`] respected) and merged with an existing `required`
+list from the C# `required` keyword. Nullability read via `NullabilityInfoContext` on net6+ and a
+manual `NullableAttribute`/`NullableContextAttribute` reader on netstandard2.0; unknown/oblivious
+counts as optional. On by default; opt-out via
+`new JsonSchemaFactory(deriveRequiredFromNonNullable: false)`. Prerequisite fixed along the way:
+the generated properties POCO was dropping nullable reference annotations
+(`string?` HTO property emitted as `string`) — the extractor now uses
+`SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier`, so nullability (and thus
+`required`) reflects the HTO declarations. Documented as a behavior change in the migration guide.
 
 ### ✅ GEN-17 — Inherited actions on derived HTOs lose `resultName`/`resultClasses`
 
@@ -355,7 +367,7 @@ own class name (see GEN-02 for the full key order). Regression test covers a two
 inheritance chain — base, derived, and next-level derived all get `resultName`/`resultClasses`.
 Multi-assembly caveat: see the GEN-01 known limitation.
 
-### GEN-18 — `ExternalLink` properties silently absent from the schema; `mediaType` never emitted
+### ✅ GEN-18 — `ExternalLink` properties silently absent from the schema; `mediaType` never emitted
 
 Reported externally by a client-generator design review (2026-07-10).
 `ExternalLink` implements only the non-generic `ILink` (`Link.cs`), but `ExtractLinks` /
@@ -367,6 +379,16 @@ exposes a download/external link at all. Fix: emit `ExternalLink` properties as 
 `targetName`/`targetClasses` (schema model already allows null), add a way to declare the expected
 media type (attribute on the property → `mediaType`), and include them in the missing-`[Relations]`
 diagnostic.
+
+**Done:** the classifier now also matches the non-generic `ILink` (implemented by `ExternalLink`),
+so external links land in the links bucket: with `[Relations]` they are emitted as
+`LinkDescription` without `targetName`/`targetClasses` (`LinkDescription.TargetName` is now nullable
+and omitted from JSON when null), without `[Relations]` they trigger RY0021. New
+`[HypermediaMediaType("...")]` attribute (`RESTyard.Schema.Model`) populates `mediaType` on any link.
+The generated Siren mapper needed no change — `SirenHelper.AddLink` already takes the non-generic
+`ILink` and the runtime resolver handles `ExternalReference`. Doc mappers handle target-less links
+(Markdown renders "*external*" with the media type; Mermaid skips the edge). Documented in
+HypermediaApiSchema.md, SourceGenerator.md, and the migration guide.
 
 ## Refactorings (structure, testability, debuggability)
 
