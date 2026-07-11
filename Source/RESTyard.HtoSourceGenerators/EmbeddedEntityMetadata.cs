@@ -16,6 +16,7 @@ namespace RESTyard.HtoSourceGenerators;
 /// <param name="DeprecationMessage">Deprecation message, if any.</param>
 /// <param name="IsMandatory">Whether the embedded entity property is non-nullable (mandatory).</param>
 /// <param name="AccessGroups">Access groups from <c>[HypermediaAccessGroup]</c>. Empty if none.</param>
+/// <param name="Location">Source location of the embedded entity property, used for diagnostics (RY0041).</param>
 internal readonly record struct EmbeddedEntityMetadata(
     string PropertyName,
     EquatableArray<string> Relations,
@@ -28,4 +29,5 @@ internal readonly record struct EmbeddedEntityMetadata(
     bool IsDeprecated,
     string? DeprecationMessage,
     bool IsMandatory,
-    EquatableArray<string> AccessGroups);
+    EquatableArray<string> AccessGroups,
+    LocationInfo? Location);

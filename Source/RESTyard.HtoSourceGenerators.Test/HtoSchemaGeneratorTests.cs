@@ -694,6 +694,11 @@ public class HtoSchemaGeneratorTests
         result.Diagnostics.Should().OnlyContain(d => d.Id == "RY0020");
         result.Diagnostics.Should().Contain(d => d.GetMessage(null).Contains("MissingRelations"));
         result.Diagnostics.Should().Contain(d => d.GetMessage(null).Contains("AlsoMissing"));
+
+        // GEN-12: message says "will be ignored" — a warning, not an error.
+        // GEN-13: the diagnostic points at the property, not Location.None.
+        result.Diagnostics.Should().OnlyContain(d => d.Severity == DiagnosticSeverity.Warning);
+        result.Diagnostics.Should().OnlyContain(d => d.Location != Location.None);
     }
 
     [Fact]
@@ -727,6 +732,8 @@ public class HtoSchemaGeneratorTests
         customerDiags.Should().ContainSingle();
         customerDiags[0].Id.Should().Be("RY0021");
         customerDiags[0].GetMessage().Should().Contain("MissingRelLink");
+        customerDiags[0].Severity.Should().Be(DiagnosticSeverity.Warning);
+        customerDiags[0].Location.Should().NotBe(Location.None);
     }
 
     [Fact]
@@ -1766,6 +1773,158 @@ public class HtoSchemaGeneratorTests
         result.GeneratedTrees.Should().NotContain(t => t.FilePath.EndsWith("SirenHelper.g.cs"));
     }
 
+    [Fact]
+    public void Named_argument_201_response_emits_RY0031_warning()
+    {
+        // GEN-15: [ProducesResponseType(StatusCode = 201)] / [SwaggerResponse(StatusCode = 201)]
+        // set the status via a named argument — previously only constructor arguments matched.
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Actions;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+            using Microsoft.AspNetCore.Mvc;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            public class SwaggerResponseAttribute : System.Attribute
+            {
+                public int StatusCode { get; set; }
+            }
+
+            public class SomeAction : HypermediaAction
+            {
+                public SomeAction() : base(() => true) { }
+            }
+
+            [HypermediaObject(Title = "Root", Classes = ["Root"])]
+            public class HypermediaRootHto : HypermediaObject
+            {
+                [HypermediaAction(Name = "Create")]
+                public SomeAction? Create { get; set; }
+            }
+
+            [ApiController]
+            [Route("api")]
+            public class RootController : ControllerBase
+            {
+                [HttpPost("create")]
+                [SwaggerResponse(StatusCode = 201)]
+                [HypermediaActionEndpoint<HypermediaRootHto>("Create")]
+                public IActionResult Create() => Ok();
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        result.Diagnostics.Should().Contain(d => d.Id == "RY0031");
+    }
+
+    [Fact]
+    public void Duplicate_embedded_entity_relations_emit_RY0041_info()
+    {
+        // GEN-15: identical [Relations] on two embedded entity properties is valid Siren
+        // (and allowed at runtime), so this is only an Info-level hint — unlike RY0040 for links.
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Address", Classes = ["Address"])]
+            public class HypermediaAddressHto : HypermediaObject
+            {
+                public string Street { get; set; } = string.Empty;
+            }
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                [Relations(["address"])]
+                public IEmbeddedEntity<HypermediaAddressHto>? HomeAddress { get; set; }
+
+                [Relations(["address"])]
+                public IEmbeddedEntity<HypermediaAddressHto>? WorkAddress { get; set; }
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        var ry0041 = result.Diagnostics.Should().ContainSingle(d => d.Id == "RY0041").Which;
+        ry0041.Severity.Should().Be(DiagnosticSeverity.Info);
+        ry0041.GetMessage().Should().Contain("HomeAddress").And.Contain("WorkAddress");
+        ry0041.Location.Should().NotBe(Location.None);
+        result.Diagnostics.Should().NotContain(d => d.Id == "RY0040");
+    }
+
+    [Fact]
+    public void Inheritdoc_on_override_property_resolves_base_doc_in_poco()
+    {
+        // GEN-15: a verbatim <inheritdoc/> resolves to nothing on the generated POCO
+        // (the POCO property overrides nothing) — resolve it to the base property's doc.
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            public abstract class CustomerBase : HypermediaObject
+            {
+                /// <summary>The customer's display name.</summary>
+                public virtual string Name { get; set; } = string.Empty;
+            }
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : CustomerBase
+            {
+                /// <inheritdoc/>
+                public override string Name { get; set; } = string.Empty;
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        var poco = GetGeneratedPoco(result, "HypermediaCustomerHto");
+        poco.Should().Contain("The customer's display name.");
+        poco.Should().NotContain("<inheritdoc");
+    }
+
+    [Fact]
+    public void Diagnostic_location_points_at_offending_property()
+    {
+        // GEN-13: diagnostics carry the property's source location (file offset)
+        // instead of Location.None so the IDE can navigate to it.
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Other", Classes = ["Other"])]
+            public class HypermediaOtherHto : HypermediaObject { }
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                public ILink<HypermediaOtherHto>? MissingRelLink { get; set; }
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        var diagnostic = result.Diagnostics.Should().ContainSingle(d => d.Id == "RY0021").Which;
+        var span = diagnostic.Location.SourceSpan;
+        source.Substring(span.Start, span.Length).Should().Be("MissingRelLink");
+    }
+
     // --- Legacy attribute existence check ---
     // If this test fails, the legacy HttpMethodHypermediaAction was removed.
     // Remove ActionResultMappingExtractor.ExtractLegacyActionResults (and its InheritsFrom
@@ -1933,8 +2092,11 @@ public class HtoSchemaGeneratorTests
         // Schema should be forced to true — output generated
         result.GeneratedTrees.Should().NotBeEmpty();
 
-        // Warning emitted
-        result.Diagnostics.Should().Contain(d => d.Id == "RY0030");
+        // GEN-12: a warning (error + forcing Schema = true would be contradictory),
+        // GEN-13: pointing at the [assembly: HypermediaAssembly] attribute.
+        var ry0030 = result.Diagnostics.Should().ContainSingle(d => d.Id == "RY0030").Which;
+        ry0030.Severity.Should().Be(DiagnosticSeverity.Warning);
+        ry0030.Location.Should().NotBe(Location.None);
     }
 
     // --- Step 2.8: Deprecation support ---

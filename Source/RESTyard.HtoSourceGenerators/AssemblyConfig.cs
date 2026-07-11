@@ -5,8 +5,11 @@ namespace RESTyard.HtoSourceGenerators;
 
 /// <summary>
 /// The <c>[assembly: HypermediaAssembly]</c> configuration controlling what the generator emits.
+/// <paramref name="AttributeLocation"/> is the attribute application's source location, used for
+/// RY0030 — note this makes the config change (and downstream outputs re-run) when the file
+/// containing the assembly attribute is edited, which is acceptable since that file rarely changes.
 /// </summary>
-internal readonly record struct AssemblyConfig(bool Schema, bool Siren)
+internal readonly record struct AssemblyConfig(bool Schema, bool Siren, LocationInfo? AttributeLocation = null)
 {
     /// <summary>
     /// Reads the <c>[HypermediaAssembly]</c> attribute from the compilation.
@@ -37,7 +40,7 @@ internal readonly record struct AssemblyConfig(bool Schema, bool Siren)
             }
         }
 
-        return new AssemblyConfig(schema, siren);
+        return new AssemblyConfig(schema, siren, LocationInfo.FromAttribute(attr));
     }
 
     /// <summary>

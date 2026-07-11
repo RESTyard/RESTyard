@@ -8,12 +8,16 @@ namespace RESTyard.HtoSourceGenerators;
 /// </summary>
 internal static class GeneratorDiagnostics
 {
+    // Severity note (GEN-12): diagnostics whose message says the generator recovered
+    // ("will be ignored", "has been forced to true") are warnings — the build succeeds and
+    // the message describes what was done. Errors are reserved for cases where generation
+    // (or the subsequent compilation) cannot proceed correctly (RY0023).
     internal static readonly DiagnosticDescriptor SirenRequiresSchema = new(
         id: "RY0030",
         title: "Siren = true requires Schema generation",
         messageFormat: "[HypermediaAssembly] has Siren = true but Schema = false — Schema has been forced to true because Siren mappers depend on the generated properties POCOs",
         category: "RESTyard.Schema",
-        defaultSeverity: DiagnosticSeverity.Error,
+        defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
     internal static readonly DiagnosticDescriptor MissingResultTypeWith201 = new(
@@ -37,7 +41,7 @@ internal static class GeneratorDiagnostics
         title: "Embedded entity property missing [Relations] attribute",
         messageFormat: "Property '{0}' on '{1}' is of type IEmbeddedEntity but has no [Relations] attribute — it will be ignored in the schema",
         category: "RESTyard.Schema",
-        defaultSeverity: DiagnosticSeverity.Error,
+        defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
     internal static readonly DiagnosticDescriptor LinkMissingRelations = new(
@@ -45,7 +49,7 @@ internal static class GeneratorDiagnostics
         title: "Link property missing [Relations] attribute",
         messageFormat: "Property '{0}' on '{1}' is of type ILink but has no [Relations] attribute — it will be ignored in the schema",
         category: "RESTyard.Schema",
-        defaultSeverity: DiagnosticSeverity.Error,
+        defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
     internal static readonly DiagnosticDescriptor InvalidPropertyNameOverride = new(
@@ -70,5 +74,15 @@ internal static class GeneratorDiagnostics
         messageFormat: "Properties '{0}' and '{1}' on '{2}' have identical [Relations] — the last one will win at runtime (Siren relations identify a unique link)",
         category: "RESTyard.Siren",
         defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
+    // Info, not Warning: multiple embedded entities sharing relations are valid Siren and
+    // intentionally allowed at runtime — this is only a hint against copy-paste mistakes.
+    internal static readonly DiagnosticDescriptor DuplicateEmbeddedEntityRelations = new(
+        id: "RY0041",
+        title: "Duplicate embedded entity relations",
+        messageFormat: "Properties '{0}' and '{1}' on '{2}' have identical [Relations] — multiple embedded entities with the same relations are valid, but verify this is intentional",
+        category: "RESTyard.Siren",
+        defaultSeverity: DiagnosticSeverity.Info,
         isEnabledByDefault: true);
 }

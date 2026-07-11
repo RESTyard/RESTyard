@@ -72,7 +72,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             {
                 spc.ReportDiagnostic(Diagnostic.Create(
                     GeneratorDiagnostics.SirenRequiresSchema,
-                    Location.None));
+                    effectiveConfig.AttributeLocation?.ToLocation()));
             }
 
             if (!effectiveConfig.Schema)
@@ -84,7 +84,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             {
                 spc.ReportDiagnostic(Diagnostic.Create(
                     GeneratorDiagnostics.ResultTypeNotHypermediaObject,
-                    Location.None,
+                    warning.Location?.ToLocation(),
                     warning.ResultTypeName, warning.HtoClassName, warning.ActionPropertyName));
             }
 
@@ -92,7 +92,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             {
                 spc.ReportDiagnostic(Diagnostic.Create(
                     GeneratorDiagnostics.MissingResultTypeWith201,
-                    Location.None,
+                    warning.Location?.ToLocation(),
                     warning.ControllerName, warning.MethodName, warning.ActionPropertyName));
             }
         });
@@ -126,21 +126,21 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             // Enrich actions with ResultType from controller endpoint attributes
             metadata = ActionResultMappingExtractor.EnrichActionsWithResultMappings(metadata, resultMappings);
 
-            foreach (var propertyName in metadata.EmbeddedEntityPropertiesWithoutRelations)
+            foreach (var property in metadata.EmbeddedEntityPropertiesWithoutRelations)
             {
                 spc.ReportDiagnostic(Diagnostic.Create(
                     GeneratorDiagnostics.EmbeddedEntityMissingRelations,
-                    Location.None,
-                    propertyName,
+                    property.Location?.ToLocation(),
+                    property.PropertyName,
                     metadata.ClassName));
             }
 
-            foreach (var propertyName in metadata.LinkPropertiesWithoutRelations)
+            foreach (var property in metadata.LinkPropertiesWithoutRelations)
             {
                 spc.ReportDiagnostic(Diagnostic.Create(
                     GeneratorDiagnostics.LinkMissingRelations,
-                    Location.None,
-                    propertyName,
+                    property.Location?.ToLocation(),
+                    property.PropertyName,
                     metadata.ClassName));
             }
 
@@ -153,7 +153,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 {
                     spc.ReportDiagnostic(Diagnostic.Create(
                         GeneratorDiagnostics.DuplicateLinkRelations,
-                        Location.None,
+                        link.Location?.ToLocation(),
                         firstPropertyName,
                         link.PropertyName,
                         metadata.ClassName));
@@ -164,11 +164,31 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 }
             }
 
+            // Duplicate embedded entity relations are valid at runtime — RY0041 is only a hint.
+            var seenEmbeddedRelations = new Dictionary<string, string>(); // relKey → first property name
+            foreach (var embedded in metadata.EmbeddedEntities)
+            {
+                var relKey = string.Join(",", embedded.Relations.OrderBy(r => r, System.StringComparer.Ordinal));
+                if (seenEmbeddedRelations.TryGetValue(relKey, out var firstPropertyName))
+                {
+                    spc.ReportDiagnostic(Diagnostic.Create(
+                        GeneratorDiagnostics.DuplicateEmbeddedEntityRelations,
+                        embedded.Location?.ToLocation(),
+                        firstPropertyName,
+                        embedded.PropertyName,
+                        metadata.ClassName));
+                }
+                else
+                {
+                    seenEmbeddedRelations[relKey] = embedded.PropertyName;
+                }
+            }
+
             foreach (var invalidName in metadata.InvalidPropertyNameOverrides)
             {
                 spc.ReportDiagnostic(Diagnostic.Create(
                     GeneratorDiagnostics.InvalidPropertyNameOverride,
-                    Location.None,
+                    invalidName.Location?.ToLocation(),
                     invalidName.InvalidName,
                     invalidName.PropertyName,
                     metadata.ClassName));
@@ -182,7 +202,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             {
                 spc.ReportDiagnostic(Diagnostic.Create(
                     GeneratorDiagnostics.GeneratedTypeNameCollision,
-                    Location.None,
+                    metadata.PropertiesTypeCollision?.ToLocation(),
                     $"{metadata.FullClassName}Properties",
                     $"the data-properties POCO for '{metadata.ClassName}'"));
             }
@@ -192,7 +212,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             {
                 spc.ReportDiagnostic(Diagnostic.Create(
                     GeneratorDiagnostics.GeneratedTypeNameCollision,
-                    Location.None,
+                    metadata.SirenExtensionsTypeCollision?.ToLocation(),
                     $"{metadata.FullClassName}SirenExtensions",
                     $"the Siren mapper for '{metadata.ClassName}'"));
             }
@@ -227,8 +247,12 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             .WithTrackingName(TrackingNames.AssemblyName);
 
         // A user-defined global-namespace SirenHelper type would collide with the generated one.
+        // Null = no collision; otherwise the colliding type's location for RY0023.
         var sirenHelperCollision = context.CompilationProvider
-            .Select(static (compilation, _) => compilation.Assembly.GetTypeByMetadataName("SirenHelper") != null)
+            .Select(static (compilation, _) =>
+                compilation.Assembly.GetTypeByMetadataName("SirenHelper") is { } sirenHelperType
+                    ? LocationInfo.FromSymbol(sirenHelperType)
+                    : null)
             .WithTrackingName(TrackingNames.SirenHelperCollision);
 
         var allHtosWithConfig = htoTypes.Collect().Combine(assemblyConfig).Combine(assemblyName)
@@ -236,7 +260,7 @@ public class HtoSchemaGenerator : IIncrementalGenerator
 
         context.RegisterSourceOutput(allHtosWithConfig, static (spc, combined) =>
         {
-            var ((((allHtos, config), assemblyNameSafe), resultData), hasSirenHelperCollision) = combined;
+            var ((((allHtos, config), assemblyNameSafe), resultData), sirenHelperCollisionLocation) = combined;
 
             // No [HypermediaAssembly] or Schema = false — no registry.
             // RY0030 for the Siren-forces-Schema override is reported in the
@@ -276,11 +300,11 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             // Siren = true — emit shared SirenHelper class with AddLink, AddAction, etc.
             if (siren)
             {
-                if (hasSirenHelperCollision)
+                if (sirenHelperCollisionLocation is { } collisionLocation)
                 {
                     spc.ReportDiagnostic(Diagnostic.Create(
                         GeneratorDiagnostics.GeneratedTypeNameCollision,
-                        Location.None,
+                        collisionLocation.ToLocation(),
                         "SirenHelper",
                         "the shared Siren helper emitted for Siren = true"));
                 }
@@ -297,6 +321,9 @@ public class HtoSchemaGenerator : IIncrementalGenerator
     /// <summary>
     /// Sanitizes an assembly name for use as a C# identifier suffix.
     /// Replaces non-alphanumeric characters with underscores.
+    /// Distinct assembly names can sanitize to the same identifier ("My.App"/"My_App") — this is
+    /// acceptable: the registry types live in different assemblies and are discovered via assembly
+    /// attributes, never referenced by name across assemblies, so equal type names cannot clash.
     /// </summary>
     internal static string SanitizeAssemblyName(string assemblyName)
     {

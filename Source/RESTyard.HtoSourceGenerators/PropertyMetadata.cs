@@ -24,6 +24,16 @@ internal readonly record struct PropertyMetadata(
 /// </summary>
 /// <param name="PropertyName">The original C# property name on the HTO class.</param>
 /// <param name="InvalidName">The rejected override value.</param>
+/// <param name="Location">Location of the <c>[HypermediaProperty]</c> attribute (or the property) for the diagnostic.</param>
 internal readonly record struct InvalidPropertyNameOverride(
     string PropertyName,
-    string InvalidName);
+    string InvalidName,
+    LocationInfo? Location);
+
+/// <summary>
+/// A property name plus its source location — used for diagnostics that only need to
+/// point at a property (e.g. missing <c>[Relations]</c>, RY0020/RY0021).
+/// </summary>
+internal readonly record struct PropertyRef(
+    string PropertyName,
+    LocationInfo? Location);

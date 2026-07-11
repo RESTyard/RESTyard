@@ -24,10 +24,10 @@ emission in `SchemaEmitter` / `PropertiesPocoEmitter` / `SirenEmitter` / `SirenH
 | GEN-09 | Embedded-collection detection too loose and too tight (arrays leak)                                                       | Bug           | S–M  | Medium | Yes                     |
 | GEN-10 | Null mandatory action silently omitted; links/embedded throw                                                              | Inconsist.    | S    | Low    | Yes — decide + document |
 | GEN-11 | No diagnostic for zero/multiple endpoints per HTO/action (design says)                                                    | Gap           | M    | Medium | Later                   |
-| GEN-12 | Diagnostic severity vs. wording mismatch (RY0020/21/30)                                                                   | Inconsist.    | S    | Low    | Yes — cheap             |
-| GEN-13 | All diagnostics use `Location.None`                                                                                       | DX gap        | M    | Low    | Yes — big DX win        |
+| GEN-12 | Diagnostic severity vs. wording mismatch (RY0020/21/30)                                                                   | Inconsist.    | S    | Low    | ✅ Done                  |
+| GEN-13 | All diagnostics use `Location.None`                                                                                       | DX gap        | M    | Low    | ✅ Done                  |
 | GEN-14 | Startup validation of dangling `TargetName` refs not implemented                                                          | Gap           | M    | Medium | Later                   |
-| GEN-15 | Minor issues (201 named args, embedded dup-relations, name sanitizing)                                                    | Nits          | S    | Low    | Opportunistic           |
+| GEN-15 | Minor issues (201 named args, embedded dup-relations, name sanitizing)                                                    | Nits          | S    | Low    | ✅ Done                  |
 | GEN-16 | `required` never emitted in properties/parameter schemas                                                                  | Gap           | M    | Medium | Yes — client fidelity   |
 | GEN-17 | Inherited actions on derived HTOs lose `resultName`/`resultClasses`                                                       | Bug           | S    | Medium | ✅ Done                  |
 | GEN-18 | `ExternalLink` properties silently absent; `mediaType` never emitted                                                      | Gap           | M    | Medium | Yes                     |
@@ -47,9 +47,9 @@ Size: S ≈ hours, M ≈ a day, L ≈ multiple days. Risk = impact of leaving it
 2. ✅ **GEN-04 + REF-06** — incrementality fix with its regression guard.
 3. ✅ **GEN-01, GEN-02, GEN-03, GEN-17** — the action-result feature cluster (fix or cut together).
 4. ✅ **GEN-05, GEN-07** — generation robustness (crash + invalid code).
-5. **GEN-06, GEN-08, GEN-09, GEN-10, GEN-12, GEN-13, GEN-16, GEN-18** — behavior gaps and DX
-   (GEN-16/18 unblock schema-driven client generation).
-6. **GEN-11, GEN-14, GEN-15, ✅ REF-04, ✅ REF-05** — opportunistic / later (REF-04/05 pulled forward and done).
+5. **GEN-06, GEN-08, GEN-09, GEN-10, ✅ GEN-12, ✅ GEN-13, GEN-16, GEN-18** — behavior gaps and DX
+   (GEN-16/18 unblock schema-driven client generation; GEN-12/13 pulled forward and done).
+6. **GEN-11, GEN-14, ✅ GEN-15, ✅ REF-04, ✅ REF-05** — opportunistic / later (GEN-15, REF-04/05 pulled forward and done).
 7. **DOC-01** — documentation update.
 
 ## Bugs and gaps
@@ -255,18 +255,40 @@ Design doc constraint: "If the generator finds zero or multiple endpoints for th
 should emit a diagnostic error." Not implemented — multiple `[HypermediaActionEndpoint]` attributes for
 the same action last-win silently in the mapping dictionary; missing endpoints are not detected at all.
 
-### GEN-12 — Diagnostic severity vs. wording mismatch
+### ✅ GEN-12 — Diagnostic severity vs. wording mismatch
 
 RY0020/RY0021 messages say "it **will be ignored** in the schema" and doc comments call them warnings,
 but both are declared `DiagnosticSeverity.Error`. RY0030 is `Error` while plan Step 2.9 says "diagnostic
 warning" — and *error + force Schema=true* is contradictory (the build fails, so the forcing never
 matters). Decide per diagnostic: error with error wording, or warning as planned.
 
-### GEN-13 — All diagnostics use `Location.None`
+**Done:** Policy documented in `GeneratorDiagnostics`: diagnostics whose message says the generator
+recovered ("will be ignored", "has been forced to true") are **warnings**; errors are reserved for
+cases where generation or the subsequent compilation cannot proceed correctly (RY0023).
+RY0020, RY0021, and RY0030 changed from Error to Warning — matching their wording and plan Step 2.9.
+
+### ✅ GEN-13 — All diagnostics use `Location.None`
 
 No squiggles, no click-to-navigate in the IDE. Capture the property/attribute location into the metadata
 records — as file path + `TextSpan` (both equatable) rather than `Location` itself, to keep incremental
 caching correct.
+
+**Done:** New equatable `LocationInfo` record (file path + `TextSpan` + `LinePositionSpan`, converted
+back via `Location.Create` at report time) threaded through all diagnostic paths:
+
+- RY0020/RY0021: missing-relations lists changed from property names to `PropertyRef` (name + location).
+- RY0022: location of the `[HypermediaProperty]` attribute (fallback: the property).
+- RY0023: location of the *colliding user type* (the message says "rename the existing type") — the
+  per-HTO collision flags became `LocationInfo?` on `HtoMetadata`; the `SirenHelper` provider now
+  yields the colliding type's location instead of a bool.
+- RY0030: the `[assembly: HypermediaAssembly]` attribute (captured in `AssemblyConfig`).
+- RY0031/RY0032: the endpoint attribute application (both modern and legacy extraction).
+- RY0040/RY0041: the duplicate link/embedded property (`Location` added to `LinkMetadata` /
+  `EmbeddedEntityMetadata`).
+
+Incremental caching stays intact — all captured values are equatable; outputs re-run only when the
+declaring file actually changes (which shifts spans). Regression-tested: the diagnostic's `SourceSpan`
+must cover the offending property identifier.
 
 ### GEN-14 — Startup validation of dangling `TargetName` references missing
 
@@ -275,7 +297,7 @@ Design doc ("Runtime Opt-In" section): the aggregated schema should validate tha
 with an `AllowUnresolvedReferences` option producing placeholder entries. `ComposeSchema()` implements
 none of this. Becomes more important once GEN-06 collisions are possible.
 
-### GEN-15 — Minor issues (collect opportunistically)
+### ✅ GEN-15 — Minor issues (collect opportunistically)
 
 - `Has201ResponseAttribute` only checks constructor args — misses `[ProducesResponseType(StatusCode = 201)]`
   named-argument form.
@@ -288,6 +310,22 @@ none of this. Becomes more important once GEN-06 collisions are possible.
 - Verify `[HypermediaObject]` positional constructor arguments (if any exist) — only named arguments
   `Title`/`Classes` are read.
 - XML doc `<inheritdoc/>` on HTO properties is copied verbatim to the POCO where it resolves to nothing.
+
+**Done:** All six items resolved:
+
+- `Has201ResponseAttribute` now also matches the `StatusCode = 201` named-argument form
+  (enum values like `HttpStatusCode.Created` already matched — their boxed value is the underlying int).
+- New **RY0041** (Info) hints at identical `[Relations]` on two embedded entity properties — Info, not
+  Warning, because duplicates are valid Siren and intentionally allowed at runtime (unlike RY0040 links).
+- `SanitizeAssemblyName` collisions assessed — no code change: the registry types live in *different
+  assemblies* and are discovered via assembly attributes, never referenced by name across assemblies,
+  so equal sanitized type names cannot clash. Documented on the method.
+- Orphaned doc comment: already fixed by the REF-01 split (`SanitizeAssemblyName` carries its own
+  `<summary>` in `HtoSchemaGenerator`; `ExtractActionResultMappings` no longer exists).
+- `[HypermediaObject]` verified: the attribute has no constructor parameters at all (`Title`/`Classes`
+  are settable properties only), so reading named arguments is complete.
+- `<inheritdoc/>` is no longer copied verbatim to the POCO: it is resolved against the overridden
+  property's doc where possible, otherwise dropped.
 
 ### GEN-16 — `required` never emitted in properties/parameter schemas
 

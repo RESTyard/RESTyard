@@ -83,8 +83,8 @@ internal static class HtoMetadataExtractor
             embeddedWithoutRelations,
             linksWithoutRelations,
             invalidPropertyNameOverrides,
-            HasUserDefinedTypeInNamespace(symbol, symbol.Name + "Properties"),
-            HasUserDefinedTypeInNamespace(symbol, symbol.Name + "SirenExtensions"));
+            FindUserDefinedTypeInNamespace(symbol, symbol.Name + "Properties"),
+            FindUserDefinedTypeInNamespace(symbol, symbol.Name + "SirenExtensions"));
     }
 
     /// <summary>
@@ -98,12 +98,14 @@ internal static class HtoMetadataExtractor
             : type.ContainingNamespace.ToDisplayString() + "." + type.Name;
 
     /// <summary>
-    /// Whether the HTO's namespace already contains a user-defined (source) type with the
-    /// given name that would collide with a type the generator emits.
+    /// Location of a user-defined (source) type in the HTO's namespace with the given name
+    /// that would collide with a type the generator emits, or null when there is none.
     /// </summary>
-    private static bool HasUserDefinedTypeInNamespace(INamedTypeSymbol htoSymbol, string typeName)
+    private static LocationInfo? FindUserDefinedTypeInNamespace(INamedTypeSymbol htoSymbol, string typeName)
         => htoSymbol.ContainingNamespace.GetTypeMembers(typeName)
-            .Any(t => t.Locations.Any(l => l.IsInSource));
+            .Where(t => t.Locations.Any(l => l.IsInSource))
+            .Select(t => LocationInfo.FromSymbol(t))
+            .FirstOrDefault();
 
     /// <summary>
     /// The single category a property is bucketed into by <see cref="Classify"/>.
@@ -128,8 +130,8 @@ internal static class HtoMetadataExtractor
         EquatableArray<LinkMetadata> Links,
         EquatableArray<ActionMetadata> Actions,
         EquatableArray<EmbeddedEntityMetadata> EmbeddedEntities,
-        EquatableArray<string> EmbeddedEntitiesWithoutRelations,
-        EquatableArray<string> LinksWithoutRelations,
+        EquatableArray<PropertyRef> EmbeddedEntitiesWithoutRelations,
+        EquatableArray<PropertyRef> LinksWithoutRelations,
         EquatableArray<InvalidPropertyNameOverride> InvalidPropertyNameOverrides)
         ClassifyProperties(INamedTypeSymbol symbol)
     {
@@ -137,8 +139,8 @@ internal static class HtoMetadataExtractor
         var links = new List<LinkMetadata>();
         var actions = new List<ActionMetadata>();
         var embeddedEntities = new List<EmbeddedEntityMetadata>();
-        var embeddedWithoutRelations = new List<string>();
-        var linksWithoutRelations = new List<string>();
+        var embeddedWithoutRelations = new List<PropertyRef>();
+        var linksWithoutRelations = new List<PropertyRef>();
         var invalidNameOverrides = new List<InvalidPropertyNameOverride>();
 
         foreach (var member in EnumerateInstanceProperties(symbol))
@@ -152,13 +154,13 @@ internal static class HtoMetadataExtractor
                     links.Add(CreateLinkMetadata(member));
                     break;
                 case PropertyCategory.LinkMissingRelations:
-                    linksWithoutRelations.Add(member.Name);
+                    linksWithoutRelations.Add(new PropertyRef(member.Name, LocationInfo.FromSymbol(member)));
                     break;
                 case PropertyCategory.EmbeddedEntity:
                     embeddedEntities.Add(CreateEmbeddedEntityMetadata(member));
                     break;
                 case PropertyCategory.EmbeddedEntityMissingRelations:
-                    embeddedWithoutRelations.Add(member.Name);
+                    embeddedWithoutRelations.Add(new PropertyRef(member.Name, LocationInfo.FromSymbol(member)));
                     break;
                 case PropertyCategory.Action:
                     actions.Add(CreateActionMetadata(member));
@@ -171,8 +173,8 @@ internal static class HtoMetadataExtractor
             new EquatableArray<LinkMetadata>(links.ToImmutableArray()),
             new EquatableArray<ActionMetadata>(actions.ToImmutableArray()),
             new EquatableArray<EmbeddedEntityMetadata>(embeddedEntities.ToImmutableArray()),
-            new EquatableArray<string>(embeddedWithoutRelations.ToImmutableArray()),
-            new EquatableArray<string>(linksWithoutRelations.ToImmutableArray()),
+            new EquatableArray<PropertyRef>(embeddedWithoutRelations.ToImmutableArray()),
+            new EquatableArray<PropertyRef>(linksWithoutRelations.ToImmutableArray()),
             new EquatableArray<InvalidPropertyNameOverride>(invalidNameOverrides.ToImmutableArray()));
     }
 
@@ -258,7 +260,13 @@ internal static class HtoMetadataExtractor
         // ("full-name") would not compile. Keywords are fine (they are @-escaped on emission).
         if (name != member.Name && !IsUsableIdentifier(name))
         {
-            invalidNameOverrides.Add(new InvalidPropertyNameOverride(member.Name, name));
+            var hypermediaPropertyAttr = member.GetAttributes().FirstOrDefault(a =>
+                a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.HypermediaPropertyAttributeFullName);
+            var overrideLocation = (hypermediaPropertyAttr != null
+                                       ? LocationInfo.FromAttribute(hypermediaPropertyAttr)
+                                       : null)
+                                   ?? LocationInfo.FromSymbol(member);
+            invalidNameOverrides.Add(new InvalidPropertyNameOverride(member.Name, name, overrideLocation));
             name = member.Name;
         }
 
@@ -304,7 +312,8 @@ internal static class HtoMetadataExtractor
             linkIsDeprecated,
             linkDeprecationMessage,
             isMandatory,
-            new EquatableArray<string>(linkAccessGroups));
+            new EquatableArray<string>(linkAccessGroups),
+            LocationInfo.FromSymbol(member));
     }
 
     private static ActionMetadata CreateActionMetadata(IPropertySymbol member)
@@ -371,7 +380,8 @@ internal static class HtoMetadataExtractor
             embeddedIsDeprecated,
             embeddedDeprecationMessage,
             isMandatory,
-            new EquatableArray<string>(embeddedAccessGroups));
+            new EquatableArray<string>(embeddedAccessGroups),
+            LocationInfo.FromSymbol(member));
     }
 
     /// <summary>
@@ -967,11 +977,27 @@ internal static class HtoMetadataExtractor
             var sb = new StringBuilder();
             foreach (XmlNode child in memberNode.ChildNodes)
             {
-                if (child.NodeType == XmlNodeType.Element)
+                if (child.NodeType != XmlNodeType.Element)
                 {
-                    var outerXml = child.OuterXml.Trim();
-                    sb.Append("/// ").AppendLine(outerXml);
+                    continue;
                 }
+
+                // <inheritdoc/> copied verbatim resolves to nothing on the generated POCO
+                // (the POCO property overrides nothing) — resolve it against the overridden
+                // property's doc where possible, otherwise drop it.
+                if (child.Name == "inheritdoc")
+                {
+                    if (symbol is IPropertySymbol { OverriddenProperty: { } overridden }
+                        && GetXmlDocComment(overridden) is { } inheritedDoc)
+                    {
+                        sb.AppendLine(inheritedDoc);
+                    }
+
+                    continue;
+                }
+
+                var outerXml = child.OuterXml.Trim();
+                sb.Append("/// ").AppendLine(outerXml);
             }
 
             var result = sb.ToString().TrimEnd();

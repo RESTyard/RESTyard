@@ -62,7 +62,9 @@ internal static class ActionResultMappingExtractor
 
                 if (!hasHypermediaObject)
                 {
-                    notHtoWarnings.Add(new ResultTypeNotHtoWarning(resultType.ToDisplayString(), htoClassName, actionPropName));
+                    notHtoWarnings.Add(new ResultTypeNotHtoWarning(
+                        resultType.ToDisplayString(), htoClassName, actionPropName,
+                        LocationInfo.FromAttribute(attr)));
                 }
                 else
                 {
@@ -82,7 +84,9 @@ internal static class ActionResultMappingExtractor
                 // No ResultType — check if method has 201-related attributes
                 if (Has201ResponseAttribute(method))
                 {
-                    missing201Warnings.Add(new Missing201Warning(method.ContainingType.Name, method.Name, actionPropName));
+                    missing201Warnings.Add(new Missing201Warning(
+                        method.ContainingType.Name, method.Name, actionPropName,
+                        LocationInfo.FromAttribute(attr)));
                 }
             }
         }
@@ -139,7 +143,9 @@ internal static class ActionResultMappingExtractor
 
                     if (!hasHypermediaObject)
                     {
-                        notHtoWarnings.Add(new ResultTypeNotHtoWarning(resultType.ToDisplayString(), htoClassName, actionName));
+                        notHtoWarnings.Add(new ResultTypeNotHtoWarning(
+                            resultType.ToDisplayString(), htoClassName, actionName,
+                            LocationInfo.FromAttribute(attr)));
                     }
                     else
                     {
@@ -304,7 +310,8 @@ internal static class ActionResultMappingExtractor
 
     /// <summary>
     /// Checks if a method has a 201-related response attribute (ProducesResponseType, SwaggerResponse, etc.)
-    /// by checking attribute name and constructor argument for value 201.
+    /// by checking attribute name plus constructor and named arguments for value 201.
+    /// Enum arguments (e.g. <c>HttpStatusCode.Created</c>) match too — their boxed value is the underlying int.
     /// </summary>
     private static bool Has201ResponseAttribute(IMethodSymbol method)
     {
@@ -317,10 +324,16 @@ internal static class ActionResultMappingExtractor
             if (!name.Contains("ProducesResponseType") && !name.Contains("SwaggerResponse"))
                 continue;
 
-            // Check constructor arguments for integer value 201
             foreach (var arg in attr.ConstructorArguments)
             {
                 if (arg.Value is int intVal && intVal == 201)
+                    return true;
+            }
+
+            // Named-argument form: [ProducesResponseType(..., StatusCode = 201)]
+            foreach (var namedArg in attr.NamedArguments)
+            {
+                if (namedArg.Key == "StatusCode" && namedArg.Value.Value is int namedVal && namedVal == 201)
                     return true;
             }
         }

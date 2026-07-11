@@ -25,13 +25,15 @@ internal sealed record ActionResultMapping(
 internal sealed record ResultTypeNotHtoWarning(
     string ResultTypeName,
     string HtoClassName,
-    string ActionPropertyName);
+    string ActionPropertyName,
+    LocationInfo? Location);
 
 /// <summary>An endpoint declaring a 201 response without a <c>ResultType</c> (RY0031).</summary>
 internal sealed record Missing201Warning(
     string ControllerName,
     string MethodName,
-    string ActionPropertyName);
+    string ActionPropertyName,
+    LocationInfo? Location);
 
 /// <summary>
 /// Value-equatable aggregate of all action-result information extracted from controller

@@ -19,11 +19,11 @@ namespace RESTyard.HtoSourceGenerators;
 /// <param name="Links">Link properties metadata.</param>
 /// <param name="Actions">Action properties metadata.</param>
 /// <param name="EmbeddedEntities">Embedded entity properties metadata.</param>
-/// <param name="EmbeddedEntityPropertiesWithoutRelations">Property names of type <c>IEmbeddedEntity</c> but missing <c>[Relations]</c>. Used to emit RY0020 warnings.</param>
-/// <param name="LinkPropertiesWithoutRelations">Property names of type <c>ILink</c> but missing <c>[Relations]</c>. Used to emit RY0021 warnings.</param>
+/// <param name="EmbeddedEntityPropertiesWithoutRelations">Properties of type <c>IEmbeddedEntity</c> but missing <c>[Relations]</c>. Used to emit RY0020 warnings.</param>
+/// <param name="LinkPropertiesWithoutRelations">Properties of type <c>ILink</c> but missing <c>[Relations]</c>. Used to emit RY0021 warnings.</param>
 /// <param name="InvalidPropertyNameOverrides">Properties whose <c>[HypermediaProperty(Name)]</c> override is not a valid C# identifier. Used to emit RY0022 warnings; the override is ignored.</param>
-/// <param name="HasPropertiesTypeCollision">Whether a user-defined type named <c>{ClassName}Properties</c> already exists in the HTO's namespace. Used to emit RY0023 and skip POCO emission.</param>
-/// <param name="HasSirenExtensionsTypeCollision">Whether a user-defined type named <c>{ClassName}SirenExtensions</c> already exists in the HTO's namespace. Used to emit RY0023 and skip mapper emission.</param>
+/// <param name="PropertiesTypeCollision">Location of a user-defined type named <c>{ClassName}Properties</c> in the HTO's namespace, or null when there is none. Used to emit RY0023 and skip POCO emission.</param>
+/// <param name="SirenExtensionsTypeCollision">Location of a user-defined type named <c>{ClassName}SirenExtensions</c> in the HTO's namespace, or null when there is none. Used to emit RY0023 and skip mapper emission.</param>
 internal readonly record struct HtoMetadata(
     string Namespace,
     string ClassName,
@@ -38,12 +38,18 @@ internal readonly record struct HtoMetadata(
     EquatableArray<LinkMetadata> Links,
     EquatableArray<ActionMetadata> Actions,
     EquatableArray<EmbeddedEntityMetadata> EmbeddedEntities,
-    EquatableArray<string> EmbeddedEntityPropertiesWithoutRelations,
-    EquatableArray<string> LinkPropertiesWithoutRelations,
+    EquatableArray<PropertyRef> EmbeddedEntityPropertiesWithoutRelations,
+    EquatableArray<PropertyRef> LinkPropertiesWithoutRelations,
     EquatableArray<InvalidPropertyNameOverride> InvalidPropertyNameOverrides,
-    bool HasPropertiesTypeCollision,
-    bool HasSirenExtensionsTypeCollision)
+    LocationInfo? PropertiesTypeCollision,
+    LocationInfo? SirenExtensionsTypeCollision)
 {
+    /// <summary>Whether a user-defined <c>{ClassName}Properties</c> type collides with the generated POCO.</summary>
+    public bool HasPropertiesTypeCollision => PropertiesTypeCollision is not null;
+
+    /// <summary>Whether a user-defined <c>{ClassName}SirenExtensions</c> type collides with the generated mapper.</summary>
+    public bool HasSirenExtensionsTypeCollision => SirenExtensionsTypeCollision is not null;
+
     /// <summary>
     /// The namespace-qualified HTO class name. Disambiguates same-named HTOs in different
     /// namespaces — used for hint names and as the action-result mapping key.
