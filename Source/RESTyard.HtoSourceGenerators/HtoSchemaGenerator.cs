@@ -59,11 +59,22 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             .Select(static (combined, _) => ActionResultMappingExtractor.Merge(combined.Left, combined.Right))
             .WithTrackingName(TrackingNames.ActionResultMappings);
 
+        // [HypermediaObjectEndpoint<THto>] applications — tracked only for duplicate-endpoint
+        // detection (RY0033, GEN-11); object endpoints carry no schema data of their own.
+        var objectEndpointOccurrences = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                WellKnownTypeNames.HypermediaObjectEndpointAttributeMetadataName,
+                predicate: static (node, _) => node is MethodDeclarationSyntax,
+                transform: static (ctx, _) => ActionResultMappingExtractor.ExtractObjectEndpointOccurrences(ctx))
+            .WithTrackingName(TrackingNames.ObjectEndpointOccurrences);
+
         // Compilation-level diagnostics: reported once, not per HTO, and also in assemblies
         // without any HTO (e.g. controller-only assemblies). No [HypermediaAssembly] → nothing.
-        context.RegisterSourceOutput(actionResultMappings.Combine(assemblyConfig), static (spc, combined) =>
+        context.RegisterSourceOutput(
+            actionResultMappings.Combine(assemblyConfig).Combine(objectEndpointOccurrences.Collect()),
+            static (spc, combined) =>
         {
-            var (resultData, config) = combined;
+            var ((resultData, config), objectOccurrences) = combined;
 
             if (config == null)
             {
@@ -97,6 +108,18 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                     GeneratorDiagnostics.MissingResultTypeWith201,
                     warning.Location?.ToLocation(),
                     warning.ControllerName, warning.MethodName, warning.ActionPropertyName));
+            }
+
+            // GEN-11: multiple endpoints for the same HTO/action — one RY0033 per surplus
+            // attribute application (every occurrence after the first, in file order).
+            var allOccurrences = resultData.EndpointOccurrences
+                .Concat(objectOccurrences.SelectMany(static o => o));
+            foreach (var duplicate in ActionResultMappingExtractor.FindDuplicateEndpoints(allOccurrences))
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(
+                    GeneratorDiagnostics.MultipleEndpoints,
+                    duplicate.Location?.ToLocation(),
+                    duplicate.DisplayName));
             }
         });
 

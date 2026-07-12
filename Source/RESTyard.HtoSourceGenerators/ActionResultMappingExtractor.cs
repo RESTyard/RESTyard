@@ -30,6 +30,7 @@ internal static class ActionResultMappingExtractor
         var mappings = ImmutableArray.CreateBuilder<ActionResultMapping>();
         var notHtoWarnings = ImmutableArray.CreateBuilder<ResultTypeNotHtoWarning>();
         var missing201Warnings = ImmutableArray.CreateBuilder<Missing201Warning>();
+        var occurrences = ImmutableArray.CreateBuilder<EndpointOccurrence>();
 
         foreach (var attr in context.Attributes)
         {
@@ -45,6 +46,13 @@ internal static class ActionResultMappingExtractor
             // Get the action property name (first constructor arg)
             if (attr.ConstructorArguments.Length == 0 || attr.ConstructorArguments[0].Value is not string actionPropName)
                 continue;
+
+            // Track every attribute application for duplicate-endpoint detection (RY0033),
+            // regardless of whether it declares a ResultType.
+            occurrences.Add(new EndpointOccurrence(
+                $"action:{HtoMetadataExtractor.GetNamespaceQualifiedName(htoType)}.{actionPropName}",
+                $"{htoType.Name}.{actionPropName}",
+                LocationInfo.FromAttribute(attr)));
 
             // Get ResultType (named argument)
             var resultTypeArg = attr.NamedArguments.FirstOrDefault(a => a.Key == "ResultType");
@@ -94,7 +102,54 @@ internal static class ActionResultMappingExtractor
         return new ActionResultData(
             new EquatableArray<ActionResultMapping>(mappings.ToImmutable()),
             new EquatableArray<ResultTypeNotHtoWarning>(notHtoWarnings.ToImmutable()),
-            new EquatableArray<Missing201Warning>(missing201Warnings.ToImmutable()));
+            new EquatableArray<Missing201Warning>(missing201Warnings.ToImmutable()),
+            new EquatableArray<EndpointOccurrence>(occurrences.ToImmutable()));
+    }
+
+    /// <summary>
+    /// Extracts endpoint occurrences from the <c>[HypermediaObjectEndpoint&lt;THto&gt;]</c> attributes
+    /// on a single method, for duplicate-endpoint detection (RY0033).
+    /// </summary>
+    internal static EquatableArray<EndpointOccurrence> ExtractObjectEndpointOccurrences(
+        GeneratorAttributeSyntaxContext context)
+    {
+        var occurrences = ImmutableArray.CreateBuilder<EndpointOccurrence>();
+
+        foreach (var attr in context.Attributes)
+        {
+            var attrClass = attr.AttributeClass;
+            if (attrClass == null || !attrClass.IsGenericType)
+                continue;
+
+            if (attrClass.TypeArguments[0] is not INamedTypeSymbol htoType)
+                continue;
+
+            occurrences.Add(new EndpointOccurrence(
+                $"object:{HtoMetadataExtractor.GetNamespaceQualifiedName(htoType)}",
+                htoType.Name,
+                LocationInfo.FromAttribute(attr)));
+        }
+
+        return new EquatableArray<EndpointOccurrence>(occurrences.ToImmutable());
+    }
+
+    /// <summary>
+    /// Groups endpoint occurrences by identity and returns, for every HTO/action with more than
+    /// one endpoint, all occurrences after the first (in file-position order) — each of those is
+    /// reported as RY0033. Deterministic so incremental re-runs report identical diagnostics.
+    /// </summary>
+    internal static ImmutableArray<EndpointOccurrence> FindDuplicateEndpoints(
+        IEnumerable<EndpointOccurrence> occurrences)
+    {
+        return occurrences
+            .GroupBy(o => o.Key, StringComparer.Ordinal)
+            .Where(g => g.Count() > 1)
+            .OrderBy(g => g.Key, StringComparer.Ordinal)
+            .SelectMany(g => g
+                .OrderBy(o => o.Location?.FilePath ?? string.Empty, StringComparer.Ordinal)
+                .ThenBy(o => o.Location?.TextSpan.Start ?? int.MaxValue)
+                .Skip(1))
+            .ToImmutableArray();
     }
 
     /// <summary>
@@ -105,6 +160,7 @@ internal static class ActionResultMappingExtractor
     {
         var mappings = ImmutableArray.CreateBuilder<ActionResultMapping>();
         var notHtoWarnings = ImmutableArray.CreateBuilder<ResultTypeNotHtoWarning>();
+        var occurrences = ImmutableArray.CreateBuilder<EndpointOccurrence>();
 
         foreach (var type in GetAllTypes(compilation.Assembly.GlobalNamespace))
         {
@@ -120,11 +176,6 @@ internal static class ActionResultMappingExtractor
                     if (!InheritsFrom(attrClass, WellKnownTypeNames.HttpMethodHypermediaActionBaseFullName))
                         continue;
 
-                    // Get ResultType (named argument)
-                    var resultTypeArg = attr.NamedArguments.FirstOrDefault(a => a.Key == "ResultType");
-                    if (resultTypeArg.Key != "ResultType" || resultTypeArg.Value.Value is not INamedTypeSymbol resultType)
-                        continue;
-
                     // Get the action type from the second constructor argument: typeof(HtoName.ActionOp)
                     if (attr.ConstructorArguments.Length < 2 || attr.ConstructorArguments[1].Value is not INamedTypeSymbol actionOpType)
                         continue;
@@ -137,6 +188,20 @@ internal static class ActionResultMappingExtractor
                     var actionName = actionOpType.Name.EndsWith("Op")
                         ? actionOpType.Name.Substring(0, actionOpType.Name.Length - 2)
                         : actionOpType.Name;
+
+                    // Track every attribute application for duplicate-endpoint detection (RY0033),
+                    // regardless of whether it declares a ResultType. The action key is the
+                    // Op-type-derived action name — for the usual property-named-like-its-Op-type
+                    // convention this also catches modern/legacy duplicates for the same action.
+                    occurrences.Add(new EndpointOccurrence(
+                        $"action:{HtoMetadataExtractor.GetNamespaceQualifiedName(declaringType)}.{actionName}",
+                        $"{htoClassName}.{actionName}",
+                        LocationInfo.FromAttribute(attr)));
+
+                    // Get ResultType (named argument)
+                    var resultTypeArg = attr.NamedArguments.FirstOrDefault(a => a.Key == "ResultType");
+                    if (resultTypeArg.Key != "ResultType" || resultTypeArg.Value.Value is not INamedTypeSymbol resultType)
+                        continue;
 
                     var hasHypermediaObject = resultType.GetAttributes()
                         .Any(a => a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.HypermediaObjectAttributeFullName);
@@ -166,7 +231,8 @@ internal static class ActionResultMappingExtractor
         return new ActionResultData(
             new EquatableArray<ActionResultMapping>(mappings.ToImmutable()),
             new EquatableArray<ResultTypeNotHtoWarning>(notHtoWarnings.ToImmutable()),
-            new EquatableArray<Missing201Warning>(ImmutableArray<Missing201Warning>.Empty));
+            new EquatableArray<Missing201Warning>(ImmutableArray<Missing201Warning>.Empty),
+            new EquatableArray<EndpointOccurrence>(occurrences.ToImmutable()));
     }
 
     /// <summary>
@@ -180,6 +246,7 @@ internal static class ActionResultMappingExtractor
         var mappingsByKey = new Dictionary<(string HtoClassName, string ActionPropertyName), ActionResultMapping>();
         var notHtoWarnings = ImmutableArray.CreateBuilder<ResultTypeNotHtoWarning>();
         var missing201Warnings = ImmutableArray.CreateBuilder<Missing201Warning>();
+        var occurrences = ImmutableArray.CreateBuilder<EndpointOccurrence>();
 
         foreach (var fragment in endpointFragments)
         {
@@ -187,12 +254,14 @@ internal static class ActionResultMappingExtractor
                 mappingsByKey[(mapping.HtoClassName, mapping.ActionPropertyName)] = mapping;
             notHtoWarnings.AddRange(fragment.NotHtoWarnings);
             missing201Warnings.AddRange(fragment.Missing201Warnings);
+            occurrences.AddRange(fragment.EndpointOccurrences);
         }
 
         foreach (var mapping in legacy.Mappings)
             mappingsByKey[(mapping.HtoClassName, mapping.ActionPropertyName)] = mapping;
         notHtoWarnings.AddRange(legacy.NotHtoWarnings);
         missing201Warnings.AddRange(legacy.Missing201Warnings);
+        occurrences.AddRange(legacy.EndpointOccurrences);
 
         var orderedMappings = mappingsByKey.Values
             .OrderBy(m => m.HtoClassName, StringComparer.Ordinal)
@@ -202,7 +271,8 @@ internal static class ActionResultMappingExtractor
         return new ActionResultData(
             new EquatableArray<ActionResultMapping>(orderedMappings),
             new EquatableArray<ResultTypeNotHtoWarning>(notHtoWarnings.ToImmutable()),
-            new EquatableArray<Missing201Warning>(missing201Warnings.ToImmutable()));
+            new EquatableArray<Missing201Warning>(missing201Warnings.ToImmutable()),
+            new EquatableArray<EndpointOccurrence>(occurrences.ToImmutable()));
     }
 
     /// <summary>

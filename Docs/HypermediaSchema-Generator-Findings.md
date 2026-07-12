@@ -23,10 +23,10 @@ emission in `SchemaEmitter` / `PropertiesPocoEmitter` / `SirenEmitter` / `SirenH
 | GEN-08 | `record` HTOs silently ignored                                                                                            | Gap           | S    | Medium | ✅ Done                  |
 | GEN-09 | Embedded-collection detection too loose and too tight (arrays leak)                                                       | Bug           | S–M  | Medium | ✅ Done                  |
 | GEN-10 | Null mandatory action silently omitted; links/embedded throw                                                              | Inconsist.    | S    | Low    | ✅ Done                  |
-| GEN-11 | No diagnostic for zero/multiple endpoints per HTO/action (design says)                                                    | Gap           | M    | Medium | Later                   |
+| GEN-11 | No diagnostic for zero/multiple endpoints per HTO/action (design says)                                                    | Gap           | M    | Medium | ✅ Done                  |
 | GEN-12 | Diagnostic severity vs. wording mismatch (RY0020/21/30)                                                                   | Inconsist.    | S    | Low    | ✅ Done                  |
 | GEN-13 | All diagnostics use `Location.None`                                                                                       | DX gap        | M    | Low    | ✅ Done                  |
-| GEN-14 | Startup validation of dangling `TargetName` refs not implemented                                                          | Gap           | M    | Medium | Later                   |
+| GEN-14 | Startup validation of dangling `TargetName` refs not implemented                                                          | Gap           | M    | Medium | ✅ Done                  |
 | GEN-15 | Minor issues (201 named args, embedded dup-relations, name sanitizing)                                                    | Nits          | S    | Low    | ✅ Done                  |
 | GEN-16 | `required` never emitted in properties/parameter schemas                                                                  | Gap           | M    | Medium | ✅ Done                  |
 | GEN-17 | Inherited actions on derived HTOs lose `resultName`/`resultClasses`                                                       | Bug           | S    | Medium | ✅ Done                  |
@@ -50,7 +50,7 @@ Size: S ≈ hours, M ≈ a day, L ≈ multiple days. Risk = impact of leaving it
 4. ✅ **GEN-05, GEN-07** — generation robustness (crash + invalid code).
 5. **✅ GEN-06, ✅ GEN-08, ✅ GEN-09, ✅ GEN-10, ✅ GEN-12, ✅ GEN-13, ✅ GEN-16, ✅ GEN-18** — behavior gaps and DX
    (GEN-16/18 unblock schema-driven client generation; GEN-12/13 pulled forward and done).
-6. **GEN-11, GEN-14, ✅ GEN-15, ✅ GEN-19, ✅ REF-04, ✅ REF-05** — opportunistic / later (GEN-15, GEN-19, REF-04/05 pulled forward and done).
+6. **✅ GEN-11, ✅ GEN-14, ✅ GEN-15, ✅ GEN-19, ✅ REF-04, ✅ REF-05** — opportunistic / later (all done).
 7. **DOC-01** — documentation update 
 
 ## Bugs and gaps
@@ -310,7 +310,7 @@ Documented in the migration guide ("Non-Nullable Actions Must Always Render", in
 contract-first migration note) and SourceGenerator.md ("Null Handling in `ToSiren()`"),
 both including the `#nullable disable` note (no annotations → everything counts as mandatory).
 
-### GEN-11 — No zero/multiple-endpoint diagnostics
+### ✅ GEN-11 — No zero/multiple-endpoint diagnostics
 
 Design doc constraint: "If the generator finds zero or multiple endpoints for the same HTO/action, it
 should emit a diagnostic error." Not implemented — multiple `[HypermediaActionEndpoint]` attributes for
@@ -322,6 +322,21 @@ detection is **not** implemented in the generator — in multi-assembly setups (
 different assembly) the generator cannot see the endpoints, so any zero-endpoint diagnostic would
 be a false positive there; the runtime route resolver already fails with a clear exception for
 genuinely missing routes. Update the design doc to match.
+
+**Done:** every endpoint attribute application is now tracked as an `EndpointOccurrence`
+(identity key + display name + location): modern `[HypermediaActionEndpoint<THto>("prop")]`
+(keyed by namespace-qualified HTO + property name, recorded regardless of `ResultType`),
+legacy `Http*HypermediaAction` attributes (keyed by the Op-type-derived action name — for the
+usual naming convention this also catches modern/legacy duplicates of the same action), and
+modern `[HypermediaObjectEndpoint<THto>]` via a new incremental provider (object endpoints
+carry no schema data, they are tracked only for this diagnostic). Duplicates are reported as
+**RY0033** (error) in the compilation-level diagnostics output — one diagnostic per surplus
+attribute application, located on that attribute, deterministic in file-position order. The
+zero-endpoint case is deliberately not diagnosed (per the decision above); the design doc
+constraint paragraph was updated accordingly, and RY0033 was added to the diagnostics tables
+in SourceGenerator.md and the migration guide. Tests: single endpoints silent, duplicate
+action/object/legacy endpoints error, triplicate → two diagnostics, location on the second
+attribute.
 
 ### ✅ GEN-12 — Diagnostic severity vs. wording mismatch
 
@@ -358,12 +373,24 @@ Incremental caching stays intact — all captured values are equatable; outputs 
 declaring file actually changes (which shifts spans). Regression-tested: the diagnostic's `SourceSpan`
 must cover the offending property identifier.
 
-### GEN-14 — Startup validation of dangling `TargetName` references missing
+### ✅ GEN-14 — Startup validation of dangling `TargetName` references missing
 
 Design doc ("Runtime Opt-In" section): the aggregated schema should validate that all `TargetName` /
 `ResultName` references resolve to an existing `EntityTypeSchema.Name`, log warnings for dangling refs,
 with an `AllowUnresolvedReferences` option producing placeholder entries. `ComposeSchema()` implements
 none of this. Becomes more important once GEN-06 collisions are possible.
+
+**Done:** `ComposeSchema()` now validates all cross-references after the cross-assembly
+action-result mappings are applied: link `TargetName` (external links exempt), embedded-entity
+`TargetName`, and action `ResultName` must resolve to an entity type. Each unresolved name logs
+one warning listing every referencing site (`Customer link [orders]`, `Customer.CreateNote result`,
+…), deterministic ordering. New `HypermediaSchemaOptions.AllowUnresolvedReferences` (default
+`false`): when enabled, each unresolved name additionally produces one placeholder
+`EntityTypeSchema` (name only — no properties, links, or actions) so the schema endpoint and
+diagram mappers keep working during development. Tests: warning per dangling ref kind, no
+placeholders by default, empty placeholders (added once per name) when enabled, resolved and
+external references silent. Design doc "Startup validation" paragraph updated to the implemented
+behavior; documented in HypermediaApiSchema.md ("Unresolved References").
 
 ### ✅ GEN-15 — Minor issues (collect opportunistically)
 
@@ -576,4 +603,3 @@ block re-runs — the end-to-end incrementality guarantee.
 
 Review docs (migration-guide.md, HypermediaApiSchema.md, SourceGenerator.md, readme.md, claude.md) incorporate changes from done issues
 Also add a summary table of necessary migrations at the top of migration guid so users can quickly scann what needs migration
-

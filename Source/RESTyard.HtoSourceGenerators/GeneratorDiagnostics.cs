@@ -36,6 +36,19 @@ internal static class GeneratorDiagnostics
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
+    // Error, not warning (GEN-11): the design constrains each HTO/action to exactly one
+    // endpoint — with duplicates the extracted mapping is last-wins, i.e. arbitrary.
+    // The zero-endpoint case is deliberately NOT diagnosed: controllers may live in a
+    // different assembly the generator cannot see; the runtime route resolver reports
+    // genuinely missing routes.
+    internal static readonly DiagnosticDescriptor MultipleEndpoints = new(
+        id: "RY0033",
+        title: "Multiple endpoints for the same HTO or action",
+        messageFormat: "Multiple endpoint attributes found for '{0}' — each HTO/action must have exactly one endpoint in the assembly. Remove the duplicate endpoint declarations",
+        category: "RESTyard.Schema",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     internal static readonly DiagnosticDescriptor EmbeddedEntityMissingRelations = new(
         id: "RY0020",
         title: "Embedded entity property missing [Relations] attribute",

@@ -3406,4 +3406,190 @@ public class HtoSchemaGeneratorTests
         // Self link parity deferred to Step 6.2 — SirenConverter resolves links from ILink properties,
         // while ToSiren() uses resolver.ObjectToRoute(). Full link parity requires link resolution (Step 6.2).
     }
+
+    // --- Duplicate endpoint diagnostics (GEN-11, RY0033) ---
+
+    private const string DuplicateEndpointBaseSource = """
+        using RESTyard.AspNetCore.Hypermedia;
+        using RESTyard.AspNetCore.Hypermedia.Actions;
+        using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+        using Microsoft.AspNetCore.Mvc;
+
+        [assembly: HypermediaAssembly]
+
+        namespace TestHtos;
+
+        public class CreateOp : HypermediaAction
+        {
+            public CreateOp() : base(() => true) { }
+        }
+
+        [HypermediaObject(Title = "Root", Classes = ["Root"])]
+        public class HypermediaRootHto : HypermediaObject
+        {
+            [HypermediaAction(Name = "Create")]
+            public CreateOp? Create { get; set; }
+        }
+
+        [ApiController]
+        [Route("api")]
+        public class RootController : ControllerBase
+        {
+            [HttpGet("root")]
+            [HypermediaObjectEndpoint<HypermediaRootHto>]
+            public IActionResult GetRoot() => Ok();
+
+            [HttpPost("create")]
+            [HypermediaActionEndpoint<HypermediaRootHto>("Create")]
+            public IActionResult Create() => Ok();
+        }
+        """;
+
+    [Fact]
+    public void Single_endpoint_per_hto_and_action_is_silent()
+    {
+        var result = GeneratorTestHelper.RunGenerator(DuplicateEndpointBaseSource);
+
+        result.Diagnostics.Should().NotContain(d => d.Id == "RY0033");
+    }
+
+    [Fact]
+    public void Duplicate_action_endpoints_report_RY0033_error()
+    {
+        var source = DuplicateEndpointBaseSource.Replace(
+            "public IActionResult Create() => Ok();",
+            """
+            public IActionResult Create() => Ok();
+
+                [HttpPost("create2")]
+                [HypermediaActionEndpoint<HypermediaRootHto>("Create")]
+                public IActionResult CreateAgain() => Ok();
+            """);
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        var diagnostic = result.Diagnostics.Should().ContainSingle(d => d.Id == "RY0033").Which;
+        diagnostic.Severity.Should().Be(DiagnosticSeverity.Error);
+        diagnostic.GetMessage().Should().Contain("HypermediaRootHto.Create");
+        // Reported on the surplus (second) attribute in file order
+        diagnostic.Location.Should().NotBe(Location.None);
+        source.Substring(diagnostic.Location.SourceSpan.Start)
+            .Should().StartWith("HypermediaActionEndpoint<HypermediaRootHto>(\"Create\")");
+        diagnostic.Location.SourceSpan.Start.Should().BeGreaterThan(
+            source.IndexOf("create2", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Duplicate_object_endpoints_report_RY0033_error()
+    {
+        var source = DuplicateEndpointBaseSource.Replace(
+            "public IActionResult GetRoot() => Ok();",
+            """
+            public IActionResult GetRoot() => Ok();
+
+                [HttpGet("root2")]
+                [HypermediaObjectEndpoint<HypermediaRootHto>]
+                public IActionResult GetRootAgain() => Ok();
+            """);
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        var diagnostic = result.Diagnostics.Should().ContainSingle(d => d.Id == "RY0033").Which;
+        diagnostic.Severity.Should().Be(DiagnosticSeverity.Error);
+        diagnostic.GetMessage().Should().Contain("'HypermediaRootHto'");
+    }
+
+    [Fact]
+    public void Triplicate_action_endpoints_report_one_RY0033_per_surplus_endpoint()
+    {
+        var source = DuplicateEndpointBaseSource.Replace(
+            "public IActionResult Create() => Ok();",
+            """
+            public IActionResult Create() => Ok();
+
+                [HttpPost("create2")]
+                [HypermediaActionEndpoint<HypermediaRootHto>("Create")]
+                public IActionResult CreateAgain() => Ok();
+
+                [HttpPost("create3")]
+                [HypermediaActionEndpoint<HypermediaRootHto>("Create")]
+                public IActionResult CreateOnceMore() => Ok();
+            """);
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        result.Diagnostics.Where(d => d.Id == "RY0033").Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void Endpoints_for_different_actions_are_silent()
+    {
+        var source = DuplicateEndpointBaseSource
+            .Replace(
+                "public CreateOp? Create { get; set; }",
+                """
+                public CreateOp? Create { get; set; }
+
+                    [HypermediaAction(Name = "Update")]
+                    public CreateOp? Update { get; set; }
+                """)
+            .Replace(
+                "public IActionResult Create() => Ok();",
+                """
+                public IActionResult Create() => Ok();
+
+                    [HttpPost("update")]
+                    [HypermediaActionEndpoint<HypermediaRootHto>("Update")]
+                    public IActionResult Update() => Ok();
+                """);
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        result.Diagnostics.Should().NotContain(d => d.Id == "RY0033");
+    }
+
+    [Fact]
+    public void Duplicate_legacy_action_endpoints_report_RY0033_error()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Actions;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+            using Microsoft.AspNetCore.Mvc;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Root", Classes = ["Root"])]
+            public class HypermediaRootHto : HypermediaObject
+            {
+                [HypermediaAction(Name = "Create")]
+                public CreateOp? Create { get; set; }
+
+                public class CreateOp : HypermediaAction
+                {
+                    public CreateOp() : base(() => true) { }
+                }
+            }
+
+            [ApiController]
+            [Route("api")]
+            public class RootController : ControllerBase
+            {
+                [HttpPostHypermediaAction("create", typeof(HypermediaRootHto.CreateOp))]
+                public IActionResult Create() => Ok();
+
+                [HttpPostHypermediaAction("create2", typeof(HypermediaRootHto.CreateOp))]
+                public IActionResult CreateAgain() => Ok();
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        var diagnostic = result.Diagnostics.Should().ContainSingle(d => d.Id == "RY0033").Which;
+        diagnostic.GetMessage().Should().Contain("HypermediaRootHto.Create");
+    }
 }

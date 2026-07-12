@@ -26,7 +26,7 @@ builder.Services.AddHypermediaSchema(o =>
 {
     o.Title = "My API";
     o.Description = "...";
-    o.Version = "1.0.0";
+    o.ApiVersion = "1.0.0";
 });
 ```
 

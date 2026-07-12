@@ -266,7 +266,7 @@ The generator finds all types implementing `IHypermediaObject` in the compilatio
 | `[HypermediaActionEndpoint<THto>("prop", ResultType = typeof(TResult))]` on controllers | Action result entity type — populates `ActionDescription.ResultName`/`ResultClasses`. Indicates the endpoint produces a Location header pointing to an entity of the specified HTO type. Optional — when not set, `ResultName` is null. |
 | `[Obsolete("message")]` | Deprecation on entity types, actions, links, embedded entities |
 
-**Constraint:** Each HTO has exactly one `[HypermediaObjectEndpoint<THto>]` and each action has exactly one `[HypermediaActionEndpoint<THto>("prop")]` in the codebase. This one-to-one mapping simplifies controller scanning — the generator can find the single matching endpoint for any HTO or action without disambiguation. If the generator finds zero or multiple endpoints for the same HTO/action, it should emit a diagnostic error.
+**Constraint:** Each HTO has exactly one `[HypermediaObjectEndpoint<THto>]` and each action has exactly one `[HypermediaActionEndpoint<THto>("prop")]` in the codebase. This one-to-one mapping simplifies controller scanning — the generator can find the single matching endpoint for any HTO or action without disambiguation. If the generator finds multiple endpoints for the same HTO/action in the source assembly, it emits **RY0033** (error) — with duplicates the extracted mapping would be last-wins, i.e. arbitrary. The zero-endpoint case is deliberately *not* diagnosed: controllers may live in a different assembly the generator cannot see, so any missing-endpoint diagnostic would be a false positive there; the runtime route resolver already fails with a clear exception for genuinely missing routes.
 
 ### Generated Output per HTO
 
@@ -530,6 +530,7 @@ public class HypermediaSchemaOptions
     public string? ApiVersion { get; set; }             // Default: null (must be set explicitly)
     public string? EntryPointName { get; set; }         // Default: auto-detected from [HypermediaObject] with "EntryPoint" class
     public string? ExternalDocsUrl { get; set; }        // Default: null
+    public bool AllowUnresolvedReferences { get; set; } // Default: false — see "Startup validation" below
 }
 ```
 
@@ -543,7 +544,7 @@ public class HypermediaSchemaOptions
 
 This produces a singleton `HypermediaApiSchema` available via DI, combining all auto-discovered per-assembly registries.
 
-**Startup validation:** At startup, the aggregated schema should validate that all `TargetName` references in `LinkDescription`, `ActionDescription.ResultName`, and `EmbeddedEntityDescription` resolve to an existing `EntityTypeSchema.Name`. Dangling references (e.g., a link to `"Order"` when no `OrderHto` exists) indicate a missing or unregistered HTO and should log a warning. An option `AllowUnresolvedReferences = true` (default `false`) can be provided for development scenarios — when enabled, unresolved references generate placeholder `EntityTypeSchema` entries (with empty links/actions/properties) so the schema endpoint and Mermaid diagrams remain functional while the API is still being built.
+**Startup validation:** During schema composition (`ComposeSchema()`, after cross-assembly action-result mappings are applied), the aggregated schema validates that all `TargetName` references in `LinkDescription`, `ActionDescription.ResultName`, and `EmbeddedEntityDescription` resolve to an existing `EntityTypeSchema.Name` (external links are exempt). Dangling references (e.g., a link to `"Order"` when no `OrderHto` exists) indicate a missing or unregistered HTO and log one warning per unresolved name, listing every referencing site. The option `HypermediaSchemaOptions.AllowUnresolvedReferences = true` (default `false`) is for development scenarios — when enabled, unresolved references generate placeholder `EntityTypeSchema` entries (with empty links/actions/properties) so the schema endpoint and Mermaid diagrams remain functional while the API is still being built.
 
 ## Runtime Schema Endpoint
 

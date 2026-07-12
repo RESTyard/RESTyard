@@ -36,4 +36,15 @@ public class HypermediaSchemaOptions
     /// Default: null (omitted from schema).
     /// </summary>
     public string? ExternalDocsUrl { get; set; }
+
+    /// <summary>
+    /// Controls how dangling cross-references (link/embedded <c>targetName</c>, action
+    /// <c>resultName</c> not matching any entity type) are handled during schema composition.
+    /// Dangling references indicate a missing or unregistered HTO and are always logged as
+    /// warnings. When <c>true</c>, each unresolved name additionally produces a placeholder
+    /// entity type (no properties, links, or actions) so the schema endpoint and diagrams
+    /// remain functional while the API is still being built.
+    /// Default: <c>false</c> (warn only, no placeholders).
+    /// </summary>
+    public bool AllowUnresolvedReferences { get; set; }
 }

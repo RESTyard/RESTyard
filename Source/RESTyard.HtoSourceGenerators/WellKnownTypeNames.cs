@@ -67,6 +67,10 @@ internal static class WellKnownTypeNames
     internal const string HypermediaActionEndpointAttributeMetadataName =
         "RESTyard.AspNetCore.WebApi.AttributedRoutes.HypermediaActionEndpointAttribute`1";
 
+    /// <summary>Metadata name of the generic object endpoint attribute for <c>ForAttributeWithMetadataName</c>.</summary>
+    internal const string HypermediaObjectEndpointAttributeMetadataName =
+        "RESTyard.AspNetCore.WebApi.AttributedRoutes.HypermediaObjectEndpointAttribute`1";
+
     // Legacy attribute support — remove this block when HttpMethodHypermediaAction is removed.
     // If you remove the legacy attribute, also remove
     // ActionResultMappingExtractor.ExtractLegacyActionResults (and its InheritsFrom scan)

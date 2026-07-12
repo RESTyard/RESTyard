@@ -36,6 +36,17 @@ internal sealed record Missing201Warning(
     LocationInfo? Location);
 
 /// <summary>
+/// A single endpoint attribute application, tracked for duplicate detection (RY0033, GEN-11).
+/// <c>Key</c> is the identity duplicates are grouped by (namespace-qualified HTO class name,
+/// for actions suffixed with the action key); <c>DisplayName</c> is the human-readable form
+/// used in the diagnostic message.
+/// </summary>
+internal sealed record EndpointOccurrence(
+    string Key,
+    string DisplayName,
+    LocationInfo? Location);
+
+/// <summary>
 /// Value-equatable aggregate of all action-result information extracted from controller
 /// endpoint attributes. Value equality is required so the incremental pipeline can cache
 /// downstream outputs even though the underlying compilation changes on every edit (GEN-04).
@@ -43,10 +54,12 @@ internal sealed record Missing201Warning(
 internal sealed record ActionResultData(
     EquatableArray<ActionResultMapping> Mappings,
     EquatableArray<ResultTypeNotHtoWarning> NotHtoWarnings,
-    EquatableArray<Missing201Warning> Missing201Warnings)
+    EquatableArray<Missing201Warning> Missing201Warnings,
+    EquatableArray<EndpointOccurrence> EndpointOccurrences)
 {
     internal static readonly ActionResultData Empty = new(
         new EquatableArray<ActionResultMapping>(ImmutableArray<ActionResultMapping>.Empty),
         new EquatableArray<ResultTypeNotHtoWarning>(ImmutableArray<ResultTypeNotHtoWarning>.Empty),
-        new EquatableArray<Missing201Warning>(ImmutableArray<Missing201Warning>.Empty));
+        new EquatableArray<Missing201Warning>(ImmutableArray<Missing201Warning>.Empty),
+        new EquatableArray<EndpointOccurrence>(ImmutableArray<EndpointOccurrence>.Empty));
 }

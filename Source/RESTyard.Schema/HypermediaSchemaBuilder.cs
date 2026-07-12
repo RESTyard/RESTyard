@@ -187,6 +187,7 @@ public static class HypermediaSchemaBuilder
         ILogger? logger)
     {
         ApplyActionResultMappings(entityTypes, actionResultMappings, logger);
+        ValidateReferences(entityTypes, options?.AllowUnresolvedReferences ?? false, logger);
         var entryAssembly = Assembly.GetEntryAssembly();
 
         var title = options?.Title
@@ -250,6 +251,84 @@ public static class HypermediaSchemaBuilder
 
             action.ResultName = mapping.ResultName;
             action.ResultClasses = mapping.ResultClasses;
+        }
+    }
+
+    /// <summary>
+    /// Validates that all cross-references — link and embedded-entity <c>TargetName</c>, action
+    /// <c>ResultName</c> — resolve to an existing <see cref="EntityTypeSchema.Name"/>. Dangling
+    /// references indicate a missing or unregistered HTO and are logged as warnings. With
+    /// <see cref="HypermediaSchemaOptions.AllowUnresolvedReferences"/> enabled, each unresolved
+    /// name additionally gets a placeholder entity type (no properties, links, or actions) so
+    /// the schema endpoint and diagram mappers remain functional while the API is being built.
+    /// External links (no target entity type) are exempt.
+    /// </summary>
+    private static void ValidateReferences(
+        List<EntityTypeSchema> entityTypes,
+        bool allowUnresolvedReferences,
+        ILogger? logger)
+    {
+        var knownNames = new HashSet<string>(entityTypes.Select(e => e.Name), StringComparer.Ordinal);
+        // Sorted so warnings and placeholder ordering are deterministic across runs
+        var danglingReferences = new SortedDictionary<string, List<string>>(StringComparer.Ordinal);
+
+        foreach (var entity in entityTypes)
+        {
+            foreach (var link in entity.Links)
+            {
+                if (!link.IsExternal && !string.IsNullOrEmpty(link.TargetName))
+                {
+                    AddIfDangling(link.TargetName!, $"{entity.Name} link [{string.Join(", ", link.Relations)}]");
+                }
+            }
+
+            foreach (var embedded in entity.EmbeddedEntities)
+            {
+                if (!string.IsNullOrEmpty(embedded.TargetName))
+                {
+                    AddIfDangling(embedded.TargetName, $"{entity.Name} embedded [{string.Join(", ", embedded.Relations)}]");
+                }
+            }
+
+            foreach (var action in entity.Actions)
+            {
+                if (!string.IsNullOrEmpty(action.ResultName))
+                {
+                    AddIfDangling(action.ResultName!, $"{entity.Name}.{action.Name} result");
+                }
+            }
+        }
+
+        foreach (var dangling in danglingReferences)
+        {
+            logger?.LogWarning(
+                "Schema reference '{TargetName}' (referenced by: {Sources}) does not resolve to any " +
+                "entity type — the referenced HTO is missing, its assembly is not loaded, or its " +
+                "schema generation is disabled.{Placeholder}",
+                dangling.Key,
+                string.Join("; ", dangling.Value),
+                allowUnresolvedReferences ? " A placeholder entity type was added." : string.Empty);
+
+            if (allowUnresolvedReferences)
+            {
+                entityTypes.Add(new EntityTypeSchema { Name = dangling.Key });
+            }
+        }
+
+        void AddIfDangling(string targetName, string source)
+        {
+            if (knownNames.Contains(targetName))
+            {
+                return;
+            }
+
+            if (!danglingReferences.TryGetValue(targetName, out var sources))
+            {
+                sources = new List<string>();
+                danglingReferences[targetName] = sources;
+            }
+
+            sources.Add(source);
         }
     }
 
