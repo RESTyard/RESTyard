@@ -256,25 +256,31 @@ internal static class SirenEmitter
 
             if (action.IsMandatory)
             {
-                // Mandatory action — null throws, consistent with links/embedded; only
-                // CanExecute() controls whether the action is rendered.
+                // Mandatory action — always rendered; null or unavailable is a contract
+                // violation and throws, consistent with links/embedded. Conditional
+                // availability requires a nullable property.
                 w.Line($"if (hto.{EscapeIdentifier(action.PropertyName)} is null)");
                 using (w.Block())
                 {
                     w.Line($"throw new System.InvalidOperationException(\"Mandatory action '{EscapeString(action.PropertyName)}' on '{EscapeString(metadata.ClassName)}' is null. Declare the property nullable if the action may be absent.\");");
                 }
 
-                w.Line($"if (hto.{EscapeIdentifier(action.PropertyName)}.CanExecute())");
+                w.Line($"if (!hto.{EscapeIdentifier(action.PropertyName)}.CanExecute())");
+                using (w.Block())
+                {
+                    w.Line($"throw new System.InvalidOperationException(\"Mandatory action '{EscapeString(action.PropertyName)}' on '{EscapeString(metadata.ClassName)}' is not available (CanExecute() returned false). Declare the property nullable if the action may be absent.\");");
+                }
+
+                w.Line($"SirenHelper.AddAction(entity.Actions, hto, hto.{EscapeIdentifier(action.PropertyName)}, \"{EscapeString(action.Name)}\", {title}, {classesArray}, resolver);");
             }
             else
             {
-                // Nullable action — null means "absent", skip silently
+                // Nullable action — null means "absent"; CanExecute() false also omits silently
                 w.Line($"if (hto.{EscapeIdentifier(action.PropertyName)}?.CanExecute() == true)");
-            }
-
-            using (w.Block())
-            {
-                w.Line($"SirenHelper.AddAction(entity.Actions, hto, hto.{EscapeIdentifier(action.PropertyName)}, \"{EscapeString(action.Name)}\", {title}, {classesArray}, resolver);");
+                using (w.Block())
+                {
+                    w.Line($"SirenHelper.AddAction(entity.Actions, hto, hto.{EscapeIdentifier(action.PropertyName)}, \"{EscapeString(action.Name)}\", {title}, {classesArray}, resolver);");
+                }
             }
 
             w.Line();

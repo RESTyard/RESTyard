@@ -31,6 +31,7 @@ emission in `SchemaEmitter` / `PropertiesPocoEmitter` / `SirenEmitter` / `SirenH
 | GEN-16 | `required` never emitted in properties/parameter schemas                                                                  | Gap           | M    | Medium | ✅ Done                  |
 | GEN-17 | Inherited actions on derived HTOs lose `resultName`/`resultClasses`                                                       | Bug           | S    | Medium | ✅ Done                  |
 | GEN-18 | `ExternalLink` properties silently absent; `mediaType` never emitted                                                      | Gap           | M    | Medium | ✅ Done                  |
+| GEN-19 | Contract-first: no way to mark an operation optional (`mandatory` attr on `<Operation>`)                                  | Gap           | M    | Medium | Later                   |
 | REF-01 | Split 2745-line god class into extractor + emitters + pipeline                                                            | Refactoring   | L    | —      | ✅ Done                  |
 | REF-02 | Replace indentation-string emission with a `CodeWriter`                                                                   | Refactoring   | M    | —      | ✅ Done                  |
 | REF-03 | `GenerateSirenHelper` emits fully static text via `AppendLine` calls                                                      | Refactoring   | S    | —      | ✅ Done                  |
@@ -49,7 +50,7 @@ Size: S ≈ hours, M ≈ a day, L ≈ multiple days. Risk = impact of leaving it
 4. ✅ **GEN-05, GEN-07** — generation robustness (crash + invalid code).
 5. **✅ GEN-06, ✅ GEN-08, ✅ GEN-09, ✅ GEN-10, ✅ GEN-12, ✅ GEN-13, ✅ GEN-16, ✅ GEN-18** — behavior gaps and DX
    (GEN-16/18 unblock schema-driven client generation; GEN-12/13 pulled forward and done).
-6. **GEN-11, GEN-14, ✅ GEN-15, ✅ REF-04, ✅ REF-05** — opportunistic / later (GEN-15, REF-04/05 pulled forward and done).
+6. **GEN-11, GEN-14, ✅ GEN-15, GEN-19, ✅ REF-04, ✅ REF-05** — opportunistic / later (GEN-15, REF-04/05 pulled forward and done).
 7. **DOC-01** — documentation update.
 
 ## Bugs and gaps
@@ -291,12 +292,22 @@ contexts everything counts as mandatory (`NullableAnnotation != Annotated`).
 nullable is the explicit way to say "may be absent". Document as a behavior change in the
 migration guide, including the `#nullable disable` note above.
 
-**Done:** `SirenEmitter.EmitActionResolution` now branches on `ActionMetadata.IsMandatory`:
-mandatory actions get a null guard that throws `InvalidOperationException` (naming property and
-HTO class) followed by a plain `CanExecute()` check; nullable actions keep the silent
-`?.CanExecute() == true` pattern. Tests: generated-source shape, render-time throw for a null
-mandatory action, silent omission for null nullable actions. Documented in the migration guide
-("Null Non-Nullable Actions Now Throw") and SourceGenerator.md ("Null Handling in `ToSiren()`"),
+**Decision (2026-07-12, extended): mandatory means always on the wire.** A non-nullable action
+must also be **available**: `CanExecute() == false` on a mandatory action throws at render time,
+the same contract violation as null. This makes `ActionDescription.IsMandatory` in the schema a
+hard guarantee ("always present on the entity") instead of "declared, availability
+runtime-dependent". `CanExecute` keeps its gating role for **nullable** actions only. No
+compile-time diagnostic: the generator cannot see through `Func<bool> canExecute`, and the only
+heuristic (Op ctor requires a delegate) would fire on every contract-first action — the runtime
+exception message carries the guidance instead. Contract-first follow-up tracked as GEN-19.
+
+**Done:** `SirenEmitter.EmitActionResolution` branches on `ActionMetadata.IsMandatory`:
+mandatory actions get two guards — null and `!CanExecute()` — that throw `InvalidOperationException`
+(naming property and HTO class), then render unconditionally; nullable actions keep the silent
+`?.CanExecute() == true` pattern. Tests: generated-source shape (both guards), render-time throw
+for null and for unavailable mandatory actions, silent omission for null nullable actions.
+Documented in the migration guide ("Non-Nullable Actions Must Always Render", incl. the
+contract-first migration note) and SourceGenerator.md ("Null Handling in `ToSiren()`"),
 both including the `#nullable disable` note (no annotations → everything counts as mandatory).
 
 ### GEN-11 — No zero/multiple-endpoint diagnostics
@@ -461,6 +472,23 @@ validation via
 the declared list; links without the attribute are never validated. The legacy `SirenConverter`
 is unchanged (runtime media types only); the parity tests compare link `type` leniently and assert
 the documented divergence instead.
+
+### GEN-19 — Contract-first: `mandatory` attribute on `<Operation>`
+
+Follow-up to the extended GEN-10 decision (mandatory action = always on the wire): the
+contract-first templates generate **non-nullable** action properties whose `*Op` constructors
+require a `canExecute` delegate. A contract-first project with a conditionally available action
+therefore cannot adopt `Siren = true` — the generated mapper throws when `CanExecute()` returns
+false on a mandatory action. The contract XML has no way to express "this operation may be
+absent".
+
+**Fix (additive, no breaking change):** add a `mandatory` boolean attribute to `OperationType`
+in `Hypermedia.xsd`, `use="optional"` with default `true` — mirroring the existing `mandatory`
+attribute on `PropertyType` and `LinkType`, so existing contract files validate unchanged and
+produce identical code. The server templates then generate a **nullable** action property for
+`mandatory="false"` operations (the HTO hides the action by leaving it null or via
+`CanExecute`). Client templates should surface the same optionality. Covered in the migration
+guide ("Contract-First Migration").
 
 ## Refactorings (structure, testability, debuggability)
 

@@ -186,12 +186,16 @@ they are treated as ordinary data properties. This matches the runtime `SirenCon
 
 ### Null Handling in `ToSiren()`
 
-Nullability annotations decide whether a link, action, or embedded-entity property is mandatory:
+Nullability annotations decide whether a link, action, or embedded-entity property is mandatory.
+A mandatory member is **always on the wire** — that is what `isMandatory: true` in the schema
+guarantees to consumers:
 
 - **Non-nullable** (`ILink<T>`, `MyOp`, `IEmbeddedEntity<T>`): a null value throws
-  `InvalidOperationException` at render time.
-- **Nullable** (`ILink<T>?`, `MyOp?`, `IEmbeddedEntity<T>?`): a null value silently omits the member.
-- Actions are additionally gated by `CanExecute()` — returning false omits the action without error.
+  `InvalidOperationException` at render time. For actions, `CanExecute()` returning false
+  **also throws** — a mandatory action must always be available.
+- **Nullable** (`ILink<T>?`, `MyOp?`, `IEmbeddedEntity<T>?`): a null value silently omits the
+  member. A nullable action is additionally gated by `CanExecute()` — returning false omits it
+  without error. Declare the property nullable whenever the action can be absent.
 
 In `#nullable disable` contexts nothing is annotated, so every such property counts as mandatory.
 Enable nullable reference types and mark optional members with `?`.

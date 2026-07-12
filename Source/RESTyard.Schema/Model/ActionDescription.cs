@@ -65,7 +65,8 @@ public class ActionDescription
     public IReadOnlyList<string>? AccessGroups { get; set; }
 
     /// <summary>
-    /// Whether this action is always present on the entity.
+    /// Whether this action is always present and available on the entity.
+    /// Conditionally available actions are not mandatory (nullable property on the HTO).
     /// </summary>
     [JsonPropertyName("isMandatory")]
     public bool IsMandatory { get; set; }

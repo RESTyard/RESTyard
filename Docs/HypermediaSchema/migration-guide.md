@@ -139,28 +139,45 @@ var options = new JsonSerializerOptions
 
 **Action required:** If clients depend on null properties being present in the JSON, do NOT set `DefaultIgnoreCondition = WhenWritingNull`, or set it only at the serializer level and not on the properties POCO. Note that `WhenWritingNull` applies globally — it also omits null Siren structural properties (`class`, `title`, etc.), which is typically desirable.
 
-## Null Non-Nullable Actions Now Throw (new behavior)
+## Non-Nullable Actions Must Always Render (new behavior)
 
-Previously, a null action property was always silently omitted from the Siren output —
-even when the property was declared non-nullable. Links and embedded entities already threw
-`InvalidOperationException` in that situation.
+Previously, a null or unavailable (`CanExecute() == false`) action property was always silently
+omitted from the Siren output — even when the property was declared non-nullable. Links and
+embedded entities already threw `InvalidOperationException` for null.
 
-**New:** `ToSiren()` treats null members consistently:
+**New:** in `ToSiren()`, a non-nullable action property is **mandatory**: it is always on the
+wire, matching `isMandatory: true` in the generated schema. Declaring the property nullable is
+the explicit way to say "this action may be absent".
 
 - **Non-nullable action property is null** → `InvalidOperationException` at render time,
-  same as links and embedded entities. Declaring the property nullable is the explicit way
-  to say "this action may be absent".
+  same as links and embedded entities.
+- **Non-nullable action with `CanExecute() == false`** → `InvalidOperationException` at render
+  time. A mandatory action must always be available.
 - **Nullable action property is null** → silently omitted (unchanged).
-- **`CanExecute()` returns false** → action omitted (unchanged); this remains the mechanism
-  for conditional availability.
+- **Nullable action with `CanExecute() == false`** → silently omitted (unchanged); `CanExecute`
+  remains the mechanism for conditional availability on nullable actions.
 
 Note: in `#nullable disable` contexts there are no nullability annotations, so **every**
 link, action, and embedded-entity property counts as mandatory — a null value throws.
 Enable nullable reference types and annotate optional members with `?`.
 
-**Action required:** if an HTO leaves a non-nullable action property null to hide the action,
-either declare the property nullable or keep it initialized and control visibility via
-`CanExecute()`.
+**Action required:** if an action can be hidden — null property or a `canExecute` delegate that
+can return false — declare the property nullable. Keep non-nullable only for actions that are
+always available.
+
+### Contract-First Migration
+
+The contract-first templates currently generate **non-nullable** action properties whose `*Op`
+constructors require a `canExecute` delegate. Under the rule above this means: a contract-first
+project can only adopt `Siren = true` if every action's delegate always returns `true` —
+a conditionally available action would throw at render time.
+
+The contract schema (`Hypermedia.xsd`) does not yet offer a way to mark an operation as
+optional. A `mandatory` attribute on `<Operation>` (defaulting to `true`, mirroring the existing
+`mandatory` attribute on `<Property>` and `<Link>`) is planned; the templates will then generate
+a nullable property for `mandatory="false"` operations. Until that lands, contract-first projects
+with conditionally available actions should stay on the classic `SirenConverter` pipeline
+(which is unaffected by all of this).
 
 ## Schema: `required` Derived from Non-Nullability (new behavior)
 

@@ -3219,9 +3219,25 @@ public class HtoSchemaGeneratorTests
         sirenSource.Should().Contain("if (hto.MarkAsFavorite is null)");
         sirenSource.Should().Contain(
             "Mandatory action 'MarkAsFavorite' on 'HypermediaCustomerHto' is null");
-        // After the guard, CanExecute is called without null-conditional
-        sirenSource.Should().Contain("if (hto.MarkAsFavorite.CanExecute())");
+        // Unavailable mandatory action is a contract violation, not a silent omission
+        sirenSource.Should().Contain("if (!hto.MarkAsFavorite.CanExecute())");
+        sirenSource.Should().Contain(
+            "Mandatory action 'MarkAsFavorite' on 'HypermediaCustomerHto' is not available");
         sirenSource.Should().NotContain("MarkAsFavorite?.CanExecute()");
+    }
+
+    [Fact]
+    public void Mandatory_unavailable_action_throws_at_render_time()
+    {
+        var resolver = new StubRouteResolver(new ResolvedRoute("http://test/self", "GET"));
+
+        var act = () => GeneratorTestHelper.RunGeneratorAndGetSirenJson(
+            "HypermediaCustomerHto", resolver, configureHto: null, options: null,
+            HtoWithDisabledMandatoryAction);
+
+        act.Should().Throw<System.Reflection.TargetInvocationException>()
+            .WithInnerException<InvalidOperationException>()
+            .WithMessage("*Disable*HypermediaCustomerHto*not available*");
     }
 
     [Fact]
@@ -3275,6 +3291,30 @@ public class HtoSchemaGeneratorTests
         {
             [HypermediaAction(Name = "MarkAsFavorite", Title = "Mark as Favorite")]
             public MarkAsFavoriteOp MarkAsFavorite { get; set; } = default!;
+        }
+        """;
+
+    private const string HtoWithDisabledMandatoryAction = """
+        using System;
+        using RESTyard.AspNetCore.Hypermedia;
+        using RESTyard.AspNetCore.Hypermedia.Actions;
+        using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using RESTyard.Schema.Model;
+
+        [assembly: HypermediaAssembly(Siren = true)]
+
+        namespace TestHtos;
+
+        public class DisableOp : HypermediaAction
+        {
+            public DisableOp() : base(() => false) { }
+        }
+
+        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+        public class HypermediaCustomerHto : HypermediaObject
+        {
+            [HypermediaAction(Name = "Disable", Title = "Never available")]
+            public DisableOp Disable { get; set; } = new DisableOp();
         }
         """;
 
