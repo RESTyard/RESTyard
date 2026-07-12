@@ -8,7 +8,7 @@ namespace RESTyard.HtoSourceGenerators;
 /// </summary>
 /// <param name="Namespace">The namespace of the HTO class.</param>
 /// <param name="ClassName">The class name of the HTO.</param>
-/// <param name="SchemaName">The schema name derived from the class name.</param>
+/// <param name="SchemaName">The schema name derived from the class name, or the <c>[HypermediaSchemaName]</c> override.</param>
 /// <param name="Title">Title from <c>[HypermediaObject(Title)]</c> or XML doc summary.</param>
 /// <param name="Description">Description from <c>[Description]</c> or XML doc remarks.</param>
 /// <param name="IsDeprecated">Whether the HTO is marked as deprecated.</param>
@@ -24,6 +24,7 @@ namespace RESTyard.HtoSourceGenerators;
 /// <param name="InvalidPropertyNameOverrides">Properties whose <c>[HypermediaProperty(Name)]</c> override is not a valid C# identifier. Used to emit RY0022 warnings; the override is ignored.</param>
 /// <param name="PropertiesTypeCollision">Location of a user-defined type named <c>{ClassName}Properties</c> in the HTO's namespace, or null when there is none. Used to emit RY0023 and skip POCO emission.</param>
 /// <param name="SirenExtensionsTypeCollision">Location of a user-defined type named <c>{ClassName}SirenExtensions</c> in the HTO's namespace, or null when there is none. Used to emit RY0023 and skip mapper emission.</param>
+/// <param name="Location">Location of the HTO class declaration. Used to emit RY0024 on duplicate schema names.</param>
 internal readonly record struct HtoMetadata(
     string Namespace,
     string ClassName,
@@ -42,7 +43,8 @@ internal readonly record struct HtoMetadata(
     EquatableArray<PropertyRef> LinkPropertiesWithoutRelations,
     EquatableArray<InvalidPropertyNameOverride> InvalidPropertyNameOverrides,
     LocationInfo? PropertiesTypeCollision,
-    LocationInfo? SirenExtensionsTypeCollision)
+    LocationInfo? SirenExtensionsTypeCollision,
+    LocationInfo? Location)
 {
     /// <summary>Whether a user-defined <c>{ClassName}Properties</c> type collides with the generated POCO.</summary>
     public bool HasPropertiesTypeCollision => PropertiesTypeCollision is not null;

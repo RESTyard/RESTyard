@@ -57,6 +57,9 @@ internal static class WellKnownTypeNames
     internal const string HypermediaMediaTypeAttributeFullName =
         "RESTyard.Schema.Model.HypermediaMediaTypeAttribute";
 
+    internal const string HypermediaSchemaNameAttributeFullName =
+        "RESTyard.Schema.Model.HypermediaSchemaNameAttribute";
+
     internal const string ObsoleteAttributeFullName =
         "System.ObsoleteAttribute";
 

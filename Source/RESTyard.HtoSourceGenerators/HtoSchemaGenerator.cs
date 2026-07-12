@@ -28,7 +28,10 @@ public class HtoSchemaGenerator : IIncrementalGenerator
         var htoTypes = context.SyntaxProvider
             .ForAttributeWithMetadataName(
                 WellKnownTypeNames.HypermediaObjectAttributeFullName,
-                predicate: static (node, _) => node is ClassDeclarationSyntax,
+                // Records are ordinary classes at the symbol level — positional properties are
+                // public instance properties, and the compiler-generated EqualityContract is
+                // protected, so the extractor's accessibility filter already excludes it.
+                predicate: static (node, _) => node is ClassDeclarationSyntax or RecordDeclarationSyntax,
                 transform: static (ctx, _) => HtoMetadataExtractor.ExtractHtoMetadata(ctx))
             .Where(static m => m.HasValue)
             .Select(static (m, _) => m!.Value)
@@ -289,6 +292,27 @@ public class HtoSchemaGenerator : IIncrementalGenerator
             if (allHtos.IsEmpty)
             {
                 return;
+            }
+
+            // Duplicate schema names ("HypermediaCustomerHto" and "CustomerHto" both derive
+            // "Customer") make cross-references ambiguous — RY0024 error per colliding HTO,
+            // ordered by class name so the reported pairs are deterministic.
+            var seenSchemaNames = new Dictionary<string, HtoMetadata>();
+            foreach (var hto in allHtos.OrderBy(h => h.FullClassName, System.StringComparer.Ordinal))
+            {
+                if (seenSchemaNames.TryGetValue(hto.SchemaName, out var first))
+                {
+                    spc.ReportDiagnostic(Diagnostic.Create(
+                        GeneratorDiagnostics.DuplicateSchemaName,
+                        hto.Location?.ToLocation(),
+                        first.FullClassName,
+                        hto.FullClassName,
+                        hto.SchemaName));
+                }
+                else
+                {
+                    seenSchemaNames[hto.SchemaName] = hto;
+                }
             }
 
             var siren = effectiveConfig.Siren;

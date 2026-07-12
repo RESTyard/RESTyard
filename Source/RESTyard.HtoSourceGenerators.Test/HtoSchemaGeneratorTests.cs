@@ -1875,7 +1875,9 @@ public class HtoSchemaGeneratorTests
 
         namespace NsB
         {
+            // [HypermediaSchemaName] disambiguates — both HTOs would derive "Item" (RY0024)
             [HypermediaObject(Title = "Item B", Classes = ["ItemB"])]
+            [RESTyard.Schema.Model.HypermediaSchemaName("ItemB")]
             public class HypermediaItemHto : HypermediaObject
             {
                 public string Value { get; set; } = string.Empty;
@@ -2632,6 +2634,289 @@ public class HtoSchemaGeneratorTests
         poco.Should().NotContain("MarkAsFavorite");
         poco.Should().NotContain("BuyCar");
         poco.Should().NotContain("Address");
+    }
+
+    // --- Schema name override and collisions (GEN-06) ---
+
+    private const string SchemaNameOverrideSource = """
+        using RESTyard.AspNetCore.Hypermedia;
+        using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using RESTyard.Schema.Model;
+
+        [assembly: HypermediaAssembly]
+
+        namespace TestHtos;
+
+        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+        [HypermediaSchemaName("CrmCustomer")]
+        public class HypermediaCustomerHto : HypermediaObject
+        {
+            public string Name { get; set; } = string.Empty;
+        }
+
+        [HypermediaObject(Title = "Root", Classes = ["Root"])]
+        public class HypermediaRootHto : HypermediaObject
+        {
+            [Relations(["customer"])]
+            public ILink<HypermediaCustomerHto>? Customer { get; set; }
+        }
+        """;
+
+    [Fact]
+    public void SchemaName_attribute_overrides_derived_name_and_link_targets()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", SchemaNameOverrideSource);
+        schema.Name.Should().Be("CrmCustomer");
+
+        // Cross-references must use the override too, or they dangle
+        var rootSchema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaRootHto", SchemaNameOverrideSource);
+        rootSchema.Links.Should().ContainSingle()
+            .Which.TargetName.Should().Be("CrmCustomer");
+    }
+
+    [Fact]
+    public void SchemaName_attribute_applies_to_action_result_names()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Actions;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+            using RESTyard.Schema.Model;
+            using Microsoft.AspNetCore.Mvc;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "QueryResult", Classes = ["QueryResult"])]
+            [HypermediaSchemaName("SearchResult")]
+            public class HypermediaQueryResultHto : HypermediaObject
+            {
+                public string ResultData { get; set; } = string.Empty;
+            }
+
+            public class DoStuffAction : HypermediaAction
+            {
+                public DoStuffAction() : base(() => true) { }
+            }
+
+            [HypermediaObject(Title = "Item", Classes = ["Item"])]
+            public class HypermediaItemHto : HypermediaObject
+            {
+                [HypermediaAction(Name = "DoStuff")]
+                public DoStuffAction? DoStuff { get; set; }
+            }
+
+            [ApiController]
+            [Route("api")]
+            public class ItemController : ControllerBase
+            {
+                [HttpPost("do")]
+                [HypermediaActionEndpoint<HypermediaItemHto>("DoStuff",
+                    ResultType = typeof(HypermediaQueryResultHto))]
+                public IActionResult Do() => Ok();
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        result.Diagnostics.Should().BeEmpty();
+        GetGeneratedSource(result, "HypermediaItemHto")
+            .Should().Contain("ResultName = \"SearchResult\"");
+    }
+
+    private const string DuplicateSchemaNamesSource = """
+        using RESTyard.AspNetCore.Hypermedia;
+        using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+        [assembly: HypermediaAssembly]
+
+        namespace TestHtos;
+
+        [HypermediaObject(Title = "Customer A", Classes = ["CustomerA"])]
+        public class HypermediaCustomerHto : HypermediaObject
+        {
+            public string Name { get; set; } = string.Empty;
+        }
+
+        [HypermediaObject(Title = "Customer B", Classes = ["CustomerB"])]
+        public class CustomerHto : HypermediaObject
+        {
+            public string OtherName { get; set; } = string.Empty;
+        }
+        """;
+
+    [Fact]
+    public void Duplicate_schema_names_report_RY0024_error()
+    {
+        // GEN-06: HypermediaCustomerHto and CustomerHto both derive "Customer" —
+        // cross-references would silently point at the wrong entity.
+        var result = GeneratorTestHelper.RunGenerator(DuplicateSchemaNamesSource);
+
+        var diagnostic = result.Diagnostics.Should().ContainSingle(d => d.Id == "RY0024").Which;
+        diagnostic.Severity.Should().Be(DiagnosticSeverity.Error);
+        diagnostic.GetMessage().Should().Contain("TestHtos.CustomerHto")
+            .And.Contain("TestHtos.HypermediaCustomerHto")
+            .And.Contain("'Customer'");
+    }
+
+    [Fact]
+    public void Duplicate_schema_names_resolved_by_attribute_are_silent()
+    {
+        var source = DuplicateSchemaNamesSource.Replace(
+            "[HypermediaObject(Title = \"Customer B\", Classes = [\"CustomerB\"])]",
+            """
+            [HypermediaObject(Title = "Customer B", Classes = ["CustomerB"])]
+            [RESTyard.Schema.Model.HypermediaSchemaName("LegacyCustomer")]
+            """);
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        result.Diagnostics.Should().BeEmpty();
+    }
+
+    // --- record HTOs (GEN-08) ---
+
+    private const string RecordHtoSource = """
+        using RESTyard.AspNetCore.Hypermedia;
+        using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+        [assembly: HypermediaAssembly]
+
+        namespace TestHtos;
+
+        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+        public record HypermediaCustomerHto(string Name, int Age) : IHypermediaObject
+        {
+            public string? Nickname { get; init; }
+        }
+        """;
+
+    [Fact]
+    public void Record_hto_generates_schema_and_poco()
+    {
+        // GEN-08: the syntax predicate matched only ClassDeclarationSyntax —
+        // record HTOs produced no schema and no mapper, silently.
+        var result = GeneratorTestHelper.RunGenerator(RecordHtoSource);
+
+        result.Diagnostics.Should().BeEmpty();
+
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", RecordHtoSource);
+        schema.Name.Should().Be("Customer");
+
+        // Positional (primary-constructor) and body properties are data properties;
+        // the compiler-generated EqualityContract is protected and must not leak in.
+        var poco = result.GeneratedTrees
+            .Single(t => t.FilePath.Contains("HypermediaCustomerHtoProperties.g.cs"))
+            .GetText().ToString();
+        poco.Should().Contain("Name")
+            .And.Contain("Age")
+            .And.Contain("Nickname")
+            .And.NotContain("EqualityContract");
+
+        GeneratorTestHelper.AssertOutputCompiles(RecordHtoSource);
+    }
+
+    // --- Embedded collection detection (GEN-09) ---
+
+    private const string ArrayEmbeddedSource = """
+        using RESTyard.AspNetCore.Hypermedia;
+        using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+        [assembly: HypermediaAssembly]
+
+        namespace TestHtos;
+
+        [HypermediaObject(Title = "Order", Classes = ["Order"])]
+        public class HypermediaOrderHto : HypermediaObject
+        {
+            public string OrderNumber { get; set; } = string.Empty;
+        }
+
+        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+        public class HypermediaCustomerHto : HypermediaObject
+        {
+            public string Name { get; set; } = string.Empty;
+
+            [Relations(["orders"])]
+            public IEmbeddedEntity<HypermediaOrderHto>[] Orders { get; set; } = [];
+        }
+        """;
+
+    [Fact]
+    public void Array_of_embedded_entities_is_a_collection_embedded_entity()
+    {
+        // GEN-09: arrays were not detected as embedded collections and leaked
+        // into the data-properties POCO as a data property.
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", ArrayEmbeddedSource);
+
+        var embedded = schema.EmbeddedEntities.Should().ContainSingle().Which;
+        embedded.IsCollection.Should().BeTrue();
+        embedded.TargetName.Should().Be("Order");
+
+        var result = GeneratorTestHelper.RunGenerator(ArrayEmbeddedSource);
+        result.GeneratedTrees
+            .Single(t => t.FilePath.Contains("HypermediaCustomerHtoProperties.g.cs"))
+            .GetText().ToString()
+            .Should().NotContain("Orders");
+    }
+
+    [Fact]
+    public void Array_of_embedded_entities_without_relations_reports_RY0020()
+    {
+        var source = ArrayEmbeddedSource.Replace("[Relations([\"orders\"])]", string.Empty);
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "RY0020");
+    }
+
+    [Fact]
+    public void Non_collection_generics_over_embedded_entities_are_not_embedded()
+    {
+        // GEN-09: any generic type whose first type argument was an embedded entity counted
+        // as a collection — Func<IEmbeddedEntity<T>> and Dictionary<IEmbeddedEntity<T>, X>
+        // were classified as embedded (and reported RY0020 here, before [FormatterIgnore...]
+        // could exclude them). Only IEnumerable<IEmbeddedEntity<T>> implementers qualify.
+        const string source = """
+            using System;
+            using System.Collections.Generic;
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            [HypermediaObject(Title = "Order", Classes = ["Order"])]
+            public class HypermediaOrderHto : HypermediaObject
+            {
+                public string OrderNumber { get; set; } = string.Empty;
+            }
+
+            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            public class HypermediaCustomerHto : HypermediaObject
+            {
+                public string Name { get; set; } = string.Empty;
+
+                [FormatterIgnoreHypermediaProperty]
+                public Func<IEmbeddedEntity<HypermediaOrderHto>>? Factory { get; set; }
+
+                [FormatterIgnoreHypermediaProperty]
+                public Dictionary<IEmbeddedEntity<HypermediaOrderHto>, string>? Lookup { get; set; }
+            }
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+        result.Diagnostics.Should().BeEmpty();
+
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema("HypermediaCustomerHto", source);
+        schema.EmbeddedEntities.Should().BeEmpty();
     }
 
     private static string GetGeneratedSource(

@@ -68,6 +68,16 @@ internal static class GeneratorDiagnostics
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    // Error, not warning: a schema-name collision makes cross-references (targetName,
+    // resultName) silently point at the wrong entity — the schema is wrong, not degraded.
+    internal static readonly DiagnosticDescriptor DuplicateSchemaName = new(
+        id: "RY0024",
+        title: "Duplicate schema name",
+        messageFormat: "HTO classes '{0}' and '{1}' both have the schema name '{2}' — schema cross-references (targetName, resultName) become ambiguous. Apply [HypermediaSchemaName] to one of them to disambiguate",
+        category: "RESTyard.Schema",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     internal static readonly DiagnosticDescriptor DuplicateLinkRelations = new(
         id: "RY0040",
         title: "Duplicate link relations",

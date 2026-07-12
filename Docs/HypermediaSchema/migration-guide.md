@@ -30,18 +30,21 @@ To enable `ToSiren()` generation (not just schema), set `Siren = true`:
 
 ## New Build Diagnostics
 
-Turning on source generation can surface **new build errors** on HTOs that compiled fine under the
-reflection-based formatter:
+Turning on source generation can surface **new build diagnostics** on HTOs that compiled fine under
+the reflection-based formatter:
 
 | Diagnostic | Severity | Cause | Fix |
 |---|---|---|---|
-| `RY0020` | Error | `IEmbeddedEntity<T>` property missing `[Relations]` | Add `[Relations(["rel"])]` to the property |
-| `RY0021` | Error | `ILink<T>` property missing `[Relations]` | Add `[Relations(["rel"])]` to the property |
-| `RY0030` | Error | `Siren = true` combined with `Schema = false` | Remove `Schema = false` (Siren needs the Properties POCO) |
+| `RY0020` | Warning | `IEmbeddedEntity<T>` property missing `[Relations]` | Add `[Relations(["rel"])]` to the property |
+| `RY0021` | Warning | `ILink<T>` property missing `[Relations]` | Add `[Relations(["rel"])]` to the property |
+| `RY0024` | Error | Two HTOs derive the same schema name (e.g. `HypermediaCustomerHto` + `CustomerHto` → both `Customer`) | Apply `[HypermediaSchemaName]` to one of them |
+| `RY0030` | Warning | `Siren = true` combined with `Schema = false` | Remove `Schema = false` (Siren needs the Properties POCO) |
 | `RY0032` | Warning | `ResultType` on an action endpoint is not a `[HypermediaObject]` | Remove `ResultType`, or suppress if the result is intentionally non-hypermedia |
 
-**Action required:** The old formatter tolerated `ILink`/`IEmbeddedEntity` properties without
-`[Relations]`; the generator does not. Add `[Relations]` to any such property, or the build will fail.
+**Action required:** `ILink`/`IEmbeddedEntity` properties without `[Relations]` are excluded from
+the schema (RY0020/RY0021 warn) — add `[Relations]` to include them. A schema-name collision
+(RY0024) fails the build; disambiguate with `[HypermediaSchemaName("...")]`
+(`RESTyard.Schema.Model`) on one of the colliding HTOs.
 
 ## Assembly Discovery
 
@@ -196,6 +199,39 @@ outside the declared list, the mapper warns by default (`SirenMapperOptions.Medi
 
 **Action required:** none for servers. To silence mismatch warnings, either fix the declaration or
 set `MediaTypeMismatch = MediaTypeMismatchBehavior.Ignore`.
+
+## Schema Names: `[HypermediaSchemaName]` and Collision Errors (new behavior)
+
+Schema names are derived by stripping the `Hypermedia` prefix and `Hto` suffix from the class name.
+Two HTOs deriving the same name previously produced a silently broken schema (cross-references
+pointed at the wrong entity); this is now build error **RY0024**. Disambiguate with the new
+`[HypermediaSchemaName("...")]` attribute (`RESTyard.Schema.Model`) — the override applies to the
+entity name and every cross-reference (`targetName`, `resultName`) consistently.
+
+**Action required:** only if your assembly contains colliding class names (e.g.
+`HypermediaCustomerHto` and `CustomerHto`).
+
+## Record HTOs Now Generate (new behavior)
+
+`record` HTOs were previously ignored by the source generator without any diagnostic (the runtime
+`SirenConverter` handled them fine). They now generate schema and Siren mappers like class HTOs;
+positional properties become data properties. Note: records cannot derive from the obsolete
+`HypermediaObject` base class — implement `IHypermediaObject` directly.
+
+**Action required:** none — existing record HTOs start producing schema entries on rebuild.
+
+## Embedded Entity Collection Detection Fixed (new behavior)
+
+Detection now matches the runtime `SirenConverter`: arrays of `IEmbeddedEntity<THto>` and types
+implementing `IEnumerable<IEmbeddedEntity<THto>>` are embedded collections. Two changes:
+
+- `IEmbeddedEntity<THto>[]` **array properties** previously leaked into the data-properties POCO
+  as data; they are now embedded entity collections (and RY0020 warns when `[Relations]` is missing).
+- Non-collection generics over an embedded entity (`Func<IEmbeddedEntity<T>>`,
+  `Dictionary<IEmbeddedEntity<T>, X>`) previously counted as embedded collections; they are now
+  ordinary data properties.
+
+**Action required:** none in typical code bases; only affects the exotic property shapes above.
 
 ## Controller Usage Pattern
 

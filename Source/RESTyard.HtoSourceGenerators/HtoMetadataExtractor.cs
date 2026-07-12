@@ -78,7 +78,7 @@ internal static class HtoMetadataExtractor
         return new HtoMetadata(
             ns,
             symbol.Name,
-            DeriveSchemaName(symbol.Name),
+            GetSchemaName(symbol),
             title,
             description,
             isDeprecated,
@@ -93,7 +93,8 @@ internal static class HtoMetadataExtractor
             linksWithoutRelations,
             invalidPropertyNameOverrides,
             FindUserDefinedTypeInNamespace(symbol, symbol.Name + "Properties"),
-            FindUserDefinedTypeInNamespace(symbol, symbol.Name + "SirenExtensions"));
+            FindUserDefinedTypeInNamespace(symbol, symbol.Name + "SirenExtensions"),
+            LocationInfo.FromSymbol(symbol));
     }
 
     /// <summary>
@@ -301,7 +302,7 @@ internal static class HtoMetadataExtractor
             .First(a => a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.RelationsAttributeFullName);
 
         var relations = GetRelationsFromAttribute(relationsAttr);
-        var targetSchemaName = targetType != null ? DeriveSchemaName(targetType.Name) : null;
+        var targetSchemaName = targetType != null ? GetSchemaName(targetType) : null;
         var targetClasses = targetType != null ? GetTargetClasses(targetType) : ImmutableArray<string>.Empty;
         var mediaTypes = GetMediaTypes(member);
         var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
@@ -369,7 +370,7 @@ internal static class HtoMetadataExtractor
             .First(a => a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.RelationsAttributeFullName);
 
         var relations = GetRelationsFromAttribute(relationsAttr);
-        var targetSchemaName = DeriveSchemaName(targetType!.Name);
+        var targetSchemaName = GetSchemaName(targetType!);
         var targetClasses = GetTargetClasses(targetType);
         var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
 
@@ -403,8 +404,9 @@ internal static class HtoMetadataExtractor
     /// <summary>
     /// Extracts the target HTO type from an embedded entity property.
     /// Returns the target type and whether it's a collection.
-    /// Supports <c>IEmbeddedEntity&lt;THto&gt;</c> (single) and
-    /// <c>List&lt;IEmbeddedEntity&lt;THto&gt;&gt;</c> / <c>IList&lt;...&gt;</c> / etc. (collection).
+    /// Supports <c>IEmbeddedEntity&lt;THto&gt;</c> (single) and collections of it —
+    /// arrays plus anything implementing <c>IEnumerable&lt;IEmbeddedEntity&lt;THto&gt;&gt;</c>
+    /// (<c>List&lt;...&gt;</c>, <c>IList&lt;...&gt;</c>, etc.).
     /// </summary>
     private static (INamedTypeSymbol? TargetType, bool IsCollection) GetEmbeddedEntityTargetType(
         IPropertySymbol property)
@@ -466,21 +468,44 @@ internal static class HtoMetadataExtractor
     }
 
     /// <summary>
-    /// Checks if the type is a generic collection (List, IList, ICollection, IEnumerable,
-    /// IReadOnlyList, IReadOnlyCollection) whose element type is <c>IEmbeddedEntity&lt;THto&gt;</c>.
-    /// Returns THto if found.
+    /// Checks if the type is a collection of <c>IEmbeddedEntity&lt;THto&gt;</c> — an array,
+    /// <c>IEnumerable&lt;IEmbeddedEntity&lt;THto&gt;&gt;</c> itself, or any type implementing it
+    /// (List, IList, ICollection, IReadOnlyList, ...). Returns THto if found.
+    /// Requiring <c>IEnumerable&lt;T&gt;</c> keeps non-collections out: neither
+    /// <c>Func&lt;IEmbeddedEntity&lt;T&gt;&gt;</c> nor <c>Dictionary&lt;IEmbeddedEntity&lt;T&gt;, X&gt;</c>
+    /// (whose enumerable element is a KeyValuePair, not the entity) count as collections.
     /// </summary>
     private static INamedTypeSymbol? GetCollectionEmbeddedEntityTarget(ITypeSymbol type)
     {
-        if (type is not INamedTypeSymbol named || !named.IsGenericType)
+        if (type is IArrayTypeSymbol array)
+        {
+            return GetIEmbeddedEntityTypeArgument(array.ElementType);
+        }
+
+        if (type is not INamedTypeSymbol named)
         {
             return null;
         }
 
-        // Check the element type of the first type argument
-        var elementType = named.TypeArguments[0];
-        return GetIEmbeddedEntityTypeArgument(elementType);
+        if (IsIEnumerableGeneric(named))
+        {
+            return GetIEmbeddedEntityTypeArgument(named.TypeArguments[0]);
+        }
+
+        foreach (var iface in named.AllInterfaces)
+        {
+            if (IsIEnumerableGeneric(iface))
+            {
+                return GetIEmbeddedEntityTypeArgument(iface.TypeArguments[0]);
+            }
+        }
+
+        return null;
     }
+
+    private static bool IsIEnumerableGeneric(INamedTypeSymbol type)
+        => type.IsGenericType
+           && type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T;
 
     private static bool IsActionType(ITypeSymbol type)
     {
@@ -720,6 +745,17 @@ internal static class HtoMetadataExtractor
             .Select(v => (string)v.Value!)
             .ToImmutableArray();
     }
+
+    /// <summary>
+    /// The effective schema name of an HTO type: the <c>[HypermediaSchemaName]</c> override
+    /// when present (and non-empty), else the name derived from the class name via
+    /// <see cref="DeriveSchemaName"/>. Must be used for every schema-name lookup — entity
+    /// names and cross-references (link/embedded targets, action results) alike — so an
+    /// override cannot desynchronize them.
+    /// </summary>
+    internal static string GetSchemaName(INamedTypeSymbol type)
+        => GetAttributeStringArgument(type, WellKnownTypeNames.HypermediaSchemaNameAttributeFullName)
+           ?? DeriveSchemaName(type.Name);
 
     internal static string DeriveSchemaName(string className)
     {

@@ -18,10 +18,10 @@ emission in `SchemaEmitter` / `PropertiesPocoEmitter` / `SirenEmitter` / `SirenH
 | GEN-03 | RY0031/RY0032 diagnostics duplicated once per HTO; wrong gating                                                           | Bug           | S    | Medium | ✅ Done                  |
 | GEN-04 | Incrementality defeated by compilation-wide controller scan                                                               | Perf bug      | M–L  | High   | ✅ Done                  |
 | GEN-05 | Same HTO class name in two namespaces crashes generator (hint names)                                                      | Bug           | S    | Medium | ✅ Done                  |
-| GEN-06 | Silent schema-name collisions; `[HypermediaSchemaName]` not implemented                                                   | Gap           | M    | Medium | Yes                     |
+| GEN-06 | Silent schema-name collisions; `[HypermediaSchemaName]` not implemented                                                   | Gap           | M    | Medium | ✅ Done                  |
 | GEN-07 | Generated code can fail to compile (escaping, culture, identifiers)                                                       | Bug           | M    | High   | ✅ Done                  |
-| GEN-08 | `record` HTOs silently ignored                                                                                            | Gap           | S    | Medium | Yes (or diagnostic)     |
-| GEN-09 | Embedded-collection detection too loose and too tight (arrays leak)                                                       | Bug           | S–M  | Medium | Yes                     |
+| GEN-08 | `record` HTOs silently ignored                                                                                            | Gap           | S    | Medium | ✅ Done                  |
+| GEN-09 | Embedded-collection detection too loose and too tight (arrays leak)                                                       | Bug           | S–M  | Medium | ✅ Done                  |
 | GEN-10 | Null mandatory action silently omitted; links/embedded throw                                                              | Inconsist.    | S    | Low    | Yes — decide + document |
 | GEN-11 | No diagnostic for zero/multiple endpoints per HTO/action (design says)                                                    | Gap           | M    | Medium | Later                   |
 | GEN-12 | Diagnostic severity vs. wording mismatch (RY0020/21/30)                                                                   | Inconsist.    | S    | Low    | ✅ Done                  |
@@ -47,7 +47,7 @@ Size: S ≈ hours, M ≈ a day, L ≈ multiple days. Risk = impact of leaving it
 2. ✅ **GEN-04 + REF-06** — incrementality fix with its regression guard.
 3. ✅ **GEN-01, GEN-02, GEN-03, GEN-17** — the action-result feature cluster (fix or cut together).
 4. ✅ **GEN-05, GEN-07** — generation robustness (crash + invalid code).
-5. **GEN-06, GEN-08, GEN-09, GEN-10, ✅ GEN-12, ✅ GEN-13, ✅ GEN-16, ✅ GEN-18** — behavior gaps and DX
+5. **✅ GEN-06, ✅ GEN-08, ✅ GEN-09, GEN-10, ✅ GEN-12, ✅ GEN-13, ✅ GEN-16, ✅ GEN-18** — behavior gaps and DX
    (GEN-16/18 unblock schema-driven client generation; GEN-12/13 pulled forward and done).
 6. **GEN-11, GEN-14, ✅ GEN-15, ✅ REF-04, ✅ REF-05** — opportunistic / later (GEN-15, REF-04/05 pulled forward and done).
 7. **DOC-01** — documentation update.
@@ -172,7 +172,7 @@ lookup passes `metadata.FullClassName`. Tests cover generation succeeding with t
 and `ResultType` not leaking across namespaces. Note: derived schema names can still collide
 ("Customer" from both) — that is GEN-06, unchanged here.
 
-### GEN-06 — Silent schema-name collisions; `[HypermediaSchemaName]` missing
+### ✅ GEN-06 — Silent schema-name collisions; `[HypermediaSchemaName]` missing
 
 `DeriveSchemaName` strips the `Hypermedia` prefix and `Hto` suffix — `HypermediaCustomerHto`,
 `CustomerHto`, and `Customer` all map to `"Customer"` with no diagnostic. Cross-references
@@ -190,6 +190,17 @@ Alternatively update the design doc if the attribute is deliberately dropped.
 collision makes cross-references (`targetName`, `resultName`) silently point at the wrong entity,
 so the schema is wrong, not degraded (same rationale as RY0023). Fix path for users:
 `[HypermediaSchemaName]` on one of the colliding HTOs.
+
+**Done:** new `[HypermediaSchemaName("Name")]` attribute (`RESTyard.Schema.Model`, class target).
+`HtoMetadataExtractor.GetSchemaName` is the single lookup (override, else `DeriveSchemaName`) and
+is used at every schema-name site — entity name, link targets, embedded targets, and both
+action-result mapping paths (modern + legacy) — so an override cannot desynchronize
+cross-references. Duplicate schema names within an assembly are reported as **RY0024** (error) in
+the registry output (which sees all HTOs), naming both colliding classes; the location points at
+the second class in deterministic (class-name ordinal) order. Tests: override reflected in entity
+name, link `targetName`, and `resultName`; RY0024 on `HypermediaCustomerHto` + `CustomerHto`;
+silence after applying the attribute. Documented in SourceGenerator.md and the migration guide.
+Cross-assembly collisions remain a compose-time concern (GEN-14 territory).
 
 ### ✅ GEN-07 — Generated code can fail to compile
 
@@ -226,7 +237,7 @@ Several emission paths produce invalid C# without any diagnostic:
   colliding artifact is skipped so the user sees the real cause instead of CS0101 on generated code
   (a Properties collision also skips the Siren mapper, which would otherwise bind the user's type).
 
-### GEN-08 — `record` HTOs silently ignored
+### ✅ GEN-08 — `record` HTOs silently ignored
 
 The syntax predicate is `node is ClassDeclarationSyntax` (line ~183); `RecordDeclarationSyntax` does not
 match, so a `record` HTO with `[HypermediaObject]` produces no schema and no Siren mapper, silently.
@@ -239,7 +250,13 @@ predicate — records are ordinary classes at the symbol level, and the reflecti
 primary-constructor/positional properties and exclude the compiler-generated `EqualityContract`
 property.
 
-### GEN-09 — Embedded-collection detection too loose and too tight
+**Done:** the syntax predicate now also matches `RecordDeclarationSyntax`; no extractor change was
+needed — positional properties are ordinary public instance properties, and `EqualityContract` is
+protected, so the existing accessibility filter excludes it. Test: positional + body properties in
+the POCO, no `EqualityContract`, output compiles. Note documented: records cannot derive from the
+obsolete `HypermediaObject` base class — they implement `IHypermediaObject` directly.
+
+### ✅ GEN-09 — Embedded-collection detection too loose and too tight
 
 `GetCollectionEmbeddedEntityTarget` (line ~748) accepts **any** generic type whose first type argument is
 an embedded entity — `Func<IEmbeddedEntity<T>>` or `Dictionary<IEmbeddedEntity<T>, X>` falsely count as
@@ -248,6 +265,15 @@ of embedded entities **leaks into the properties POCO as a data property**.
 
 **Fix:** require the type to implement `IEnumerable<IEmbeddedEntity<T>>`; handle `IArrayTypeSymbol`.
 The doc comment already claims the stricter behavior — make the code match it.
+
+**Done:** `GetCollectionEmbeddedEntityTarget` now accepts `IArrayTypeSymbol` (element type checked)
+and otherwise requires the type to be or implement `IEnumerable<IEmbeddedEntity<T>>` — matching the
+runtime `SirenConverter`, which buckets related entities via `IEnumerable<IEmbeddedEntity>`
+assignability. `Func<IEmbeddedEntity<T>>` and `Dictionary<IEmbeddedEntity<T>, X>` (enumerable
+element is a KeyValuePair) no longer count as embedded. The generated mapper already iterates
+collections with `foreach`, so arrays needed no emitter change. Tests: array → embedded collection
+(and gone from the POCO), array without `[Relations]` → RY0020, Func/Dictionary → not embedded.
+Documented as behavior changes in the migration guide.
 
 ### GEN-10 — Inconsistent null handling for mandatory members
 

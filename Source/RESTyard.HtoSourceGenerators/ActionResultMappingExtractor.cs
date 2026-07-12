@@ -68,12 +68,12 @@ internal static class ActionResultMappingExtractor
                 }
                 else
                 {
-                    var resultSchemaName = HtoMetadataExtractor.DeriveSchemaName(resultType.Name);
+                    var resultSchemaName = HtoMetadataExtractor.GetSchemaName(resultType);
                     var resultClasses = HtoMetadataExtractor.GetTargetClasses(resultType);
                     mappings.Add(new ActionResultMapping(
                         HtoMetadataExtractor.GetNamespaceQualifiedName(htoType),
                         actionPropName,
-                        HtoMetadataExtractor.DeriveSchemaName(htoClassName),
+                        HtoMetadataExtractor.GetSchemaName(htoType),
                         ResolveActionName(htoType, actionPropName),
                         resultSchemaName,
                         new EquatableArray<string>(resultClasses)));
@@ -149,12 +149,12 @@ internal static class ActionResultMappingExtractor
                     }
                     else
                     {
-                        var resultSchemaName = HtoMetadataExtractor.DeriveSchemaName(resultType.Name);
+                        var resultSchemaName = HtoMetadataExtractor.GetSchemaName(resultType);
                         var resultClasses = HtoMetadataExtractor.GetTargetClasses(resultType);
                         mappings.Add(new ActionResultMapping(
                             HtoMetadataExtractor.GetNamespaceQualifiedName(declaringType),
                             actionName,
-                            HtoMetadataExtractor.DeriveSchemaName(htoClassName),
+                            HtoMetadataExtractor.GetSchemaName(declaringType),
                             ResolveActionName(declaringType, actionName),
                             resultSchemaName,
                             new EquatableArray<string>(resultClasses)));

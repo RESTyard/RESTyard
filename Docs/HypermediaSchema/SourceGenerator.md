@@ -68,7 +68,7 @@ flowchart LR
 
 ## What Gets Generated
 
-For each HTO class with `[HypermediaObject]`, the generator produces:
+For each HTO class — `record` HTOs are supported too — with `[HypermediaObject]`, the generator produces:
 
 | Generated file | Contains | Purpose |
 |---|---|---|
@@ -145,6 +145,44 @@ Assembly-level attribute that enables source generation and assembly discovery.
 [assembly: HypermediaAssembly(Siren = true)]          // schema + ToSiren()
 [assembly: HypermediaAssembly(Schema = false)]        // discovery only, no generation
 ```
+
+### `[HypermediaSchemaName]` — Entity Names and Collisions
+
+The schema name of an entity type is derived from the class name by stripping the `Hypermedia`
+prefix and `Hto` suffix: `HypermediaCustomerHto` → `Customer`. It is the identifier used in schema
+cross-references (`targetName` on links and embedded entities, `resultName` on actions), Mermaid
+diagrams, and Markdown documentation.
+
+Because of the stripping, different classes can derive the same name — `HypermediaCustomerHto` and
+`CustomerHto` both become `Customer`. Within one assembly this is reported as **error RY0024**
+(cross-references would silently point at the wrong entity). Resolve it with
+`[HypermediaSchemaName]` (`RESTyard.Schema.Model`) on one of the classes:
+
+```csharp
+[HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+[HypermediaSchemaName("CrmCustomer")]
+public class HypermediaCustomerHto : IHypermediaObject { ... }
+```
+
+The override applies everywhere the name is used — entity name and all cross-references pointing
+at the type stay consistent. It is also useful without a collision, e.g. for shorter names in
+documentation and diagrams. Cross-assembly collisions cannot be detected at compile time; they
+surface when the aggregated schema is composed at runtime.
+
+### Record HTOs
+
+`record` HTOs work like class HTOs: positional (primary-constructor) properties and body
+properties become data properties; the compiler-generated `EqualityContract` is excluded.
+Note that a `record` cannot derive from the (obsolete) `HypermediaObject` base class — implement
+`IHypermediaObject` directly.
+
+### Embedded Entity Collections
+
+A property counts as an embedded entity collection when its type is an array of
+`IEmbeddedEntity<THto>` or implements `IEnumerable<IEmbeddedEntity<THto>>` (`List<>`, `IList<>`,
+`IReadOnlyList<>`, ...). Other generic types over an embedded entity
+(`Func<IEmbeddedEntity<T>>`, `Dictionary<IEmbeddedEntity<T>, X>`) are **not** embedded entities —
+they are treated as ordinary data properties. This matches the runtime `SirenConverter`.
 
 ### Title and Description Harvesting
 
@@ -334,8 +372,9 @@ After adding `[assembly: HypermediaAssembly]` and building:
 | No generated files | Missing `[assembly: HypermediaAssembly]` | Add the attribute to your HTO assembly |
 | No generated files | Source generator not referenced | Add the analyzer project/NuGet reference |
 | Empty schema (no entity types) | `Schema = false` on the attribute | Remove `Schema = false` or set to `true` |
-| `RY0020` error | `IEmbeddedEntity<T>` property missing `[Relations]` | Add `[Relations(["rel"])]` to the property |
-| `RY0021` error | `ILink<T>` property missing `[Relations]` | Add `[Relations(["rel"])]` to the property |
+| `RY0020` warning | `IEmbeddedEntity<T>` property missing `[Relations]` | Add `[Relations(["rel"])]` to the property |
+| `RY0021` warning | `ILink<T>` property missing `[Relations]` | Add `[Relations(["rel"])]` to the property |
+| `RY0024` error | Two HTOs derive the same schema name | Apply `[HypermediaSchemaName]` to one of them |
 | `RY0030` warning | `Siren = true` with `Schema = false` | `Schema` is forced to `true` (Siren needs the Properties POCO) |
 | `RY0032` warning | `ResultType` is not a `[HypermediaObject]` | Schema can't describe non-HTO results. Suppress if intentional, or remove `ResultType`. |
 | Properties POCO has wrong name | `[HypermediaProperty(Name)]` not applied | Verify the attribute is on the HTO property |
