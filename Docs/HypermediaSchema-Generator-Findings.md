@@ -186,6 +186,11 @@ in the codebase** (no attribute type, no generator support).
 an assembly (cross-assembly collisions can only be caught at compose time — log there).
 Alternatively update the design doc if the attribute is deliberately dropped.
 
+**Decision (2026-07-12):** duplicate derived schema names within an assembly are an **error** — a
+collision makes cross-references (`targetName`, `resultName`) silently point at the wrong entity,
+so the schema is wrong, not degraded (same rationale as RY0023). Fix path for users:
+`[HypermediaSchemaName]` on one of the colliding HTOs.
+
 ### ✅ GEN-07 — Generated code can fail to compile
 
 Several emission paths produce invalid C# without any diagnostic:
@@ -228,6 +233,12 @@ match, so a `record` HTO with `[HypermediaObject]` produces no schema and no Sir
 Either support records (include `RecordDeclarationSyntax`) or emit a diagnostic saying records are
 unsupported. Same question applies to the runtime `SirenConverter` — behavior should match.
 
+**Decision (2026-07-12): support records.** Include `RecordDeclarationSyntax` in the syntax
+predicate — records are ordinary classes at the symbol level, and the reflection-based
+`SirenConverter` already handles them, so this closes a parity gap. Tests must cover
+primary-constructor/positional properties and exclude the compiler-generated `EqualityContract`
+property.
+
 ### GEN-09 — Embedded-collection detection too loose and too tight
 
 `GetCollectionEmbeddedEntityTarget` (line ~748) accepts **any** generic type whose first type argument is
@@ -249,11 +260,23 @@ branches — that dead duplication was removed during REF-01/REF-02 (now a singl
 emitter, and document the behavior in the migration guide. Also document that in `#nullable disable`
 contexts everything counts as mandatory (`NullableAnnotation != Annotated`).
 
+**Decision (2026-07-12): throw for actions too.** A null non-nullable action throws
+`InvalidOperationException` at render time, consistent with links/embedded — declaring the property
+nullable is the explicit way to say "may be absent". Document as a behavior change in the
+migration guide, including the `#nullable disable` note above.
+
 ### GEN-11 — No zero/multiple-endpoint diagnostics
 
 Design doc constraint: "If the generator finds zero or multiple endpoints for the same HTO/action, it
 should emit a diagnostic error." Not implemented — multiple `[HypermediaActionEndpoint]` attributes for
 the same action last-win silently in the mapping dictionary; missing endpoints are not detected at all.
+
+**Decision (2026-07-12): diagnose the multiple case only.** Multiple endpoints for the same
+HTO/action in the source assembly → **error** (always wrong, no false positives). Missing-endpoint
+detection is **not** implemented in the generator — in multi-assembly setups (controllers in a
+different assembly) the generator cannot see the endpoints, so any zero-endpoint diagnostic would
+be a false positive there; the runtime route resolver already fails with a clear exception for
+genuinely missing routes. Update the design doc to match.
 
 ### ✅ GEN-12 — Diagnostic severity vs. wording mismatch
 
