@@ -766,6 +766,10 @@ constants in `Source/Shared`), so it can move to a dedicated agent-interface pla
 - Integration tests: `Cache-Control` present with configured `max-age`; `private` on the access-group and
   default-provider variants; `public` after provider override; header absent when `CacheMaxAge = null`.
 
+#### Step 6C.6: Updated files in /Docs/
+
+migration-guide.md, HypermediaApiSchema.md, SourceGenerator.md, readme.md, claude.md
+
 ### Phase 7: Generated Siren Output Formatter
 
 **Goal:** Provide a drop-in replacement output formatter that uses the generated `ToSiren()` internally, for existing APIs that want the performance benefit without rewriting controllers.
@@ -841,6 +845,8 @@ silently producing subtly different JSON via the reflection path.
   called — the exception on unmapped HTOs is the safety net; document this switch semantics
 - Document trade-offs: Option 2 has same OpenAPI limitation as current formatter (Swagger sees HTO type, not Siren shape); Option 1 fixes this;
   known minor JSON deviations between `SirenConverter` and `ToSiren()` output are tracked in the migration guide
+
+- look at: migration-guide.md, HypermediaApiSchema.md, SourceGenerator.md, readme.md, claude.md
 
 ### Phase 8 (Optional): Migration and Parity
 

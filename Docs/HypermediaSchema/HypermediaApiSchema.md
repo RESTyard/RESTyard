@@ -375,6 +375,38 @@ public partial class HypermediaEntrypointHto
 
 `HypermediaSchema.Link(HypermediaSchemaFilterParameters)` creates a link to the filtered schema. This also enables building a custom schema HTO with a filter action — the action handler can use `HypermediaSchema.Link(parameters)` to build the filtered URL and return it as a `Created` response with `Location` header.
 
+## Reference Validation
+
+When the aggregated schema is composed (`HypermediaSchemaBuilder.Build`), all cross-references are
+validated against the set of known entity type names:
+
+- link `targetName` and embedded-entity `targetName`
+- action `resultName`
+
+A reference that resolves to no `EntityTypeSchema.Name` is **dangling** — the target HTO is missing,
+its assembly is not loaded, or its schema generation is disabled. (External links have no target and
+are exempt.) Each dangling reference is logged as a warning naming the target and the elements that
+reference it.
+
+`HypermediaSchemaOptions.AllowUnresolvedReferences` controls recovery:
+
+| Value | Behavior |
+|---|---|
+| `false` (default) | Warn only; the dangling reference stays in the schema unchanged. |
+| `true` | Warn **and** add a placeholder `EntityTypeSchema` (name only, no properties/links/actions) for each unresolved name, so the schema endpoint and diagram mappers stay functional. |
+
+```csharp
+builder.Services.AddHypermediaSchema(o =>
+{
+    o.Title = "My API";
+    o.AllowUnresolvedReferences = true; // serve a partial schema during development
+});
+```
+
+Placeholder entities and warnings are emitted in deterministic (ordinal) order. Cross-assembly
+schema-name collisions, which cannot be caught at compile time, typically surface here as dangling
+references.
+
 ## CLI Schema Generation
 
 Generate schema artifacts from your server application. Use `--schema-help` for a full list of arguments:
@@ -480,6 +512,16 @@ var app = builder.Build();
 if (app.GenerateSchemaIfRequested(args)) return;
 app.Run();
 ```
+
+### Unresolved References
+
+During composition the builder validates that every link/embedded `targetName` and action
+`resultName` resolves to an entity type in the schema (external links are exempt). A dangling
+reference indicates a missing or unregistered HTO and logs one warning per unresolved name,
+listing every referencing site. For development, set
+`HypermediaSchemaOptions.AllowUnresolvedReferences = true` to additionally emit an empty
+placeholder entity type per unresolved name, so the schema endpoint and generated diagrams
+keep working while the API is still being built.
 
 ### Tooling (no ASP.NET Core)
 

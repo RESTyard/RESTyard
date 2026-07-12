@@ -9,6 +9,8 @@ Since REF-01 the code is split: analysis in `HtoMetadataExtractor` / `ActionResu
 emission in `SchemaEmitter` / `PropertiesPocoEmitter` / `SirenEmitter` / `SirenHelperEmitter` /
 `RegistryEmitter`, diagnostics in `GeneratorDiagnostics`, pipeline wiring in `HtoSchemaGenerator`.
 
+**Status: ✅ Complete (2026-07-13) — all findings (GEN-01…GEN-19, REF-01…REF-06, DOC-01) resolved.**
+
 ## Overview
 
 | ID     | Finding                                                                                                                   | Type          | Size | Risk   | Worth fixing            |
@@ -38,7 +40,7 @@ emission in `SchemaEmitter` / `PropertiesPocoEmitter` / `SirenEmitter` / `SirenH
 | REF-04 | Unify six duplicated base-type property walks into one classification                                                     | Refactoring   | M    | —      | ✅ Done                  |
 | REF-05 | Deduplicate assembly-config normalization (`Siren`→`Schema` rule)                                                         | Refactoring   | S    | —      | ✅ Done                  |
 | REF-06 | Add `.WithTrackingName()` + cacheability tests                                                                            | Test gap      | S–M  | —      | ✅ Done                  |
-| DOC-01 | Review docs (migration-guide.md, HypermediaApiSchema.md, SourceGenerator.md, readme.md) incorporate changes from done issues | Documentation | S  | —      | yes                     |
+| DOC-01 | Review docs (migration-guide.md, HypermediaApiSchema.md, SourceGenerator.md, readme.md) incorporate changes from done issues | Documentation | S  | —      | ✅ Done                  |
 
 Size: S ≈ hours, M ≈ a day, L ≈ multiple days. Risk = impact of leaving it unfixed.
 
@@ -51,7 +53,7 @@ Size: S ≈ hours, M ≈ a day, L ≈ multiple days. Risk = impact of leaving it
 5. **✅ GEN-06, ✅ GEN-08, ✅ GEN-09, ✅ GEN-10, ✅ GEN-12, ✅ GEN-13, ✅ GEN-16, ✅ GEN-18** — behavior gaps and DX
    (GEN-16/18 unblock schema-driven client generation; GEN-12/13 pulled forward and done).
 6. **✅ GEN-11, ✅ GEN-14, ✅ GEN-15, ✅ GEN-19, ✅ REF-04, ✅ REF-05** — opportunistic / later (all done).
-7. **DOC-01** — documentation update 
+7. **✅ DOC-01** — documentation update (done).
 
 ## Bugs and gaps
 
@@ -599,7 +601,27 @@ block re-runs — the end-to-end incrementality guarantee.
 
 ## Docu
 
-### DOC-01 — documentation update
+### ✅ DOC-01 — documentation update
 
 Review docs (migration-guide.md, HypermediaApiSchema.md, SourceGenerator.md, readme.md, claude.md) incorporate changes from done issues
 Also add a summary table of necessary migrations at the top of migration guid so users can quickly scann what needs migration
+
+**Done:**
+
+- **migration-guide.md:** added an "At a Glance: What Needs Migration" summary table at the top
+  (impact-classified rows with anchor links to each section). Completed the New Build Diagnostics
+  table (added RY0022, RY0023, RY0031, RY0040, RY0041 — previously only a subset). Added a
+  "Schema: Dangling Reference Validation" section for GEN-14 (`AllowUnresolvedReferences`).
+  Corrected the Controller Usage section: returning an HTO directly is still supported by the new
+  output formatter — `OkSiren`/manual `ToSiren` are opt-in alternatives, not a required migration.
+- **HypermediaApiSchema.md:** added a "Reference Validation" section documenting the compose-time
+  dangling-reference check and `AllowUnresolvedReferences` (GEN-14).
+- **SourceGenerator.md:** verified current — already covers RY0022–RY0024, RY0030–RY0033, records,
+  external links/`[HypermediaMediaType]`, null-handling, and `required`-from-nullability.
+- **README (RESTyard.Schema):** verified the register-schema sample uses `o.ApiVersion`
+  (matches `HypermediaSchemaOptions`; there is no `Version` property).
+- **CLAUDE.md (RESTyard):** added the previously-missing `RESTyard.HtoSourceGenerators` and
+  `RESTyard.Schema` projects to the project-structure list, with doc pointers.
+
+GEN-11 (RY0033) was already reflected in both guides. The design-doc update for GEN-11's
+zero-endpoint decision is tracked under GEN-11, not here.

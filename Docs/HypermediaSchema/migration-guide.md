@@ -2,6 +2,36 @@
 
 This guide covers behavioral differences and required changes when migrating from the reflection-based `SirenConverter` / `SirenHypermediaFormatter` to the source-generated `ToSiren()` extension methods.
 
+## At a Glance: What Needs Migration
+
+Scan this table first, then read the linked section for anything that applies to you. **Impact**
+legend: **Required** — you must act or generation/serialization breaks; **Likely** — a behavior
+change that commonly needs a fix; **Conditional** — only affects specific code shapes; **Info** —
+new capability, no action for existing servers.
+
+| Area | What changed | Impact | Action |
+|---|---|---|---|
+| [`[assembly: HypermediaAssembly]`](#required-assembly-hypermediaassembly) | Generator only runs on marked assemblies (HTO **and** controller assemblies) | **Required** | Add the attribute to every HTO and controller assembly |
+| [Build diagnostics](#new-build-diagnostics) | New `RY00xx` warnings/errors surface on HTOs that compiled before | **Likely** | Fix flagged properties; errors (RY0023/RY0024/RY0033) fail the build |
+| [Controller usage](#controller-usage-pattern) | Controllers can still return HTOs directly (auto-serialized by the new formatter); `OkSiren(hto)` / manual `ToSiren(...)` are opt-in alternatives | **Info** | None required; adopt `OkSiren`/manual only if you want explicit control |
+| [Action body deserialization](#action-parameter-deserialization-systemtextjson) | System.Text.Json replaces the Newtonsoft body binder; body is a plain object, not the Siren array-wrapper | **Required** | Update clients to send plain objects; migrate custom converters to `ConfigureHttpJsonOptions` |
+| [Enum deserialization](#behavioral-change-enums-sent-as-strings) | STJ does not parse enum names out of the box | **Likely** | Register `JsonStringEnumConverter` |
+| [Enum serialization](#enum-serialization) | `[EnumMember]` not honored by STJ | **Likely** | Register `JsonStringEnumConverter`; replace custom `[EnumMember]` values |
+| [Client serializers](#client-legacy-parameter-serializers-are-obsolete) | Array-wrapper parameter serializers obsolete | **Conditional** | Switch to the plain-object serializers |
+| [Property name casing](#property-name-casing) | Casing now controlled by `JsonSerializerOptions.PropertyNamingPolicy` | **Conditional** | Set (or avoid) camelCase to match client expectations |
+| [Null properties](#null-property-handling) | Controlled by `DefaultIgnoreCondition` | **Conditional** | Keep nulls if clients depend on them |
+| [Auto self link](#auto-self-link) | Self link added automatically (`AutoSelfLink`, default `true`) | **Conditional** | Set `AutoSelfLink = false` if clients don't expect it |
+| [`NoProperties`](#noproperties-marker-type) | Empty `properties` may be omitted instead of `{}` | **Conditional** | Include nulls if clients need `{}` |
+| [Non-nullable actions](#non-nullable-actions-must-always-render-new-behavior) | Non-nullable action null or `CanExecute()==false` now throws | **Conditional** | Declare optional actions nullable |
+| [Contract-first optional operations](#contract-first-migration) | `mandatory="false"` on `<Operation>` for optional actions | **Conditional** | Add `mandatory="false"` to conditionally-available operations |
+| [`required` in schema](#schema-required-derived-from-non-nullability-new-behavior) | `required` now derived from non-nullability | **Info** | Regenerate schema consumers/clients |
+| [Schema names / RY0024](#schema-names-hypermediaschemaname-and-collision-errors-new-behavior) | Duplicate derived schema names now error | **Conditional** | Apply `[HypermediaSchemaName]` on a collision |
+| [Unresolved references](#schema-dangling-reference-validation-new-behavior) | Dangling `targetName`/`resultName` now logged; optional placeholders | **Info** | Set `AllowUnresolvedReferences` while building incrementally |
+| [External links in schema](#schema-external-links-now-included-new-behavior) | `ExternalLink` now appears in the schema (`isExternal`) | **Info** | None (Siren wire unchanged) |
+| [Link media types](#link-media-types-schema-mediatypes-and-siren-type-fallback-new-behavior) | `mediaTypes` in schema; `[HypermediaMediaType]` fallback for Siren `type` | **Info** | None; declare `[HypermediaMediaType]` on external links |
+| [Record HTOs](#record-htos-now-generate-new-behavior) | `record` HTOs now generate | **Info** | None |
+| [Embedded collection detection](#embedded-entity-collection-detection-fixed-new-behavior) | Arrays of embedded entities now detected; exotic generics no longer | **Conditional** | Rare — only unusual property shapes |
+
 ## Required: `[assembly: HypermediaAssembly]`
 
 The source generator only runs for assemblies marked with the assembly-level attribute. Add it once
@@ -36,10 +66,16 @@ the reflection-based formatter:
 | Diagnostic | Severity | Cause | Fix |
 |---|---|---|---|
 | `RY0020` | Warning | `IEmbeddedEntity<T>` property missing `[Relations]` | Add `[Relations(["rel"])]` to the property |
-| `RY0021` | Warning | `ILink<T>` property missing `[Relations]` | Add `[Relations(["rel"])]` to the property |
+| `RY0021` | Warning | `ILink<T>` (or `ExternalLink`) property missing `[Relations]` | Add `[Relations(["rel"])]` to the property |
+| `RY0022` | Warning | `[HypermediaProperty(Name = "...")]` override is not a valid C# identifier (e.g. `"full-name"`) | Use a valid identifier — the override names the POCO property structurally |
+| `RY0023` | Error | A user type collides with a generated type (`{ClassName}Properties`, `{ClassName}SirenExtensions`, `SirenHelper`) | Rename the existing type |
 | `RY0024` | Error | Two HTOs derive the same schema name (e.g. `HypermediaCustomerHto` + `CustomerHto` → both `Customer`) | Apply `[HypermediaSchemaName]` to one of them |
-| `RY0030` | Warning | `Siren = true` combined with `Schema = false` | Remove `Schema = false` (Siren needs the Properties POCO) |
+| `RY0030` | Warning | `Siren = true` combined with `Schema = false` | Remove `Schema = false` (Siren needs the Properties POCO); `Schema` is forced to `true` |
+| `RY0031` | Warning | Action endpoint has a 201 response but no `ResultType` | Add `ResultType` to declare the result entity for the schema |
 | `RY0032` | Warning | `ResultType` on an action endpoint is not a `[HypermediaObject]` | Remove `ResultType`, or suppress if the result is intentionally non-hypermedia |
+| `RY0033` | Error | Multiple endpoint attributes for the same HTO or action (`[HypermediaObjectEndpoint<T>]` / `[HypermediaActionEndpoint<T>("prop")]` / legacy `Http*HypermediaAction`) | Remove the duplicate endpoint — each HTO/action must have exactly one |
+| `RY0040` | Warning | Two link properties on one HTO have identical `[Relations]` (last wins at runtime) | Give each link a distinct relation |
+| `RY0041` | Info | Two embedded-entity properties on one HTO have identical `[Relations]` (valid, but often a copy-paste slip) | Verify it is intentional |
 
 **Action required:** `ILink`/`IEmbeddedEntity` properties without `[Relations]` are excluded from
 the schema (RY0020/RY0021 warn) — add `[Relations]` to include them. A schema-name collision
@@ -257,6 +293,35 @@ entity name and every cross-reference (`targetName`, `resultName`) consistently.
 **Action required:** only if your assembly contains colliding class names (e.g.
 `HypermediaCustomerHto` and `CustomerHto`).
 
+## Schema: Dangling Reference Validation (new behavior)
+
+When the aggregated schema is composed at runtime (`HypermediaSchemaBuilder.Build`), every
+cross-reference — link/embedded `targetName` and action `resultName` — is now validated against the
+known entity type names. A reference that resolves to no entity type is **dangling**: the target HTO
+is missing, its assembly is not loaded, or its schema generation is disabled. (External links carry
+no target and are exempt.)
+
+- **Default (`AllowUnresolvedReferences = false`):** each dangling reference is logged as a warning
+  naming the target and the referencing entities; the reference is left as-is in the schema.
+- **`AllowUnresolvedReferences = true`:** in addition to the warning, each unresolved name gets a
+  **placeholder** entity type (no properties, links, or actions) so the schema endpoint and diagram
+  mappers stay functional while the API is still being built.
+
+```csharp
+builder.Services.AddHypermediaSchema(o =>
+{
+    o.Title = "My API";
+    o.AllowUnresolvedReferences = true; // tolerate in-progress APIs; default is false
+});
+```
+
+This most often surfaces in multi-assembly setups (an HTO referenced across an assembly boundary
+whose assembly is not loaded) and after a schema-name collision was resolved.
+
+**Action required:** none for complete single-assembly APIs. Watch the build/startup logs for the
+dangling-reference warning; enable `AllowUnresolvedReferences` if you deliberately serve a partial
+schema during development.
+
 ## Record HTOs Now Generate (new behavior)
 
 `record` HTOs were previously ignored by the source generator without any diagnostic (the runtime
@@ -281,15 +346,19 @@ implementing `IEnumerable<IEmbeddedEntity<THto>>` are embedded collections. Two 
 
 ## Controller Usage Pattern
 
-**`SirenConverter` (old):** Controllers return HTO objects directly; the formatter converts them automatically and sets the content type:
+Returning an HTO directly still works — the source-generated output formatter auto-serializes it to
+Siren JSON and sets the `application/vnd.siren+json` content type, exactly like the old
+`SirenConverter`:
 
 ```csharp
-return Ok(myHto);
+return Ok(myHto); // unchanged — still supported
 ```
 
-**`ToSiren()` (new):** Two approaches — convenience or manual.
+**Action required:** none. The two approaches below are **opt-in alternatives** for when you want
+explicit control over serialization (e.g. a custom `SirenMapperOptions`, or avoiding the formatter
+entirely).
 
-### Convenience: `OkSiren()` (recommended)
+### Convenience: `OkSiren()`
 
 A generated controller extension per HTO that resolves services from DI, calls `ToSiren()`, and sets the `application/vnd.siren+json` content type:
 

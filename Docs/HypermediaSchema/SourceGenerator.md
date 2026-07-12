@@ -393,5 +393,6 @@ After adding `[assembly: HypermediaAssembly]` and building:
 | `RY0024` error | Two HTOs derive the same schema name | Apply `[HypermediaSchemaName]` to one of them |
 | `RY0030` warning | `Siren = true` with `Schema = false` | `Schema` is forced to `true` (Siren needs the Properties POCO) |
 | `RY0032` warning | `ResultType` is not a `[HypermediaObject]` | Schema can't describe non-HTO results. Suppress if intentional, or remove `ResultType`. |
+| `RY0033` error | Multiple endpoint attributes for the same HTO or action | Each HTO/action must have exactly one endpoint in the assembly — remove the duplicates |
 | Properties POCO has wrong name | `[HypermediaProperty(Name)]` not applied | Verify the attribute is on the HTO property |
 | Attribute not forwarded to POCO | It's a RESTyard attribute | `[Key]`, `[Relations]`, `[HypermediaAction]`, `[HypermediaProperty]`, `[FormatterIgnoreHypermediaProperty]` are consumed by the generator, not forwarded |
