@@ -31,7 +31,7 @@ emission in `SchemaEmitter` / `PropertiesPocoEmitter` / `SirenEmitter` / `SirenH
 | GEN-16 | `required` never emitted in properties/parameter schemas                                                                  | Gap           | M    | Medium | ✅ Done                  |
 | GEN-17 | Inherited actions on derived HTOs lose `resultName`/`resultClasses`                                                       | Bug           | S    | Medium | ✅ Done                  |
 | GEN-18 | `ExternalLink` properties silently absent; `mediaType` never emitted                                                      | Gap           | M    | Medium | ✅ Done                  |
-| GEN-19 | Contract-first: no way to mark an operation optional (`mandatory` attr on `<Operation>`)                                  | Gap           | M    | Medium | Later                   |
+| GEN-19 | Contract-first: no way to mark an operation optional (`mandatory` attr on `<Operation>`)                                  | Gap           | M    | Medium | ✅ Done                  |
 | REF-01 | Split 2745-line god class into extractor + emitters + pipeline                                                            | Refactoring   | L    | —      | ✅ Done                  |
 | REF-02 | Replace indentation-string emission with a `CodeWriter`                                                                   | Refactoring   | M    | —      | ✅ Done                  |
 | REF-03 | `GenerateSirenHelper` emits fully static text via `AppendLine` calls                                                      | Refactoring   | S    | —      | ✅ Done                  |
@@ -50,8 +50,8 @@ Size: S ≈ hours, M ≈ a day, L ≈ multiple days. Risk = impact of leaving it
 4. ✅ **GEN-05, GEN-07** — generation robustness (crash + invalid code).
 5. **✅ GEN-06, ✅ GEN-08, ✅ GEN-09, ✅ GEN-10, ✅ GEN-12, ✅ GEN-13, ✅ GEN-16, ✅ GEN-18** — behavior gaps and DX
    (GEN-16/18 unblock schema-driven client generation; GEN-12/13 pulled forward and done).
-6. **GEN-11, GEN-14, ✅ GEN-15, GEN-19, ✅ REF-04, ✅ REF-05** — opportunistic / later (GEN-15, REF-04/05 pulled forward and done).
-7. **DOC-01** — documentation update.
+6. **GEN-11, GEN-14, ✅ GEN-15, ✅ GEN-19, ✅ REF-04, ✅ REF-05** — opportunistic / later (GEN-15, GEN-19, REF-04/05 pulled forward and done).
+7. **DOC-01** — documentation update 
 
 ## Bugs and gaps
 
@@ -473,7 +473,7 @@ the declared list; links without the attribute are never validated. The legacy `
 is unchanged (runtime media types only); the parity tests compare link `type` leniently and assert
 the documented divergence instead.
 
-### GEN-19 — Contract-first: `mandatory` attribute on `<Operation>`
+### ✅ GEN-19 — Contract-first: `mandatory` attribute on `<Operation>`
 
 Follow-up to the extended GEN-10 decision (mandatory action = always on the wire): the
 contract-first templates generate **non-nullable** action properties whose `*Op` constructors
@@ -489,6 +489,18 @@ produce identical code. The server templates then generate a **nullable** action
 `mandatory="false"` operations (the HTO hides the action by leaving it null or via
 `CanExecute`). Client templates should surface the same optionality. Covered in the migration
 guide ("Contract-First Migration").
+
+**Done:** `mandatory` attribute added to `OperationType` in `Hypermedia.xsd`
+(`use="optional"` default `true`) and to the `OperationType` serializer class (constructor
+default `true`, `[DefaultValue(true)]` — same pattern as `hasSelfLink`). Server templates
+generate a nullable property and constructor argument for `mandatory="false"`:
+`server/csharp/v5` (`OperationProperties.razor` + `RazorTemplateBase.GatherArguments`) and
+`server/csharp/v4` (property line + shared `gatherArguments` in `_common.sbn`, used only by
+v4). No client-template change needed — `client/csharp/v3` and `client/typescript/v0` already
+render every action as nullable/optional. The controller template is intentionally unaffected:
+an optional operation still gets its endpoint. Test coverage via a `mandatory="false"`
+operation in `TestSchema.xml`; all six template snapshots updated. Migration guide
+("Contract-First Migration") rewritten to describe the attribute instead of the workaround.
 
 ## Refactorings (structure, testability, debuggability)
 
@@ -557,3 +569,11 @@ or immediately after GEN-04.
 assembly-name, and action-result-mapping stages on a re-run with an unrelated source change.
 With GEN-04 fixed, the tests also assert via `TrackedOutputSteps` that no `RegisterSourceOutput`
 block re-runs — the end-to-end incrementality guarantee.
+
+## Docu
+
+### DOC-01 — documentation update
+
+Review docs (migration-guide.md, HypermediaApiSchema.md, SourceGenerator.md, readme.md, claude.md) incorporate changes from done issues
+Also add a summary table of necessary migrations at the top of migration guid so users can quickly scann what needs migration
+

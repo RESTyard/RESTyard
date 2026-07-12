@@ -89,6 +89,7 @@
 		<xs:attribute type="xs:boolean" name="isUploadAction" use="optional" />
 		<xs:attribute type="xs:IDREF" name="parameterTypeName" use="optional"/>
 		<xs:attribute type="xs:IDREF" name="resultDocument" use="optional"/>
+		<xs:attribute type="xs:boolean" name="mandatory" default="true" use="optional" />
 	</xs:complexType>
 
 	<!-- Parameter -->

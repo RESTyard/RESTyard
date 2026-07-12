@@ -50,6 +50,12 @@ public class BaseController : ControllerBase
     {
         throw new NotImplementedException();
     }
+
+    [HttpPostHypermediaAction("<stub>", typeof(BaseHto.OptionalOp))]
+    public Task<IActionResult> OptionalAsync()
+    {
+        throw new NotImplementedException();
+    }
 }
 
 [Route("api/[controller]")]

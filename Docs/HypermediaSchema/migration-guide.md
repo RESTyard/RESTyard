@@ -167,17 +167,23 @@ always available.
 
 ### Contract-First Migration
 
-The contract-first templates currently generate **non-nullable** action properties whose `*Op`
-constructors require a `canExecute` delegate. Under the rule above this means: a contract-first
-project can only adopt `Siren = true` if every action's delegate always returns `true` —
-a conditionally available action would throw at render time.
+The contract-first templates generate **non-nullable** action properties by default, whose `*Op`
+constructors require a `canExecute` delegate. Under the rule above this means: such an action's
+delegate must always return `true` once the project adopts `Siren = true` — a conditionally
+available action declared non-nullable throws at render time.
 
-The contract schema (`Hypermedia.xsd`) does not yet offer a way to mark an operation as
-optional. A `mandatory` attribute on `<Operation>` (defaulting to `true`, mirroring the existing
-`mandatory` attribute on `<Property>` and `<Link>`) is planned; the templates will then generate
-a nullable property for `mandatory="false"` operations. Until that lands, contract-first projects
-with conditionally available actions should stay on the classic `SirenConverter` pipeline
-(which is unaffected by all of this).
+To express "this operation may be absent", set `mandatory="false"` on the `<Operation>` element.
+The attribute defaults to `true` (mirroring the existing `mandatory` attribute on `<Property>`
+and `<Link>`), so existing contract files validate unchanged and produce identical code:
+
+```xml
+<Operation name="MarkAsFavorite" method="Post" mandatory="false" />
+```
+
+The server templates (`server/csharp/v4` and `v5`) then generate a **nullable** action property
+and a nullable constructor argument — pass `null` (or let its `canExecute` delegate return
+`false`) to omit the action from the response. The client templates already model every action
+as optional, so nothing changes on the consuming side.
 
 ## Schema: `required` Derived from Non-Nullability (new behavior)
 

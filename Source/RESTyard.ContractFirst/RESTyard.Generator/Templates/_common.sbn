@@ -28,7 +28,7 @@ func gatherArguments
         argumentsRetVal = array.add argumentsRetVal arg
     end
     for operation in $0.Operations
-        arg = operation.name + "Op " + (operation.name | uncapitalize)
+        arg = (mapNullableType (!operation.mandatory) (operation.name + "Op")) + " " + (operation.name | uncapitalize)
         argumentsRetVal = array.add argumentsRetVal arg
     end
     for entity in $0.Entities

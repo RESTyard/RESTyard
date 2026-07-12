@@ -546,9 +546,15 @@ public partial class OperationType {
     private bool isUploadActionFieldSpecified;
     
     private string parameterTypeNameField;
-    
+
     private string resultDocumentField;
-    
+
+    private bool mandatoryField;
+
+    public OperationType() {
+        this.mandatoryField = true;
+    }
+
     /// <remarks/>
     public PoliciesType Policies {
         get {
@@ -633,6 +639,18 @@ public partial class OperationType {
         }
         set {
             this.resultDocumentField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [System.ComponentModel.DefaultValueAttribute(true)]
+    public bool mandatory {
+        get {
+            return this.mandatoryField;
+        }
+        set {
+            this.mandatoryField = value;
         }
     }
 }

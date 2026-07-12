@@ -2,7 +2,7 @@
 
 @foreach (var operation in List)
 {
-    var operationType = operation.name + "Op";
+    var operationType = MapNullableType(!operation.mandatory, operation.name + "Op");
     <Attribute>HypermediaAction(Name = "@operation.name", Title = "@operation.title")</Attribute>
     <PropertyStatement TypeName="@operationType" PropertyName="@operation.name" />
 }

@@ -63,6 +63,7 @@
                 <Operation name="WithParameterAndResult" method="Patch" parameterTypeName="External" resultDocument="Child" />
                 <Operation name="Upload" method="Delete" isUploadAction="true" />
                 <Operation name="UploadWithParameter" method="Post" isUploadAction="true" parameterTypeName="TP12" />
+                <Operation name="Optional" method="Post" title="Optional operation" mandatory="false" />
             </Operations>
             <Links>
                 <Link mandatory="true" rel="dependency" document="Child" />

@@ -79,7 +79,7 @@ public class RazorTemplateBase : ComponentBase
 
         foreach (var operation in document.Operations)
         {
-            result.Add($"{operation.name}Op {Uncapitalize(operation.name)}");
+            result.Add($"{MapNullableType(!operation.mandatory, $"{operation.name}Op")} {Uncapitalize(operation.name)}");
         }
 
         foreach (var entity in document.Entities)

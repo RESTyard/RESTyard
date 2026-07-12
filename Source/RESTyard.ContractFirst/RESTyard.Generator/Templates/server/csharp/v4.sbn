@@ -108,7 +108,7 @@ public partial class {{ typeName }} : {{
 {{ end }}
 {{- for operation in document.Operations }}
     [HypermediaAction(Name = "{{ operation.name }}", Title = "{{operation.title}}")]
-    public {{ operation.name }}Op {{ operation.name }} { get; init; }
+    public {{ mapNullableType (!operation.mandatory) (operation.name + "Op") }} {{ operation.name }} { get; init; }
 {{ end }}
 {{-
     arguments = gatherArguments document

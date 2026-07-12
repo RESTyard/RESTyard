@@ -102,7 +102,8 @@ export class BaseHco extends HypermediaObject {
         public readonly WithResult: Nullable<HypermediaFunction<ChildHco>>,
         public readonly WithParameterAndResult: Nullable<HypermediaFunction<ChildHco, External>>,
         public readonly Upload: Nullable<HypermediaAction>,
-        public readonly UploadWithParameter: Nullable<HypermediaAction<TP12>>
+        public readonly UploadWithParameter: Nullable<HypermediaAction<TP12>>,
+        public readonly Optional: Nullable<HypermediaAction>
     ) {
         super();
     }
