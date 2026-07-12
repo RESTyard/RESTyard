@@ -3208,6 +3208,76 @@ public class HtoSchemaGeneratorTests
         GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithActionsWithSiren);
     }
 
+    [Fact]
+    public void Mandatory_action_generates_null_guard_that_throws()
+    {
+        var result = GeneratorTestHelper.RunGenerator(HtoWithMandatoryAction);
+
+        result.Diagnostics.Should().BeEmpty();
+
+        var sirenSource = GetGeneratedSirenSource(result, "HypermediaCustomerHto");
+        sirenSource.Should().Contain("if (hto.MarkAsFavorite is null)");
+        sirenSource.Should().Contain(
+            "Mandatory action 'MarkAsFavorite' on 'HypermediaCustomerHto' is null");
+        // After the guard, CanExecute is called without null-conditional
+        sirenSource.Should().Contain("if (hto.MarkAsFavorite.CanExecute())");
+        sirenSource.Should().NotContain("MarkAsFavorite?.CanExecute()");
+    }
+
+    [Fact]
+    public void Mandatory_null_action_throws_at_render_time()
+    {
+        var resolver = new StubRouteResolver(new ResolvedRoute("http://test/self", "GET"));
+
+        var act = () => GeneratorTestHelper.RunGeneratorAndGetSirenJson(
+            "HypermediaCustomerHto", resolver, configureHto: null, options: null, HtoWithMandatoryAction);
+
+        // Reflection invoke wraps the InvalidOperationException from the generated mapper
+        act.Should().Throw<System.Reflection.TargetInvocationException>()
+            .WithInnerException<InvalidOperationException>()
+            .WithMessage("*MarkAsFavorite*HypermediaCustomerHto*");
+    }
+
+    [Fact]
+    public void Nullable_null_action_is_silently_omitted()
+    {
+        var resolver = new StubRouteResolver(new ResolvedRoute("http://test/self", "GET"));
+
+        // Both actions in the fixture are nullable and left null
+        var json = GeneratorTestHelper.RunGeneratorAndGetSirenJson(
+            "HypermediaCustomerHto", resolver, configureHto: null, options: null,
+            TestHtoSources.HtoWithActionsWithSiren);
+
+        using var doc = JsonDocument.Parse(json);
+        var hasActions = doc.RootElement.TryGetProperty("actions", out var actions);
+        (!hasActions || actions.GetArrayLength() == 0).Should().BeTrue(
+            "null nullable actions must not be rendered");
+    }
+
+    private const string HtoWithMandatoryAction = """
+        using System;
+        using RESTyard.AspNetCore.Hypermedia;
+        using RESTyard.AspNetCore.Hypermedia.Actions;
+        using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using RESTyard.Schema.Model;
+
+        [assembly: HypermediaAssembly(Siren = true)]
+
+        namespace TestHtos;
+
+        public class MarkAsFavoriteOp : HypermediaAction
+        {
+            public MarkAsFavoriteOp() : base(() => true) { }
+        }
+
+        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+        public class HypermediaCustomerHto : HypermediaObject
+        {
+            [HypermediaAction(Name = "MarkAsFavorite", Title = "Mark as Favorite")]
+            public MarkAsFavoriteOp MarkAsFavorite { get; set; } = default!;
+        }
+        """;
+
     // --- Step 6.4: Embedded entity resolution tests ---
 
     [Fact]

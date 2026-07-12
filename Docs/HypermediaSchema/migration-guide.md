@@ -139,6 +139,29 @@ var options = new JsonSerializerOptions
 
 **Action required:** If clients depend on null properties being present in the JSON, do NOT set `DefaultIgnoreCondition = WhenWritingNull`, or set it only at the serializer level and not on the properties POCO. Note that `WhenWritingNull` applies globally — it also omits null Siren structural properties (`class`, `title`, etc.), which is typically desirable.
 
+## Null Non-Nullable Actions Now Throw (new behavior)
+
+Previously, a null action property was always silently omitted from the Siren output —
+even when the property was declared non-nullable. Links and embedded entities already threw
+`InvalidOperationException` in that situation.
+
+**New:** `ToSiren()` treats null members consistently:
+
+- **Non-nullable action property is null** → `InvalidOperationException` at render time,
+  same as links and embedded entities. Declaring the property nullable is the explicit way
+  to say "this action may be absent".
+- **Nullable action property is null** → silently omitted (unchanged).
+- **`CanExecute()` returns false** → action omitted (unchanged); this remains the mechanism
+  for conditional availability.
+
+Note: in `#nullable disable` contexts there are no nullability annotations, so **every**
+link, action, and embedded-entity property counts as mandatory — a null value throws.
+Enable nullable reference types and annotate optional members with `?`.
+
+**Action required:** if an HTO leaves a non-nullable action property null to hide the action,
+either declare the property nullable or keep it initialized and control visibility via
+`CanExecute()`.
+
 ## Schema: `required` Derived from Non-Nullability (new behavior)
 
 Previously, generated JSON Schemas (entity properties and action parameters) never contained the

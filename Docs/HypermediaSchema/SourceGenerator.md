@@ -184,6 +184,18 @@ A property counts as an embedded entity collection when its type is an array of
 (`Func<IEmbeddedEntity<T>>`, `Dictionary<IEmbeddedEntity<T>, X>`) are **not** embedded entities —
 they are treated as ordinary data properties. This matches the runtime `SirenConverter`.
 
+### Null Handling in `ToSiren()`
+
+Nullability annotations decide whether a link, action, or embedded-entity property is mandatory:
+
+- **Non-nullable** (`ILink<T>`, `MyOp`, `IEmbeddedEntity<T>`): a null value throws
+  `InvalidOperationException` at render time.
+- **Nullable** (`ILink<T>?`, `MyOp?`, `IEmbeddedEntity<T>?`): a null value silently omits the member.
+- Actions are additionally gated by `CanExecute()` — returning false omits the action without error.
+
+In `#nullable disable` contexts nothing is annotated, so every such property counts as mandatory.
+Enable nullable reference types and mark optional members with `?`.
+
 ### Title and Description Harvesting
 
 The generator extracts title and description for entity types, links, actions, and embedded entities:

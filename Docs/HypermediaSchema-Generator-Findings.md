@@ -22,7 +22,7 @@ emission in `SchemaEmitter` / `PropertiesPocoEmitter` / `SirenEmitter` / `SirenH
 | GEN-07 | Generated code can fail to compile (escaping, culture, identifiers)                                                       | Bug           | M    | High   | ✅ Done                  |
 | GEN-08 | `record` HTOs silently ignored                                                                                            | Gap           | S    | Medium | ✅ Done                  |
 | GEN-09 | Embedded-collection detection too loose and too tight (arrays leak)                                                       | Bug           | S–M  | Medium | ✅ Done                  |
-| GEN-10 | Null mandatory action silently omitted; links/embedded throw                                                              | Inconsist.    | S    | Low    | Yes — decide + document |
+| GEN-10 | Null mandatory action silently omitted; links/embedded throw                                                              | Inconsist.    | S    | Low    | ✅ Done                  |
 | GEN-11 | No diagnostic for zero/multiple endpoints per HTO/action (design says)                                                    | Gap           | M    | Medium | Later                   |
 | GEN-12 | Diagnostic severity vs. wording mismatch (RY0020/21/30)                                                                   | Inconsist.    | S    | Low    | ✅ Done                  |
 | GEN-13 | All diagnostics use `Location.None`                                                                                       | DX gap        | M    | Low    | ✅ Done                  |
@@ -47,7 +47,7 @@ Size: S ≈ hours, M ≈ a day, L ≈ multiple days. Risk = impact of leaving it
 2. ✅ **GEN-04 + REF-06** — incrementality fix with its regression guard.
 3. ✅ **GEN-01, GEN-02, GEN-03, GEN-17** — the action-result feature cluster (fix or cut together).
 4. ✅ **GEN-05, GEN-07** — generation robustness (crash + invalid code).
-5. **✅ GEN-06, ✅ GEN-08, ✅ GEN-09, GEN-10, ✅ GEN-12, ✅ GEN-13, ✅ GEN-16, ✅ GEN-18** — behavior gaps and DX
+5. **✅ GEN-06, ✅ GEN-08, ✅ GEN-09, ✅ GEN-10, ✅ GEN-12, ✅ GEN-13, ✅ GEN-16, ✅ GEN-18** — behavior gaps and DX
    (GEN-16/18 unblock schema-driven client generation; GEN-12/13 pulled forward and done).
 6. **GEN-11, GEN-14, ✅ GEN-15, ✅ REF-04, ✅ REF-05** — opportunistic / later (GEN-15, REF-04/05 pulled forward and done).
 7. **DOC-01** — documentation update.
@@ -275,7 +275,7 @@ collections with `foreach`, so arrays needed no emitter change. Tests: array →
 (and gone from the POCO), array without `[Relations]` → RY0020, Func/Dictionary → not embedded.
 Documented as behavior changes in the migration guide.
 
-### GEN-10 — Inconsistent null handling for mandatory members
+### ✅ GEN-10 — Inconsistent null handling for mandatory members
 
 A null non-nullable link or embedded entity throws `InvalidOperationException` at runtime; a null
 non-nullable **action** is silently omitted. The if/else in `EmitActionResolution` had two identical
@@ -290,6 +290,14 @@ contexts everything counts as mandatory (`NullableAnnotation != Annotated`).
 `InvalidOperationException` at render time, consistent with links/embedded — declaring the property
 nullable is the explicit way to say "may be absent". Document as a behavior change in the
 migration guide, including the `#nullable disable` note above.
+
+**Done:** `SirenEmitter.EmitActionResolution` now branches on `ActionMetadata.IsMandatory`:
+mandatory actions get a null guard that throws `InvalidOperationException` (naming property and
+HTO class) followed by a plain `CanExecute()` check; nullable actions keep the silent
+`?.CanExecute() == true` pattern. Tests: generated-source shape, render-time throw for a null
+mandatory action, silent omission for null nullable actions. Documented in the migration guide
+("Null Non-Nullable Actions Now Throw") and SourceGenerator.md ("Null Handling in `ToSiren()`"),
+both including the `#nullable disable` note (no annotations → everything counts as mandatory).
 
 ### GEN-11 — No zero/multiple-endpoint diagnostics
 

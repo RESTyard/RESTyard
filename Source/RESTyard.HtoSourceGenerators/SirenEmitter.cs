@@ -252,13 +252,28 @@ internal static class SirenEmitter
         foreach (var action in metadata.Actions)
         {
             var classesArray = StringArrayLiteral(action.UserClasses);
+            var title = action.Title != null ? $"\"{EscapeString(action.Title)}\"" : "null";
 
-            // Both mandatory and nullable actions gate on CanExecute(); a null mandatory action
-            // is currently silently omitted (see GEN-10 in the findings — decision pending).
-            w.Line($"if (hto.{EscapeIdentifier(action.PropertyName)}?.CanExecute() == true)");
+            if (action.IsMandatory)
+            {
+                // Mandatory action — null throws, consistent with links/embedded; only
+                // CanExecute() controls whether the action is rendered.
+                w.Line($"if (hto.{EscapeIdentifier(action.PropertyName)} is null)");
+                using (w.Block())
+                {
+                    w.Line($"throw new System.InvalidOperationException(\"Mandatory action '{EscapeString(action.PropertyName)}' on '{EscapeString(metadata.ClassName)}' is null. Declare the property nullable if the action may be absent.\");");
+                }
+
+                w.Line($"if (hto.{EscapeIdentifier(action.PropertyName)}.CanExecute())");
+            }
+            else
+            {
+                // Nullable action — null means "absent", skip silently
+                w.Line($"if (hto.{EscapeIdentifier(action.PropertyName)}?.CanExecute() == true)");
+            }
+
             using (w.Block())
             {
-                var title = action.Title != null ? $"\"{EscapeString(action.Title)}\"" : "null";
                 w.Line($"SirenHelper.AddAction(entity.Actions, hto, hto.{EscapeIdentifier(action.PropertyName)}, \"{EscapeString(action.Name)}\", {title}, {classesArray}, resolver);");
             }
 
