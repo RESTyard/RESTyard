@@ -563,10 +563,16 @@ The schema intentionally does not contain resolved URLs or route templates. Clie
 
 ## API Guide Endpoint
 
-> **Status:** design. New sibling to the schema endpoint, driven by the `guide` verb in
+> **Status:** landed (plan Phase 6C). New sibling to the schema endpoint, driven by the `guide` verb in
 > `HypermediaAgentInterface-Design.md`. Same *serving mechanic* as the schema endpoint; different content
 > *layer* — the guide is **authored** (human-written intent/glossary Markdown), not **generated** from
 > types. Keep the two layers separate (see the "three knowledge layers" rule in the agent-interface design).
+>
+> **What the guide is for:** semantic orientation, not just technical usage. It answers *what this API is
+> for* (business intent, domain), *what the key resources are* (the important domain objects and how they
+> relate), *what processes/workflows are available* (multi-step business flows spanning several resources
+> and actions), and the *domain glossary*. The schema gives the mechanical shape; the guide gives the
+> meaning. See `Docs/HypermediaSchema/ApiGuideEndpoint.md` → "What belongs in the guide".
 
 Same concept as serving an OpenAPI spec (or the schema endpoint above): a well-known, discoverable HTTP
 endpoint that serves a description document. Both files follow the identical pattern:

@@ -3,8 +3,25 @@
 Serves an authored API **guide/manual** (Markdown) from a well-known, configurable minimal-API
 endpoint — a sibling to the schema endpoint (`MapHypermediaSchema()`, see
 [HypermediaApiSchema.md](HypermediaApiSchema.md)). The schema is the *generated*, machine-readable
-description of types, links, and actions; the guide is the *authored* layer on top: workflows,
-conventions, and semantics that cannot be derived from types.
+description of types, links, and actions; the guide is the *authored* layer on top that gives a
+reader **semantic orientation** the schema cannot.
+
+### What belongs in the guide
+
+The guide is not just a technical "how to call the endpoints" reference. Its primary job is to
+answer the questions a schema can't:
+
+- **What is this API for?** The business intent and domain it serves — why it exists and who uses it.
+- **What are the key resources?** The important domain objects a consumer will work with, in plain
+  language, and how they relate.
+- **What processes and workflows are available?** The multi-step business flows (e.g. "onboard a
+  customer", "fulfil an order") that span several resources and actions — the sequence and intent
+  that individual links/actions don't reveal on their own.
+- **Domain glossary and conventions** — the vocabulary, semantics, and wording specific to this API.
+
+Technical usage notes (entry point, media types, action-availability rules) are welcome too, but
+they support the above — they are not the point. The schema already covers the *mechanical* shape;
+the guide covers the *meaning*.
 
 The feature is opt-in: nothing is registered unless you map the endpoint.
 
