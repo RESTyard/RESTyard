@@ -664,7 +664,7 @@ Generate two named classes per HTO so the Siren POCOs have meaningful type names
 - Division of concerns going forward: **schema = typed shape view**, **Siren = runtime state view**. Once the schema is accepted as the typed view, the pressure on Siren to "be typed too" disappears.
 - A related forward-looking idea (OpenAPI-from-schema mapper) is captured in `HypermediaSchema-Design.md` under "Future Idea: OpenAPI projection from `HypermediaApiSchema`" — recorded with its open doubt, not committed work.
 
-### Phase 6B: Source Generator Cleanup — Review Findings
+### Phase 6B: ✅ Source Generator Cleanup — Review Findings
 
 **Goal:** Address the issues found in the 2026-07-10 code review of `RESTyard.HtoSourceGenerators`.
 
@@ -679,7 +679,7 @@ to keep the plan readable; check off IDs in the findings document as they are fi
 - Overlaps with and supersedes the generator part of Step 8.7 (Cleanup).
 - Recommended: do the structural refactorings (REF-01..03) first, then fix bugs in the smaller units.
 
-### Phase 6C: Guide (API Manual) Delivery Endpoint
+### Phase 6C: ✅ Guide (API Manual) Delivery Endpoint
 
 **Goal:** Serve the authored API **guide/manual** (Markdown) from a well-known, configurable **minimal-API**
 endpoint — a sibling to `MapHypermediaSchema()`. Same delivery mechanic as the schema endpoint; different
@@ -687,7 +687,7 @@ content *layer* (authored, not generated — see the "API Guide Endpoint" sectio
 rule in the design docs).
 
 **Scope note:** This is an **optional, opt-in** feature (like the schema endpoint) and is **forward-looking
-groundwork** — the primary consumer is the future agent interface (`guide` verb → `apiGuide` rel, see
+groundwork** — the primary consumer is the future agent interface (`guide` verb → `api-guide` rel, see
 `HypermediaAgentInterface-Design.md`). It is implemented here and left in place for later; no other part of
 this plan depends on it. Placement is decoupled from the schema project (endpoint in `RESTyard.AspNetCore`,
 constants in `Source/Shared`), so it can move to a dedicated agent-interface plan later without code churn.
@@ -701,72 +701,76 @@ constants in `Source/Shared`), so it can move to a dedicated agent-interface pla
   returns `IEndpointConventionBuilder`, Step 3.1). This phase applies the same pattern to the guide — it does
   **not** touch the schema endpoint.
 
-#### Step 6C.1: Media-type + rel constants (in Shared, not Schema)
-- **Media type — settled:** add `DefaultMediaTypes.HypermediaGuide = "text/vnd.restyard.hypermedia-guide+markdown"`
+#### Step 6C.1: ✅ Media-type + rel constants (in Shared, not Schema)
+- **Media type — settled:** add `DefaultMediaTypes.ApiGuide = "text/vnd.restyard.api-guide+markdown"`
   to `Source/Shared/DefaultMediaTypes.cs` (namespace `RESTyard.MediaTypes`, beside `Siren`/`JsonSchema`/
   `ProblemJson`) — **not** `SchemaMediaTypes`, since the guide is not a schema concept. Custom vendor subtype
   whose body is raw Markdown (`text/` for Markdown per RFC 7763; `+markdown` is a deliberate
   RESTyard-internal suffix, not IANA-registered; see design "API Guide Endpoint").
-- **Rel — settled:** add `DefaultHypermediaRelations.ApiGuide = "apiGuide"` to
+- **Rel — settled:** add `DefaultHypermediaRelations.ApiGuide = "api-guide"` (lowercase-hyphenated,
+  in line with IANA link-relation style) to
   `Source/Shared/DefaultHypermediaRelations.cs` (namespace `RESTyard.Relations`).
 
-#### Step 6C.2: `MapHypermediaGuide()` minimal-API endpoint (in `RESTyard.AspNetCore`)
+#### Step 6C.2: ✅ `MapApiGuide()` minimal-API endpoint (in `RESTyard.AspNetCore`)
 - Lives in `RESTyard.AspNetCore` beside `HypermediaSchemaEndpointExtensions.cs` — **no dependency on
   `RESTyard.Schema` or the source generator.**
 - **Content source — settled: file path + optional provider, via overloads**, all
   **returning `IEndpointConventionBuilder`** (mirror `MapHypermediaSchema`) so users chain
   `.RequireAuthorization()` / `.RequireCors()`:
-  - `MapHypermediaGuide(string filePath, Action<HypermediaGuideEndpointOptions>? configure = null)` — common case.
-  - `MapHypermediaGuide(IHypermediaGuideProvider provider, Action<…>? configure = null)` — dynamic/per-user/
+  - `MapApiGuide(string filePath, Action<ApiGuideEndpointOptions>? configure = null)` — common case.
+  - `MapApiGuide(IApiGuideProvider provider, Action<…>? configure = null)` — dynamic/per-user/
     localized content; provider receives `HttpContext` and returns the Markdown. May also be resolved from DI.
-- `HypermediaGuideEndpointOptions`: `Route` (default `/hypermedia-guide`).
-- `IHypermediaGuideProvider`: `Task<string> GetGuideAsync(HttpContext context)` (or sync variant).
-- Serves the authored Markdown with `DefaultMediaTypes.HypermediaGuide`. Opt-in — not registered unless mapped.
-- Integration test: `GET /hypermedia-guide` returns content + correct content type; file-path and provider
+- `ApiGuideEndpointOptions`: `Route` (default `/api-guide`).
+- `IApiGuideProvider`: `Task<string> GetGuideAsync(HttpContext context)` (or sync variant).
+- Serves the authored Markdown with `DefaultMediaTypes.ApiGuide`. Opt-in — not registered unless mapped.
+- Integration test: `GET /api-guide` returns content + correct content type; file-path and provider
   overloads both work; `.RequireAuthorization()` chaining compiles and enforces.
 
-#### Step 6C.3: `HypermediaGuide.Link()` helper
+#### Step 6C.3: ✅ `ApiGuide.Link()` helper
 - Mirror `HypermediaSchema.Link()` — an `ExternalLink`/`InternalReference` to the named guide route with
-  `DefaultMediaTypes.HypermediaGuide`, so any HTO can advertise the guide (typically the entry point under
+  `DefaultMediaTypes.ApiGuide`, so any HTO can advertise the guide (typically the entry point under
   the `DefaultHypermediaRelations.ApiGuide` rel the agent-interface `guide` verb follows).
-- Unit/integration test: an entry-point `apiGuide` link resolves to the guide endpoint.
+- Unit/integration test: an entry-point `api-guide` link resolves to the guide endpoint.
 
-#### Step 6C.4: CarShack demo + docs
-- Author a small `api-guide.md` for CarShack, call `MapHypermediaGuide()` in `Program.cs`, add an `apiGuide`
+#### Step 6C.4: ✅ CarShack demo + docs
+- Author a small `api-guide.md` for CarShack, call `MapApiGuide()` in `Program.cs`, add an `api-guide`
   link on the entry-point HTO.
 - Document setup, content source, media type, and auth chaining in `Docs/HypermediaSchema/`.
 
-#### Step 6C.5: Cache headers on schema + guide endpoints
+#### Step 6C.5: ✅ Cache headers on schema + guide endpoints (opt-in)
 - **Why:** both documents change only on API deploy, and the agent-interface caching policy
   (`HypermediaAgentInterface-Design.md` → "Caching") is strictly server-driven for resources — clients
-  cache **only** what the server declares. Emitting a cache header by default makes these endpoints
-  cache-friendly out of the box.
+  cache **only** what the server declares. An easy opt-in cache header makes these endpoints
+  cache-friendly with one option.
 - **Scope kept deliberately small: `Cache-Control` with `max-age` only.** ETag + `304 Not Modified`
   handling was considered and **deferred** — these documents are small, so the 304's payoff (skipped body)
   doesn't justify the implementation cost (content hashing, validator correctness, provider edge cases).
   Can be added later as an opt-in enhancement without breaking anything.
-- Applies to **both** `MapHypermediaGuide()` (new, Step 6C.2) and `MapHypermediaSchema()` /
+- Applies to **both** `MapApiGuide()` (new, Step 6C.2) and `MapHypermediaSchema()` /
   `MapHypermediaSchemaAccessGroups()` (retrofit of the done Phase 3/4 endpoints):
-  - New option on both options classes: `CacheMaxAge` (`TimeSpan?`) — sensible default (e.g. 5 min);
-    **`null` opts out** (no cache header emitted), set directly in the map call:
-    `app.MapHypermediaSchema(o => o.CacheMaxAge = null);`
-- **Per-caller variation → `private` — determined structurally from the configured mode, not by content
-  inspection.** New option `CacheVisibility` (enum `Public`/`Private`) on both options classes,
-  **auto-defaulted per mode**:
-  - Schema, plain singleton `HypermediaApiSchema` → `Public` automatically (one shared object for all).
-  - Schema **with access-group filtering** (Phase 4) → **forced `private`** — the framework *knows* the
-    response varies per caller; a `Public` override is ignored (or not offered) here.
-  - Guide, file-path overload → `Public` automatically (static file, same bytes for all).
-  - Guide, `IHypermediaGuideProvider` overload → the **only ambiguous case** (provider receives
-    `HttpContext` and may or may not vary output; the framework can't see inside). **Default `Private`**
-    (safe: an unnecessary `private` costs shared-cache efficiency; a wrong `public` leaks data —
-    asymmetric risk → conservative default). Author may override:
-    `app.MapHypermediaGuide(provider, o => o.CacheVisibility = CacheVisibility.Public);` — this is an
-    **assertion** that the provider output is caller-independent, document it as such.
-- Integration tests: `Cache-Control` present with configured `max-age`; `private` on the access-group and
-  default-provider variants; `public` after provider override; header absent when `CacheMaxAge = null`.
+  - New option on both options classes: `CacheMaxAge` (`TimeSpan?`) — **default `null` = no cache header
+    emitted (opt-in)**. Set directly in the map call to enable:
+    `app.MapHypermediaSchema(o => o.CacheMaxAge = TimeSpan.FromMinutes(5));`
+  - Opt-in (rather than a default-on header with `null` opt-out) was chosen deliberately:
+    - No silent behavioral change to the already-shipped schema endpoints (a retrofit that starts
+      emitting `Cache-Control` by default would surprise anyone with a proxy/CDN in front).
+    - It removes the need to auto-detect cache visibility per mode — the author enabling caching is
+      looking at their endpoint anyway and states visibility explicitly (see next point).
+- **`CacheVisibility` (enum `Public`/`Private`), flat default `Private` — no structural auto-detection.**
+  `Private` is safe in every mode; the only cost is shared-cache efficiency until the author explicitly
+  sets `Public`. Setting `Public` is an **assertion** that the response is caller-independent (true for
+  the plain schema singleton and the guide file-path overload; the author's call for the
+  `IApiGuideProvider` overload). Conservative default because the risk is asymmetric:
+  unnecessary `private` costs cache efficiency, wrong `public` leaks data.
+  - **One hard guard kept:** `MapHypermediaSchemaAccessGroups()` cannot be made `public` — the
+    framework *knows* that response varies per caller, and a shared cache serving one caller's filtered
+    schema to another is a data leak, not just inefficiency. Implemented as compile-time absence:
+    `HypermediaSchemaAccessGroupsOptions` has `CacheMaxAge` but deliberately **no** `CacheVisibility`
+    option, so the mistake cannot even be expressed; the endpoint always emits `private`.
+- Integration tests: header absent by default; `Cache-Control: private, max-age=…` when `CacheMaxAge`
+  set; `public` when visibility set; access-group endpoint always `private` (no visibility option).
 
-#### Step 6C.6: Updated files in /Docs/
+#### Step 6C.6: ✅ Updated files in /Docs/
 
 migration-guide.md, HypermediaApiSchema.md, SourceGenerator.md, readme.md, claude.md
 
@@ -964,6 +968,7 @@ silently producing subtly different JSON via the reflection path.
 - Document `MermaidMapperOptions` (`IncludeProperties`, `IncludeActions`) and `MarkdownMapperOptions` (`IncludeTableOfContents`, `IncludeDiagram`) — API usage and corresponding CLI args (`--mermaid-include-properties`, `--mermaid-include-actions`, `--markdown-include-toc`, `--markdown-include-diagram`)
 - Document access group filtering (if implemented in Phase 4)
 - Add migration guide for existing users
+- add a new document (new festures V7) that summarizes all new festures and points out why usefull/usecase/rasoning. also bug fixes and point to other documents in doc folder which are relevant.
 
 #### Step 10.2: Document `ToSiren()` migration path (Phase 8)
 - Document how to migrate from the reflection-based `SirenHypermediaFormatter` to the source-generated `ToSiren()` extension methods

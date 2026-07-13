@@ -99,6 +99,9 @@ public partial class HypermediaEntrypointHto
 
    [Relations(["access-groups"])]
    public ExternalLink AccessGroups { get; init; } = HypermediaSchemaAccessGroups.Link();
+
+   [Relations([RESTyard.Relations.DefaultHypermediaRelations.ApiGuide])]
+   public ExternalLink Guide { get; init; } = ApiGuide.Link();
 }
 
 [HypermediaAccessGroup("customer")]

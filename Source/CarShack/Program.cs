@@ -68,6 +68,7 @@ namespace CarShack
             app.MapControllers();
             app.MapHypermediaSchema();
             app.MapHypermediaSchemaAccessGroups();
+            app.MapApiGuide("api-guide.md", o => o.CacheMaxAge = System.TimeSpan.FromMinutes(5));
 
             await app.RunAsync();
         }

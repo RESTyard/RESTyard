@@ -573,29 +573,29 @@ endpoint that serves a description document. Both files follow the identical pat
 
 | | Schema endpoint (done) | Guide endpoint (new) |
 |---|---|---|
-| Mapping call | `app.MapHypermediaSchema()` | `app.MapHypermediaGuide()` |
-| Default route | `/hypermedia-schema` | `/hypermedia-guide` |
+| Mapping call | `app.MapHypermediaSchema()` | `app.MapApiGuide()` |
+| Default route | `/hypermedia-schema` | `/api-guide` |
 | Route overridable | yes (`o => o.Route = ...`) | yes (`o => o.Route = ...`) |
 | Content | generated `HypermediaApiSchema` JSON | authored Markdown |
-| Media type | `application/vnd.restyard.hypermedia-schema+json` | `text/vnd.restyard.hypermedia-guide+markdown` |
-| Link helper (advertise on any HTO) | `HypermediaSchema.Link()` | `HypermediaGuide.Link()` |
-| Typical rel | `schema` | `apiGuide` |
+| Media type | `application/vnd.restyard.hypermedia-schema+json` | `text/vnd.restyard.api-guide+markdown` |
+| Link helper (advertise on any HTO) | `HypermediaSchema.Link()` | `ApiGuide.Link()` |
+| Typical rel | `schema` | `api-guide` |
 
 ```csharp
-app.MapHypermediaGuide();                          // default: /hypermedia-guide
-app.MapHypermediaGuide(o => o.Route = "/api/guide"); // or configure a custom route
+app.MapApiGuide();                          // default: /api-guide
+app.MapApiGuide(o => o.Route = "/api/guide"); // or configure a custom route
 ```
 
 - **Opt-in, like the schema endpoint** — omit the call and the guide isn't exposed. No guide is registered
   by default (an API without an authored guide simply doesn't map it).
-- **Advertise via a link on any HTO** — `HypermediaGuide.Link()` mirrors `HypermediaSchema.Link()`
+- **Advertise via a link on any HTO** — `ApiGuide.Link()` mirrors `HypermediaSchema.Link()`
   (an `ExternalLink`/`InternalReference` to the named guide route with the correct media type). Normally
-  placed on the **entry point** under the `apiGuide` rel so the CLI's `guide` verb can discover it by
+  placed on the **entry point** under the `api-guide` rel so the CLI's `guide` verb can discover it by
   following the rel — never a hardcoded path.
 - **Degrades gracefully** — when no guide endpoint/rel exists, the `guide` verb falls back to pure
   navigation (per the agent-interface design).
 
-**Media type — settled:** `text/vnd.restyard.hypermedia-guide+markdown`. A **custom vendor subtype whose
+**Media type — settled:** `text/vnd.restyard.api-guide+markdown`. A **custom vendor subtype whose
 body is raw Markdown**:
 - `text/` is the correct top-level for Markdown (RFC 7763 registers `text/markdown`) — gives `charset`
   semantics and signals human-readable text the `guide` verb consumes raw.
@@ -604,40 +604,45 @@ body is raw Markdown**:
   (RFC 6839 lists `+json`/`+xml`/`+cbor`/…) — a deliberate RESTyard-internal convention, matched as a plain
   string. A `+json` envelope was rejected: wrapping Markdown in JSON forces the agent to unwrap a string
   before reading, defeating "Markdown is what LLMs read fluently."
-- Constant home is **`DefaultMediaTypes.HypermediaGuide`** (`Source/Shared/DefaultMediaTypes.cs`,
+- Constant home is **`DefaultMediaTypes.ApiGuide`** (`Source/Shared/DefaultMediaTypes.cs`,
   namespace `RESTyard.MediaTypes`) — **not** `SchemaMediaTypes`. The guide is not a schema concept; it sits
   with `Siren` / `JsonSchema` / `ProblemJson`.
 
 **Content source — settled:** **file path + optional provider**, exposed as overloads:
-- File-path overload for the common case (`MapHypermediaGuide("api-guide.md")` / `o.FilePath`).
-- Provider overload for dynamic/per-user/localized content — `IHypermediaGuideProvider` (receives
+- File-path overload for the common case (`MapApiGuide("api-guide.md")` / `o.FilePath`).
+- Provider overload for dynamic/per-user/localized content — `IApiGuideProvider` (receives
   `HttpContext`, returns the Markdown), supplied directly or resolved from DI.
 - Embedded resource / raw string are just convenience wrappers over the file-path/provider forms if wanted.
 
 **Project placement — settled:** the guide is **not schema-related** — it's a runtime ASP.NET Core delivery
 feature with no dependency on the source generator or schema model. Placement:
-- Endpoint machinery (`MapHypermediaGuide`, `HypermediaGuideEndpointOptions`, `IHypermediaGuideProvider`,
-  `HypermediaGuide.Link()`) → **`RESTyard.AspNetCore`**, beside `HypermediaSchemaEndpointExtensions.cs`.
-- Media-type constant → **`Source/Shared/DefaultMediaTypes.cs`** (`DefaultMediaTypes.HypermediaGuide`).
-- `apiGuide` rel → **`Source/Shared/DefaultHypermediaRelations.cs`** (`DefaultHypermediaRelations.ApiGuide`).
-- *Note:* this section documents the feature; the implementation work is tracked in the plan (Phase 6C) but
-  the code does not land in `RESTyard.Schema`. The endpoint is **optional/opt-in** and is built here as
+- Endpoint machinery (`MapApiGuide`, `ApiGuideEndpointOptions`, `IApiGuideProvider`,
+  `ApiGuide.Link()`) → **`RESTyard.AspNetCore`**, beside `HypermediaSchemaEndpointExtensions.cs`.
+- Media-type constant → **`Source/Shared/DefaultMediaTypes.cs`** (`DefaultMediaTypes.ApiGuide`).
+- `api-guide` rel → **`Source/Shared/DefaultHypermediaRelations.cs`** (`DefaultHypermediaRelations.ApiGuide`).
+- *Note:* this section documents the feature; the implementation is **done** (plan Phase 6C) but the code
+  does not land in `RESTyard.Schema`. The endpoint is **optional/opt-in** and is built here as
   forward-looking groundwork for the agent interface — nothing else in this effort depends on it.
+  User-facing documentation: `Docs/HypermediaSchema/ApiGuideEndpoint.md`.
 
-**Cache headers (both endpoints — schema and guide):** both documents change only on deploy, and the
-agent-interface caching policy is strictly server-driven — clients cache only what the server declares. So
-both endpoints emit `Cache-Control` with a configurable **`CacheMaxAge`** (`TimeSpan?`, sensible default,
-**`null` opts out** directly in the map call: `app.MapHypermediaSchema(o => o.CacheMaxAge = null)`).
-- **Per-caller variation → `private`, determined structurally from the configured mode** (never by content
-  inspection), via a `CacheVisibility` option (`Public`/`Private`) auto-defaulted per mode: plain schema
-  singleton and guide file-path → `Public`; schema under access-group filtering → **forced `private`** (the
-  framework knows it varies — no override); guide provider overload → **default `Private`** as the one case
-  the framework can't judge (provider receives `HttpContext`), overridable to `Public` as an explicit
-  author assertion that the output is caller-independent. Conservative default because the risk is
-  asymmetric: unnecessary `private` costs cache efficiency, wrong `public` leaks data.
+**Cache headers (both endpoints — schema and guide, opt-in):** both documents change only on deploy, and
+the agent-interface caching policy is strictly server-driven — clients cache only what the server declares.
+Both endpoints support an **opt-in** `Cache-Control` header via **`CacheMaxAge`** (`TimeSpan?`, **default
+`null` = no header**), enabled directly in the map call:
+`app.MapHypermediaSchema(o => o.CacheMaxAge = TimeSpan.FromMinutes(5))`.
+- **Opt-in, not default-on:** avoids a silent behavioral change to the already-shipped schema endpoints
+  and removes any need to auto-detect cache visibility from the configured mode — the author enabling
+  caching states visibility explicitly.
+- **`CacheVisibility` (`Public`/`Private`), flat default `Private`** — safe in every mode; setting `Public`
+  is an explicit author assertion that the response is caller-independent. Conservative default because
+  the risk is asymmetric: unnecessary `private` costs cache efficiency, wrong `public` leaks data.
+  One hard guard: the access-group-filtered schema endpoint cannot be made `public` — the framework knows
+  that response varies per caller, and a shared cache serving it across callers would leak data.
+  Implemented as compile-time absence: its options class has `CacheMaxAge` but no `CacheVisibility`,
+  so the endpoint always emits `private`.
 - **ETag/`304` deliberately deferred** — the documents are small, so revalidation's payoff doesn't justify
   content-hashing and validator handling now; can be added later as an opt-in enhancement.
-- Tracked as plan Step 6C.5 (includes retrofitting the already-implemented schema endpoints).
+- Tracked as plan Step 6C.5 (includes retrofitting the already-implemented schema endpoints) — **done**.
 
 ## Mermaid Diagram Mapper
 

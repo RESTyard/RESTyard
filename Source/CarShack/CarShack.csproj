@@ -38,4 +38,8 @@
     <Folder Include="schema-output\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="api-guide.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

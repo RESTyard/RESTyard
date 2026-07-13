@@ -480,6 +480,21 @@ app.MapHypermediaSchema().RequireAuthorization("AdminOnly");
 
 Make sure `AddHypermediaSchema()` was called during service registration to enable the schema feature.
 
+**Cache headers (opt-in):** the schema changes only on deploy, so it is a good caching candidate.
+Set `CacheMaxAge` to emit a `Cache-Control` header — no header is emitted by default:
+
+```csharp
+app.MapHypermediaSchema(o => o.CacheMaxAge = TimeSpan.FromMinutes(5));
+// -> Cache-Control: private, max-age=300
+```
+
+Visibility defaults to `private`. Set `o.CacheVisibility = CacheVisibility.Public` only if the
+response is identical for every caller (no per-caller `ISchemaAccessGroupSanitizer` effects) —
+`public` lets shared caches (proxies, CDNs) store the response, and a wrong `public` leaks data
+while an unnecessary `private` only costs cache efficiency.
+`MapHypermediaSchemaAccessGroups()` supports `CacheMaxAge` too, but is always `private` — its
+response can vary per caller, so the options class deliberately has no visibility setting.
+
 ### Linking to the Schema from the Entry Point
 
 Add a discoverable link from your API's entry point HTO to the schema endpoint using the `ToSchema()` helper:

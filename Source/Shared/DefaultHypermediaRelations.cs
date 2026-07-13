@@ -14,6 +14,11 @@ namespace RESTyard.Relations
         public const string Self = "self";
 
         /// <summary>
+        /// Relation pointing to the authored API guide (manual) endpoint.
+        /// </summary>
+        public const string ApiGuide = "api-guide";
+
+        /// <summary>
         /// Relations commonly used for query results.
         /// </summary>
         public class Queries

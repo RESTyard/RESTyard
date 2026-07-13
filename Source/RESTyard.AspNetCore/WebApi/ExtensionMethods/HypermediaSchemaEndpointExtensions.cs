@@ -85,6 +85,7 @@ public static class HypermediaSchemaEndpointExtensions
             }
 
             var json = JsonSerializer.Serialize(schema, SerializerOptions);
+            CacheControlHeader.Apply(context, options.CacheMaxAge, options.CacheVisibility);
             context.Response.ContentType = SchemaMediaType;
             return context.Response.WriteAsync(json);
         }).WithName(RouteName);
@@ -152,6 +153,8 @@ public static class HypermediaSchemaEndpointExtensions
 
             var response = new AccessGroupsResponse { AccessGroups = visibleGroups };
             var json = JsonSerializer.Serialize(response, SerializerOptions);
+            // Always private: the response varies per caller when a sanitizer is registered.
+            CacheControlHeader.Apply(context, options.CacheMaxAge, CacheVisibility.Private);
             context.Response.ContentType = SchemaMediaTypes.HypermediaSchemaAccessGroups;
             return context.Response.WriteAsync(json);
         }).WithName(AccessGroupsRouteName);

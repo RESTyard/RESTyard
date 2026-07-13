@@ -3,15 +3,15 @@ using System;
 namespace RESTyard.AspNetCore.WebApi.ExtensionMethods;
 
 /// <summary>
-/// Options for the hypermedia schema endpoint.
+/// Options for the API guide endpoint.
 /// </summary>
-public class HypermediaSchemaEndpointOptions
+public class ApiGuideEndpointOptions
 {
     /// <summary>
-    /// The route path for the schema endpoint.
-    /// Default: <c>/hypermedia-schema</c>.
+    /// The route path for the guide endpoint.
+    /// Default: <c>/api-guide</c>.
     /// </summary>
-    public string Route { get; set; } = "/hypermedia-schema";
+    public string Route { get; set; } = "/api-guide";
 
     /// <summary>
     /// When set, a <c>Cache-Control</c> header with this <c>max-age</c> is emitted.
@@ -21,9 +21,8 @@ public class HypermediaSchemaEndpointOptions
 
     /// <summary>
     /// Cache visibility used when <see cref="CacheMaxAge"/> is set. Default: <see cref="CacheVisibility.Private"/>.
-    /// Set <see cref="CacheVisibility.Public"/> only if the response is identical for every caller —
-    /// true for the unfiltered schema; when an <see cref="RESTyard.Schema.ISchemaAccessGroupSanitizer"/>
-    /// is registered, filtered responses (<c>?accessGroups=…</c>) may vary per caller.
+    /// Set <see cref="CacheVisibility.Public"/> only if the guide content is identical for every caller
+    /// (always true for the file-path overload; your call for an <see cref="IApiGuideProvider"/>).
     /// </summary>
     public CacheVisibility CacheVisibility { get; set; } = CacheVisibility.Private;
 }
