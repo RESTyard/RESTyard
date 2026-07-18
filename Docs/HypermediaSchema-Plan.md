@@ -792,13 +792,29 @@ silently producing subtly different JSON via the reflection path.
 - When `Siren = true`, the generator additionally emits per assembly (same pattern as
   `HypermediaSchemaRegistry_*` / `HypermediaActionResultRegistry_*` in `RegistryEmitter`):
   - `[assembly: HypermediaSirenMapperRegistryAttribute(typeof(HypermediaSirenMapperRegistry_<AssemblyNameSafe>))]`
-  - a static registry class with `GetMappers()` returning one `SirenMapperRegistration` per HTO:
+  - a registry class implementing `ISirenMapperRegistry` (public parameterless ctor) whose
+    `GetMappers()` returns one `SirenMapperRegistration` per HTO:
     `new(typeof(HypermediaCustomerHto), static (hto, resolver, qsb, options) => ((HypermediaCustomerHto)hto).ToSiren(resolver, qsb, options))`
 - `SirenMapperRegistration` (runtime type, lives next to the registry attribute):
   `Type HtoType` + a `Func<IHypermediaObject, IHypermediaRouteResolver, IQueryStringBuilder, SirenMapperOptions?, object>` delegate.
   The downcast is written by the generator, so runtime dispatch is dictionary lookup + delegate call —
   no `MethodInfo.Invoke`, no expression compilation, AOT-compatible.
-- Reflection budget: one `GetCustomAttribute` + one static `GetMappers()` call per assembly at startup; zero per request.
+- **Trim/AOT-safe discovery (decided):** unlike `HypermediaSchemaBuilder` (which does
+  `GetMethod("GetSchemas")` + `Invoke()` — string-based lookup the trimmer cannot follow), the mapper
+  registry is invoked through a typed interface:
+  - `ISirenMapperRegistry { IReadOnlyList<SirenMapperRegistration> GetMappers(); }` (runtime type)
+  - `HypermediaSirenMapperRegistryAttribute`'s `Type` ctor parameter is annotated
+    `[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]`
+    so the trimmer keeps the ctor; startup does `Activator.CreateInstance` + interface call —
+    no member-name strings, no `MethodInfo.Invoke`
+- Reflection budget: one `GetCustomAttribute` + one annotated `Activator.CreateInstance` per assembly
+  at startup; zero per request. `ToSiren()` methods and HTO attributes need **no** changes: attributes
+  are consumed at compile time by the generator, and the delegates reference `ToSiren()` statically,
+  so the trimmer sees and keeps everything.
+- Known remaining AOT gap (out of scope here, natural follow-up): POCO serialization via reflection-based
+  System.Text.Json. Full NativeAOT would need a generator-emitted `JsonSerializerContext`
+  (`[JsonSerializable(typeof(*HtoSiren))]` per assembly). MVC output formatters are outside ASP.NET Core's
+  supported AOT surface anyway — the goal here is trim-safe + reflection-free per request, not NativeAOT end to end.
 
 #### Step 7.1: `GeneratedSirenFormatter` implementation
 - Implement `GeneratedSirenFormatter` as a separate output formatter (reuse `HypermediaOutputFormatter`
