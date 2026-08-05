@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using FunicularSwitch;
 using RESTyard.Client.Hypermedia;
@@ -11,7 +12,8 @@ namespace RESTyard.Client.Extensions
     {
         public static async Task<HypermediaResult<Unit>> ExecuteAsync(
             this IHypermediaClientAction action,
-            IHypermediaResolver resolver)
+            IHypermediaResolver resolver,
+            CancellationToken cancellationToken = default)
         {
             if (!action.CanExecute)
             {
@@ -20,7 +22,7 @@ namespace RESTyard.Client.Extensions
 
             try
             {
-                var result = await resolver.ResolveActionAsync(action.Uri, action.Method);
+                var result = await resolver.ResolveActionAsync(action.Uri, action.Method, cancellationToken);
                 return result;
             }
             catch (Exception e)
@@ -32,7 +34,8 @@ namespace RESTyard.Client.Extensions
         public static async Task<HypermediaResult<Unit>> ExecuteAsync<TParameters>(
             this IHypermediaClientAction<TParameters> action,
             TParameters parameters,
-            IHypermediaResolver resolver)
+            IHypermediaResolver resolver,
+            CancellationToken cancellationToken = default)
         {
             if (!action.CanExecute)
             {
@@ -45,7 +48,8 @@ namespace RESTyard.Client.Extensions
                     action.Uri,
                     action.Method,
                     action.ParameterDescriptions,
-                    parameters);
+                    parameters,
+                    cancellationToken);
                 return result;
             }
             catch (Exception e)
@@ -56,7 +60,8 @@ namespace RESTyard.Client.Extensions
 
         public static async Task<HypermediaResult<MandatoryHypermediaLink<TResultType>>> ExecuteAsync<TResultType>(
             this IHypermediaClientFunction<TResultType> function,
-            IHypermediaResolver resolver)
+            IHypermediaResolver resolver,
+            CancellationToken cancellationToken = default)
             where TResultType : HypermediaClientObject
         {
             if (!function.CanExecute)
@@ -66,7 +71,7 @@ namespace RESTyard.Client.Extensions
 
             try
             {
-                var result = await resolver.ResolveFunctionAsync<TResultType>(function.Uri, function.Method);
+                var result = await resolver.ResolveFunctionAsync<TResultType>(function.Uri, function.Method, cancellationToken);
                 return result;
             }
             catch (Exception e)
@@ -78,7 +83,8 @@ namespace RESTyard.Client.Extensions
         public static async Task<HypermediaResult<MandatoryHypermediaLink<TResultType>>> ExecuteAsync<TResultType, TParameters>(
             this IHypermediaClientFunction<TResultType, TParameters> function,
             TParameters parameters,
-            IHypermediaResolver resolver)
+            IHypermediaResolver resolver,
+            CancellationToken cancellationToken = default)
             where TResultType : HypermediaClientObject
         {
             if (!function.CanExecute)
@@ -92,7 +98,8 @@ namespace RESTyard.Client.Extensions
                     function.Uri,
                     function.Method,
                     function.ParameterDescriptions,
-                    parameters);
+                    parameters,
+                    cancellationToken);
                 return result;
             }
             catch (Exception e)
@@ -104,7 +111,8 @@ namespace RESTyard.Client.Extensions
         public static async Task<HypermediaResult<Unit>> ExecuteAsync(
             this IHypermediaClientFileUploadAction action,
             HypermediaFileUploadActionParameter parameters,
-            IHypermediaResolver resolver)
+            IHypermediaResolver resolver,
+            CancellationToken cancellationToken = default)
         {
             if (!action.CanExecute)
             {
@@ -117,7 +125,8 @@ namespace RESTyard.Client.Extensions
                     action.Uri,
                     action.Method,
                     action.ParameterDescriptions,
-                    parameters);
+                    parameters,
+                    cancellationToken);
                 return result;
             }
             catch (Exception e)
@@ -129,7 +138,8 @@ namespace RESTyard.Client.Extensions
         public static async Task<HypermediaResult<Unit>> ExecuteAsync<TParameters>(
             this IHypermediaClientFileUploadAction<TParameters> action,
             HypermediaFileUploadActionParameter<TParameters> parameters,
-            IHypermediaResolver resolver)
+            IHypermediaResolver resolver,
+            CancellationToken cancellationToken = default)
         {
             if (!action.CanExecute)
             {
@@ -142,7 +152,8 @@ namespace RESTyard.Client.Extensions
                     action.Uri,
                     action.Method,
                     action.ParameterDescriptions,
-                    parameters);
+                    parameters,
+                    cancellationToken);
                 return result;
             }
             catch (Exception e)
@@ -154,7 +165,8 @@ namespace RESTyard.Client.Extensions
         public static async Task<HypermediaResult<MandatoryHypermediaLink<TResultType>>> ExecuteAsync<TResultType>(
             this IHypermediaClientFileUploadFunction<TResultType> function,
             HypermediaFileUploadActionParameter parameters,
-            IHypermediaResolver resolver)
+            IHypermediaResolver resolver,
+            CancellationToken cancellationToken = default)
             where TResultType : HypermediaClientObject
         {
             if (!function.CanExecute)
@@ -168,7 +180,8 @@ namespace RESTyard.Client.Extensions
                     function.Uri,
                     function.Method,
                     function.ParameterDescriptions,
-                    parameters);
+                    parameters,
+                    cancellationToken);
                 return result;
             }
             catch (Exception e)
@@ -180,7 +193,8 @@ namespace RESTyard.Client.Extensions
         public static async Task<HypermediaResult<MandatoryHypermediaLink<TResultType>>> ExecuteAsync<TResultType, TParameters>(
             this IHypermediaClientFileUploadFunction<TResultType, TParameters> function,
             HypermediaFileUploadActionParameter<TParameters> parameters,
-            IHypermediaResolver resolver)
+            IHypermediaResolver resolver,
+            CancellationToken cancellationToken = default)
             where TResultType : HypermediaClientObject
         {
             if (!function.CanExecute)
@@ -194,7 +208,8 @@ namespace RESTyard.Client.Extensions
                     function.Uri,
                     function.Method,
                     function.ParameterDescriptions,
-                    parameters);
+                    parameters,
+                    cancellationToken);
                 return result;
             }
             catch (Exception e)

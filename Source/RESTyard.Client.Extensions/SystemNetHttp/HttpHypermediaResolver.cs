@@ -46,7 +46,8 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             Uri uriToResolve,
             HttpLinkHcoCacheEntry cacheEntry,
             DateTimeOffset assumedNow,
-            bool forceResolve)
+            bool forceResolve,
+            CancellationToken cancellationToken = default)
         {
             bool forceRevalidate = forceResolve;
             var mustRevalidate = forceRevalidate || cacheEntry.IsRevalidationRequired(assumedNow);
@@ -56,7 +57,7 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             }
 
             var request = CreateRevalidationRequest(uriToResolve, cacheEntry);
-            var response = await this.httpClient.SendAsync(request, CancellationToken.None);
+            var response = await this.httpClient.SendAsync(request, cancellationToken);
             var assumedNowAfterRequest = DateTimeOffset.Now;
             if (response.StatusCode == HttpStatusCode.NotModified)
             {
@@ -135,7 +136,8 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
 
         protected override async Task<HypermediaResult<MultipartFormDataContent>> CreateUploadPayload(
             IHypermediaFileUploadParameter parameterObject,
-            ParameterDescription? parameterDescription = null)
+            ParameterDescription? parameterDescription = null,
+            CancellationToken cancellationToken = default)
         {
             MultipartFormDataContent? result = null;
             try
@@ -152,7 +154,7 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
 
                 foreach (var file in parameterObject.FileDefinitions)
                 {
-                    result.Add(new StreamContent(await file.OpenReadStreamAsync()), file.Name, file.FileName);
+                    result.Add(new StreamContent(await file.OpenReadStreamAsync(cancellationToken)), file.Name, file.FileName);
                 }
 
                 return result;
@@ -164,11 +166,13 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             }
         }
 
-        protected override async Task<HypermediaResult<HttpResponseMessage>> ResolveAsync(Uri uriToResolve)
+        protected override async Task<HypermediaResult<HttpResponseMessage>> ResolveAsync(
+            Uri uriToResolve,
+            CancellationToken cancellationToken = default)
         {
             try
             {
-                return await this.httpClient.GetAsync(uriToResolve);
+                return await this.httpClient.GetAsync(uriToResolve, cancellationToken);
             }
             catch (Exception e)
             {
@@ -179,7 +183,8 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
         protected override async Task<HypermediaResult<HttpResponseMessage>> SendCommandAsync(
             Uri uri,
             string method,
-            string? payload = null)
+            string? payload = null,
+            CancellationToken cancellationToken = default)
         {
             var httpMethod = GetHttpMethod(method);
             var request = new HttpRequestMessage(httpMethod, uri);
@@ -191,7 +196,7 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
 
             try
             {
-                var responseMessage = await httpClient.SendAsync(request);
+                var responseMessage = await httpClient.SendAsync(request, cancellationToken);
                 return responseMessage;
             }
             catch (Exception e)
@@ -203,7 +208,8 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
         protected override async Task<HypermediaResult<HttpResponseMessage>> SendUploadCommandAsync(
             Uri uri,
             string method,
-            MultipartFormDataContent uploadPayload)
+            MultipartFormDataContent uploadPayload,
+            CancellationToken cancellationToken = default)
         {
             using var _ = uploadPayload;
 
@@ -213,7 +219,7 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
 
             try
             {
-                var responseMessage = await httpClient.SendAsync(request);
+                var responseMessage = await httpClient.SendAsync(request, cancellationToken);
                 return responseMessage;
             }
             catch (Exception e)
@@ -222,14 +228,16 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             }
         }
 
-        protected override async Task<HypermediaResult<Unit>> EnsureRequestIsSuccessfulAsync(HttpResponseMessage responseMessage)
+        protected override async Task<HypermediaResult<Unit>> EnsureRequestIsSuccessfulAsync(
+            HttpResponseMessage responseMessage,
+            CancellationToken cancellationToken = default)
         {
             if (responseMessage.IsSuccessStatusCode)
             {
                 return HypermediaResult.Ok(No.Thing);
             }
 
-            var (hasProblemDescription, problemDescription) = await this.TryReadProblemStringAsync(responseMessage);
+            var (hasProblemDescription, problemDescription) = await this.TryReadProblemStringAsync(responseMessage, cancellationToken);
             if (hasProblemDescription)
             {
                 if (problemDescription!.Status is not null)
@@ -254,7 +262,9 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             return HypermediaResult.Error<Unit>(HypermediaProblem.StatusCode((int)responseMessage.StatusCode));
         }
 
-        private async Task<(bool hasProblemDescription, ProblemDetails? problemDescription)> TryReadProblemStringAsync(HttpResponseMessage response)
+        private async Task<(bool hasProblemDescription, ProblemDetails? problemDescription)> TryReadProblemStringAsync(
+            HttpResponseMessage response,
+            CancellationToken cancellationToken = default)
         {
             if (response.Content == null)
             {
@@ -262,7 +272,12 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             }
             try
             {
+#if NET8_0_OR_GREATER
+                var contentAsString = await response.Content.ReadAsStringAsync(cancellationToken);
+#else
+                cancellationToken.ThrowIfCancellationRequested();
                 var contentAsString = await response.Content.ReadAsStringAsync();
+#endif
                 var result = this.ProblemReader.TryReadProblemString(contentAsString, out var problemDescription);
                 return (result, problemDescription);
             }
@@ -272,11 +287,18 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             }
         }
 
-        protected override async Task<HypermediaResult<Stream>> ResponseAsStreamAsync(HttpResponseMessage responseMessage)
+        protected override async Task<HypermediaResult<Stream>> ResponseAsStreamAsync(
+            HttpResponseMessage responseMessage,
+            CancellationToken cancellationToken = default)
         {
             try
             {
+#if NET8_0_OR_GREATER
+                return await responseMessage.Content.ReadAsStreamAsync(cancellationToken);
+#else
+                cancellationToken.ThrowIfCancellationRequested();
                 return await responseMessage.Content.ReadAsStreamAsync();
+#endif
             }
             catch (Exception e)
             {

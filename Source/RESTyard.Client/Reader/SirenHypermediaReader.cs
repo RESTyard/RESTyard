@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using FunicularSwitch;
 using RESTyard.Client.Hypermedia;
@@ -66,11 +67,12 @@ namespace RESTyard.Client.Reader
 
         public async Task<HypermediaReaderResult<HypermediaClientObject>> ReadAsync(
             Stream contentStream,
-            IHypermediaResolver resolver)
+            IHypermediaResolver resolver,
+            CancellationToken cancellationToken = default)
         {
             try
             {
-                var rootObject = await this.stringParser.ParseAsync(contentStream);
+                var rootObject = await this.stringParser.ParseAsync(contentStream, cancellationToken);
                 if (rootObject is null)
                 {
                     return HypermediaReaderResult.Error<HypermediaClientObject>(
@@ -88,11 +90,12 @@ namespace RESTyard.Client.Reader
 
         public async Task<HypermediaReaderResult<(HypermediaClientObject, string)>> ReadAndSerializeAsync(
             Stream contentStream,
-            IHypermediaResolver resolver)
+            IHypermediaResolver resolver,
+            CancellationToken cancellationToken = default)
         {
             try
             {
-                var rootObject = await this.stringParser.ParseAsync(contentStream);
+                var rootObject = await this.stringParser.ParseAsync(contentStream, cancellationToken);
                 if (rootObject is null)
                 {
                     return HypermediaReaderResult.Error<(HypermediaClientObject, string)>(
