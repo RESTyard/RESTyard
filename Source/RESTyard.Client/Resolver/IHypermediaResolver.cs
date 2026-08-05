@@ -19,14 +19,36 @@ namespace RESTyard.Client.Resolver
         /// <param name="forceResolve">If set to true, indicates to the Resolver to ignore any measures to circumvent making a request with the server, like serving the result from a local cache.</param>
         /// <param name="cancellationToken">A token to cancel the ongoing operation</param>
         /// <returns></returns>
-        Task<HypermediaResult<T>> ResolveLinkAsync<T>(Uri uriToResolve, bool forceResolve = false, CancellationToken cancellationToken = default) where T : HypermediaClientObject;
+        Task<HypermediaResult<T>> ResolveLinkAsync<T>(
+            Uri uriToResolve,
+            bool forceResolve = false,
+            CancellationToken cancellationToken = default)
+            where T : HypermediaClientObject;
 
-        Task<HypermediaResult<Unit>> ResolveActionAsync(Uri uri, string method, CancellationToken cancellationToken = default);
+        Task<HypermediaResult<Unit>> ResolveActionAsync(
+            Uri uri,
+            string method,
+            CancellationToken cancellationToken = default);
 
-        Task<HypermediaResult<Unit>> ResolveActionAsync(Uri uri, string method, IReadOnlyList<ParameterDescription> parameterDescriptions, object? parameterObject, CancellationToken cancellationToken = default);
+        Task<HypermediaResult<Unit>> ResolveActionAsync(
+            Uri uri,
+            string method,
+            IReadOnlyList<ParameterDescription> parameterDescriptions,
+            object? parameterObject,
+            CancellationToken cancellationToken = default);
 
-        Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(Uri uri, string method, CancellationToken cancellationToken = default) where T : HypermediaClientObject;
+        Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(
+            Uri uri,
+            string method,
+            CancellationToken cancellationToken = default)
+            where T : HypermediaClientObject;
 
-        Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(Uri uri, string method, IReadOnlyList<ParameterDescription> parameterDescriptions, object? parameterObject, CancellationToken cancellationToken = default) where T : HypermediaClientObject;
+        Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(
+            Uri uri,
+            string method,
+            IReadOnlyList<ParameterDescription> parameterDescriptions,
+            object? parameterObject,
+            CancellationToken cancellationToken = default)
+            where T : HypermediaClientObject;
     }
 }

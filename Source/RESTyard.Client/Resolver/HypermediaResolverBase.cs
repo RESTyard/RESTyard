@@ -55,7 +55,13 @@ namespace RESTyard.Client.Resolver
             if (this.LinkHcoCache.TryGetValue(uriToResolve, out var cacheEntry))
             {
                 var verificationResult = await this.VerifyIfCacheEntryCanBeUsedAsync(uriToResolve, cacheEntry, DateTimeOffset.Now, forceResolve, cancellationToken);
-                var cacheEntryCanBeUsed = verificationResult.Match(
+                if (verificationResult.IsError)
+                {
+                    return HypermediaResult.Error(verificationResult.GetErrorOrDefault()!);
+                }
+
+                var verification = verificationResult.GetValueOrThrow();
+                var cacheEntryCanBeUsed = verification.Match(
                     canBeUsed => true,
                     canNotBeUsed => false,
                     useThisResponseInstead => false);
@@ -64,7 +70,7 @@ namespace RESTyard.Client.Resolver
                     return this.HypermediaReader.Read(cacheEntry.LinkResponseContent, this)
                         .Match(
                             hco => HypermediaResult.Ok((T)hco),
-                            error => HypermediaResult.Error<T>(error.Match(
+                            error => HypermediaResult.Error(error.Match(
                                 requiredPropertyMissing => HypermediaProblem.InvalidResponse(requiredPropertyMissing.Message),
                                 invalidFormat => HypermediaProblem.InvalidResponse(invalidFormat.Message),
                                 invalidClientClass => HypermediaProblem.BadHcoDefinition(invalidClientClass.Message),
@@ -75,7 +81,7 @@ namespace RESTyard.Client.Resolver
                     this.LinkHcoCache.Remove(uriToResolve);
                 }
 
-                networkResult = await verificationResult.Match(
+                networkResult = await verification.Match(
                     canBeUsed => this.ResolveAsync(uriToResolve, cancellationToken),
                     canNotBeUsed => this.ResolveAsync(uriToResolve, cancellationToken),
                     useResponse => Task.FromResult(HypermediaResult.Ok(useResponse.Response)));
@@ -107,7 +113,7 @@ namespace RESTyard.Client.Resolver
                 });
         }
 
-        protected abstract Task<CacheEntryVerificationResult<TNetworkResponseMessage>> VerifyIfCacheEntryCanBeUsedAsync(
+        protected abstract Task<HypermediaResult<CacheEntryVerificationResult<TNetworkResponseMessage>>> VerifyIfCacheEntryCanBeUsedAsync(
             Uri uriToResolve,
             TLinkHcoCacheEntry cacheEntry,
             DateTimeOffset assumedNow,
@@ -138,15 +144,15 @@ namespace RESTyard.Client.Resolver
             object? parameterObject,
             CancellationToken cancellationToken = default)
         {
-            if (parameterObject is IHypermediaFileUploadParameter fileUploadParameter)
+            return parameterObject switch
             {
-                return await this.ProcessUploadParameters(parameterDescriptions, fileUploadParameter, cancellationToken)
+                IHypermediaFileUploadParameter fileUploadParameter => await this.ProcessUploadParameters(parameterDescriptions, fileUploadParameter, cancellationToken)
                     .Bind(uploadPayload => this.SendUploadCommandAsync(uri, method, uploadPayload, cancellationToken))
-                    .Bind(responseMessage => this.HandleActionResponseAsync(responseMessage, cancellationToken));
-            }
-            return await this.ProcessParameters(parameterDescriptions, parameterObject)
-                .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters, cancellationToken))
-                .Bind(responseMessage => this.HandleActionResponseAsync(responseMessage, cancellationToken));
+                    .Bind(responseMessage => this.HandleActionResponseAsync(responseMessage, cancellationToken)),
+                _ => await this.ProcessParameters(parameterDescriptions, parameterObject)
+                    .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters, cancellationToken))
+                    .Bind(responseMessage => this.HandleActionResponseAsync(responseMessage, cancellationToken))
+            };
         }
 
         public async Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(
@@ -165,15 +171,15 @@ namespace RESTyard.Client.Resolver
             object? parameterObject,
             CancellationToken cancellationToken = default) where T : HypermediaClientObject
         {
-            if (parameterObject is IHypermediaFileUploadParameter fileUploadParameter)
+            return parameterObject switch
             {
-                return await this.ProcessUploadParameters(parameterDescriptions, fileUploadParameter, cancellationToken)
+                IHypermediaFileUploadParameter fileUploadParameter => await this.ProcessUploadParameters(parameterDescriptions, fileUploadParameter, cancellationToken)
                     .Bind(uploadPayload => this.SendUploadCommandAsync(uri, method, uploadPayload, cancellationToken))
-                    .Bind(responseMessage => this.HandleFunctionResponseAsync<T>(responseMessage, cancellationToken));
-            }
-            return await this.ProcessParameters(parameterDescriptions, parameterObject)
-                .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters, cancellationToken))
-                .Bind(responseMessage => this.HandleFunctionResponseAsync<T>(responseMessage, cancellationToken));
+                    .Bind(responseMessage => this.HandleFunctionResponseAsync<T>(responseMessage, cancellationToken)),
+                _ => await this.ProcessParameters(parameterDescriptions, parameterObject)
+                    .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters, cancellationToken))
+                    .Bind(responseMessage => this.HandleFunctionResponseAsync<T>(responseMessage, cancellationToken))
+            };
         }
 
         protected async Task<HypermediaResult<(T ResultHco, string HcoAsString)>> HandleLinkResponseAsync<T>(
@@ -189,20 +195,21 @@ namespace RESTyard.Client.Resolver
                     HypermediaReaderResult<(HypermediaClientObject ResultHco, string HcoAsString)> readResult;
                     if (serializeToString)
                     {
-                        readResult =
-                            await this.HypermediaReader.ReadAndSerializeAsync(hypermediaObjectSirenStream, this, cancellationToken);
+                        readResult = await this.HypermediaReader
+                            .ReadAndSerializeAsync(hypermediaObjectSirenStream, this, cancellationToken);
                     }
                     else
                     {
-                        readResult =
-                            await this.HypermediaReader.ReadAsync(hypermediaObjectSirenStream, this, cancellationToken).Map(hco => (hco, string.Empty));
+                        readResult = await this.HypermediaReader
+                            .ReadAsync(hypermediaObjectSirenStream, this, cancellationToken)
+                            .Map(hco => (hco, string.Empty));
                     }
 
                     return readResult.Match(
                         ok: tuple => tuple.ResultHco is T hco
                             ? HypermediaResult.Ok((hco, tuple.HcoAsString))
-                            : HypermediaResult.Error<(T, string)>(HypermediaProblem.InvalidResponse(($"Could not retrieve result as {typeof(T).Name}."))),
-                        error => HypermediaResult.Error<(T, string)>(
+                            : HypermediaResult.Error(HypermediaProblem.InvalidResponse(($"Could not retrieve result as {typeof(T).Name}."))),
+                        error => HypermediaResult.Error(
                             error.Match(
                                 requiredPropertyMissing: rpm => HypermediaProblem.InvalidResponse(rpm.Message),
                                 invalidFormat: invalidFormat => HypermediaProblem.InvalidResponse(invalidFormat.Message),
@@ -241,16 +248,12 @@ namespace RESTyard.Client.Resolver
         {
             if (parameterObject is null)
             {
-                return HypermediaResult.Error<string>(
+                return HypermediaResult.Error(
                     HypermediaProblem.InvalidRequest("Parameter is described but not passed by action."));
             }
 
             return GetParameterDescription(parameterDescriptions)
-                .Map(parameterDescription => {
-                    var serializedParameters =
-                        this.ParameterSerializer.SerializeParameterObject(parameterDescription.Name, parameterObject);
-                    return serializedParameters;
-                });
+                .Map(parameterDescription => this.ParameterSerializer.SerializeParameterObject(parameterDescription.Name, parameterObject));
         }
 
         protected Task<HypermediaResult<TUploadPayload>> ProcessUploadParameters(
@@ -270,20 +273,20 @@ namespace RESTyard.Client.Resolver
         {
             if (parameterDescriptions.Count == 0)
             {
-                return HypermediaResult<ParameterDescription>.Error(HypermediaProblem.InvalidRequest("Parameter not described."));
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Parameter not described."));
             }
 
             // todo allow more fields
             if (parameterDescriptions.Count > 1)
             {
-                return HypermediaResult<ParameterDescription>.Error(HypermediaProblem.InvalidRequest("Only one action parameter is supported."));
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Only one action parameter is supported."));
             }
 
             // todo allow more types
             var parameterDescription = parameterDescriptions.First();
             if (!parameterDescription.Type.Equals(DefaultMediaTypes.ApplicationJson) && !parameterDescription.Type.Equals(DefaultMediaTypes.MultipartFormData))
             {
-                return HypermediaResult<ParameterDescription>.Error(HypermediaProblem.InvalidRequest("Only one action type 'application/json' is supported."));
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Only one action type 'application/json' is supported."));
             }
             return HypermediaResult.Ok(parameterDescription);
         }

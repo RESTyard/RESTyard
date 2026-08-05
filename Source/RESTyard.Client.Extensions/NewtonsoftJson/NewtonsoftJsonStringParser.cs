@@ -22,12 +22,11 @@ namespace RESTyard.Client.Extensions.NewtonsoftJson
 
         public async Task<IToken?> ParseAsync(Stream contentStream, CancellationToken cancellationToken = default)
         {
-            using (var textReader = new StreamReader(contentStream))
-            using (var jsonReader = new JsonTextReader(textReader))
-            {
-                var jObject = await JObject.LoadAsync(jsonReader, cancellationToken);
-                return JTokenWrapper.Wrap(jObject);
-            }
+            using var textReader = new StreamReader(contentStream);
+            using var jsonReader = new JsonTextReader(textReader);
+            
+            var jObject = await JObject.LoadAsync(jsonReader, cancellationToken);
+            return JTokenWrapper.Wrap(jObject);
         }
 
         private class JTokenWrapper : IToken
