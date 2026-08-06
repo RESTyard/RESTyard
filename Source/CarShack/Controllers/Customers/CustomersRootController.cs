@@ -110,6 +110,7 @@ namespace CarShack.Controllers.Customers
 #endregion
     }
 
+    // TODO: use built-in attribute when it becomes available.
     public class HttpQueryAttribute : HttpMethodAttribute
     {
         private static readonly IEnumerable<string> _supportedMethods = ["QUERY"];
