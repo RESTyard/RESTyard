@@ -62,19 +62,19 @@ namespace RESTyard.Client.Resolver
 
                 var verification = verificationResult.GetValueOrThrow();
                 var cacheEntryCanBeUsed = verification.Match(
-                    canBeUsed => true,
-                    canNotBeUsed => false,
-                    useThisResponseInstead => false);
+                    cacheEntryMayBeUsed: _ => true,
+                    cacheEntryMayNotBeUsed: _ => false,
+                    useThisResponseInstead: _ => false);
                 if (cacheEntryCanBeUsed)
                 {
                     return this.HypermediaReader.Read(cacheEntry.LinkResponseContent, this)
                         .Match(
-                            hco => HypermediaResult.Ok((T)hco),
-                            error => HypermediaResult.Error(error.Match(
-                                requiredPropertyMissing => HypermediaProblem.InvalidResponse(requiredPropertyMissing.Message),
-                                invalidFormat => HypermediaProblem.InvalidResponse(invalidFormat.Message),
-                                invalidClientClass => HypermediaProblem.BadHcoDefinition(invalidClientClass.Message),
-                                exception => HypermediaProblem.Exception(exception.Exc))));
+                            ok: hco => HypermediaResult.Ok((T)hco),
+                            error: error => HypermediaResult.Error(error.Match(
+                                requiredPropertyMissing: requiredPropertyMissing => HypermediaProblem.InvalidResponse(requiredPropertyMissing.Message),
+                                invalidFormat: invalidFormat => HypermediaProblem.InvalidResponse(invalidFormat.Message),
+                                invalidClientClass: invalidClientClass => HypermediaProblem.BadHcoDefinition(invalidClientClass.Message),
+                                exception: exception => HypermediaProblem.Exception(exception.Exc))));
                 }
                 else
                 {
@@ -82,9 +82,9 @@ namespace RESTyard.Client.Resolver
                 }
 
                 networkResult = await verification.Match(
-                    canBeUsed => this.ResolveAsync(uriToResolve, cancellationToken),
-                    canNotBeUsed => this.ResolveAsync(uriToResolve, cancellationToken),
-                    useResponse => Task.FromResult(HypermediaResult.Ok(useResponse.Response)));
+                    cacheEntryMayBeUsed: _ => this.ResolveAsync(uriToResolve, cancellationToken),
+                    cacheEntryMayNotBeUsed: _ => this.ResolveAsync(uriToResolve, cancellationToken),
+                    useThisResponseInstead: useResponse => Task.FromResult(HypermediaResult.Ok(useResponse.Response)));
             }
             else
             {
@@ -144,14 +144,23 @@ namespace RESTyard.Client.Resolver
             object? parameterObject,
             CancellationToken cancellationToken = default)
         {
+            return await SendCommandWithParametersAsync(uri, method, parameterDescriptions, parameterObject, cancellationToken)
+                .Bind(responseMessage => this.HandleActionResponseAsync(responseMessage, cancellationToken));
+        }
+
+        private async Task<HypermediaResult<TNetworkResponseMessage>> SendCommandWithParametersAsync(
+            Uri uri,
+            string method,
+            IReadOnlyList<ParameterDescription> parameterDescriptions,
+            object? parameterObject,
+            CancellationToken cancellationToken)
+        {
             return parameterObject switch
             {
                 IHypermediaFileUploadParameter fileUploadParameter => await this.ProcessUploadParameters(parameterDescriptions, fileUploadParameter, cancellationToken)
-                    .Bind(uploadPayload => this.SendUploadCommandAsync(uri, method, uploadPayload, cancellationToken))
-                    .Bind(responseMessage => this.HandleActionResponseAsync(responseMessage, cancellationToken)),
+                    .Bind(uploadPayload => this.SendUploadCommandAsync(uri, method, uploadPayload, cancellationToken)),
                 _ => await this.ProcessParameters(parameterDescriptions, parameterObject)
-                    .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters, cancellationToken))
-                    .Bind(responseMessage => this.HandleActionResponseAsync(responseMessage, cancellationToken))
+                    .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters, cancellationToken)),
             };
         }
 
@@ -171,15 +180,8 @@ namespace RESTyard.Client.Resolver
             object? parameterObject,
             CancellationToken cancellationToken = default) where T : HypermediaClientObject
         {
-            return parameterObject switch
-            {
-                IHypermediaFileUploadParameter fileUploadParameter => await this.ProcessUploadParameters(parameterDescriptions, fileUploadParameter, cancellationToken)
-                    .Bind(uploadPayload => this.SendUploadCommandAsync(uri, method, uploadPayload, cancellationToken))
-                    .Bind(responseMessage => this.HandleFunctionResponseAsync<T>(responseMessage, cancellationToken)),
-                _ => await this.ProcessParameters(parameterDescriptions, parameterObject)
-                    .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters, cancellationToken))
-                    .Bind(responseMessage => this.HandleFunctionResponseAsync<T>(responseMessage, cancellationToken))
-            };
+            return await SendCommandWithParametersAsync(uri, method, parameterDescriptions, parameterObject, cancellationToken)
+                .Bind(responseMessage => this.HandleFunctionResponseAsync<T>(responseMessage, cancellationToken));
         }
 
         protected async Task<HypermediaResult<(T ResultHco, string HcoAsString)>> HandleLinkResponseAsync<T>(
