@@ -2,50 +2,50 @@
 using Microsoft.AspNetCore.Mvc;
 using RESTyard.AspNetCore.WebApi;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
-using server._csharp._v4;
+using server._csharp._v5;
 using RESTyard.Generator.Test.Output;
 
-namespace server._csharp_controller._v4;
+namespace server._csharp_controller._v5;
 [Route("api/[controller]")]
 public class BaseController : ControllerBase
 {
-    [HttpGetHypermediaObject("<stub>", typeof(BaseHto))]
+    [HttpGet("<stub>"), HypermediaObjectEndpoint<BaseHto>]
     public Task<IActionResult> GetAsync()
     {
         throw new NotImplementedException();
     }
 
-    [HttpPostHypermediaAction("<stub>", typeof(BaseHto.OperationOp))]
+    [HttpPost("<stub>"), HypermediaActionEndpoint<BaseHto>(nameof(BaseHto.Operation))]
     public Task<IActionResult> OperationAsync()
     {
         throw new NotImplementedException();
     }
 
-    [HttpPatchHypermediaAction("<stub>", typeof(BaseHto.WithParameterOp))]
+    [HttpPatch("<stub>"), HypermediaActionEndpoint<BaseHto>(nameof(BaseHto.WithParameter))]
     public Task<IActionResult> WithParameterAsync([HypermediaActionParameterFromBody] TP2 tP2)
     {
         throw new NotImplementedException();
     }
 
-    [HttpPatchHypermediaAction("<stub>", typeof(BaseHto.WithResultOp))]
+    [HttpPatch("<stub>"), HypermediaActionEndpoint<BaseHto>(nameof(BaseHto.WithResult))]
     public Task<IActionResult> WithResultAsync()
     {
         throw new NotImplementedException();
     }
 
-    [HttpPatchHypermediaAction("<stub>", typeof(BaseHto.WithParameterAndResultOp))]
+    [HttpPatch("<stub>"), HypermediaActionEndpoint<BaseHto>(nameof(BaseHto.WithParameterAndResult))]
     public Task<IActionResult> WithParameterAndResultAsync([HypermediaActionParameterFromBody] External external)
     {
         throw new NotImplementedException();
     }
 
-    [HttpDeleteHypermediaAction("<stub>", typeof(BaseHto.UploadOp))]
+    [HttpDelete("<stub>"), HypermediaActionEndpoint<BaseHto>(nameof(BaseHto.Upload))]
     public Task<IActionResult> UploadAsync()
     {
         throw new NotImplementedException();
     }
 
-    [HttpPostHypermediaAction("<stub>", typeof(BaseHto.UploadWithParameterOp))]
+    [HttpPost("<stub>"), HypermediaActionEndpoint<BaseHto>(nameof(BaseHto.UploadWithParameter))]
     public Task<IActionResult> UploadWithParameterAsync([HypermediaActionParameterFromBody] TP12 tP12)
     {
         throw new NotImplementedException();
@@ -55,7 +55,7 @@ public class BaseController : ControllerBase
 [Route("api/[controller]")]
 public class ChildController : ControllerBase
 {
-    [HttpGetHypermediaObject("<stub>", typeof(ChildHto))]
+    [HttpGet("<stub>"), HypermediaObjectEndpoint<ChildHto>]
     public Task<IActionResult> GetAsync()
     {
         throw new NotImplementedException();
@@ -65,7 +65,7 @@ public class ChildController : ControllerBase
 [Route("api/[controller]")]
 public class DerivedController : ControllerBase
 {
-    [HttpGetHypermediaObject("<stub>", typeof(DerivedHto))]
+    [HttpGet("<stub>"), HypermediaObjectEndpoint<DerivedHto>]
     public Task<IActionResult> GetAsync()
     {
         throw new NotImplementedException();
@@ -75,7 +75,7 @@ public class DerivedController : ControllerBase
 [Route("api/[controller]")]
 public class SecondLevelDerivedController : ControllerBase
 {
-    [HttpGetHypermediaObject("<stub>", typeof(SecondLevelDerivedHto))]
+    [HttpGet("<stub>"), HypermediaObjectEndpoint<SecondLevelDerivedHto>]
     public Task<IActionResult> GetAsync()
     {
         throw new NotImplementedException();
@@ -90,7 +90,7 @@ public class NoSelfLinkController : ControllerBase
 [Route("api/[controller]")]
 public class QueryController : ControllerBase
 {
-    [HttpGetHypermediaObject("<stub>", typeof(QueryHto))]
+    [HttpGet("<stub>"), HypermediaObjectEndpoint<QueryHto>]
     public Task<IActionResult> GetAsync()
     {
         throw new NotImplementedException();

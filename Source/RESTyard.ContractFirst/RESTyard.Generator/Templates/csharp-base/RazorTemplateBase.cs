@@ -29,7 +29,7 @@ public class RazorTemplateBase : ComponentBase
         return $"{text[..1].ToUpperInvariant()}{text[1..]}";
     }
 
-    public string Uncapitalize(string text)
+    public static string Uncapitalize(string text)
     {
         if (string.IsNullOrEmpty(text))
         {
