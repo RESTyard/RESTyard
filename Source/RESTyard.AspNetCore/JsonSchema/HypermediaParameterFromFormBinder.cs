@@ -42,12 +42,12 @@ public class HypermediaParameterFromFormBinderProvider : IModelBinderProvider
     {
         return !this.explicitUsage
                && context.BindingInfo.BinderType == null
-               && DataIsInFormOrNull(context);
+               && DataIsInForm(context);
     }
 
-    private static bool DataIsInFormOrNull(ModelBinderProviderContext context)
+    private static bool DataIsInForm(ModelBinderProviderContext context)
     {
-        return (context.BindingInfo.BindingSource == null || context.BindingInfo.BindingSource == BindingSource.Form || context.BindingInfo.BindingSource == BindingSource.FormFile);
+        return (context.BindingInfo.BindingSource == BindingSource.Form || context.BindingInfo.BindingSource == BindingSource.FormFile);
     }
 
     private static bool ThisBinderIsSelectedOnMethod(ModelBinderProviderContext context)
