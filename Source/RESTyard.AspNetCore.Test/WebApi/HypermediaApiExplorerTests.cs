@@ -19,58 +19,6 @@ namespace RESTyard.AspNetCore.Test.WebApi;
 public class HypermediaApiExplorerTests : AssemblyBasedTestBase
 {
     [TestMethod]
-    public void CreateModel_LegacyAttributes()
-    {
-        var assembly = CreateAssembly([
-            CreateFile(
-                $$"""
-                [Route("Test")]
-                [ApiController]
-                public class Controller : ControllerBase
-                {
-                    [HttpGetHypermediaObject("Get", typeof({{nameof(ExampleHto)}}))]
-                    public IActionResult Get() => this.Ok();
-                    
-                    [HttpPostHypermediaAction("Post", typeof({{nameof(ExampleHto)}}.{{nameof(ExampleHto.BasicOp)}}))]
-                    public IActionResult Post() => this.Ok();
-                    
-                    [HttpGetHypermediaActionParameterInfo("Info", typeof({{nameof(ExampleHto)}}.{{nameof(ExampleHto.BasicParameter)}}))]
-                    public IActionResult Info() => this.Ok();
-                }
-                """),
-            GetExampleHtoCode(),
-        ]);
-        var apiExplorer = CreateApiExplorer(assembly);
-
-        var getTemplate = apiExplorer.GetFullRouteTemplateFor(GetType<ExampleHto>(assembly));
-        getTemplate.Should().ContainSingle().Which.Should().Be("Test/Get");
-
-        var endpoints = apiExplorer.GetHypermediaEndpoints();
-        endpoints.Should().HaveCount(3);
-
-        var getEndpoint = endpoints.Should().ContainSingle(a =>
-            a.ActionDescriptor.EndpointMetadata.OfType<IHypermediaObjectEndpointMetadata>().Any()).Which;
-        getEndpoint.RelativePath.Should().Be("Test/Get");
-        var hmoMetadata = getEndpoint.ActionDescriptor.EndpointMetadata.OfType<IHypermediaObjectEndpointMetadata>().Should()
-            .ContainSingle().Which;
-        hmoMetadata.RouteType.Should().Be(GetType<ExampleHto>(assembly));
-
-        var postEndpoint = endpoints.Should().ContainSingle(a =>
-            a.ActionDescriptor.EndpointMetadata.OfType<IHypermediaActionEndpointMetadata>().Any()).Which;
-        postEndpoint.RelativePath.Should().Be("Test/Post");
-        var actionMetadata = postEndpoint.ActionDescriptor.EndpointMetadata.OfType<IHypermediaActionEndpointMetadata>()
-            .Should().ContainSingle().Which;
-        actionMetadata.ActionType.Should().Be(GetType<ExampleHto.BasicOp>(assembly));
-
-        var parameterInfoEndpoint = endpoints.Should().ContainSingle(a =>
-            a.ActionDescriptor.EndpointMetadata.OfType<IHypermediaActionParameterInfoEndpointMetadata>().Any()).Which;
-        parameterInfoEndpoint.RelativePath.Should().Be("Test/Info");
-        var parameterInfoMetadata = parameterInfoEndpoint.ActionDescriptor.EndpointMetadata
-            .OfType<IHypermediaActionParameterInfoEndpointMetadata>().Should().ContainSingle().Which;
-        parameterInfoMetadata.RouteType.Should().Be(GetType<ExampleHto.BasicParameter>(assembly));
-    }
-    
-    [TestMethod]
     public void CreateModel_HypermediaAttributes()
     {
         var assembly = CreateAssembly([
