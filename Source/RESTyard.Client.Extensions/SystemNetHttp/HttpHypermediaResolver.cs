@@ -314,6 +314,8 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
                     return HttpMethod.Trace;
                 case "PATCH":
                     return new HttpMethod("PATCH");
+                case "QUERY":
+                    return new HttpMethod("QUERY");
                 default:
                     throw new Exception($"Unknown method: '{method}'");
             }

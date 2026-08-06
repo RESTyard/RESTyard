@@ -103,7 +103,7 @@ public class HypermediaParameterFromFormBinder : IModelBinder
     private Result<ModelBindingContext> CheckRequestMethod(ModelBindingContext bindingContext)
     {
         var requestMethod = bindingContext.ActionContext.HttpContext.Request.Method;
-        if (requestMethod == HttpMethods.Post || requestMethod == HttpMethods.Patch || requestMethod == HttpMethods.Put)
+        if (requestMethod == HttpMethods.Post || requestMethod == HttpMethods.Patch || requestMethod == HttpMethods.Put || requestMethod == HttpMethods.Query) 
         {
             return Result.Ok(bindingContext);
         }

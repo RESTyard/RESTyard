@@ -45,7 +45,8 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                               && (HttpMethods.IsPost(httpMethod)
                                   || HttpMethods.IsPut(httpMethod)
                                   || HttpMethods.IsPatch(httpMethod)
-                                  || HttpMethods.IsDelete(httpMethod));
+                                  || HttpMethods.IsDelete(httpMethod)
+                                  || HttpMethods.IsQuery(httpMethod));
                 if (!isValid)
                 {
                     throw new ArgumentOutOfRangeException(nameof(apiDescription.HttpMethod),
