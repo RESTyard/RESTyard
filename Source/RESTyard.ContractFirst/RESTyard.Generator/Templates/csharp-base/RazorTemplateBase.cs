@@ -6,6 +6,7 @@ namespace RESTyard.Generator.Templates.csharp_base;
 public class RazorTemplateBase : ComponentBase
 {
     [Parameter] public HypermediaType Schema { get; set; } = null!;
+    [Parameter] public Version Version { get; set; } = null!;
 
     public static void Warning(string message) => Console.WriteLine($"[WARNING] {message}");
 

@@ -66,13 +66,31 @@ namespace RESTyard.Client.Extensions
 
             try
             {
-                var result = await resolver.ResolveFunctionAsync<TResultType>(function.Uri, function.Method);
-                return result;
+                return await resolver
+                    .ResolveFunctionAsync<TResultType>(function.Uri, function.Method)
+                    .Bind(linkOrEntity => SafeCastToLink(linkOrEntity, resolver));
             }
             catch (Exception e)
             {
                 return HypermediaResult.Error<MandatoryHypermediaLink<TResultType>>(HypermediaProblem.Exception(e));
             }
+        }
+
+        public static async Task<HypermediaResult<TResultType>> ExecuteAndResolveAsync<TResultType>(
+            this IHypermediaClientFunction<TResultType> function,
+            IHypermediaResolver resolver)
+            where TResultType : HypermediaClientObject
+        {
+            if (!function.CanExecute)
+            {
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Can not execute Function."));
+            }
+
+            return await HypermediaResult.Try(
+                async () => await resolver
+                    .ResolveFunctionAsync<TResultType>(function.Uri, function.Method)
+                    .Bind(ResolveAsyncIfLink),
+                HypermediaProblem.Exception);
         }
 
         public static async Task<HypermediaResult<MandatoryHypermediaLink<TResultType>>> ExecuteAsync<TResultType, TParameters>(
@@ -88,17 +106,39 @@ namespace RESTyard.Client.Extensions
 
             try
             {
-                var result = await resolver.ResolveFunctionAsync<TResultType>(
+                return await resolver.ResolveFunctionAsync<TResultType>(
                     function.Uri,
                     function.Method,
                     function.ParameterDescriptions,
-                    parameters);
-                return result;
+                    parameters)
+                    .Bind(linkOrEntity => SafeCastToLink(linkOrEntity, resolver));
             }
             catch (Exception e)
             {
                 return HypermediaResult.Error<MandatoryHypermediaLink<TResultType>>(HypermediaProblem.Exception(e));
             }
+        }
+
+        public static async Task<HypermediaResult<TResultType>> ExecuteAndResolveAsync<TResultType, TParameters>(
+            this IHypermediaClientFunction<TResultType, TParameters> function,
+            TParameters parameters,
+            IHypermediaResolver resolver)
+            where TResultType : HypermediaClientObject
+        {
+            if (!function.CanExecute)
+            {
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Can not execute Function."));
+            }
+
+            return await HypermediaResult.Try(
+                async () => await resolver
+                    .ResolveFunctionAsync<TResultType>(
+                        function.Uri,
+                        function.Method,
+                        function.ParameterDescriptions,
+                        parameters)
+                    .Bind(ResolveAsyncIfLink),
+                HypermediaProblem.Exception);
         }
 
         public static async Task<HypermediaResult<Unit>> ExecuteAsync(
@@ -164,17 +204,40 @@ namespace RESTyard.Client.Extensions
 
             try
             {
-                var result = await resolver.ResolveFunctionAsync<TResultType>(
-                    function.Uri,
-                    function.Method,
-                    function.ParameterDescriptions,
-                    parameters);
-                return result;
+                return await resolver
+                    .ResolveFunctionAsync<TResultType>(
+                        function.Uri,
+                        function.Method,
+                        function.ParameterDescriptions,
+                        parameters)
+                    .Bind(linkOrEntity => SafeCastToLink(linkOrEntity, resolver));
             }
             catch (Exception e)
             {
                 return HypermediaResult.Error<MandatoryHypermediaLink<TResultType>>(HypermediaProblem.Exception(e));
             }
+        }
+
+        public static async Task<HypermediaResult<TResultType>> ExecuteAndResolveAsync<TResultType>(
+            this IHypermediaClientFileUploadFunction<TResultType> function,
+            HypermediaFileUploadActionParameter parameters,
+            IHypermediaResolver resolver)
+            where TResultType : HypermediaClientObject
+        {
+            if (!function.CanExecute)
+            {
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Can not execute Function."));
+            }
+
+            return await HypermediaResult.Try(
+                async () => await resolver
+                    .ResolveFunctionAsync<TResultType>(
+                        function.Uri,
+                        function.Method,
+                        function.ParameterDescriptions,
+                        parameters)
+                    .Bind(ResolveAsyncIfLink),
+                HypermediaProblem.Exception);
         }
 
         public static async Task<HypermediaResult<MandatoryHypermediaLink<TResultType>>> ExecuteAsync<TResultType, TParameters>(
@@ -190,17 +253,56 @@ namespace RESTyard.Client.Extensions
 
             try
             {
-                var result = await resolver.ResolveFunctionAsync<TResultType>(
-                    function.Uri,
-                    function.Method,
-                    function.ParameterDescriptions,
-                    parameters);
-                return result;
+                return await resolver
+                    .ResolveFunctionAsync<TResultType>(
+                        function.Uri,
+                        function.Method,
+                        function.ParameterDescriptions,
+                        parameters)
+                    .Bind(linkOrEntity => SafeCastToLink(linkOrEntity, resolver));
             }
             catch (Exception e)
             {
                 return HypermediaResult.Error<MandatoryHypermediaLink<TResultType>>(HypermediaProblem.Exception(e));
             }
         }
+
+        public static async Task<HypermediaResult<TResultType>> ExecuteAndResolveAsync<TResultType, TParameters>(
+            this IHypermediaClientFileUploadFunction<TResultType, TParameters> function,
+            HypermediaFileUploadActionParameter<TParameters> parameters,
+            IHypermediaResolver resolver)
+            where TResultType : HypermediaClientObject
+        {
+            if (!function.CanExecute)
+            {
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Can not execute Function."));
+            }
+
+            return await HypermediaResult.Try(
+                async () => await resolver
+                    .ResolveFunctionAsync<TResultType>(
+                        function.Uri,
+                        function.Method,
+                        function.ParameterDescriptions,
+                        parameters)
+                    .Bind(ResolveAsyncIfLink),
+                HypermediaProblem.Exception);
+        }
+
+        private static Task<HypermediaResult<T>> ResolveAsyncIfLink<T>(LinkOrEntity<T> linkOrEntity)
+            where T : HypermediaClientObject
+            => linkOrEntity.Match(
+                link: link => link.Value.ResolveAsync(),
+                entity: entity => Task.FromResult(HypermediaResult.Ok(entity.Value)));
+        
+        private static HypermediaResult<MandatoryHypermediaLink<T>> SafeCastToLink<T>(LinkOrEntity<T> linkOrEntity, IHypermediaResolver resolver)
+            where T : HypermediaClientObject
+            => linkOrEntity.Match(
+                link: link => HypermediaResult.Ok(link.Value),
+                entity: entity => HypermediaResult.Ok(new MandatoryHypermediaLink<T>()
+                {
+                    Uri = entity.Location,
+                    Resolver = resolver,
+                }));
     }
 }

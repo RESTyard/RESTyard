@@ -139,6 +139,16 @@ public class GeneratorTests
     }
 
     [Fact]
+    public async Task ServerCSharpV5_1Test()
+    {
+        await RunGeneratorAsync(
+            "server/csharp/v5.1",
+            outputFile: "server_v5_1.cs");
+
+        await VerifyExtern("server_v5_1.cs", outputSuffix: "V5");
+    }
+
+    [Fact]
     public async Task ServerCSharpControllerV5Test()
     {
         await RunGeneratorAsync(

@@ -332,7 +332,7 @@ public partial class CustomerPurchaseHistoryHto : HypermediaQueryResult
     public List<IEmbeddedEntity<CustomerPurchaseHto>> Purchases { get; set; }
 
     [Relations([DefaultHypermediaRelations.Self])]
-    public new ILink<CustomerPurchaseHistoryHto> Self { get; set; }
+    public ILink<CustomerPurchaseHistoryHto> Self { get; set; }
 
     public CustomerPurchaseHistoryHto(int? customerId, IEnumerable<CustomerPurchaseHto> purchases, IHypermediaQuery query) : base(query)
     {
@@ -453,7 +453,7 @@ public partial class HypermediaCustomerQueryResultHto : HypermediaQueryResult
     public List<IEmbeddedEntity<HypermediaCustomerHto>> Customers { get; set; }
 
     [Relations([DefaultHypermediaRelations.Self])]
-    public new ILink<HypermediaCustomerQueryResultHto> Self { get; set; }
+    public ILink<HypermediaCustomerQueryResultHto> Self { get; set; }
 
     public HypermediaCustomerQueryResultHto(int? totalEntities, int? currentEntitiesCount, IEnumerable<HypermediaCustomerHto> customers, Option<IHypermediaQuery> nextQuery, Option<IHypermediaQuery> previousQuery, Option<IHypermediaQuery> lastQuery, Option<IHypermediaQuery> allQuery, IHypermediaQuery query) : base(query)
     {

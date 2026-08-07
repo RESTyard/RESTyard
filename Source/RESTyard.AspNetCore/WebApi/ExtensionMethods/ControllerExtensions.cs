@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Query;
@@ -38,6 +39,27 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         public static ActionResult Created(this ControllerBase controller, ILink link)
         {
             return controller.Ok(new HypermediaLinkLocation(link, HttpStatusCode.Created));
+        }
+
+        public static ActionResult InlineQueryResult(this ControllerBase controller, IHypermediaQueryResult queryResult, IHypermediaQuery query)
+        {
+            var link = GetLocation();
+            controller.HttpContext.Response.Headers.ContentLocation = link;
+            controller.HttpContext.Response.Headers.Location = link;
+
+            return controller.Ok(queryResult);
+
+            string GetLocation()
+            {
+                var routeResolverFactory = controller.HttpContext.RequestServices.GetRequiredService<IRouteResolverFactory>();
+                var queryStringBuilder = controller.HttpContext.RequestServices.GetRequiredService<IQueryStringBuilder>();
+                
+                var routeResolver = routeResolverFactory.CreateRouteResolver(controller.HttpContext);
+                var route = routeResolver.ObjectToRoute(queryResult);
+
+                var queryString = queryStringBuilder.CreateQueryString(query);
+                return route.Url + (queryString ?? "");
+            }
         }
 
         /// <summary>

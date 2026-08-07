@@ -1,8 +1,5 @@
-﻿using System;
-using RESTyard.AspNetCore.Hypermedia.Attributes;
-using RESTyard.AspNetCore.Hypermedia.Links;
+﻿using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.Query;
-using RESTyard.Relations;
 
 namespace RESTyard.AspNetCore.Hypermedia
 {
@@ -21,10 +18,6 @@ namespace RESTyard.AspNetCore.Hypermedia
         protected HypermediaQueryResult(IHypermediaQuery query)
         {
             Query = query;
-            Self = new Link<HypermediaQueryResult>(new HypermediaObjectQueryReference(GetType(), query));
         }
-        
-        [Relations([DefaultHypermediaRelations.Self])]
-        public ILink<HypermediaQueryResult> Self { get; }
     }
 }

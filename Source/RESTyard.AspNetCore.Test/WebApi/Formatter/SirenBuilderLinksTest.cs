@@ -500,6 +500,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     [HypermediaObject(Classes = [nameof(Linked1HypermediaObject)])]
     public class Linked1HypermediaObject : IHypermediaObject, IHypermediaQueryResult
     {
+        public IHypermediaQuery Query => new QueryForLinkHto(1);
+        
         public record Key(int Id) : HypermediaObjectKeyBase<Linked1HypermediaObject>
         {
             protected override IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration()
@@ -512,6 +514,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     [HypermediaObject(Classes = [nameof(Linked2HypermediaObject)])]
     public class Linked2HypermediaObject : IHypermediaObject, IHypermediaQueryResult
     {
+        public IHypermediaQuery Query => new QueryForLinkHto(2);
         public record Key(string Text) : HypermediaObjectKeyBase<Linked2HypermediaObject>
         {
             protected override IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration()
@@ -520,6 +523,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             }
         }
     }
+
+    public record QueryForLinkHto(int Number) : IHypermediaQuery;
 
     [HypermediaObject(Classes = [nameof(Linked3HypermediaObject)])]
     public class Linked3HypermediaObject : IHypermediaObject
