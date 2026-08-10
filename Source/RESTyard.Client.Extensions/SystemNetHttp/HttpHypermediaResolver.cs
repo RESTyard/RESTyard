@@ -42,29 +42,39 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             this.disposeHttpClient = disposeHttpClient;
         }
 
-        protected override async Task<CacheEntryVerificationResult<HttpResponseMessage>> VerifyIfCacheEntryCanBeUsedAsync(
+        protected override async Task<HypermediaResult<CacheEntryVerificationResult<HttpResponseMessage>>> VerifyIfCacheEntryCanBeUsedAsync(
             Uri uriToResolve,
             HttpLinkHcoCacheEntry cacheEntry,
             DateTimeOffset assumedNow,
-            bool forceResolve)
+            bool forceResolve,
+            CancellationToken cancellationToken = default)
         {
             bool forceRevalidate = forceResolve;
             var mustRevalidate = forceRevalidate || cacheEntry.IsRevalidationRequired(assumedNow);
             if (!mustRevalidate)
             {
-                return new CacheEntryVerificationResult<HttpResponseMessage>.CacheEntryMayBeUsed();
+                return CacheEntryVerificationResult<HttpResponseMessage>.CacheEntryMayBeUsed();
             }
 
             var request = CreateRevalidationRequest(uriToResolve, cacheEntry);
-            var response = await this.httpClient.SendAsync(request, CancellationToken.None);
-            var assumedNowAfterRequest = DateTimeOffset.Now;
-            if (response.StatusCode == HttpStatusCode.NotModified)
-            {
-                this.UpdateCacheEntry(uriToResolve, cacheEntry, HttpLinkHcoCacheEntryConfiguration.FromHttpResponse(response, assumedNowAfterRequest));
-                return new CacheEntryVerificationResult<HttpResponseMessage>.CacheEntryMayBeUsed();
-            }
+            var webResult = await HypermediaResult.Try(
+                async () => await this.httpClient.SendAsync(request, cancellationToken),
+                HypermediaProblem.Exception);
+            return webResult
+                .Map(response =>
+                {
+                    var assumedNowAfterRequest = DateTimeOffset.Now;
+                    if (response.StatusCode == HttpStatusCode.NotModified)
+                    {
+                        this.UpdateCacheEntry(
+                            uriToResolve: uriToResolve,
+                            oldEntry: cacheEntry,
+                            newConfiguration: HttpLinkHcoCacheEntryConfiguration.FromHttpResponse(response, assumedNowAfterRequest));
+                        return CacheEntryVerificationResult<HttpResponseMessage>.CacheEntryMayBeUsed();
+                    }
 
-            return new CacheEntryVerificationResult<HttpResponseMessage>.UseThisResponseInstead(response);
+                    return CacheEntryVerificationResult<HttpResponseMessage>.UseThisResponseInstead(response);
+                });
         }
 
         protected override HttpLinkHcoCacheEntryConfiguration GetCacheConfigurationFromResponse(
@@ -135,7 +145,8 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
 
         protected override async Task<HypermediaResult<MultipartFormDataContent>> CreateUploadPayload(
             IHypermediaFileUploadParameter parameterObject,
-            ParameterDescription? parameterDescription = null)
+            ParameterDescription? parameterDescription = null,
+            CancellationToken cancellationToken = default)
         {
             MultipartFormDataContent? result = null;
             try
@@ -152,7 +163,7 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
 
                 foreach (var file in parameterObject.FileDefinitions)
                 {
-                    result.Add(new StreamContent(await file.OpenReadStreamAsync()), file.Name, file.FileName);
+                    result.Add(new StreamContent(await file.OpenReadStreamAsync(cancellationToken)), file.Name, file.FileName);
                 }
 
                 return result;
@@ -160,136 +171,120 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             catch (Exception e)
             {
                 result?.Dispose();
-                return HypermediaResult.Error<MultipartFormDataContent>(HypermediaProblem.Exception(e));
+                return HypermediaResult.Error(HypermediaProblem.Exception(e));
             }
         }
 
-        protected override async Task<HypermediaResult<HttpResponseMessage>> ResolveAsync(Uri uriToResolve)
-        {
-            try
-            {
-                return await this.httpClient.GetAsync(uriToResolve);
-            }
-            catch (Exception e)
-            {
-                return HypermediaResult.Error<HttpResponseMessage>(HypermediaProblem.Exception(e));
-            }
-        }
+        protected override async Task<HypermediaResult<HttpResponseMessage>> ResolveAsync(
+            Uri uriToResolve,
+            CancellationToken cancellationToken = default)
+            => await HypermediaResult.Try(
+                async () => await this.httpClient.GetAsync(uriToResolve, cancellationToken),
+                HypermediaProblem.Exception);
 
         protected override async Task<HypermediaResult<HttpResponseMessage>> SendCommandAsync(
             Uri uri,
             string method,
-            string? payload = null)
+            string? payload = null,
+            CancellationToken cancellationToken = default)
         {
             var httpMethod = GetHttpMethod(method);
-            var request = new HttpRequestMessage(httpMethod, uri);
+            using var request = new HttpRequestMessage(httpMethod, uri);
 
             if (!string.IsNullOrEmpty(payload))
             {
                 request.Content = new StringContent(payload, Encoding.UTF8, DefaultMediaTypes.ApplicationJson);//CONTENT-TYPE header    
             }
 
-            try
-            {
-                var responseMessage = await httpClient.SendAsync(request);
-                return responseMessage;
-            }
-            catch (Exception e)
-            {
-                return HypermediaResult.Error<HttpResponseMessage>(HypermediaProblem.Exception(e));
-            }
+            return await HypermediaResult.Try(
+                async () => await httpClient.SendAsync(request, cancellationToken),
+                HypermediaProblem.Exception);
         }
 
         protected override async Task<HypermediaResult<HttpResponseMessage>> SendUploadCommandAsync(
             Uri uri,
             string method,
-            MultipartFormDataContent uploadPayload)
+            MultipartFormDataContent uploadPayload,
+            CancellationToken cancellationToken = default)
         {
             using var _ = uploadPayload;
 
             var httpMethod = GetHttpMethod(method);
-            var request = new HttpRequestMessage(httpMethod, uri);
+            using var request = new HttpRequestMessage(httpMethod, uri);
             request.Content = uploadPayload;
 
-            try
-            {
-                var responseMessage = await httpClient.SendAsync(request);
-                return responseMessage;
-            }
-            catch (Exception e)
-            {
-                return HypermediaResult.Error<HttpResponseMessage>(HypermediaProblem.Exception(e));
-            }
+            return await HypermediaResult.Try(
+                async () => await httpClient.SendAsync(request, cancellationToken),
+                HypermediaProblem.Exception);
         }
 
-        protected override async Task<HypermediaResult<Unit>> EnsureRequestIsSuccessfulAsync(HttpResponseMessage responseMessage)
+        protected override async Task<HypermediaResult<Unit>> EnsureRequestIsSuccessfulAsync(
+            HttpResponseMessage responseMessage,
+            CancellationToken cancellationToken = default)
         {
             if (responseMessage.IsSuccessStatusCode)
             {
                 return HypermediaResult.Ok(No.Thing);
             }
 
-            var (hasProblemDescription, problemDescription) = await this.TryReadProblemStringAsync(responseMessage);
-            if (hasProblemDescription)
-            {
-                if (problemDescription!.Status is not null)
-                {
-                    return HypermediaResult.Error<Unit>(HypermediaProblem.ProblemDetails(problemDescription));
-                }
-                var problemDetailsCopy = new ProblemDetails()
-                {
-                    Detail = problemDescription.Detail,
-                    Instance = problemDescription.Instance,
-                    Status = (int)responseMessage.StatusCode,
-                    Title = problemDescription.Title,
-                    Type = problemDescription.Type,
-                };
-                foreach (var kvp in problemDescription.Extensions)
-                {
-                    problemDetailsCopy.Extensions.Add(kvp);
-                }
-                return HypermediaResult.Error<Unit>(HypermediaProblem.ProblemDetails(problemDetailsCopy));
-            }
+            var problemDescriptionOption = await this.TryReadProblemStringAsync(responseMessage, cancellationToken);
+            return HypermediaResult.Error(
+                problemDescriptionOption.Match(
+                    some: problemDescription =>
+                    {
+                        problemDescription.Status ??= (int)responseMessage.StatusCode;
+                        return HypermediaProblem.ProblemDetails(problemDescription);
+                    },
+                    none: () => HypermediaProblem.StatusCode((int)responseMessage.StatusCode)));
 
-            return HypermediaResult.Error<Unit>(HypermediaProblem.StatusCode((int)responseMessage.StatusCode));
+
         }
 
-        private async Task<(bool hasProblemDescription, ProblemDetails? problemDescription)> TryReadProblemStringAsync(HttpResponseMessage response)
+        private async Task<Option<ProblemDetails>> TryReadProblemStringAsync(
+            HttpResponseMessage response,
+            CancellationToken cancellationToken = default)
         {
             if (response.Content == null)
             {
-                return (false, null);
+                return Option.None();
             }
             try
             {
+#if NET8_0_OR_GREATER
+                var contentAsString = await response.Content.ReadAsStringAsync(cancellationToken);
+#else
+                cancellationToken.ThrowIfCancellationRequested();
                 var contentAsString = await response.Content.ReadAsStringAsync();
-                var result = this.ProblemReader.TryReadProblemString(contentAsString, out var problemDescription);
-                return (result, problemDescription);
+#endif
+                return this.ProblemReader.TryReadProblemString(contentAsString);
             }
             catch (Exception)
             {
-                return (false, null);
+                return Option.None();
             }
         }
 
-        protected override async Task<HypermediaResult<Stream>> ResponseAsStreamAsync(HttpResponseMessage responseMessage)
-        {
-            try
-            {
-                return await responseMessage.Content.ReadAsStreamAsync();
-            }
-            catch (Exception e)
-            {
-                return HypermediaResult<Stream>.Error(HypermediaProblem.Exception(e));
-            }
-        }
+        protected override async Task<HypermediaResult<Stream>> ResponseAsStreamAsync(
+            HttpResponseMessage responseMessage,
+            CancellationToken cancellationToken = default)
+            => await HypermediaResult.Try(
+                async () =>
+                {
+#if NET8_0_OR_GREATER
+                    return await responseMessage.Content.ReadAsStreamAsync(cancellationToken);
+#else
+                    cancellationToken.ThrowIfCancellationRequested();
+                    return await responseMessage.Content.ReadAsStreamAsync();
+#endif
+                },
+                HypermediaProblem.Exception);
 
         protected override HypermediaResult<Uri> GetLocation(HttpResponseMessage responseMessage)
         {
             var location = responseMessage.Headers.Location;
             if (location is null)
             {
-                return HypermediaResult.Error<Uri>(HypermediaProblem.InvalidResponse("hypermedia function did not return a result resource location."));
+                return HypermediaResult.Error(HypermediaProblem.InvalidResponse("hypermedia function did not return a result resource location."));
             }
             return HypermediaResult.Ok(location);
         }

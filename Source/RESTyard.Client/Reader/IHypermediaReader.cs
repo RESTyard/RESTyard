@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using RESTyard.Client.Hypermedia;
 using RESTyard.Client.Resolver;
@@ -14,10 +15,12 @@ namespace RESTyard.Client.Reader
 
         Task<HypermediaReaderResult<HypermediaClientObject>> ReadAsync(
             Stream contentStream,
-            IHypermediaResolver resolver);
+            IHypermediaResolver resolver,
+            CancellationToken cancellationToken = default);
 
         Task<HypermediaReaderResult<(HypermediaClientObject, string)>> ReadAndSerializeAsync(
             Stream contentStream,
-            IHypermediaResolver resolver);
+            IHypermediaResolver resolver,
+            CancellationToken cancellationToken = default);
     }
 }

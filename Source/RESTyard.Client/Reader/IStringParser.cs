@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RESTyard.Client.Reader
@@ -9,7 +10,7 @@ namespace RESTyard.Client.Reader
     {
         IToken? Parse(string contentString);
 
-        Task<IToken?> ParseAsync(Stream contentStream);
+        Task<IToken?> ParseAsync(Stream contentStream, CancellationToken cancellationToken = default);
     }
 
     public interface IToken : IEnumerable<IToken>
