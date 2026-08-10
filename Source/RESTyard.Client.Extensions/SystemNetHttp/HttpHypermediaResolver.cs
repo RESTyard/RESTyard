@@ -57,19 +57,24 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             }
 
             var request = CreateRevalidationRequest(uriToResolve, cacheEntry);
-            var webResult = await HypermediaResult.Try(() => this.httpClient.SendAsync(request, cancellationToken), HypermediaProblem.Exception);
-            return webResult.Map(response =>
-            {
-                var assumedNowAfterRequest = DateTimeOffset.Now;
-                if (response.StatusCode == HttpStatusCode.NotModified)
+            var webResult = await HypermediaResult.Try(
+                async () => await this.httpClient.SendAsync(request, cancellationToken),
+                HypermediaProblem.Exception);
+            return webResult
+                .Map(response =>
                 {
-                    this.UpdateCacheEntry(uriToResolve, cacheEntry,
-                        HttpLinkHcoCacheEntryConfiguration.FromHttpResponse(response, assumedNowAfterRequest));
-                    return CacheEntryVerificationResult<HttpResponseMessage>.CacheEntryMayBeUsed();
-                }
+                    var assumedNowAfterRequest = DateTimeOffset.Now;
+                    if (response.StatusCode == HttpStatusCode.NotModified)
+                    {
+                        this.UpdateCacheEntry(
+                            uriToResolve: uriToResolve,
+                            oldEntry: cacheEntry,
+                            newConfiguration: HttpLinkHcoCacheEntryConfiguration.FromHttpResponse(response, assumedNowAfterRequest));
+                        return CacheEntryVerificationResult<HttpResponseMessage>.CacheEntryMayBeUsed();
+                    }
 
-                return CacheEntryVerificationResult<HttpResponseMessage>.UseThisResponseInstead(response);
-            });
+                    return CacheEntryVerificationResult<HttpResponseMessage>.UseThisResponseInstead(response);
+                });
         }
 
         protected override HttpLinkHcoCacheEntryConfiguration GetCacheConfigurationFromResponse(
@@ -222,38 +227,43 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
                 return HypermediaResult.Ok(No.Thing);
             }
 
-            var (hasProblemDescription, problemDescription) = await this.TryReadProblemStringAsync(responseMessage, cancellationToken);
-            if (hasProblemDescription)
-            {
-                if (problemDescription!.Status is not null)
-                {
-                    return HypermediaResult.Error(HypermediaProblem.ProblemDetails(problemDescription));
-                }
-                var problemDetailsCopy = new ProblemDetails()
-                {
-                    Detail = problemDescription.Detail,
-                    Instance = problemDescription.Instance,
-                    Status = (int)responseMessage.StatusCode,
-                    Title = problemDescription.Title,
-                    Type = problemDescription.Type,
-                };
-                foreach (var kvp in problemDescription.Extensions)
-                {
-                    problemDetailsCopy.Extensions.Add(kvp);
-                }
-                return HypermediaResult.Error(HypermediaProblem.ProblemDetails(problemDetailsCopy));
-            }
+            var problemDescriptionOption = await this.TryReadProblemStringAsync(responseMessage, cancellationToken);
+            return HypermediaResult.Error(
+                problemDescriptionOption.Match(
+                    some: problemDescription =>
+                    {
+                        if (problemDescription.Status is not null)
+                        {
+                            return HypermediaProblem.ProblemDetails(problemDescription);
+                        }
 
-            return HypermediaResult.Error(HypermediaProblem.StatusCode((int)responseMessage.StatusCode));
+                        var problemDetailsCopy = new ProblemDetails()
+                        {
+                            Detail = problemDescription.Detail,
+                            Instance = problemDescription.Instance,
+                            Status = (int)responseMessage.StatusCode,
+                            Title = problemDescription.Title,
+                            Type = problemDescription.Type,
+                        };
+                        foreach (var kvp in problemDescription.Extensions)
+                        {
+                            problemDetailsCopy.Extensions.Add(kvp);
+                        }
+
+                        return HypermediaProblem.ProblemDetails(problemDetailsCopy);
+                    },
+                    none: () => HypermediaProblem.StatusCode((int)responseMessage.StatusCode)));
+
+
         }
 
-        private async Task<(bool hasProblemDescription, ProblemDetails? problemDescription)> TryReadProblemStringAsync(
+        private async Task<Option<ProblemDetails>> TryReadProblemStringAsync(
             HttpResponseMessage response,
             CancellationToken cancellationToken = default)
         {
             if (response.Content == null)
             {
-                return (false, null);
+                return Option.None();
             }
             try
             {
@@ -263,12 +273,11 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
                 cancellationToken.ThrowIfCancellationRequested();
                 var contentAsString = await response.Content.ReadAsStringAsync();
 #endif
-                var result = this.ProblemReader.TryReadProblemString(contentAsString, out var problemDescription);
-                return (result, problemDescription);
+                return this.ProblemReader.TryReadProblemString(contentAsString);
             }
             catch (Exception)
             {
-                return (false, null);
+                return Option.None();
             }
         }
 
