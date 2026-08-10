@@ -86,11 +86,9 @@ namespace RESTyard.Client.Extensions
                 return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Can not execute Function."));
             }
 
-            return await HypermediaResult.Try(
-                async () => await resolver
-                    .ResolveFunctionAsync<TResultType>(function.Uri, function.Method)
-                    .Bind(ResolveAsyncIfLink),
-                HypermediaProblem.Exception);
+            return await resolver
+                .ResolveFunctionAsync<TResultType>(function.Uri, function.Method)
+                .Bind(ResolveAsyncIfLink);
         }
 
         public static async Task<HypermediaResult<MandatoryHypermediaLink<TResultType>>> ExecuteAsync<TResultType, TParameters>(
@@ -130,15 +128,13 @@ namespace RESTyard.Client.Extensions
                 return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Can not execute Function."));
             }
 
-            return await HypermediaResult.Try(
-                async () => await resolver
-                    .ResolveFunctionAsync<TResultType>(
-                        function.Uri,
-                        function.Method,
-                        function.ParameterDescriptions,
-                        parameters)
-                    .Bind(ResolveAsyncIfLink),
-                HypermediaProblem.Exception);
+            return await resolver
+                .ResolveFunctionAsync<TResultType>(
+                    function.Uri,
+                    function.Method,
+                    function.ParameterDescriptions,
+                    parameters)
+                .Bind(ResolveAsyncIfLink);
         }
 
         public static async Task<HypermediaResult<Unit>> ExecuteAsync(
@@ -229,15 +225,13 @@ namespace RESTyard.Client.Extensions
                 return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Can not execute Function."));
             }
 
-            return await HypermediaResult.Try(
-                async () => await resolver
-                    .ResolveFunctionAsync<TResultType>(
-                        function.Uri,
-                        function.Method,
-                        function.ParameterDescriptions,
-                        parameters)
-                    .Bind(ResolveAsyncIfLink),
-                HypermediaProblem.Exception);
+            return await resolver
+                .ResolveFunctionAsync<TResultType>(
+                    function.Uri,
+                    function.Method,
+                    function.ParameterDescriptions,
+                    parameters)
+                .Bind(ResolveAsyncIfLink);
         }
 
         public static async Task<HypermediaResult<MandatoryHypermediaLink<TResultType>>> ExecuteAsync<TResultType, TParameters>(
@@ -278,15 +272,13 @@ namespace RESTyard.Client.Extensions
                 return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Can not execute Function."));
             }
 
-            return await HypermediaResult.Try(
-                async () => await resolver
-                    .ResolveFunctionAsync<TResultType>(
-                        function.Uri,
-                        function.Method,
-                        function.ParameterDescriptions,
-                        parameters)
-                    .Bind(ResolveAsyncIfLink),
-                HypermediaProblem.Exception);
+            return await resolver
+                .ResolveFunctionAsync<TResultType>(
+                    function.Uri,
+                    function.Method,
+                    function.ParameterDescriptions,
+                    parameters)
+                .Bind(ResolveAsyncIfLink);
         }
 
         private static Task<HypermediaResult<T>> ResolveAsyncIfLink<T>(LinkOrEntity<T> linkOrEntity)

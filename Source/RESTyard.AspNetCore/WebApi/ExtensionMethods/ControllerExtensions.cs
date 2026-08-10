@@ -41,7 +41,7 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
             return controller.Ok(new HypermediaLinkLocation(link, HttpStatusCode.Created));
         }
 
-        public static ActionResult InlineQueryResult(this ControllerBase controller, IHypermediaQueryResult queryResult, IHypermediaQuery query)
+        public static ActionResult InlineQueryResult(this ControllerBase controller, IHypermediaQueryResult queryResult)
         {
             var link = GetLocation();
             controller.HttpContext.Response.Headers.ContentLocation = link;
@@ -57,7 +57,7 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
                 var routeResolver = routeResolverFactory.CreateRouteResolver(controller.HttpContext);
                 var route = routeResolver.ObjectToRoute(queryResult);
 
-                var queryString = queryStringBuilder.CreateQueryString(query);
+                var queryString = queryStringBuilder.CreateQueryString(queryResult.Query);
                 return route.Url + (queryString ?? "");
             }
         }
