@@ -70,7 +70,7 @@ namespace RESTyard.Client.Extensions
 
             return await resolver
                 .ResolveFunctionAsync<TResultType>(function.Uri, function.Method, cancellationToken)
-                .Bind(ResolveAsyncIfLink);
+                .Bind(linkOrEntity => ResolveAsyncIfLink(linkOrEntity, cancellationToken));
         }
 
         public static async Task<HypermediaResult<MandatoryHypermediaLink<TResultType>>> ExecuteAsync<TResultType, TParameters>(
@@ -113,7 +113,7 @@ namespace RESTyard.Client.Extensions
                     function.ParameterDescriptions,
                     parameters,
                     cancellationToken)
-                .Bind(ResolveAsyncIfLink);
+                .Bind(linkOrEntity => ResolveAsyncIfLink(linkOrEntity, cancellationToken));
         }
 
         public static async Task<HypermediaResult<Unit>> ExecuteAsync(
@@ -194,7 +194,7 @@ namespace RESTyard.Client.Extensions
                     function.ParameterDescriptions,
                     parameters,
                     cancellationToken)
-                .Bind(ResolveAsyncIfLink);
+                .Bind(linkOrEntity => ResolveAsyncIfLink(linkOrEntity, cancellationToken));
         }
 
         public static async Task<HypermediaResult<MandatoryHypermediaLink<TResultType>>> ExecuteAsync<TResultType, TParameters>(
@@ -237,13 +237,15 @@ namespace RESTyard.Client.Extensions
                     function.ParameterDescriptions,
                     parameters,
                     cancellationToken)
-                .Bind(ResolveAsyncIfLink);
+                .Bind(linkOrEntity => ResolveAsyncIfLink(linkOrEntity, cancellationToken));
         }
 
-        private static Task<HypermediaResult<T>> ResolveAsyncIfLink<T>(LinkOrEntity<T> linkOrEntity)
+        private static Task<HypermediaResult<T>> ResolveAsyncIfLink<T>(
+            LinkOrEntity<T> linkOrEntity,
+            CancellationToken cancellationToken)
             where T : HypermediaClientObject
             => linkOrEntity.Match(
-                link: link => link.Value.ResolveAsync(),
+                link: link => link.Value.ResolveAsync(cancellationToken),
                 entity: entity => Task.FromResult(HypermediaResult.Ok(entity.Value)));
         
         private static HypermediaResult<MandatoryHypermediaLink<T>> SafeCastToLink<T>(LinkOrEntity<T> linkOrEntity, IHypermediaResolver resolver)
