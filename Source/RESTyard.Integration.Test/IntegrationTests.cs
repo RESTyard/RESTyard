@@ -212,7 +212,7 @@ public class IntegrationTests : IAsyncLifetime
             new HypermediaFileUploadActionParameter(
                 FileDefinitions:
                 [
-                    new(() => Task.FromResult<Stream>(new MemoryStream([5, 6, 7, 8])), "Scan", "Scan.pdf"),
+                    new(_ => Task.FromResult<Stream>(new MemoryStream([5, 6, 7, 8])), "Scan", "Scan.pdf"),
                 ]),
             this.Resolver);
         var link = uploadResult.Should().BeOk().Which;
@@ -239,7 +239,7 @@ public class IntegrationTests : IAsyncLifetime
             new HypermediaFileUploadActionParameter<UploadCarImageParameters>(
                 FileDefinitions: new List<FileDefinition>()
                 {
-                    new(() => Task.FromResult<Stream>(new MemoryStream([1, 2, 3, 4])), "Bytes", "Bytes.txt"),
+                    new(_ => Task.FromResult<Stream>(new MemoryStream([1, 2, 3, 4])), "Bytes", "Bytes.txt"),
                 },
                 new(
                     "Text",

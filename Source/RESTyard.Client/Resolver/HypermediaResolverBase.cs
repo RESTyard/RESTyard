@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FunicularSwitch;
 using RESTyard.Client.Hypermedia;
@@ -47,53 +48,60 @@ namespace RESTyard.Client.Resolver
 
         public async Task<HypermediaResult<T>> ResolveLinkAsync<T>(
             Uri uriToResolve,
-            bool forceResolve = false)
+            bool forceResolve = false,
+            CancellationToken cancellationToken = default)
             where T : HypermediaClientObject
         {
             HypermediaResult<TNetworkResponseMessage> networkResult;
             if (this.LinkHcoCache.TryGetValue(uriToResolve, out var cacheEntry))
             {
-                var verificationResult = await this.VerifyIfCacheEntryCanBeUsedAsync(uriToResolve, cacheEntry, DateTimeOffset.Now, forceResolve);
-                var cacheEntryCanBeUsed = verificationResult.Match(
-                    canBeUsed => true,
-                    canNotBeUsed => false,
-                    useThisResponseInstead => false);
+                var verificationResult = await this.VerifyIfCacheEntryCanBeUsedAsync(uriToResolve, cacheEntry, DateTimeOffset.Now, forceResolve, cancellationToken);
+                if (verificationResult.IsError)
+                {
+                    return HypermediaResult.Error(verificationResult.GetErrorOrDefault()!);
+                }
+
+                var verification = verificationResult.GetValueOrThrow();
+                var cacheEntryCanBeUsed = verification.Match(
+                    cacheEntryMayBeUsed: _ => true,
+                    cacheEntryMayNotBeUsed: _ => false,
+                    useThisResponseInstead: _ => false);
                 if (cacheEntryCanBeUsed)
                 {
                     return this.HypermediaReader.Read(cacheEntry.LinkResponseContent, this)
                         .Match(
-                            hco => HypermediaResult.Ok((T)hco),
-                            error => HypermediaResult.Error<T>(error.Match(
-                                requiredPropertyMissing => HypermediaProblem.InvalidResponse(requiredPropertyMissing.Message),
-                                invalidFormat => HypermediaProblem.InvalidResponse(invalidFormat.Message),
-                                invalidClientClass => HypermediaProblem.BadHcoDefinition(invalidClientClass.Message),
-                                exception => HypermediaProblem.Exception(exception.Exc))));
+                            ok: hco => HypermediaResult.Ok((T)hco),
+                            error: error => HypermediaResult.Error(error.Match(
+                                requiredPropertyMissing: requiredPropertyMissing => HypermediaProblem.InvalidResponse(requiredPropertyMissing.Message),
+                                invalidFormat: invalidFormat => HypermediaProblem.InvalidResponse(invalidFormat.Message),
+                                invalidClientClass: invalidClientClass => HypermediaProblem.BadHcoDefinition(invalidClientClass.Message),
+                                exception: exception => HypermediaProblem.Exception(exception.Exc))));
                 }
                 else
                 {
                     this.LinkHcoCache.Remove(uriToResolve);
                 }
 
-                networkResult = await verificationResult.Match(
-                    canBeUsed => this.ResolveAsync(uriToResolve),
-                    canNotBeUsed => this.ResolveAsync(uriToResolve),
-                    useResponse => Task.FromResult(HypermediaResult.Ok(useResponse.Response)));
+                networkResult = await verification.Match(
+                    cacheEntryMayBeUsed: _ => this.ResolveAsync(uriToResolve, cancellationToken),
+                    cacheEntryMayNotBeUsed: _ => this.ResolveAsync(uriToResolve, cancellationToken),
+                    useThisResponseInstead: useResponse => Task.FromResult(HypermediaResult.Ok(useResponse.Response)));
             }
             else
             {
-                networkResult = await this.ResolveAsync(uriToResolve);
+                networkResult = await this.ResolveAsync(uriToResolve, cancellationToken);
             }
 
             return await networkResult
-                .Bind(response => HandleLinkResponseAndAddToCacheIfCacheable<T>(uriToResolve, response));
+                .Bind(response => HandleLinkResponseAndAddToCacheIfCacheable<T>(uriToResolve, response, cancellationToken));
         }
 
-        private async Task<HypermediaResult<T>> HandleLinkResponseAndAddToCacheIfCacheable<T>(Uri uriToResolve, TNetworkResponseMessage response)
+        private async Task<HypermediaResult<T>> HandleLinkResponseAndAddToCacheIfCacheable<T>(Uri uriToResolve, TNetworkResponseMessage response, CancellationToken cancellationToken)
             where T : HypermediaClientObject
         {
             var cacheConfiguration = this.GetCacheConfigurationFromResponse(response, DateTimeOffset.Now);
             bool serializeToString = cacheConfiguration.ShouldBeAddedToCache();
-            var linkResult = await this.HandleLinkResponseAsync<T>(response, serializeToString);
+            var linkResult = await this.HandleLinkResponseAsync<T>(response, serializeToString, cancellationToken);
 
             linkResult.Match(ok =>
             {
@@ -109,11 +117,12 @@ namespace RESTyard.Client.Resolver
             return linkResult.Map(ok => ok.ResultHco);
         }
 
-        protected abstract Task<CacheEntryVerificationResult<TNetworkResponseMessage>> VerifyIfCacheEntryCanBeUsedAsync(
+        protected abstract Task<HypermediaResult<CacheEntryVerificationResult<TNetworkResponseMessage>>> VerifyIfCacheEntryCanBeUsedAsync(
             Uri uriToResolve,
             TLinkHcoCacheEntry cacheEntry,
             DateTimeOffset assumedNow,
-            bool forceResolve);
+            bool forceResolve,
+            CancellationToken cancellationToken = default);
 
         protected abstract TLinkHcoCacheEntryConfiguration GetCacheConfigurationFromResponse(
             TNetworkResponseMessage response,
@@ -125,80 +134,88 @@ namespace RESTyard.Client.Resolver
 
         public async Task<HypermediaResult<Unit>> ResolveActionAsync(
             Uri uri,
-            string method)
+            string method,
+            CancellationToken cancellationToken = default)
         {
-            return await this.SendCommandAsync(uri, method)
-                .Bind(this.HandleActionResponseAsync);
+            return await this.SendCommandAsync(uri, method, cancellationToken: cancellationToken)
+                .Bind(responseMessage => this.HandleActionResponseAsync(responseMessage, cancellationToken));
         }
 
         public async Task<HypermediaResult<Unit>> ResolveActionAsync(
             Uri uri,
             string method,
             IReadOnlyList<ParameterDescription> parameterDescriptions,
-            object? parameterObject)
+            object? parameterObject,
+            CancellationToken cancellationToken = default)
         {
-            if (parameterObject is IHypermediaFileUploadParameter fileUploadParameter)
+            return await SendCommandWithParametersAsync(uri, method, parameterDescriptions, parameterObject, cancellationToken)
+                .Bind(responseMessage => this.HandleActionResponseAsync(responseMessage, cancellationToken));
+        }
+
+        private async Task<HypermediaResult<TNetworkResponseMessage>> SendCommandWithParametersAsync(
+            Uri uri,
+            string method,
+            IReadOnlyList<ParameterDescription> parameterDescriptions,
+            object? parameterObject,
+            CancellationToken cancellationToken)
+        {
+            return parameterObject switch
             {
-                return await this.ProcessUploadParameters(parameterDescriptions, fileUploadParameter)
-                    .Bind(uploadPayload => this.SendUploadCommandAsync(uri, method, uploadPayload))
-                    .Bind(this.HandleActionResponseAsync);
-            }
-            return await this.ProcessParameters(parameterDescriptions, parameterObject)
-                .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters))
-                .Bind(this.HandleActionResponseAsync);
+                IHypermediaFileUploadParameter fileUploadParameter => await this.ProcessUploadParameters(parameterDescriptions, fileUploadParameter, cancellationToken)
+                    .Bind(uploadPayload => this.SendUploadCommandAsync(uri, method, uploadPayload, cancellationToken)),
+                _ => await this.ProcessParameters(parameterDescriptions, parameterObject)
+                    .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters, cancellationToken)),
+            };
         }
 
         public async Task<HypermediaResult<LinkOrEntity<T>>> ResolveFunctionAsync<T>(
             Uri uri,
-            string method) where T : HypermediaClientObject
+            string method,
+            CancellationToken cancellationToken = default) where T : HypermediaClientObject
         {
-            return await SendCommandAsync(uri, method)
-                .Bind(this.HandleFunctionResponseAsync<T>);
+            return await SendCommandAsync(uri, method, cancellationToken: cancellationToken)
+                .Bind(responseMessage => this.HandleFunctionResponseAsync<T>(responseMessage, cancellationToken));
         }
 
         public async Task<HypermediaResult<LinkOrEntity<T>>> ResolveFunctionAsync<T>(
             Uri uri,
             string method,
             IReadOnlyList<ParameterDescription> parameterDescriptions,
-            object? parameterObject) where T : HypermediaClientObject
+            object? parameterObject,
+            CancellationToken cancellationToken = default) where T : HypermediaClientObject
         {
-            if (parameterObject is IHypermediaFileUploadParameter fileUploadParameter)
-            {
-                return await this.ProcessUploadParameters(parameterDescriptions, fileUploadParameter)
-                    .Bind(uploadPayload => this.SendUploadCommandAsync(uri, method, uploadPayload))
-                    .Bind(this.HandleFunctionResponseAsync<T>);
-            }
-            return await this.ProcessParameters(parameterDescriptions, parameterObject)
-                .Bind(serializedParameters => this.SendCommandAsync(uri, method, serializedParameters))
-                .Bind(this.HandleFunctionResponseAsync<T>);
+            return await SendCommandWithParametersAsync(uri, method, parameterDescriptions, parameterObject, cancellationToken)
+                .Bind(responseMessage => this.HandleFunctionResponseAsync<T>(responseMessage, cancellationToken));
         }
 
         protected async Task<HypermediaResult<(T ResultHco, string HcoAsString)>> HandleLinkResponseAsync<T>(
             TNetworkResponseMessage responseMessage,
-            bool serializeToString)
+            bool serializeToString,
+            CancellationToken cancellationToken = default)
             where T : HypermediaClientObject
         {
-            return await this.EnsureRequestIsSuccessfulAsync(responseMessage)
-                .Bind(_ => this.ResponseAsStreamAsync(responseMessage))
+            return await this.EnsureRequestIsSuccessfulAsync(responseMessage, cancellationToken)
+                .Bind(_ => this.ResponseAsStreamAsync(responseMessage, cancellationToken))
                 .Bind(async hypermediaObjectSirenStream =>
                 {
                     HypermediaReaderResult<(HypermediaClientObject ResultHco, string HcoAsString)> readResult;
                     if (serializeToString)
                     {
-                        readResult =
-                            await this.HypermediaReader.ReadAndSerializeAsync(hypermediaObjectSirenStream, this);
+                        readResult = await this.HypermediaReader
+                            .ReadAndSerializeAsync(hypermediaObjectSirenStream, this, cancellationToken);
                     }
                     else
                     {
-                        readResult =
-                            await this.HypermediaReader.ReadAsync(hypermediaObjectSirenStream, this).Map(hco => (hco, string.Empty));
+                        readResult = await this.HypermediaReader
+                            .ReadAsync(hypermediaObjectSirenStream, this, cancellationToken)
+                            .Map(hco => (hco, string.Empty));
                     }
 
                     return readResult.Match(
                         ok: tuple => tuple.ResultHco is T hco
                             ? HypermediaResult.Ok((hco, tuple.HcoAsString))
-                            : HypermediaResult.Error<(T, string)>(HypermediaProblem.InvalidResponse(($"Could not retrieve result as {typeof(T).Name}."))),
-                        error => HypermediaResult.Error<(T, string)>(
+                            : HypermediaResult.Error(HypermediaProblem.InvalidResponse(($"Could not retrieve result as {typeof(T).Name}."))),
+                        error => HypermediaResult.Error(
                             error.Match(
                                 requiredPropertyMissing: rpm => HypermediaProblem.InvalidResponse(rpm.Message),
                                 invalidFormat: invalidFormat => HypermediaProblem.InvalidResponse(invalidFormat.Message),
@@ -207,18 +224,21 @@ namespace RESTyard.Client.Resolver
                 });
         }
 
-        protected async Task<HypermediaResult<Unit>> HandleActionResponseAsync(TNetworkResponseMessage responseMessage)
+        protected async Task<HypermediaResult<Unit>> HandleActionResponseAsync(
+            TNetworkResponseMessage responseMessage,
+            CancellationToken cancellationToken = default)
         {
-            return await this.EnsureRequestIsSuccessfulAsync(responseMessage);
+            return await this.EnsureRequestIsSuccessfulAsync(responseMessage, cancellationToken);
         }
 
         protected async Task<HypermediaResult<LinkOrEntity<T>>> HandleFunctionResponseAsync<T>(
-            TNetworkResponseMessage responseMessage)
+            TNetworkResponseMessage responseMessage,
+            CancellationToken cancellationToken = default)
             where T : HypermediaClientObject
         {
-            return await this.EnsureRequestIsSuccessfulAsync(responseMessage)
+            return await this.EnsureRequestIsSuccessfulAsync(responseMessage, cancellationToken)
                 .Bind(async _ => this.WasFunctionResultInlined(responseMessage, out var locationOfInlinedResult)
-                    ? await this.HandleLinkResponseAndAddToCacheIfCacheable<T>(locationOfInlinedResult, responseMessage)
+                    ? await this.HandleLinkResponseAndAddToCacheIfCacheable<T>(locationOfInlinedResult, responseMessage, cancellationToken)
                         .Map(hco => LinkOrEntity<T>.Entity(hco, locationOfInlinedResult))
                     : this.GetLocation(responseMessage)
                         .Map(location => new MandatoryHypermediaLink<T>()
@@ -233,66 +253,72 @@ namespace RESTyard.Client.Resolver
         {
             if (parameterObject is null)
             {
-                return HypermediaResult.Error<string>(
+                return HypermediaResult.Error(
                     HypermediaProblem.InvalidRequest("Parameter is described but not passed by action."));
             }
 
             return GetParameterDescription(parameterDescriptions)
-                .Map(parameterDescription => {
-                    var serializedParameters =
-                        this.ParameterSerializer.SerializeParameterObject(parameterDescription.Name, parameterObject);
-                    return serializedParameters;
-                });
+                .Map(parameterDescription => this.ParameterSerializer.SerializeParameterObject(parameterDescription.Name, parameterObject));
         }
 
         protected Task<HypermediaResult<TUploadPayload>> ProcessUploadParameters(
-            IReadOnlyList<ParameterDescription> parameterDescriptions, IHypermediaFileUploadParameter parameterObject)
+            IReadOnlyList<ParameterDescription> parameterDescriptions,
+            IHypermediaFileUploadParameter parameterObject,
+            CancellationToken cancellationToken = default)
         {
             return GetParameterDescription(parameterDescriptions)
                 .Match(
-                    parameterDescription => CreateUploadPayload(parameterObject, parameterDescription),
-                    error: _ => CreateUploadPayload(parameterObject));
+                    parameterDescription => CreateUploadPayload(parameterObject, parameterDescription, cancellationToken),
+                    error: _ => CreateUploadPayload(parameterObject, cancellationToken: cancellationToken));
         }
 
-        protected abstract Task<HypermediaResult<TUploadPayload>> CreateUploadPayload(IHypermediaFileUploadParameter parameterObject, ParameterDescription? parameterDescription = null);
+        protected abstract Task<HypermediaResult<TUploadPayload>> CreateUploadPayload(IHypermediaFileUploadParameter parameterObject, ParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default);
 
         protected static HypermediaResult<ParameterDescription> GetParameterDescription(IReadOnlyList<ParameterDescription> parameterDescriptions)
         {
             if (parameterDescriptions.Count == 0)
             {
-                return HypermediaResult<ParameterDescription>.Error(HypermediaProblem.InvalidRequest("Parameter not described."));
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Parameter not described."));
             }
 
             // todo allow more fields
             if (parameterDescriptions.Count > 1)
             {
-                return HypermediaResult<ParameterDescription>.Error(HypermediaProblem.InvalidRequest("Only one action parameter is supported."));
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Only one action parameter is supported."));
             }
 
             // todo allow more types
             var parameterDescription = parameterDescriptions.First();
             if (!parameterDescription.Type.Equals(DefaultMediaTypes.ApplicationJson) && !parameterDescription.Type.Equals(DefaultMediaTypes.MultipartFormData))
             {
-                return HypermediaResult<ParameterDescription>.Error(HypermediaProblem.InvalidRequest("Only one action type 'application/json' is supported."));
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Only one action type 'application/json' is supported."));
             }
             return HypermediaResult.Ok(parameterDescription);
         }
 
-        protected abstract Task<HypermediaResult<TNetworkResponseMessage>> ResolveAsync(Uri uriToResolve);
+        protected abstract Task<HypermediaResult<TNetworkResponseMessage>> ResolveAsync(
+            Uri uriToResolve,
+            CancellationToken cancellationToken = default);
 
         protected abstract Task<HypermediaResult<TNetworkResponseMessage>> SendCommandAsync(
             Uri uri,
             string method,
-            string? payload = null);
+            string? payload = null,
+            CancellationToken cancellationToken = default);
 
         protected abstract Task<HypermediaResult<TNetworkResponseMessage>> SendUploadCommandAsync(
             Uri uri,
             string method,
-            TUploadPayload payload);
+            TUploadPayload payload,
+            CancellationToken cancellationToken = default);
 
-        protected abstract Task<HypermediaResult<Unit>> EnsureRequestIsSuccessfulAsync(TNetworkResponseMessage responseMessage);
+        protected abstract Task<HypermediaResult<Unit>> EnsureRequestIsSuccessfulAsync(
+            TNetworkResponseMessage responseMessage,
+            CancellationToken cancellationToken = default);
 
-        protected abstract Task<HypermediaResult<Stream>> ResponseAsStreamAsync(TNetworkResponseMessage responseMessage);
+        protected abstract Task<HypermediaResult<Stream>> ResponseAsStreamAsync(
+            TNetworkResponseMessage responseMessage,
+            CancellationToken cancellationToken = default);
 
         protected abstract HypermediaResult<Uri> GetLocation(TNetworkResponseMessage responseMessage);
         

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,14 +20,13 @@ namespace RESTyard.Client.Extensions.NewtonsoftJson
             return JTokenWrapper.Wrap(jObject);
         }
 
-        public async Task<IToken?> ParseAsync(Stream contentStream)
+        public async Task<IToken?> ParseAsync(Stream contentStream, CancellationToken cancellationToken = default)
         {
-            using (var textReader = new StreamReader(contentStream))
-            using (var jsonReader = new JsonTextReader(textReader))
-            {
-                var jObject = await JObject.LoadAsync(jsonReader);
-                return JTokenWrapper.Wrap(jObject);
-            }
+            using var textReader = new StreamReader(contentStream);
+            using var jsonReader = new JsonTextReader(textReader);
+            
+            var jObject = await JObject.LoadAsync(jsonReader, cancellationToken);
+            return JTokenWrapper.Wrap(jObject);
         }
 
         private class JTokenWrapper : IToken
