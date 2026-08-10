@@ -15,18 +15,10 @@ namespace RESTyard.Client.Extensions
         {
             if (link.Uri == null)
             {
-                return HypermediaResult.Error<THco>(HypermediaProblem.InvalidRequest("Link Uri is null"));
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Link Uri is null"));
             }
 
-            try
-            {
-                var result = await link.Resolver.ResolveLinkAsync<THco>(link.Uri, cancellationToken: cancellationToken);
-                return result;
-            }
-            catch (Exception e)
-            {
-                return HypermediaResult.Error<THco>(HypermediaProblem.Exception(e));
-            }
+            return await link.Resolver.ResolveLinkAsync<THco>(link.Uri, cancellationToken: cancellationToken);
         }
     }
 }
