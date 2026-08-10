@@ -17,18 +17,10 @@ namespace RESTyard.Client.Extensions
         {
             if (!action.CanExecute)
             {
-                return HypermediaResult.Error<Unit>(HypermediaProblem.InvalidRequest("Can not execute Action."));
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Can not execute Action."));
             }
 
-            try
-            {
-                var result = await resolver.ResolveActionAsync(action.Uri, action.Method, cancellationToken);
-                return result;
-            }
-            catch (Exception e)
-            {
-                return HypermediaResult.Error<Unit>(HypermediaProblem.Exception(e));
-            }
+            return await resolver.ResolveActionAsync(action.Uri, action.Method, cancellationToken);
         }
 
         public static async Task<HypermediaResult<Unit>> ExecuteAsync<TParameters>(
@@ -39,23 +31,15 @@ namespace RESTyard.Client.Extensions
         {
             if (!action.CanExecute)
             {
-                return HypermediaResult.Error<Unit>(HypermediaProblem.InvalidRequest("Can not execute Action."));
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Can not execute Action."));
             }
 
-            try
-            {
-                var result = await resolver.ResolveActionAsync(
-                    action.Uri,
-                    action.Method,
-                    action.ParameterDescriptions,
-                    parameters,
-                    cancellationToken);
-                return result;
-            }
-            catch (Exception e)
-            {
-                return HypermediaResult.Error<Unit>(HypermediaProblem.Exception(e));
-            }
+            return await resolver.ResolveActionAsync(
+                action.Uri,
+                action.Method,
+                action.ParameterDescriptions,
+                parameters,
+                cancellationToken);
         }
 
         public static async Task<HypermediaResult<MandatoryHypermediaLink<TResultType>>> ExecuteAsync<TResultType>(
@@ -66,18 +50,10 @@ namespace RESTyard.Client.Extensions
         {
             if (!function.CanExecute)
             {
-                return HypermediaResult.Error<MandatoryHypermediaLink<TResultType>>(HypermediaProblem.InvalidRequest("Can not execute Function."));
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Can not execute Function."));
             }
 
-            try
-            {
-                var result = await resolver.ResolveFunctionAsync<TResultType>(function.Uri, function.Method, cancellationToken);
-                return result;
-            }
-            catch (Exception e)
-            {
-                return HypermediaResult.Error<MandatoryHypermediaLink<TResultType>>(HypermediaProblem.Exception(e));
-            }
+            return await resolver.ResolveFunctionAsync<TResultType>(function.Uri, function.Method, cancellationToken);
         }
 
         public static async Task<HypermediaResult<MandatoryHypermediaLink<TResultType>>> ExecuteAsync<TResultType, TParameters>(
@@ -89,23 +65,15 @@ namespace RESTyard.Client.Extensions
         {
             if (!function.CanExecute)
             {
-                return HypermediaResult.Error<MandatoryHypermediaLink<TResultType>>(HypermediaProblem.InvalidRequest("Can not execute Function."));
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Can not execute Function."));
             }
 
-            try
-            {
-                var result = await resolver.ResolveFunctionAsync<TResultType>(
-                    function.Uri,
-                    function.Method,
-                    function.ParameterDescriptions,
-                    parameters,
-                    cancellationToken);
-                return result;
-            }
-            catch (Exception e)
-            {
-                return HypermediaResult.Error<MandatoryHypermediaLink<TResultType>>(HypermediaProblem.Exception(e));
-            }
+            return await resolver.ResolveFunctionAsync<TResultType>(
+                function.Uri,
+                function.Method,
+                function.ParameterDescriptions,
+                parameters,
+                cancellationToken);
         }
 
         public static async Task<HypermediaResult<Unit>> ExecuteAsync(
@@ -116,23 +84,15 @@ namespace RESTyard.Client.Extensions
         {
             if (!action.CanExecute)
             {
-                return HypermediaResult.Error<Unit>(HypermediaProblem.InvalidRequest("Can not execute Action."));
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Can not execute Action."));
             }
 
-            try
-            {
-                var result = await resolver.ResolveActionAsync(
-                    action.Uri,
-                    action.Method,
-                    action.ParameterDescriptions,
-                    parameters,
-                    cancellationToken);
-                return result;
-            }
-            catch (Exception e)
-            {
-                return HypermediaResult.Error<Unit>(HypermediaProblem.Exception(e));
-            }
+            return await resolver.ResolveActionAsync(
+                action.Uri,
+                action.Method,
+                action.ParameterDescriptions,
+                parameters,
+                cancellationToken);
         }
         
         public static async Task<HypermediaResult<Unit>> ExecuteAsync<TParameters>(
@@ -143,23 +103,15 @@ namespace RESTyard.Client.Extensions
         {
             if (!action.CanExecute)
             {
-                return HypermediaResult.Error<Unit>(HypermediaProblem.InvalidRequest("Can not execute Action."));
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Can not execute Action."));
             }
 
-            try
-            {
-                var result = await resolver.ResolveActionAsync(
-                    action.Uri,
-                    action.Method,
-                    action.ParameterDescriptions,
-                    parameters,
-                    cancellationToken);
-                return result;
-            }
-            catch (Exception e)
-            {
-                return HypermediaResult.Error<Unit>(HypermediaProblem.Exception(e));
-            }
+            return await resolver.ResolveActionAsync(
+                action.Uri,
+                action.Method,
+                action.ParameterDescriptions,
+                parameters,
+                cancellationToken);
         }
 
         public static async Task<HypermediaResult<MandatoryHypermediaLink<TResultType>>> ExecuteAsync<TResultType>(
@@ -171,23 +123,15 @@ namespace RESTyard.Client.Extensions
         {
             if (!function.CanExecute)
             {
-                return HypermediaResult.Error<MandatoryHypermediaLink<TResultType>>(HypermediaProblem.InvalidRequest("Can not execute Function."));
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Can not execute Function."));
             }
 
-            try
-            {
-                var result = await resolver.ResolveFunctionAsync<TResultType>(
-                    function.Uri,
-                    function.Method,
-                    function.ParameterDescriptions,
-                    parameters,
-                    cancellationToken);
-                return result;
-            }
-            catch (Exception e)
-            {
-                return HypermediaResult.Error<MandatoryHypermediaLink<TResultType>>(HypermediaProblem.Exception(e));
-            }
+            return await resolver.ResolveFunctionAsync<TResultType>(
+                function.Uri,
+                function.Method,
+                function.ParameterDescriptions,
+                parameters,
+                cancellationToken);
         }
 
         public static async Task<HypermediaResult<MandatoryHypermediaLink<TResultType>>> ExecuteAsync<TResultType, TParameters>(
@@ -199,23 +143,15 @@ namespace RESTyard.Client.Extensions
         {
             if (!function.CanExecute)
             {
-                return HypermediaResult.Error<MandatoryHypermediaLink<TResultType>>(HypermediaProblem.InvalidRequest("Can not execute Function."));
+                return HypermediaResult.Error(HypermediaProblem.InvalidRequest("Can not execute Function."));
             }
 
-            try
-            {
-                var result = await resolver.ResolveFunctionAsync<TResultType>(
-                    function.Uri,
-                    function.Method,
-                    function.ParameterDescriptions,
-                    parameters,
-                    cancellationToken);
-                return result;
-            }
-            catch (Exception e)
-            {
-                return HypermediaResult.Error<MandatoryHypermediaLink<TResultType>>(HypermediaProblem.Exception(e));
-            }
+            return await resolver.ResolveFunctionAsync<TResultType>(
+                function.Uri,
+                function.Method,
+                function.ParameterDescriptions,
+                parameters,
+                cancellationToken);
         }
     }
 }
