@@ -54,7 +54,7 @@ namespace RESTyard.Client.Extensions
             }
 
             return await resolver.ResolveFunctionAsync<TResultType>(function.Uri, function.Method, cancellationToken)
-                .Bind(linkOrEntity => SafeCastToLink(linkOrEntity, resolver));
+                .Map(linkOrEntity => SafeCastToLink(linkOrEntity, resolver));
         }
 
         public static async Task<HypermediaResult<TResultType>> ExecuteAndResolveAsync<TResultType>(
@@ -91,7 +91,7 @@ namespace RESTyard.Client.Extensions
                 function.ParameterDescriptions,
                 parameters,
                 cancellationToken)
-                .Bind(linkOrEntity => SafeCastToLink(linkOrEntity, resolver));
+                .Map(linkOrEntity => SafeCastToLink(linkOrEntity, resolver));
         }
 
         public static async Task<HypermediaResult<TResultType>> ExecuteAndResolveAsync<TResultType, TParameters>(
@@ -172,7 +172,7 @@ namespace RESTyard.Client.Extensions
                 function.ParameterDescriptions,
                 parameters,
                 cancellationToken)
-                .Bind(linkOrEntity => SafeCastToLink(linkOrEntity, resolver));
+                .Map(linkOrEntity => SafeCastToLink(linkOrEntity, resolver));
         }
 
         public static async Task<HypermediaResult<TResultType>> ExecuteAndResolveAsync<TResultType>(
@@ -215,7 +215,7 @@ namespace RESTyard.Client.Extensions
                 function.ParameterDescriptions,
                 parameters,
                 cancellationToken)
-                .Bind(linkOrEntity => SafeCastToLink(linkOrEntity, resolver));
+                .Map(linkOrEntity => SafeCastToLink(linkOrEntity, resolver));
         }
 
         public static async Task<HypermediaResult<TResultType>> ExecuteAndResolveAsync<TResultType, TParameters>(
@@ -248,14 +248,14 @@ namespace RESTyard.Client.Extensions
                 link: link => link.Value.ResolveAsync(cancellationToken),
                 entity: entity => Task.FromResult(HypermediaResult.Ok(entity.Value)));
         
-        private static HypermediaResult<MandatoryHypermediaLink<T>> SafeCastToLink<T>(LinkOrEntity<T> linkOrEntity, IHypermediaResolver resolver)
+        private static MandatoryHypermediaLink<T> SafeCastToLink<T>(LinkOrEntity<T> linkOrEntity, IHypermediaResolver resolver)
             where T : HypermediaClientObject
             => linkOrEntity.Match(
-                link: link => HypermediaResult.Ok(link.Value),
-                entity: entity => HypermediaResult.Ok(new MandatoryHypermediaLink<T>()
+                link: link => link.Value,
+                entity: entity => new MandatoryHypermediaLink<T>()
                 {
                     Uri = entity.Location,
                     Resolver = resolver,
-                }));
+                });
     }
 }
