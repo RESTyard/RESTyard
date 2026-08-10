@@ -232,25 +232,8 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
                 problemDescriptionOption.Match(
                     some: problemDescription =>
                     {
-                        if (problemDescription.Status is not null)
-                        {
-                            return HypermediaProblem.ProblemDetails(problemDescription);
-                        }
-
-                        var problemDetailsCopy = new ProblemDetails()
-                        {
-                            Detail = problemDescription.Detail,
-                            Instance = problemDescription.Instance,
-                            Status = (int)responseMessage.StatusCode,
-                            Title = problemDescription.Title,
-                            Type = problemDescription.Type,
-                        };
-                        foreach (var kvp in problemDescription.Extensions)
-                        {
-                            problemDetailsCopy.Extensions.Add(kvp);
-                        }
-
-                        return HypermediaProblem.ProblemDetails(problemDetailsCopy);
+                        problemDescription.Status ??= (int)responseMessage.StatusCode;
+                        return HypermediaProblem.ProblemDetails(problemDescription);
                     },
                     none: () => HypermediaProblem.StatusCode((int)responseMessage.StatusCode)));
 
