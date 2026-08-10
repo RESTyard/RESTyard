@@ -93,7 +93,7 @@ namespace CarShack.Controllers.Customers
             
             // Will return the result inline
             var result = await DoQuery(query);
-            return this.InlineQueryResult(result, query);
+            return this.InlineQueryResult(result);
         }
 
         [HttpPost("CreateCustomer"), HypermediaActionEndpoint<HypermediaCustomersRootHto>(nameof(HypermediaCustomersRootHto.CreateCustomer))]
