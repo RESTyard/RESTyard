@@ -133,7 +133,8 @@ public class GeneratorTests
     {
         await RunGeneratorAsync(
             "server/csharp/v5",
-            outputFile: "server_v5.cs");
+            outputFile: "server_v5.cs",
+            includeNamespaces: ["HypermediaQueryResult = RESTyard.Generator.Test.Output.HypermediaQueryResult_V5_0"]);
 
         await VerifyExtern("server_v5.cs", outputSuffix: "V5");
     }

@@ -1,22 +1,26 @@
-﻿@inherits RazorTemplateBase
+﻿@using FunicularSwitch
+@inherits RazorTemplateBase
 
 @{
     var typeName = $"{DocumentType.name}Hto";
     var selfLinkType = $"ILink<{typeName}>";
-    var baseType = string.IsNullOrEmpty(DocumentType.parentDocument)
-        ? (DocumentType.isQueryResult
-            ? "HypermediaQueryResult"
-            : Version switch {
-                { Major: 4 } => "HypermediaObject",
-                _ => "IHypermediaObject"})
-        : DocumentType.parentDocument + "Hto";
-    var parentHasSelfLink = !string.IsNullOrEmpty(DocumentType.parentDocument) || (Version <= new Version(5, 0) && DocumentType.isQueryResult);
+    var baseType = DocumentType.parentDocument.NoneIfEmpty()
+        .Map(p => p + "Hto")
+        .GetValueOrDefault(() => DocumentType.isQueryResult
+            ? (Version.HypermediaQueryResultParentExists() ? "HypermediaQueryResult" : "IHypermediaQueryResult")
+            : (Version.HypermediaObjectParentExists() ? "HypermediaObject" : "IHypermediaObject"));
+    var parentHasSelfLink = !string.IsNullOrEmpty(DocumentType.parentDocument) || (DocumentType.isQueryResult && Version.HypermediaQueryResultParentExists());
     var classes = string.Join(", ", DocumentType.Classifications.Select(c => $"\"{c.@class}\""));
     CheckProperties(DocumentType.name, DocumentType.Properties);
 }
 
 <Attribute>HypermediaObject(Title = "@DocumentType.title", Classes = new string[] { @classes })</Attribute>
 <Class Name="@typeName" Inherits="@baseType">
+    @if (DocumentType.isQueryResult && !Version.HypermediaQueryResultParentExists())
+    {
+        <Attribute>FormatterIgnoreHypermediaProperty</Attribute>
+        <Property Schema="Schema" PropertyType="@(new PropertyType() { mandatory = true, name = "Query", type = "IHypermediaQuery" })" />
+    }
     @foreach (var property in DocumentType.Properties)
     {
         <Property Schema="@Schema" PropertyType="@property"/>
@@ -32,10 +36,10 @@
     @if (DocumentType.hasSelfLink)
     {
         <Attribute>Relations([DefaultHypermediaRelations.Self])</Attribute>
-        <PropertyStatement TypeName="@selfLinkType" PropertyName="Self" HasNewKeyword="@parentHasSelfLink" />
+        <PropertyStatement TypeName="@selfLinkType" PropertyName="Self" HasNewKeyword="@parentHasSelfLink"/>
     }
     <OperationProperties Schema="@Schema" List="@DocumentType.Operations"/>
-    <Constructor Schema="@Schema" Document="@DocumentType" Version="@Version" />
+    <Constructor Schema="@Schema" Document="@DocumentType" Version="@Version"/>
     <KeyRecord Schema="@Schema" Document="@DocumentType"/>
     <OperationClasses Schema="@Schema" Document="@DocumentType"/>
 </Class>

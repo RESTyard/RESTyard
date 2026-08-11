@@ -118,13 +118,16 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
                 /* lang=c# */
                 """
                 [HypermediaObject(Classes = ["Query"])]
-                public class QueryHto : HypermediaQueryResult
+                public class QueryHto : IHypermediaQueryResult
                 {
+                    public IHypermediaQuery Query { get; }
+                    
                     [Key("id")]
                     public int Id { get; set; }
                     
-                    public QueryHto(IHypermediaQuery query) : base(query)
+                    public QueryHto(IHypermediaQuery query)
                     {
+                        this.Query = query;
                     }
                 }
                 

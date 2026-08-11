@@ -322,8 +322,11 @@ public partial class CustomerPurchaseHto : IHypermediaObject
 }
 
 [HypermediaObject(Title = "", Classes = new string[] { "CustomerPurchaseHistory" })]
-public partial class CustomerPurchaseHistoryHto : HypermediaQueryResult
+public partial class CustomerPurchaseHistoryHto : IHypermediaQueryResult
 {
+    [FormatterIgnoreHypermediaProperty]
+    public IHypermediaQuery Query { get; set; }
+
     [Key("customerId")]
     [FormatterIgnoreHypermediaProperty]
     public int? CustomerId { get; set; }
@@ -334,10 +337,11 @@ public partial class CustomerPurchaseHistoryHto : HypermediaQueryResult
     [Relations([DefaultHypermediaRelations.Self])]
     public ILink<CustomerPurchaseHistoryHto> Self { get; set; }
 
-    public CustomerPurchaseHistoryHto(int? customerId, IEnumerable<CustomerPurchaseHto> purchases, IHypermediaQuery query) : base(query)
+    public CustomerPurchaseHistoryHto(int? customerId, IEnumerable<CustomerPurchaseHto> purchases, IHypermediaQuery query)
     {
         this.CustomerId = customerId;
         this.Purchases = purchases.Select(x => EmbeddedEntity.Embed<CustomerPurchaseHto>(x)).ToList();
+        this.Query = query;
         this.Self = Link.To(this);
     }
 
@@ -432,8 +436,10 @@ public partial class HypermediaCustomerHto : IHypermediaObject
 }
 
 [HypermediaObject(Title = "Query result on Customer", Classes = new string[] { "CustomersQueryResult" })]
-public partial class HypermediaCustomerQueryResultHto : HypermediaQueryResult
+public partial class HypermediaCustomerQueryResultHto : IHypermediaQueryResult
 {
+    [FormatterIgnoreHypermediaProperty]
+    public IHypermediaQuery Query { get; set; }
     public int? TotalEntities { get; set; }
     public int? CurrentEntitiesCount { get; set; }
 
@@ -455,7 +461,7 @@ public partial class HypermediaCustomerQueryResultHto : HypermediaQueryResult
     [Relations([DefaultHypermediaRelations.Self])]
     public ILink<HypermediaCustomerQueryResultHto> Self { get; set; }
 
-    public HypermediaCustomerQueryResultHto(int? totalEntities, int? currentEntitiesCount, IEnumerable<HypermediaCustomerHto> customers, Option<IHypermediaQuery> nextQuery, Option<IHypermediaQuery> previousQuery, Option<IHypermediaQuery> lastQuery, Option<IHypermediaQuery> allQuery, IHypermediaQuery query) : base(query)
+    public HypermediaCustomerQueryResultHto(int? totalEntities, int? currentEntitiesCount, IEnumerable<HypermediaCustomerHto> customers, Option<IHypermediaQuery> nextQuery, Option<IHypermediaQuery> previousQuery, Option<IHypermediaQuery> lastQuery, Option<IHypermediaQuery> allQuery, IHypermediaQuery query)
     {
         this.TotalEntities = totalEntities;
         this.CurrentEntitiesCount = currentEntitiesCount;
@@ -464,6 +470,7 @@ public partial class HypermediaCustomerQueryResultHto : HypermediaQueryResult
         this.Previous = previousQuery.Map(some => Link.ByQuery<HypermediaCustomerQueryResultHto>(some)).GetValueOrDefault();
         this.Last = lastQuery.Map(some => Link.ByQuery<HypermediaCustomerQueryResultHto>(some)).GetValueOrDefault();
         this.All = allQuery.Map(some => Link.ByQuery<HypermediaCustomerQueryResultHto>(some)).GetValueOrDefault();
+        this.Query = query;
         this.Self = Link.To(this);
     }
 }

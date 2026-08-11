@@ -192,8 +192,11 @@ public partial class NoSelfLinkHto : IHypermediaObject
 }
 
 [HypermediaObject(Title = "", Classes = new string[] { })]
-public partial class QueryHto : HypermediaQueryResult
+public partial class QueryHto : IHypermediaQueryResult
 {
+    [FormatterIgnoreHypermediaProperty]
+    public IHypermediaQuery Query { get; set; }
+
     [Key("normalKey")]
     public int? NormalKey { get; set; }
 
@@ -204,11 +207,12 @@ public partial class QueryHto : HypermediaQueryResult
     [Relations([DefaultHypermediaRelations.Self])]
     public ILink<QueryHto> Self { get; set; }
 
-    public QueryHto(int? normalKey, string? queryKey, double? notAKey, IHypermediaQuery query) : base(query)
+    public QueryHto(int? normalKey, string? queryKey, double? notAKey, IHypermediaQuery query)
     {
         this.NormalKey = normalKey;
         this.QueryKey = queryKey;
         this.NotAKey = notAKey;
+        this.Query = query;
         this.Self = Link.To(this);
     }
 
