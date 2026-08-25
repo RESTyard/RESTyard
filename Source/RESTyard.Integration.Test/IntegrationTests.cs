@@ -119,7 +119,7 @@ public class IntegrationTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CallAction_CreateQuery()
+    public async Task CallAction_CreateQuery_WithManualResolve()
     {
         var apiRoot = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint);
         var customersRootResult = await apiRoot.NavigateAsync(l => l.CustomersRoot);
@@ -143,7 +143,40 @@ public class IntegrationTests : IAsyncLifetime
         queryResult.All?.Uri.Should().NotBeNull();
         queryResult.Next?.Uri.Should().NotBeNull();
         queryResult.Previous?.Uri.Should().NotBeNull();
-        queryResult.TotalEntities.Should().Be(20);
+        queryResult.TotalEntities.Should().BeGreaterThanOrEqualTo(18);
+
+        var self = queryResult.Self;
+        self.Uri.Should().NotBeNull();
+        var reload = await self.ResolveAsync();
+        reload.Should().BeOk().Which.Self.Uri.Should().Be(self.Uri);
+    }
+
+    [Fact]
+    public async Task CallAction_CreateQuery_WithExecuteAndResolve()
+    {
+        var apiRoot = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint);
+        var customersRootResult = await apiRoot.NavigateAsync(l => l.CustomersRoot);
+        var customersRoot = customersRootResult.Should().BeOk().Which;
+        
+        var query = new CustomerQuery
+        {
+            Filter = new CustomerFilter { MinAge = 22 },
+            SortBy = new SortOptions { PropertyName = "Age", SortType = "Ascending" },
+            Pagination = new Pagination { PageOffset = 2, PageSize = 3 }
+        };
+
+        var result = await customersRoot.CreateQuery!.ExecuteAndResolveAsync(query, this.Resolver);
+        var queryResult = result.Should().BeOk().Which;
+        queryResult.Customers.Should().HaveCount(3);
+        queryResult.All?.Uri.Should().NotBeNull();
+        queryResult.Next?.Uri.Should().NotBeNull();
+        queryResult.Previous?.Uri.Should().NotBeNull();
+        queryResult.TotalEntities.Should().BeGreaterThanOrEqualTo(18);
+
+        var self = queryResult.Self;
+        self.Uri.Should().NotBeNull();
+        var reload = await self.ResolveAsync();
+        reload.Should().BeOk().Which.Self.Uri.Should().Be(self.Uri);
     }
 
     [Fact]

@@ -45,7 +45,8 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
                               && (HttpMethods.IsPost(httpMethod)
                                   || HttpMethods.IsPut(httpMethod)
                                   || HttpMethods.IsPatch(httpMethod)
-                                  || HttpMethods.IsDelete(httpMethod));
+                                  || HttpMethods.IsDelete(httpMethod)
+                                  || HttpMethods.IsQuery(httpMethod));
                 if (!isValid)
                 {
                     throw new ArgumentOutOfRangeException(nameof(apiDescription.HttpMethod),
@@ -87,7 +88,7 @@ namespace RESTyard.AspNetCore.WebApi.RouteResolver
         {
             if (hmoEndpoint.RouteKeyProducerType != null)
             {
-                if (typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(hmoEndpoint.RouteType))
+                if (typeof(IHypermediaQueryResult).GetTypeInfo().IsAssignableFrom(hmoEndpoint.RouteType))
                 {
                     throw new RouteRegisterException(
                         $"Routes to Query's may not require a key '{hmoEndpoint.RouteType}'. Queries should not be handled on a Entity.");

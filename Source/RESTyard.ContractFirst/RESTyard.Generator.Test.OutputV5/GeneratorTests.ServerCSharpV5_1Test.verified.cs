@@ -12,10 +12,9 @@ using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 using RESTyard.Relations;
-using HypermediaQueryResult = RESTyard.Generator.Test.Output.HypermediaQueryResult_V5_0;
 using RESTyard.Generator.Test.Output;
 
-namespace server._csharp._v5;
+namespace server._csharp._v5._1;
 public static class MimeTypes
 {
     public const string APPLICATION_JSON = "application/json";
@@ -193,8 +192,11 @@ public partial class NoSelfLinkHto : IHypermediaObject
 }
 
 [HypermediaObject(Title = "", Classes = new string[] { })]
-public partial class QueryHto : HypermediaQueryResult
+public partial class QueryHto : IHypermediaQueryResult
 {
+    [FormatterIgnoreHypermediaProperty]
+    public IHypermediaQuery Query { get; set; }
+
     [Key("normalKey")]
     public int? NormalKey { get; set; }
 
@@ -203,13 +205,14 @@ public partial class QueryHto : HypermediaQueryResult
     public double? NotAKey { get; set; }
 
     [Relations([DefaultHypermediaRelations.Self])]
-    public new ILink<QueryHto> Self { get; set; }
+    public ILink<QueryHto> Self { get; set; }
 
-    public QueryHto(int? normalKey, string? queryKey, double? notAKey, IHypermediaQuery query) : base(query)
+    public QueryHto(int? normalKey, string? queryKey, double? notAKey, IHypermediaQuery query)
     {
         this.NormalKey = normalKey;
         this.QueryKey = queryKey;
         this.NotAKey = notAKey;
+        this.Query = query;
         this.Self = Link.To(this);
     }
 

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -289,6 +291,23 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
             return HypermediaResult.Ok(location);
         }
 
+        protected override bool WasFunctionResultInlined(HttpResponseMessage responseMessage, [NotNullWhen(true)] out Uri? locationOfInlinedResult)
+        {
+            if (responseMessage.StatusCode is HttpStatusCode.OK
+                && responseMessage.Headers.TryGetValues("Content-Location", out var values))
+            {
+                var value = values.FirstOrDefault();
+                if (value is not null)
+                {
+                    locationOfInlinedResult = new Uri(value);
+                    return true;
+                }
+            }
+
+            locationOfInlinedResult = null;
+            return false;
+        }
+
         private static HttpMethod GetHttpMethod(string method)
         {
             switch (method.ToUpperInvariant())
@@ -309,6 +328,8 @@ namespace RESTyard.Client.Extensions.SystemNetHttp
                     return HttpMethod.Trace;
                 case "PATCH":
                     return new HttpMethod("PATCH");
+                case "QUERY":
+                    return new HttpMethod("QUERY");
                 default:
                     throw new Exception($"Unknown method: '{method}'");
             }

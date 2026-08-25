@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.Util.Repository;
@@ -19,7 +22,9 @@ namespace CarShack.Controllers.Customers
         private readonly HypermediaCustomersRootHto customersRoot;
         private readonly ICustomerRepository customerRepository;
 
-        public CustomersRootController(HypermediaCustomersRootHto customersRoot, ICustomerRepository customerRepository)
+        public CustomersRootController(
+            HypermediaCustomersRootHto customersRoot,
+            ICustomerRepository customerRepository)
         {
             this.customersRoot = customersRoot;
             this.customerRepository = customerRepository;
@@ -42,6 +47,13 @@ namespace CarShack.Controllers.Customers
                 return this.Problem(ProblemJsonBuilder.CreateBadParameters());
             }
 
+            var result = await DoQuery(query);
+
+            return Ok(result);
+        }
+
+        private async Task<HypermediaCustomerQueryResultHto> DoQuery(CustomerQuery query)
+        {
             var queryResult = await customerRepository.QueryAsync(query).ConfigureAwait(false);
             var resultReferences = new List<HypermediaCustomerHto>();
             foreach (var customer in queryResult.Entities)
@@ -59,15 +71,15 @@ namespace CarShack.Controllers.Customers
                 queries.last.Map(IHypermediaQuery (some) => some),
                 queries.all.Map(IHypermediaQuery (some) => some),
                 query);
-           
-            return Ok(result);
+            return result;
         }
+
 #endregion
 
 #region Actions
         // Provides a link to the result Query.
-        [HttpPost("Queries"), HypermediaActionEndpoint<HypermediaCustomersRootHto>(nameof(HypermediaCustomersRootHto.CreateQuery))]
-        public ActionResult NewQueryAction(CustomerQuery query)
+        [HttpQuery("Queries"), HypermediaActionEndpoint<HypermediaCustomersRootHto>(nameof(HypermediaCustomersRootHto.CreateQuery))]
+        public async Task<ActionResult> NewQueryAction(CustomerQuery query)
         {
             if (query == null)
             {
@@ -78,9 +90,10 @@ namespace CarShack.Controllers.Customers
             {
                 return this.CanNotExecute();
             }
-
-            // Will create a Location header with a URI to the result.
-            return this.Created(Link.ByQuery<HypermediaCustomerQueryResultHto>(query));
+            
+            // Will return the result inline
+            var result = await DoQuery(query);
+            return this.InlineQueryResult(result);
         }
 
         [HttpPost("CreateCustomer"), HypermediaActionEndpoint<HypermediaCustomersRootHto>(nameof(HypermediaCustomersRootHto.CreateCustomer))]
@@ -105,5 +118,21 @@ namespace CarShack.Controllers.Customers
             return customer.ToHto();
         }
 #endregion
+    }
+
+    // TODO: use built-in attribute when it becomes available.
+    public class HttpQueryAttribute : HttpMethodAttribute
+    {
+        private static readonly IEnumerable<string> _supportedMethods = ["QUERY"];
+
+        public HttpQueryAttribute() : base(_supportedMethods)
+        {
+        }
+
+        public HttpQueryAttribute([StringSyntax("Route")] string template)
+            : base(_supportedMethods, template)
+        {
+            ArgumentNullException.ThrowIfNull(template);
+        }
     }
 }

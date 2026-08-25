@@ -37,13 +37,13 @@ namespace RESTyard.Client.Resolver
             object? parameterObject,
             CancellationToken cancellationToken = default);
 
-        Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(
+        Task<HypermediaResult<LinkOrEntity<T>>> ResolveFunctionAsync<T>(
             Uri uri,
             string method,
             CancellationToken cancellationToken = default)
             where T : HypermediaClientObject;
 
-        Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(
+        Task<HypermediaResult<LinkOrEntity<T>>> ResolveFunctionAsync<T>(
             Uri uri,
             string method,
             IReadOnlyList<ParameterDescription> parameterDescriptions,

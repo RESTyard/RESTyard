@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -92,25 +93,28 @@ namespace RESTyard.Client.Resolver
             }
 
             return await networkResult
-                .Bind(async response =>
+                .Bind(response => HandleLinkResponseAndAddToCacheIfCacheable<T>(uriToResolve, response, cancellationToken));
+        }
+
+        private async Task<HypermediaResult<T>> HandleLinkResponseAndAddToCacheIfCacheable<T>(Uri uriToResolve, TNetworkResponseMessage response, CancellationToken cancellationToken)
+            where T : HypermediaClientObject
+        {
+            var cacheConfiguration = this.GetCacheConfigurationFromResponse(response, DateTimeOffset.Now);
+            bool serializeToString = cacheConfiguration.ShouldBeAddedToCache();
+            var linkResult = await this.HandleLinkResponseAsync<T>(response, serializeToString, cancellationToken);
+
+            linkResult.Match(ok =>
+            {
+                var hcoAsString = ok.HcoAsString;
+                if (cacheConfiguration.ShouldBeAddedToCache()
+                    && !string.IsNullOrEmpty(hcoAsString))
                 {
-                    var cacheConfiguration = this.GetCacheConfigurationFromResponse(response, DateTimeOffset.Now);
-                    bool serializeToString = cacheConfiguration.ShouldBeAddedToCache();
-                    var linkResult = await this.HandleLinkResponseAsync<T>(response, serializeToString, cancellationToken);
+                    var entry = GetCacheEntryFromConfiguration(hcoAsString, cacheConfiguration);
+                    this.LinkHcoCache.Set(uriToResolve, entry);
+                }
+            });
 
-                    linkResult.Match(ok =>
-                    {
-                        var hcoAsString = ok.HcoAsString;
-                        if (cacheConfiguration.ShouldBeAddedToCache()
-                            && !string.IsNullOrEmpty(hcoAsString))
-                        {
-                            var entry = GetCacheEntryFromConfiguration(hcoAsString, cacheConfiguration);
-                            this.LinkHcoCache.Set(uriToResolve, entry);
-                        }
-                    });
-
-                    return linkResult.Bind<T>(ok => ok.ResultHco);
-                });
+            return linkResult.Map(ok => ok.ResultHco);
         }
 
         protected abstract Task<HypermediaResult<CacheEntryVerificationResult<TNetworkResponseMessage>>> VerifyIfCacheEntryCanBeUsedAsync(
@@ -164,7 +168,7 @@ namespace RESTyard.Client.Resolver
             };
         }
 
-        public async Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(
+        public async Task<HypermediaResult<LinkOrEntity<T>>> ResolveFunctionAsync<T>(
             Uri uri,
             string method,
             CancellationToken cancellationToken = default) where T : HypermediaClientObject
@@ -173,7 +177,7 @@ namespace RESTyard.Client.Resolver
                 .Bind(responseMessage => this.HandleFunctionResponseAsync<T>(responseMessage, cancellationToken));
         }
 
-        public async Task<HypermediaResult<MandatoryHypermediaLink<T>>> ResolveFunctionAsync<T>(
+        public async Task<HypermediaResult<LinkOrEntity<T>>> ResolveFunctionAsync<T>(
             Uri uri,
             string method,
             IReadOnlyList<ParameterDescription> parameterDescriptions,
@@ -227,23 +231,22 @@ namespace RESTyard.Client.Resolver
             return await this.EnsureRequestIsSuccessfulAsync(responseMessage, cancellationToken);
         }
 
-        protected async Task<HypermediaResult<MandatoryHypermediaLink<T>>> HandleFunctionResponseAsync<T>(
+        protected async Task<HypermediaResult<LinkOrEntity<T>>> HandleFunctionResponseAsync<T>(
             TNetworkResponseMessage responseMessage,
             CancellationToken cancellationToken = default)
             where T : HypermediaClientObject
         {
             return await this.EnsureRequestIsSuccessfulAsync(responseMessage, cancellationToken)
-                .Bind(_ => this.GetLocation(responseMessage))
-                .Bind(location =>
-                {
-                    var actionResult = HypermediaResult.Ok(new MandatoryHypermediaLink<T>()
-                    {
-                        Uri = location,
-                        Resolver = this,
-                    });
-
-                    return actionResult;
-                });
+                .Bind(async _ => this.WasFunctionResultInlined(responseMessage, out var locationOfInlinedResult)
+                    ? await this.HandleLinkResponseAndAddToCacheIfCacheable<T>(locationOfInlinedResult, responseMessage, cancellationToken)
+                        .Map(hco => LinkOrEntity<T>.Entity(hco, locationOfInlinedResult))
+                    : this.GetLocation(responseMessage)
+                        .Map(location => new MandatoryHypermediaLink<T>()
+                        {
+                            Uri = location,
+                            Resolver = this,
+                        })
+                        .Map(LinkOrEntity<T>.Link));
         }
 
         protected HypermediaResult<string> ProcessParameters(IReadOnlyList<ParameterDescription> parameterDescriptions, object? parameterObject)
@@ -318,6 +321,8 @@ namespace RESTyard.Client.Resolver
             CancellationToken cancellationToken = default);
 
         protected abstract HypermediaResult<Uri> GetLocation(TNetworkResponseMessage responseMessage);
+        
+        protected abstract bool WasFunctionResultInlined(TNetworkResponseMessage responseMessage, [NotNullWhen(true)] out Uri? locationOfInlinedResult);
 
         ~HypermediaResolverBase()
         {

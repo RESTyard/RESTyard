@@ -133,20 +133,31 @@ public class GeneratorTests
     {
         await RunGeneratorAsync(
             "server/csharp/v5",
-            outputFile: "server_v5.cs");
+            outputFile: "server_v5.cs",
+            includeNamespaces: ["HypermediaQueryResult = RESTyard.Generator.Test.Output.HypermediaQueryResult_V5_0"]);
 
         await VerifyExtern("server_v5.cs", outputSuffix: "V5");
     }
 
     [Fact]
-    public async Task ServerCSharpControllerV4Test()
+    public async Task ServerCSharpV5_1Test()
     {
         await RunGeneratorAsync(
-            "server/csharp-controller/v4",
-            outputFile: "server_controller_v4.cs",
-            includeNamespaces: [TemplateToNamespace("server/csharp/v4")]);
+            "server/csharp/v5.1",
+            outputFile: "server_v5_1.cs");
 
-        await VerifyExtern("server_controller_v4.cs");
+        await VerifyExtern("server_v5_1.cs", outputSuffix: "V5");
+    }
+
+    [Fact]
+    public async Task ServerCSharpControllerV5Test()
+    {
+        await RunGeneratorAsync(
+            "server/csharp-controller/v5",
+            outputFile: "server_controller_v5.cs",
+            includeNamespaces: [TemplateToNamespace("server/csharp/v5")]);
+
+        await VerifyExtern("server_controller_v5.cs", outputSuffix: "V5");
     }
 
     [Fact]

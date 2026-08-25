@@ -6,6 +6,7 @@ namespace RESTyard.Generator.Templates.csharp_base;
 public class RazorTemplateBase : ComponentBase
 {
     [Parameter] public HypermediaType Schema { get; set; } = null!;
+    [Parameter] public Version Version { get; set; } = null!;
 
     public static void Warning(string message) => Console.WriteLine($"[WARNING] {message}");
 
@@ -29,7 +30,7 @@ public class RazorTemplateBase : ComponentBase
         return $"{text[..1].ToUpperInvariant()}{text[1..]}";
     }
 
-    public string Uncapitalize(string text)
+    public static string Uncapitalize(string text)
     {
         if (string.IsNullOrEmpty(text))
         {

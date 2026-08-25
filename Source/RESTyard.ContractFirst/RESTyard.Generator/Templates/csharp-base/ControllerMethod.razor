@@ -1,0 +1,15 @@
+﻿@{
+    var parameterExpression = string.IsNullOrEmpty(ParameterName)
+        ? ""
+        : $"[HypermediaActionParameterFromBody] {ParameterName} {RazorTemplateBase.Uncapitalize(ParameterName)}";
+}
+
+public Task@("<IActionResult>") @(Name)Async(@(parameterExpression))
+{
+    throw new NotImplementedException();
+}
+
+@code {
+    [Parameter] public string Name { get; set; } = null!;
+    [Parameter] public string? ParameterName { get; set; }
+}

@@ -11,31 +11,6 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
     private static AttributedRoutesRegister CreateRegister(IHypermediaApiExplorer apiExplorer) => new AttributedRoutesRegister(
         apiExplorer,
         null!);
-
-    [TestMethod]
-    public void LegacyGetHypermediaObjectAttribute()
-    {
-        var assembly = CreateAssembly([
-            CreateFile(
-                $$"""
-                [Route("Test")]
-                [ApiController]
-                public class Controller : ControllerBase
-                {
-                    [HttpGetHypermediaObject("Get", typeof({{nameof(ExampleHto)}}))]
-                    public IActionResult Get() => this.Ok();
-                }
-                """),
-            GetExampleHtoCode(),
-        ]);
-        var apiExplorer = CreateApiExplorer(assembly);
-        var register = CreateRegister(apiExplorer);
-        var type = GetType<ExampleHto>(assembly);
-        register.TryGetRoute(type, out var info).Should().BeTrue();
-        info.HttpMethod.Should().Be(HttpMethods.Get);
-        info.AcceptableMediaType.Should().BeNull();
-        info.Name.Should().Contain(nameof(ExampleHto));
-    }
     
     [TestMethod]
     public void HypermediaEndpoint_Get()
@@ -68,35 +43,6 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
     [DataRow("Put")]
     [DataRow("Patch")]
     [DataRow("Delete")]
-    public void TestLegacyHypermediaAction(string method)
-    {
-        var assembly = CreateAssembly([
-            CreateFile(
-                $$"""
-                  [Route("Test")]
-                  [ApiController]
-                  public class Controller : ControllerBase
-                  {
-                      [Http{{method}}HypermediaAction("{{method}}", typeof({{nameof(ExampleHto)}}.{{nameof(ExampleHto.BasicOp)}}))]
-                      public IActionResult {{method}}() => this.Ok();
-                  }
-                  """),
-            GetExampleHtoCode(),
-        ]);
-        var apiExplorer = CreateApiExplorer(assembly);
-        var register = CreateRegister(apiExplorer);
-        var type = GetType<ExampleHto.BasicOp>(assembly);
-        register.TryGetRoute(type, out var info).Should().BeTrue();
-        info.HttpMethod.Should().Be(method.ToUpper());
-        info.AcceptableMediaType.Should().BeNull();
-        info.Name.Should().Contain(nameof(ExampleHto.BasicOp));
-    }
-
-    [TestMethod]
-    [DataRow("Post")]
-    [DataRow("Put")]
-    [DataRow("Patch")]
-    [DataRow("Delete")]
     public void TestHypermediaAction(string method)
     {
         var assembly = CreateAssembly([
@@ -120,31 +66,6 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
         info.HttpMethod.Should().Be(method.ToUpper());
         info.AcceptableMediaType.Should().BeNull();
         info.Name.Should().Contain(nameof(ExampleHto.BasicOp));
-    }
-
-    [TestMethod]
-    public void LegacyHypermediaParameterInfoEndpoint_Get()
-    {
-        var assembly = CreateAssembly([
-            CreateFile(
-                $$"""
-                  [Route("Test")]
-                  [ApiController]
-                  public class Controller : ControllerBase
-                  {
-                      [HttpGetHypermediaActionParameterInfo("Info", typeof({{nameof(ExampleHto)}}.{{nameof(ExampleHto.BasicParameter)}}))]
-                      public IActionResult Info() => this.Ok();
-                  }
-                  """),
-            GetExampleHtoCode(),
-        ]);
-        var apiExplorer = CreateApiExplorer(assembly);
-        var register = CreateRegister(apiExplorer);
-        var type = GetType<ExampleHto.BasicParameter>(assembly);
-        register.TryGetRoute(type, out var info).Should().BeTrue();
-        info.HttpMethod.Should().Be(HttpMethods.Get);
-        info.AcceptableMediaType.Should().BeNull();
-        info.Name.Should().Contain(nameof(ExampleHto.BasicParameter));
     }
 
     [TestMethod]
@@ -197,13 +118,16 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
                 /* lang=c# */
                 """
                 [HypermediaObject(Classes = ["Query"])]
-                public class QueryHto : HypermediaQueryResult
+                public class QueryHto : IHypermediaQueryResult
                 {
+                    public IHypermediaQuery Query { get; }
+                    
                     [Key("id")]
                     public int Id { get; set; }
                     
-                    public QueryHto(IHypermediaQuery query) : base(query)
+                    public QueryHto(IHypermediaQuery query)
                     {
+                        this.Query = query;
                     }
                 }
                 
