@@ -19,6 +19,11 @@
       "workingDirectory": "$(SolutionDir)",
       "commandLineArgs": "--schema-file CarShack/Hypermedia/Schema.xml --template server/csharp/v5.1 --output-file CarShack/Hypermedia/Hypermedia.Server.g.cs --namespace CarShack.Hypermedia"
     },
+    "Generate Siren Server": {
+      "commandName": "Project",
+      "workingDirectory": "$(SolutionDir)",
+      "commandLineArgs": "--schema-file CarShack/Hypermedia/Schema.xml --template server/csharp/v5-siren --output-file CarShack/Hypermedia/Hypermedia.Server.Siren.g.cs --namespace CarShack.Hypermedia.Siren"
+    },
     "Generate Server Controllers": {
       "commandName": "Project",
       "workingDirectory": "$(SolutionDir)",

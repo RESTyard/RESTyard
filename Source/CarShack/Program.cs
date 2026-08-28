@@ -30,6 +30,8 @@ namespace CarShack
                 .AddSingleton<HypermediaCarsRootHto>()
                 .AddSingleton<ICustomerRepository, CustomerRepository>();
 
+            builder.Services.AddOpenApi();
+
             var app = builder.Build();
 
             app.UseCors(builder =>
@@ -41,6 +43,8 @@ namespace CarShack
                     .WithExposedHeaders("Location");
             });
             app.MapControllers();
+
+            app.MapOpenApi();
 
             await app.RunAsync();
         }

@@ -1,0 +1,59 @@
+@using RESTyard.Generator.Templates.csharp_base
+@inherits RazorTemplateBase
+@implements ITemplateBase
+
+#nullable enable
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using FunicularSwitch;
+using Microsoft.AspNetCore.Routing;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Actions;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
+using RESTyard.AspNetCore.Hypermedia.Links;
+using RESTyard.AspNetCore.Query;
+using RESTyard.AspNetCore.WebApi.RouteResolver;
+using RESTyard.Relations;
+@Includes
+
+@if (!string.IsNullOrEmpty(Namespace))
+{
+    @:namespace @Namespace;
+}
+
+<Class Name="Action" IsPartial="false">
+    <PropertyStatement PropertyName="@@class" TypeName="IReadOnlyCollection<string>" HasRequiredKeyword="true" />
+    <PropertyStatement PropertyName="name" TypeName="string" HasRequiredKeyword="true" />
+    <PropertyStatement PropertyName="method" TypeName="string" HasRequiredKeyword="true" />
+    <PropertyStatement PropertyName="href" TypeName="System.Uri" HasRequiredKeyword="true" />
+    <PropertyStatement PropertyName="title" TypeName="string" HasRequiredKeyword="true" />
+    <PropertyStatement PropertyName="type" TypeName="string" HasRequiredKeyword="true" />
+</Class>
+
+<Class Name="Link" IsPartial="false">
+    <PropertyStatement PropertyName="@@class" TypeName="IReadOnlyCollection<string>" HasRequiredKeyword="true"/>
+    <PropertyStatement PropertyName="title" TypeName="string" HasRequiredKeyword="true"/>
+    <PropertyStatement PropertyName="rel" TypeName="IReadOnlyCollection<string>" HasRequiredKeyword="true"/>
+    <PropertyStatement PropertyName="href" TypeName="System.Uri" HasRequiredKeyword="true"/>
+    <PropertyStatement PropertyName="type" TypeName="string" HasRequiredKeyword="true"/>
+</Class>
+
+<Class Name="EmbeddedEntity" IsPartial="false">
+    <PropertyStatement PropertyName="properties" TypeName="object" HasRequiredKeyword="true"/>
+    <PropertyStatement PropertyName="entities" TypeName="ICollection<EmbeddedEntity>" HasRequiredKeyword="true"/>
+    <PropertyStatement PropertyName="actions" TypeName="ICollection<Action>" HasRequiredKeyword="true"/>
+    <PropertyStatement PropertyName="links" TypeName="ICollection<Link>" HasRequiredKeyword="true"/>
+    <PropertyStatement PropertyName="rel" TypeName="IReadOnlyCollection<string>" HasRequiredKeyword="true" />
+</Class>
+
+@foreach (var document in Schema.Documents)
+{
+    <SirenDocument Schema="@Schema" DocumentType="@document" Version="@Version" />
+}
+
+@code {
+    [Parameter] public string? Namespace { get; set; }
+    [Parameter] public string Includes { get; set; } = null!;
+}

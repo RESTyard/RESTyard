@@ -41,6 +41,7 @@ public class CustomerController : Controller
     // This RouteTemplate also contains a key, so a RouteKeyProducer can be provided. In this case the RouteKeyProducer
     // could be ommited and KeyAttribute could be used on HypermediaCustomer instead.
     [HttpGet("{key:int}"), HypermediaObjectEndpoint<HypermediaCustomerHto>(typeof(CustomerRouteKeyProducer))]
+    [ProducesSiren<Hypermedia.Siren.HypermediaCustomer>]
     public async Task<ActionResult> GetEntity(int key)
     {
         try

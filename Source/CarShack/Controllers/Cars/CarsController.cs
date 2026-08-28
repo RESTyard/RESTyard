@@ -38,6 +38,7 @@ namespace CarShack.Controllers.Cars
         // example route with more than one placeholder variable. Mapping of object keys to those parameters when creating links
         // is handled by using KeyAttribute on HypermediaCar instead of passing RouteKeyProducer type in HttpGetHypermediaObject attribute.
         [HttpGet("{brand}/{id:int}"), HypermediaObjectEndpoint<HypermediaCarHto>]
+        [ProducesSiren<Hypermedia.Siren.HypermediaCar>]
         public ActionResult GetEntity(string brand, int id)
         {
             try

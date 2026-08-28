@@ -1,0 +1,43 @@
+@inherits RazorTemplateBase
+
+@{
+    var className = IsEmbedded ? $"Embedded{DocumentType.name}" : DocumentType.name;
+    var classes = string.Join(", ", DocumentType.Classifications.Select(c => $"\"{c.@class}\""));
+    var propertiesToOutput =
+        EnumerateParents(DocumentType, includeSelf: true)
+            .SelectMany(document => document.Properties.Where(p => !p.hidden))
+            .ToList();
+    var hasProperties = propertiesToOutput.Any();
+    var propertiesClassName = $"{DocumentType.name}Properties";
+}
+
+<Class Name="@className" IsPartial="false">
+    <PropertyStatement PropertyName="@@class" TypeName="IReadOnlyCollection<string>" /> = [@(classes)];
+    <PropertyStatement PropertyName="title" TypeName="string" /> = "@DocumentType.title";
+    @if (hasProperties)
+    {
+        <PropertyStatement PropertyName="properties" TypeName="@propertiesClassName" HasRequiredKeyword="true"/>
+    }
+    <PropertyStatement PropertyName="entities" TypeName="ICollection<EmbeddedEntity>" HasRequiredKeyword="true"/>
+    <PropertyStatement PropertyName="actions" TypeName="ICollection<Action>" HasRequiredKeyword="true"/>
+    <PropertyStatement PropertyName="links" TypeName="ICollection<Link>" HasRequiredKeyword="true"/>
+    @if (IsEmbedded)
+    {
+        <PropertyStatement PropertyName="rel" TypeName="IReadOnlyCollection<string>" HasRequiredKeyword="true" />
+    }
+
+    @if (hasProperties)
+    {
+        <Class Name="@propertiesClassName">
+            @foreach (var property in propertiesToOutput)
+            {
+                <PropertyStatement TypeName="@(MapNullableType(!property.mandatory, property.type))" PropertyName="@property.name" HasRequiredKeyword="@property.mandatory"/>
+            }
+        </Class>
+    }
+</Class>
+
+@code {
+    [Parameter] public DocumentType DocumentType { get; set; }
+    [Parameter] public bool IsEmbedded { get; set; }
+}
