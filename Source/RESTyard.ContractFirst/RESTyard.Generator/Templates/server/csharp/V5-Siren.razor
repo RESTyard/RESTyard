@@ -51,6 +51,7 @@ using RESTyard.Relations;
 @foreach (var document in Schema.Documents)
 {
     <SirenDocument Schema="@Schema" DocumentType="@document" Version="@Version" />
+    <SirenDocument Schema="@Schema" DocumentType="@document" Version="@Version" IsEmbedded="true" />
 }
 
 @code {

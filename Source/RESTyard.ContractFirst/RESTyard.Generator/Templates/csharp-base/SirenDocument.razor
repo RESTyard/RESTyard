@@ -9,6 +9,13 @@
             .ToList();
     var hasProperties = propertiesToOutput.Any();
     var propertiesClassName = $"{DocumentType.name}Properties";
+    var entityTypes = 
+        EnumerateParents(DocumentType, includeSelf: true)
+            .SelectMany(document => document.Entities.Select(e => e.document))
+            .Distinct()
+            .ToList();
+    var embeddedEntityType = entityTypes is [var single] ? $"Embedded{single}" : "EmbeddedEntity";
+    var embeddedEntityCollectionType = $"ICollection<{embeddedEntityType}>";
 }
 
 <Class Name="@className" IsPartial="false">
@@ -18,7 +25,7 @@
     {
         <PropertyStatement PropertyName="properties" TypeName="@propertiesClassName" HasRequiredKeyword="true"/>
     }
-    <PropertyStatement PropertyName="entities" TypeName="ICollection<EmbeddedEntity>" HasRequiredKeyword="true"/>
+    <PropertyStatement PropertyName="entities" TypeName="@embeddedEntityCollectionType" HasRequiredKeyword="true"/>
     <PropertyStatement PropertyName="actions" TypeName="ICollection<Action>" HasRequiredKeyword="true"/>
     <PropertyStatement PropertyName="links" TypeName="ICollection<Link>" HasRequiredKeyword="true"/>
     @if (IsEmbedded)
