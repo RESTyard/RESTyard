@@ -41,10 +41,10 @@ public partial class HypermediaEntrypointHto : IHypermediaObject
     [Relations([DefaultHypermediaRelations.Self])]
     public ILink<HypermediaEntrypointHto> Self { get; set; }
 
-    public HypermediaEntrypointHto()
+    public HypermediaEntrypointHto(ILink<HypermediaCustomersRootHto> customersRoot, ILink<HypermediaCarsRootHto> carsRoot)
     {
-        this.CustomersRoot = Link.ByKey<HypermediaCustomersRootHto>(null);
-        this.CarsRoot = Link.ByKey<HypermediaCarsRootHto>(null);
+        this.CustomersRoot = customersRoot;
+        this.CarsRoot = carsRoot;
         this.Self = Link.To(this);
     }
 }
@@ -67,12 +67,12 @@ public partial class HypermediaCarsRootHto : IHypermediaObject
     [HypermediaAction(Name = "UploadInsuranceScan", Title = "Upload scan of insurance for the car")]
     public UploadInsuranceScanOp UploadInsuranceScan { get; set; }
 
-    public HypermediaCarsRootHto(UploadCarImageOp uploadCarImage, UploadInsuranceScanOp uploadInsuranceScan, DerivedCarHto.Key niceCarKey, HypermediaCarHto.Key superCarKey)
+    public HypermediaCarsRootHto(UploadCarImageOp uploadCarImage, UploadInsuranceScanOp uploadInsuranceScan, ILink<DerivedCarHto> niceCar, ILink<HypermediaCarHto> superCar)
     {
         this.UploadCarImage = uploadCarImage;
         this.UploadInsuranceScan = uploadInsuranceScan;
-        this.NiceCar = Link.ByKey<DerivedCarHto>(niceCarKey);
-        this.SuperCar = Link.ByKey<HypermediaCarHto>(superCarKey);
+        this.NiceCar = niceCar;
+        this.SuperCar = superCar;
         this.Self = Link.To(this);
     }
 
@@ -206,12 +206,12 @@ public partial class DerivedCarHto : HypermediaCarHto
     [HypermediaAction(Name = "DerivedOperation", Title = "Derived Operation")]
     public DerivedOperationOp DerivedOperation { get; set; }
 
-    public DerivedCarHto(int? id, string? brand, IEnumerable<float>? priceDevelopment, List<Country>? popularCountries, Country? mostPopularIn, DateOnly? lastInspection, UpdateInspectionOp updateInspection, string? derivedProperty, DerivedOperationOp derivedOperation, IEnumerable<HypermediaCustomerHto> item, Option<HypermediaCustomerHto.Key> derivedLinkKey) : base(id, brand, priceDevelopment, popularCountries, mostPopularIn, lastInspection, updateInspection)
+    public DerivedCarHto(int? id, string? brand, IEnumerable<float>? priceDevelopment, List<Country>? popularCountries, Country? mostPopularIn, DateOnly? lastInspection, UpdateInspectionOp updateInspection, string? derivedProperty, DerivedOperationOp derivedOperation, IEnumerable<HypermediaCustomerHto> item, Option<ILink<HypermediaCustomerHto>> derivedLink) : base(id, brand, priceDevelopment, popularCountries, mostPopularIn, lastInspection, updateInspection)
     {
         this.DerivedProperty = derivedProperty;
         this.DerivedOperation = derivedOperation;
         this.Item = item.Select(x => EmbeddedEntity.Embed<HypermediaCustomerHto>(x)).ToList();
-        this.DerivedLink = derivedLinkKey.Map(some => Link.ByKey<HypermediaCustomerHto>(some)).GetValueOrDefault();
+        this.DerivedLink = derivedLink.GetValueOrDefault();
         this.Self = Link.To(this);
     }
 
@@ -240,7 +240,7 @@ public partial class NextLevelDerivedCarHto : DerivedCarHto
     [Relations([DefaultHypermediaRelations.Self])]
     public new ILink<NextLevelDerivedCarHto> Self { get; set; }
 
-    public NextLevelDerivedCarHto(int? id, string? brand, IEnumerable<float>? priceDevelopment, List<Country>? popularCountries, Country? mostPopularIn, DateOnly? lastInspection, UpdateInspectionOp updateInspection, string? derivedProperty, DerivedOperationOp derivedOperation, IEnumerable<HypermediaCustomerHto> item, Option<HypermediaCustomerHto.Key> derivedLinkKey, string? nextLevelDerivedProperty) : base(id, brand, priceDevelopment, popularCountries, mostPopularIn, lastInspection, updateInspection, derivedProperty, derivedOperation, item, derivedLinkKey)
+    public NextLevelDerivedCarHto(int? id, string? brand, IEnumerable<float>? priceDevelopment, List<Country>? popularCountries, Country? mostPopularIn, DateOnly? lastInspection, UpdateInspectionOp updateInspection, string? derivedProperty, DerivedOperationOp derivedOperation, IEnumerable<HypermediaCustomerHto> item, Option<ILink<HypermediaCustomerHto>> derivedLink, string? nextLevelDerivedProperty) : base(id, brand, priceDevelopment, popularCountries, mostPopularIn, lastInspection, updateInspection, derivedProperty, derivedOperation, item, derivedLink)
     {
         this.NextLevelDerivedProperty = nextLevelDerivedProperty;
         this.Self = Link.To(this);
@@ -280,14 +280,14 @@ public partial class HypermediaCustomersRootHto : IHypermediaObject
     [HypermediaAction(Name = "CreateQuery", Title = "Query the Customers collection.")]
     public CreateQueryOp CreateQuery { get; set; }
 
-    public HypermediaCustomersRootHto(CreateCustomerOp createCustomer, CreateQueryOp createQuery, CustomerQuery allQuery, HypermediaCustomerHto.Key bestCustomerKey, HypermediaObjectReferenceBase greatSite, Option<HypermediaObjectReferenceBase> okaySite)
+    public HypermediaCustomersRootHto(CreateCustomerOp createCustomer, CreateQueryOp createQuery, ILink<HypermediaCustomerQueryResultHto> all, ILink<HypermediaCustomerHto> bestCustomer, ExternalLink greatSite, Option<ExternalLink> okaySite)
     {
         this.CreateCustomer = createCustomer;
         this.CreateQuery = createQuery;
-        this.All = Link.ByQuery<HypermediaCustomerQueryResultHto>(allQuery);
-        this.BestCustomer = Link.ByKey<HypermediaCustomerHto>(bestCustomerKey);
-        this.GreatSite = Link.External(greatSite);
-        this.OkaySite = okaySite.Map(some => Link.External(some)).GetValueOrDefault();
+        this.All = all;
+        this.BestCustomer = bestCustomer;
+        this.GreatSite = greatSite;
+        this.OkaySite = okaySite.GetValueOrDefault();
         this.Self = Link.To(this);
     }
 
@@ -383,7 +383,7 @@ public partial class HypermediaCustomerHto : IHypermediaObject
     [HypermediaAction(Name = "BuyCar", Title = "Buy a car.")]
     public BuyCarOp BuyCar { get; set; }
 
-    public HypermediaCustomerHto(int id, int? age, string? fullName, AddressTo? address, bool isFavorite, CustomerMoveOp customerMove, CustomerRemoveOp customerRemove, MarkAsFavoriteOp markAsFavorite, BuyCarOp buyCar, (CustomerPurchaseHistoryQuery Query, CustomerPurchaseHistoryHto.Key Key) purchaseHistoryReference)
+    public HypermediaCustomerHto(int id, int? age, string? fullName, AddressTo? address, bool isFavorite, CustomerMoveOp customerMove, CustomerRemoveOp customerRemove, MarkAsFavoriteOp markAsFavorite, BuyCarOp buyCar, ILink<CustomerPurchaseHistoryHto> purchaseHistory)
     {
         this.Id = id;
         this.Age = age;
@@ -394,7 +394,7 @@ public partial class HypermediaCustomerHto : IHypermediaObject
         this.CustomerRemove = customerRemove;
         this.MarkAsFavorite = markAsFavorite;
         this.BuyCar = buyCar;
-        this.PurchaseHistory = Link.ByQuery<CustomerPurchaseHistoryHto>(purchaseHistoryReference.Query, purchaseHistoryReference.Key);
+        this.PurchaseHistory = purchaseHistory;
         this.Self = Link.To(this);
     }
 
@@ -461,15 +461,15 @@ public partial class HypermediaCustomerQueryResultHto : IHypermediaQueryResult
     [Relations([DefaultHypermediaRelations.Self])]
     public ILink<HypermediaCustomerQueryResultHto> Self { get; set; }
 
-    public HypermediaCustomerQueryResultHto(int? totalEntities, int? currentEntitiesCount, IEnumerable<HypermediaCustomerHto> customers, Option<IHypermediaQuery> nextQuery, Option<IHypermediaQuery> previousQuery, Option<IHypermediaQuery> lastQuery, Option<IHypermediaQuery> allQuery, IHypermediaQuery query)
+    public HypermediaCustomerQueryResultHto(int? totalEntities, int? currentEntitiesCount, IEnumerable<HypermediaCustomerHto> customers, Option<ILink<HypermediaCustomerQueryResultHto>> next, Option<ILink<HypermediaCustomerQueryResultHto>> previous, Option<ILink<HypermediaCustomerQueryResultHto>> last, Option<ILink<HypermediaCustomerQueryResultHto>> all, IHypermediaQuery query)
     {
         this.TotalEntities = totalEntities;
         this.CurrentEntitiesCount = currentEntitiesCount;
         this.Customers = customers.Select(x => EmbeddedEntity.Embed<HypermediaCustomerHto>(x)).ToList();
-        this.Next = nextQuery.Map(some => Link.ByQuery<HypermediaCustomerQueryResultHto>(some)).GetValueOrDefault();
-        this.Previous = previousQuery.Map(some => Link.ByQuery<HypermediaCustomerQueryResultHto>(some)).GetValueOrDefault();
-        this.Last = lastQuery.Map(some => Link.ByQuery<HypermediaCustomerQueryResultHto>(some)).GetValueOrDefault();
-        this.All = allQuery.Map(some => Link.ByQuery<HypermediaCustomerQueryResultHto>(some)).GetValueOrDefault();
+        this.Next = next.GetValueOrDefault();
+        this.Previous = previous.GetValueOrDefault();
+        this.Last = last.GetValueOrDefault();
+        this.All = all.GetValueOrDefault();
         this.Query = query;
         this.Self = Link.To(this);
     }

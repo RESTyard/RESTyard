@@ -11,7 +11,7 @@ public static class Link
     public static ILink<THto> ByKey<THto>(IHypermediaObjectKey<THto>? key) where THto : IHypermediaObject
         => new Link<THto>(new HypermediaObjectKeyReference(typeof(THto), key));
 
-    public static ILink<THto> ByQuery<THto>(IHypermediaQuery query, HypermediaObjectKeyBase<THto>? key = null)
+    public static ILink<THto> ByQuery<THto>(IHypermediaQuery query, IHypermediaObjectKey<THto>? key = null)
         where THto : IHypermediaQueryResult
         => new Link<THto>(new HypermediaObjectQueryReference(typeof(THto), query, key));
 

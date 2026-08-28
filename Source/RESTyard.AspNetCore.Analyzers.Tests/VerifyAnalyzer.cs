@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using AwesomeAssertions.Execution;
+using FunicularSwitch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -45,7 +46,7 @@ public class VerifyAnalyzer : VerifyBase
     protected async Task Verify(
         string source,
         DiagnosticAnalyzer analyzer,
-        CodeFixProvider codeFixProvider,
+        Option<CodeFixProvider> codeFixProvider,
         Action<ImmutableArray<Diagnostic>> verifyDiagnostics,
         Action<Diagnostic, CodeAction>? verifyCodeAction = null,
         [CallerMemberName] string callingMethod = "")
@@ -87,19 +88,23 @@ public class VerifyAnalyzer : VerifyBase
                      .OrderBy(d => d.Location.GetLineSpan().StartLinePosition.Line)
                      .ThenBy(d => d.Location.GetLineSpan().StartLinePosition.Character))
         {
-            var actions = new List<CodeAction>();
-            var codeFixContext = new CodeFixContext(document, d, (a, _) => actions.Add(a), CancellationToken.None);
-            await codeFixProvider.RegisterCodeFixesAsync(codeFixContext);
-            actions.Should().NotBeEmpty();
-            verifyCodeAction?.Invoke(d, actions[0]);
-            var updatedDocument = await ApplyFix(document, actions[0]);
-            var syntaxTree = await updatedDocument.GetSyntaxRootAsync();
-            var updatedCode = syntaxTree.ToFullString();
-            var settings = new VerifySettings();
-            settings.UseFileName($"{Path.GetFileNameWithoutExtension(this.sourceFile)}_{callingMethod}_{d.Id}_{index}.cs");
-            await Verify(updatedCode, settings)
-                .UseDirectory("Snapshots");
-            index += 1;
+            await codeFixProvider.Match(async some =>
+            {
+                var actions = new List<CodeAction>();
+                var codeFixContext = new CodeFixContext(document, d, (a, _) => actions.Add(a), CancellationToken.None);
+                await some.RegisterCodeFixesAsync(codeFixContext);
+                actions.Should().NotBeEmpty();
+                verifyCodeAction?.Invoke(d, actions[0]);
+                var updatedDocument = await ApplyFix(document, actions[0]);
+                var syntaxTree = await updatedDocument.GetSyntaxRootAsync();
+                var updatedCode = syntaxTree.ToFullString();
+                var settings = new VerifySettings();
+                settings.UseFileName(
+                    $"{Path.GetFileNameWithoutExtension(this.sourceFile)}_{callingMethod}_{d.Id}_{index}.cs");
+                await Verify(updatedCode, settings)
+                    .UseDirectory("Snapshots");
+                index += 1;
+            });
         }
     }
     

@@ -66,10 +66,10 @@ namespace CarShack.Controllers.Customers
                 queryResult.TotalCountOfEnties,
                 resultReferences.Count,
                 resultReferences,
-                queries.next.Map(IHypermediaQuery (some) => some),
-                queries.previous.Map(IHypermediaQuery (some) => some),
-                queries.last.Map(IHypermediaQuery (some) => some),
-                queries.all.Map(IHypermediaQuery (some) => some),
+                queries.next.Map(some => Link.ByQuery<HypermediaCustomerQueryResultHto>(some)),
+                queries.previous.Map(some => Link.ByQuery<HypermediaCustomerQueryResultHto>(some)),
+                queries.last.Map(some => Link.ByQuery<HypermediaCustomerQueryResultHto>(some)),
+                queries.all.Map(some => Link.ByQuery<HypermediaCustomerQueryResultHto>(some)),
                 query);
             return result;
         }

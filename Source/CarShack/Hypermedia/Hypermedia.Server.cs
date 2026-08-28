@@ -154,10 +154,10 @@ public partial class HypermediaCustomersRootHto
                     SortType = SortTypes.Ascending
                 }
             }),
-            allQuery: new CustomerQuery(),
-            bestCustomerKey: new(1),
-            greatSite: new HypermediaObjectReference(new ExternalReference(new Uri("https://www.example.com/")).WithAvailableMediaType("text/html")),
-            okaySite: Option<HypermediaObjectReferenceBase>.None)
+            all: Link.ByQuery<HypermediaCustomerQueryResultHto>(new CustomerQuery()),
+            bestCustomer: Link.ByKey(new HypermediaCustomerHto.Key(1)),
+            greatSite: Link.External(new HypermediaObjectReference(new ExternalReference(new Uri("https://www.example.com/")).WithAvailableMediaType("text/html"))),
+            okaySite: Option.None())
     {
     }
 }
@@ -183,8 +183,8 @@ public partial class HypermediaCarsRootHto
                     AllowMultiple = true,
                     MaxFileSizeBytes = 200,
                 }),
-            new DerivedCarHto.Key(Id: 2, Brand: "VW"),
-            new HypermediaCarHto.Key(Id: 5, Brand: "Porsche"))
+            Link.ByKey(new DerivedCarHto.Key(Id: 2, Brand: "VW")),
+            Link.ByKey(new HypermediaCarHto.Key(Id: 5, Brand: "Porsche")))
     {
     }
 }
@@ -203,7 +203,7 @@ public partial class HypermediaCustomerHto
             new CustomerRemoveOp(() => true),
             new MarkAsFavoriteOp(() => !customer.IsFavorite),
             new BuyCarOp(() => true, default),
-            (new CustomerPurchaseHistoryQuery(), new CustomerPurchaseHistoryHto.Key(customer.Id)));
+            Link.ByQuery(new CustomerPurchaseHistoryQuery(), new CustomerPurchaseHistoryHto.Key(customer.Id)));
         return hto;
     }
 }

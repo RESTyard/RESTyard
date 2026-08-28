@@ -95,38 +95,8 @@ public class RazorTemplateBase : ComponentBase
 
         foreach (var link in document.Links)
         {
-            if (!string.IsNullOrEmpty(link.document))
-            {
-                var hasQuery = !string.IsNullOrEmpty(link.query);
-                var linkDocument = Schema.Documents.First(d => d.name == link.document);
-                var hasKey = HasKeyProperties(linkDocument);
-
-                if (hasQuery && hasKey)
-                {
-                    var tupleType = MapOption(!link.mandatory, $"({link.query} Query, {linkDocument.name}Hto.Key Key)");
-                    result.Add($"{tupleType} {Uncapitalize(link.rel)}Reference");
-                }
-                else if (hasQuery)
-                {
-                    var queryType = MapOption(!link.mandatory, link.query);
-                    result.Add($"{queryType} {Uncapitalize(link.rel)}Query");
-                }
-                else if (hasKey)
-                {
-                    var keyType = MapOption(!link.mandatory, $"{linkDocument.name}Hto.Key");
-                    result.Add($"{keyType} {Uncapitalize(link.rel)}Key");
-                }
-                else if (!link.mandatory)
-                {
-                    var keyType = MapOption(isOption: true, type: "Unit");
-                    result.Add($"{keyType} {Uncapitalize(link.rel)}Key");
-                }
-            }
-            else
-            {
-                var referenceType = MapOption(!link.mandatory, "HypermediaObjectReferenceBase");
-                result.Add($"{referenceType} {Uncapitalize(link.rel)}");
-            }
+            var linkType = link.document.NoneIfEmpty().Map(d => $"ILink<{d}Hto>").GetValueOrDefault("ExternalLink");
+            result.Add($"{MapOption(!link.mandatory, linkType)} {Uncapitalize(link.rel)}");
         }
 
         if (document.isQueryResult)

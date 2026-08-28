@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using AwesomeAssertions;
+using FunicularSwitch;
 using Xunit;
 
 namespace RESTyard.AspNetCore.Analyzers.Tests;

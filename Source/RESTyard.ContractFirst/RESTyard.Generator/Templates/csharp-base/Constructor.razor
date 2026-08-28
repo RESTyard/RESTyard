@@ -124,15 +124,15 @@ public @typeName (@allArgumentsString)@parentArgumentsString
         var hto = $"<{entity.document}Hto>";
         @:this.@Capitalize(entity.collectionName) = @Uncapitalize(@entity.collectionName)@(".")Select(x => EmbeddedEntity.Embed@(hto)(x)).ToList();
     }
-    @foreach (var (isMandatory, match, rel, hto, value) in links)
+    @foreach (var link in Document.Links)
     {
-        if (isMandatory)
+        if (link.mandatory)
         {
-            @:this.@(Capitalize(rel)) = @value;
+            @:this.@(Capitalize(link.rel)) = @(Uncapitalize(link.rel));
         }
         else
         {
-            @:this.@(Capitalize(rel)) = @match@(".")Map(some => @value).GetValueOrDefault();
+            @:this.@(Capitalize(link.rel)) = @(Uncapitalize(link.rel)).GetValueOrDefault();
         }
     }
     @if (Document.isQueryResult && !Version.HypermediaQueryResultParentExists())

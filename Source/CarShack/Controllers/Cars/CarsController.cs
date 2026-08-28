@@ -70,7 +70,7 @@ namespace CarShack.Controllers.Cars
                     derivedOperation: new(() => false),
                     updateInspection: new(() => true),
                     item: [],
-                    derivedLinkKey: Option<HypermediaCustomerHto.Key>.None);
+                    derivedLink: Option.None());
                 return Ok(result);
             }
             catch (EntityNotFoundException)

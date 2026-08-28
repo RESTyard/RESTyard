@@ -1,0 +1,25 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+using RESTyard.AspNetCore.Hypermedia;
+using RESTyard.AspNetCore.Hypermedia.Attributes;
+using RESTyard.AspNetCore.Query;
+
+public class TestClass()
+{
+    public void TestMethod()
+    {
+        var key = Link.ByQuery<SomeHto>(query: /* TODO: provide the query */ null, null);
+    }
+}
+
+[HypermediaObject(Classes = ["SomeHto"])]
+public class SomeHto : IHypermediaQueryResult
+{
+    public IHypermediaQuery Query { get; }
+    
+    public record Key() : HypermediaObjectKeyBase<SomeHto>
+    {
+        protected override IEnumerable<KeyValuePair<string, object?>> EnumerateKeysForLinkGeneration()
+            => Enumerable.Empty<KeyValuePair<string, object?>>();
+    }
+}
