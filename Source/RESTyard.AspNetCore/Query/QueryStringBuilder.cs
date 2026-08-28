@@ -28,7 +28,7 @@ namespace RESTyard.AspNetCore.Query
                 return string.Empty;
             }
 
-            var properties = sourceObject.GetType().GetTypeInfo().GetProperties()
+            var properties = sourceObject.GetType().GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(x => x.CanRead)
                 .Where(x => x.GetValue(sourceObject, null) != null);
 
@@ -54,6 +54,12 @@ namespace RESTyard.AspNetCore.Query
                 if (serializeInfo.IsUri)
                 {
                     result += CreateKeyValue($"{objectPrefix}{propertyInfo.Name}", ((Uri)propertyValue).ToString());
+                    continue;
+                }
+
+                if (serializeInfo.IsGuid)
+                {
+                    result += CreateKeyValue($"{objectPrefix}{propertyInfo.Name}", ((Guid)propertyValue).ToString("D"));
                     continue;
                 }
 

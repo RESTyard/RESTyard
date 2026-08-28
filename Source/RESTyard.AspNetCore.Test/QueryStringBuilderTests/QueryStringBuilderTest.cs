@@ -43,13 +43,14 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
                 ADateOnly = DateOnly.FromDateTime(new DateTime(2025, 12, 31)),
                 ATimeOnly = TimeOnly.FromTimeSpan(new TimeSpan(0, 3, 1, 2)),
                 AUri = new Uri("http://www.example.com?a=1"),
+                AGuid = new Guid("65b48f3c-fc1e-4b81-bde4-2bc2ac5119f3"),
             };
 
             var result = queryStringBuilder.CreateQueryString(queryObject);
             var valueDictionary = QueryStringBuilderTestHelper.CreateValueDictionaryFromQueryString(result);
 
             result[0].Should().Be('?');
-            valueDictionary.Should().HaveCount(15);
+            valueDictionary.Should().HaveCount(16);
             valueDictionary.Should().ContainKey("ABool").WhoseValue.Should().Be(queryObject.ABool.ToString());
             valueDictionary.Should().ContainKey("AString").WhoseValue.Should().Be(queryObject.AString);
             valueDictionary.Should().ContainKey("AInt").WhoseValue.Should().Be(queryObject.AInt.ToInvariantString());
@@ -65,6 +66,8 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             valueDictionary.Should().ContainKey("ADateOnly").WhoseValue.Should().Be(Uri.EscapeDataString(queryObject.ADateOnly.ToInvariantString()));
             valueDictionary.Should().ContainKey("ATimeOnly").WhoseValue.Should().Be(Uri.EscapeDataString(queryObject.ATimeOnly.ToInvariantString()));
             valueDictionary.Should().ContainKey("AUri").WhoseValue.Should().Be(Uri.EscapeDataString(queryObject.AUri.ToInvariantString()));
+            valueDictionary.Should().ContainKey("AGuid").WhoseValue.Should()
+                .Be(Uri.EscapeDataString(queryObject.AGuid.ToString("D")));
         }
 
         [TestMethod]
@@ -131,7 +134,8 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             public DateTimeOffset ADateTimeOffset { get; set; }
             public DateOnly ADateOnly { get; set; }
             public TimeOnly ATimeOnly { get; set; }
-            public Uri AUri { get; set; }            
+            public Uri AUri { get; set; }
+            public Guid AGuid { get; set; }
         }
 
         private class QueryWithNesting
