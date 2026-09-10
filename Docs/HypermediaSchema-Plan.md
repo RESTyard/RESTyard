@@ -778,13 +778,29 @@ migration-guide.md, HypermediaApiSchema.md, SourceGenerator.md, readme.md, claud
 
 **Goal:** Provide a drop-in replacement output formatter that uses the generated `ToSiren()` internally, for existing APIs that want the performance benefit without rewriting controllers.
 
-**Formatter policy (decided):** exactly **one** Siren formatter is active per app. `GeneratedSirenFormatter`
+**Formatter policy (decided):** exactly **one** Siren formatter is active per app. `SirenMapperFormatter`
 is a separate implementation, not a wrapper. The existing `SirenHypermediaFormatter` stays only for
 compatibility and gets deprecated (Step 8.3). There is **no runtime fallback** to `SirenConverter`:
 if the new formatter finds no mapper for the HTO's runtime type, it throws an exception naming the
 missing generated Siren target class (e.g. "`HypermediaCustomerHtoSiren` not found — is
 `[assembly: HypermediaAssembly(Siren = true)]` set on the HTO's assembly?"). Fail loudly instead of
 silently producing subtly different JSON via the reflection path.
+
+**Undecided — to discuss before implementation:**
+
+- **Registration API shape:** is `AddHypermediaSirenMapper()` something the *user* calls, or an internal
+  detail of `AddHypermediaExtensions()`? Preference: the user should *configure* the formatter choice
+  (the `SirenFormatter` enum on `HypermediaExtensionsOptions`), not have to remember "I must also add
+  the formatter". If the enum is the single source of truth and `AddHypermediaExtensions()` registers
+  the chosen formatter itself, the `PostConfigure<MvcOptions>` remove/insert swap (Step 7.2) becomes
+  unnecessary — order-independence is free because there is never a second registration to undo.
+- **POCO serialization inside the formatter:** preferred implementation is to delegate the actual
+  writing to `SystemTextJsonOutputFormatter` internally (parity with the `OkSiren()` path by
+  construction, no result filter). But that hard-codes System.Text.Json: an app using another JSON
+  formatter (e.g. Newtonsoft) would get STJ output for Siren responses only — RESTyard becomes
+  opinionated on serialization again. Options to weigh: accept STJ-only (document it), resolve
+  "the app's JSON output formatter" from `MvcOptions.OutputFormatters` instead, or serialize via
+  `JsonOptions` directly and declare Newtonsoft out of scope for the generated path.
 
 #### Step 7.0: Generated Siren mapper registry (generator work)
 - **Why:** `ToSiren()` / `ToSirenEmbedded()` are extension methods — compile-time dispatch. A formatter
@@ -816,8 +832,8 @@ silently producing subtly different JSON via the reflection path.
   (`[JsonSerializable(typeof(*HtoSiren))]` per assembly). MVC output formatters are outside ASP.NET Core's
   supported AOT surface anyway — the goal here is trim-safe + reflection-free per request, not NativeAOT end to end.
 
-#### Step 7.1: `GeneratedSirenFormatter` implementation
-- Implement `GeneratedSirenFormatter` as a separate output formatter (reuse `HypermediaOutputFormatter`
+#### Step 7.1: `SirenMapperFormatter` implementation
+- Implement `SirenMapperFormatter` as a separate output formatter (reuse `HypermediaOutputFormatter`
   base if it fits) that maps HTO → generated Siren POCO via the mapper registry, then serializes the POCO
 - Startup: build a `FrozenDictionary<Type, SirenMapperRegistration>` from the discovered registries;
   per request: look up `context.Object.GetType()` (exact-type match) and invoke the delegate
@@ -830,13 +846,15 @@ silently producing subtly different JSON via the reflection path.
 
 #### Step 7.2: Formatter configuration and registration
 - `AddHypermediaSirenMapper()` (separate from `AddHypermediaExtensions()`, consistent with
-  `AddHypermediaSchema()`) discovers the mapper registries and registers `GeneratedSirenFormatter`
+  `AddHypermediaSchema()`) discovers the mapper registries and registers `SirenMapperFormatter`
   **instead of** `SirenHypermediaFormatter` — one active Siren formatter, no coexistence
 - Discovery scans `ControllerAndHypermediaAssemblies` for `HypermediaSirenMapperRegistryAttribute`
   (explicit assembly list, **not** `AppDomain.CurrentDomain.GetAssemblies()` — avoids the
   lazy-loaded-assembly gap noted for the action-result registry)
 - Formatter swap must be order-independent w.r.t. `AddHypermediaExtensions()` — do the
-  remove/insert in a `PostConfigure<MvcOptions>` rather than relying on call order
+  remove/insert in a `PostConfigure<MvcOptions>` rather than relying on call order.
+  *Note:* this whole bullet falls away if the undecided "registration API shape" item (top of Phase 7)
+  resolves to enum-driven registration inside `AddHypermediaExtensions()`
 - RESTyard config exposes an explicit formatter choice (e.g. `HypermediaExtensionsOptions.SirenFormatter`
   enum: `Reflection` (default, legacy `SirenHypermediaFormatter`) / `Generated`) so the active formatter
   is visible in configuration, not implied solely by calling `AddHypermediaSirenMapper()`
@@ -846,8 +864,11 @@ silently producing subtly different JSON via the reflection path.
   - `Generated` active with missing mappings → **startup exception**, and it is *complete*: cross-check
     every non-abstract `[HypermediaObject]` type from the `ControllerAndHypermediaAssemblies` scan
     (the route-registry scan already enumerates them) against the mapper dictionary and throw one
-    exception listing **all** unmapped HTOs with the `Siren = true` fix hint — fail fast on
-    `dotnet run` instead of one 500 at a time in production
+    exception listing **all** unmapped HTOs — fail fast on `dotnet run` instead of one 500 at a time
+    in production. Within a `Siren = true` assembly the generator maps every HTO, so the check's real
+    target is cross-assembly misconfiguration; the message names the two user-fixable causes:
+    the HTO's assembly is missing `[assembly: HypermediaAssembly(Siren = true)]`, or the assembly
+    is not listed in `ControllerAndHypermediaAssemblies`
   - The per-request no-mapper exception (Step 7.1) remains only as a backstop for types the startup
     scan cannot see (dynamically loaded assemblies, runtime-created HTO subclasses)
 - Configuration: opt-in per assembly via `[HypermediaAssembly(Siren = true)]` (already designed)
@@ -855,7 +876,7 @@ silently producing subtly different JSON via the reflection path.
 #### Step 7.3: Documentation — alternative formatter and migration path
 - Document the two approaches for using `ToSiren()`:
   - **Option 1 (recommended for new APIs):** Direct return via `this.OkSiren(hto)` controller extension — explicit, OpenAPI-compatible, full serialization control
-  - **Option 2 (migration path for existing APIs):** `GeneratedSirenFormatter` — drop-in replacement, no controller changes, transparent performance improvement
+  - **Option 2 (migration path for existing APIs):** `SirenMapperFormatter` — drop-in replacement, no controller changes, transparent performance improvement
 - Document migration path: existing API → add `[HypermediaAssembly(Siren = true)]` + `AddHypermediaSirenMapper()` → formatter handles `ToSiren()` automatically → optionally migrate controllers to `this.OkSiren(hto)` one by one → formatter becomes redundant when fully migrated
 - **Migration granularity is the object graph, not the single HTO:** generated `ToSiren()` calls
   `ToSirenEmbedded()` on embedded entities at compile time, so every assembly contributing HTOs to a

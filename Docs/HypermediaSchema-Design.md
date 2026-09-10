@@ -849,7 +849,7 @@ public IActionResult Get(int id)
 
 ```
 Controller returns IHypermediaObject (unchanged)
-    -> GeneratedSirenFormatter (output formatter, replaces SirenHypermediaFormatter)
+    -> SirenMapperFormatter (output formatter, replaces SirenHypermediaFormatter)
         -> calls hto.ToSiren(resolver) via generated mapper (no reflection)
         -> JSON serialization
     -> HTTP response

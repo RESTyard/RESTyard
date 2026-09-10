@@ -2,6 +2,12 @@
 
 This guide covers behavioral differences and required changes when migrating from the reflection-based `SirenConverter` / `SirenHypermediaFormatter` to the source-generated `ToSiren()` extension methods.
 
+**Expect diffs vs. legacy output.** The generated path does not reproduce `SirenConverter`'s JSON
+byte-for-byte — property casing, enum rendering, null handling, self links, and action rendering
+all differ deliberately (each is documented in its own section below). There is no compatibility
+mode and no runtime fallback to the legacy converter. If you have consumers that compare responses
+literally (snapshot tests, cached payload diffing), re-baseline them as part of the migration.
+
 ## At a Glance: What Needs Migration
 
 Scan this table first, then read the linked section for anything that applies to you. **Impact**
