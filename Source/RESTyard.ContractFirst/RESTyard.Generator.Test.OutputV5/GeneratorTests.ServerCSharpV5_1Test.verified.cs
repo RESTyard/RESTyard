@@ -32,9 +32,11 @@ public partial record TP14(string? Property = default, string? Property2 = defau
 public partial record WithProperties(string? Property = default, string? HiddenProperty = default, string? KeyProperty = default, string? OptionalProperty = default, string? HiddenKeyProperty = default, string? HiddenOptionalProperty = default, string? KeyOptionalProperty = default, string? HiddenKeyOptionalProperty = default);
 public partial record DerivedWithProperties(string? Property = default, string? HiddenProperty = default, string? KeyProperty = default, string? OptionalProperty = default, string? HiddenKeyProperty = default, string? HiddenOptionalProperty = default, string? KeyOptionalProperty = default, string? HiddenKeyOptionalProperty = default, bool? DerivedProperty = default) : WithProperties(Property, HiddenProperty, KeyProperty, OptionalProperty, HiddenKeyProperty, HiddenOptionalProperty, KeyOptionalProperty, HiddenKeyOptionalProperty);
 public partial record QueryHtoQuery(int? SomeInt = default) : IHypermediaQuery;
-[HypermediaObject(Title = "A base document", Classes = new string[] { "Base" })]
+[HypermediaObject(Classes = new string[] { "Base" })]
 public partial class BaseHto : IHypermediaObject
 {
+    public string? SirenTitle { get; set; } = "A base document";
+
     [Key("id")]
     public double? Id { get; set; }
     public List<int> Property { get; set; }
@@ -144,9 +146,11 @@ public partial class BaseHto : IHypermediaObject
     }
 }
 
-[HypermediaObject(Title = "", Classes = new string[] { "First", "Second" })]
+[HypermediaObject(Classes = new string[] { "First", "Second" })]
 public partial class ChildHto : IHypermediaObject
 {
+    public string? SirenTitle { get; set; } = "";
+
     [Relations([DefaultHypermediaRelations.Self])]
     public ILink<ChildHto> Self { get; set; }
 
@@ -156,9 +160,10 @@ public partial class ChildHto : IHypermediaObject
     }
 }
 
-[HypermediaObject(Title = "", Classes = new string[] { "Third" })]
+[HypermediaObject(Classes = new string[] { "Third" })]
 public partial class DerivedHto : ChildHto
 {
+    public string? SirenTitle { get; set; } = "";
     public string InheritedText { get; set; }
 
     [Relations([DefaultHypermediaRelations.Self])]
@@ -171,9 +176,11 @@ public partial class DerivedHto : ChildHto
     }
 }
 
-[HypermediaObject(Title = "", Classes = new string[] { "Fourth" })]
+[HypermediaObject(Classes = new string[] { "Fourth" })]
 public partial class SecondLevelDerivedHto : DerivedHto
 {
+    public string? SirenTitle { get; set; } = "";
+
     [Relations([DefaultHypermediaRelations.Self])]
     public new ILink<SecondLevelDerivedHto> Self { get; set; }
 
@@ -183,19 +190,22 @@ public partial class SecondLevelDerivedHto : DerivedHto
     }
 }
 
-[HypermediaObject(Title = "", Classes = new string[] { })]
+[HypermediaObject(Classes = new string[] { })]
 public partial class NoSelfLinkHto : IHypermediaObject
 {
+    public string? SirenTitle { get; set; } = "";
+
     public NoSelfLinkHto()
     {
     }
 }
 
-[HypermediaObject(Title = "", Classes = new string[] { })]
+[HypermediaObject(Classes = new string[] { })]
 public partial class QueryHto : IHypermediaQueryResult
 {
     [FormatterIgnoreHypermediaProperty]
     public IHypermediaQuery Query { get; set; }
+    public string? SirenTitle { get; set; } = "";
 
     [Key("normalKey")]
     public int? NormalKey { get; set; }

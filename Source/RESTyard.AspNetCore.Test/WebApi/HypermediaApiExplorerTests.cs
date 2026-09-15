@@ -78,6 +78,7 @@ public class HypermediaApiExplorerTests : AssemblyBasedTestBase
         var baseName = "BaseHmo";
         var assembly = CreateAssembly([
             CreateFile(
+                /* lang=c# */
                 $$"""
                 [ApiController]
                 public class MyController : ControllerBase
@@ -96,10 +97,13 @@ public class HypermediaApiExplorerTests : AssemblyBasedTestBase
                 }
                 """, false),
             CreateFile(
+                /* lang=c# */
                 $$"""
                 [HypermediaObject(Classes = ["{{baseName}}"])]
                 public abstract class {{baseName}} : IHypermediaObject
                 {
+                    public string? SirenTitle => null;
+                    
                     [RESTyard.AspNetCore.WebApi.RouteResolver.Key]
                     public string Key { get; }
                 
@@ -169,6 +173,8 @@ public class HypermediaApiExplorerTests : AssemblyBasedTestBase
                 [HypermediaObject(Classes = ["Some"])]
                 public class SomeHto : IHypermediaObject
                 {
+                    public string? SirenTitle => null;
+                    
                     [Key]
                     public int Key { get; set; }
                     

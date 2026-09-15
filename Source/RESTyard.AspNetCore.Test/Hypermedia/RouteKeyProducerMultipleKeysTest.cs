@@ -26,6 +26,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
             [Key]
             public string Key { get; }
 
+            public string? SirenTitle { get; } = "My Awesome Hypermedia Object";
             public MyHypermediaObject(string key1)
             {
                 Key = key1;
@@ -38,6 +39,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
                     yield return new KeyValuePair<string, object?>("key", this.Key);
                 }
             }
+
         }
 
         [TestMethod]
@@ -73,6 +75,9 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
 
         class MyHypermediaObject : IHypermediaObject
         {
+            
+            public string? SirenTitle { get; } = "My Awesome Hypermedia Object";
+            
             [Key("id1")]
             public string Key1 { get; }
 
@@ -93,6 +98,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
                     yield return new KeyValuePair<string, object?>("key2", this.Key2);
                 }
             }
+
         }
 
         [TestMethod]

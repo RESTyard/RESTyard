@@ -68,7 +68,10 @@ public class When_generating_json_schema_from_type_containing_a_list : AsyncTest
        public List<Uri> UrisToHmos { get; set; } = new();
    }
 
-   class MyHypermediaObject : IHypermediaObject;
+   class MyHypermediaObject : IHypermediaObject
+   {
+       public string? SirenTitle { get; }
+   }
 }
 
 [TestClass]
@@ -113,7 +116,10 @@ public class When_generating_json_schema_from_type_containing_a_list_and_not_a_l
         public Uri UriToHmo { get; set; } = new("");
     }
 
-    class MyHypermediaObject : IHypermediaObject;
+    class MyHypermediaObject : IHypermediaObject
+    {
+        public string? SirenTitle => null;
+    }
 }
 
 [TestClass]
@@ -173,8 +179,15 @@ public class When_generating_json_schema_from_type_containing_two_types_and_a_li
         public Uri UriToHmo2 { get; set; } = new("");
     }
 
-    class MyHypermediaObject : IHypermediaObject;
-    class MyHypermediaObject2 : IHypermediaObject;
+    class MyHypermediaObject : IHypermediaObject
+    {
+        public string? SirenTitle => null;
+    }
+
+    class MyHypermediaObject2 : IHypermediaObject
+    {
+        public string? SirenTitle => null;
+    }
 }
 
 [TestClass]
@@ -207,8 +220,15 @@ public class When_generating_json_schema_with_same_name_for_both_a_collection_an
         public Guid Guid2 { get; set; } = new();
     }
 
-    class MyHypermediaObject : IHypermediaObject;
-    class MyHypermediaObject2 : IHypermediaObject;
+    class MyHypermediaObject : IHypermediaObject
+    {
+        public string? SirenTitle => null;
+    }
+
+    class MyHypermediaObject2 : IHypermediaObject
+    {
+        public string? SirenTitle => null;
+    }
 }
 
 [TestClass]
@@ -237,7 +257,14 @@ public class When_generating_json_schema_with_same_name_for_multiple_target_type
         public Guid Guid2 { get; set; } = new();
     }
 
-    class MyHypermediaObject : IHypermediaObject;
-    class MyHypermediaObject2 : IHypermediaObject;
+    class MyHypermediaObject : IHypermediaObject
+    {
+        public string? SirenTitle => null;
+    }
+
+    class MyHypermediaObject2 : IHypermediaObject
+    {
+        public string? SirenTitle => null;
+    }
 }
 // End: Schema generation tests

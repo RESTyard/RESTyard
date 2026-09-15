@@ -7,4 +7,6 @@ public static class VersionExtensions
 
     public static bool HypermediaObjectParentExists(this Version version)
         => version < new Version(5, 0);
+    
+    public static bool SirenTitlePropertyExists(this Version version) => version >= new Version(5, 2);
 }

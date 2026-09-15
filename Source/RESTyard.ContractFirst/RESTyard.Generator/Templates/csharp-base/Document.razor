@@ -14,13 +14,28 @@
     CheckProperties(DocumentType.name, DocumentType.Properties);
 }
 
-<Attribute>HypermediaObject(Title = "@DocumentType.title", Classes = new string[] { @classes })</Attribute>
+@if (Version.SirenTitlePropertyExists())
+{
+    <Attribute>HypermediaObject(Classes = new string[] { @classes })</Attribute>    
+}
+else
+{
+    <Attribute>HypermediaObject(Title = "@DocumentType.title", Classes = new string[] { @classes })</Attribute>    
+}
+
 <Class Name="@typeName" Inherits="@baseType">
+    
     @if (DocumentType.isQueryResult && !Version.HypermediaQueryResultParentExists())
     {
         <Attribute>FormatterIgnoreHypermediaProperty</Attribute>
-        <Property Schema="Schema" PropertyType="@(new PropertyType() { mandatory = true, name = "Query", type = "IHypermediaQuery" })" />
+        <Property Schema="Schema" PropertyType="@(new PropertyType() { mandatory = true, name = "Query", type = "IHypermediaQuery" })"/>
     }
+    
+    @if (Version.SirenTitlePropertyExists())
+    {
+        <PropertyStatement TypeName="string" PropertyName="SirenTitle" />@: = "@DocumentType.title";
+    }
+    
     @foreach (var property in DocumentType.Properties)
     {
         <Property Schema="@Schema" PropertyType="@property"/>
@@ -45,5 +60,6 @@
 </Class>
 
 @code {
+    
     [Parameter] public DocumentType DocumentType { get; set; } = null!;
 }

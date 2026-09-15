@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
+using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Test.Helpers;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
@@ -95,7 +96,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
                 .Where(p =>
                     p.Name != "IgnoredProperty"
                     && p.Name != "Entities"
-                    && p.Name != "Links")
+                    && p.Name != "Links"
+                    && p.Name != nameof(IHypermediaObject.SirenTitle))
                 .ToList();
             Assert.AreEqual(propertiesObject.Properties().Count(), propertyInfos.Count);
 

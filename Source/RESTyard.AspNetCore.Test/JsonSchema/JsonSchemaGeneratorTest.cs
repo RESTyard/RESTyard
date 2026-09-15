@@ -45,6 +45,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
 
         class MyHypermediaObject : IHypermediaObject
         {
+            public string? SirenTitle { get; } = null;
         }
     }
 
@@ -79,7 +80,10 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
             // ReSharper restore UnusedMember.Local
         }
 
-        class MyHypermediaObject : IHypermediaObject;
+        class MyHypermediaObject : IHypermediaObject
+        {
+            public string? SirenTitle => null;
+        }
     }
 
     public static class SchemaAssertionExtension
@@ -158,6 +162,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
 
         class MyHypermediaObject : IHypermediaObject
         {
+            public string? SirenTitle => null;
         }
     }
 

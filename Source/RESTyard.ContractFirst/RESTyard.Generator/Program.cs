@@ -162,7 +162,7 @@ public static class Program
 
         return template.Split('/', '\\') switch
         {
-            ["server", "csharp", var version] when version is "v5" or "v5.1" => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp.V5), ParseVersion(version)),
+            ["server", "csharp", var version] when version is "v5" or "v5.1" or "v5.2" => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp.V5), ParseVersion(version)),
             ["server", "csharp-controller", "v5"] => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp_controller.V5), new Version(5,0)),
             _ => null,
         };

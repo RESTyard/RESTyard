@@ -4,9 +4,11 @@ using RESTyard.AspNetCore.Hypermedia.Attributes;
 namespace CarShack.Hypermedia.Cars
 {
     // this HTO has no route. Exists to demonstrate the use of ReturnDefaultRouteForUnknownHto.
-    [HypermediaObject(Title = "A truck", Classes = new[] { "Truck" })]
+    [HypermediaObject(Classes = new[] { "Truck" })]
     public class HypermediaTruck : IHypermediaObject
     {
+        public string? SirenTitle => "A truck";
+
         public string Brand { get; set; }
 
         public int Id { get; set; }

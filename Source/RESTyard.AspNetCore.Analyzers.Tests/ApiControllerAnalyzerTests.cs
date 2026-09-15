@@ -15,6 +15,7 @@ public class ApiControllerAnalyzerTests : VerifyAnalyzer
     public async Task WarningForHypermediaEndpointWithoutApiController()
     {
         var code =
+            /* lang=c# */
             """
             using Microsoft.AspNetCore.Mvc;
             using RESTyard.AspNetCore.Hypermedia;
@@ -31,6 +32,7 @@ public class ApiControllerAnalyzerTests : VerifyAnalyzer
             [HypermediaObject(Classes = ["SomeHto"])]
             public class SomeHto : IHypermediaObject
             {
+                public string? SirenTitle => null;
             }
             """;
         await Verify(
@@ -44,6 +46,7 @@ public class ApiControllerAnalyzerTests : VerifyAnalyzer
     public async Task NoWarningForHypermediaEndpointWithPartialApiController()
     {
         var code =
+            /* lang=c# */
             """
             using Microsoft.AspNetCore.Mvc;
             using RESTyard.AspNetCore.Hypermedia;
@@ -65,6 +68,7 @@ public class ApiControllerAnalyzerTests : VerifyAnalyzer
             [HypermediaObject(Classes = ["SomeHto"])]
             public class SomeHto : IHypermediaObject
             {
+                public string? SirenTitle => null;
             }
             """;
         await Verify(
@@ -78,6 +82,7 @@ public class ApiControllerAnalyzerTests : VerifyAnalyzer
     public async Task NoWarningForHypermediaEndpointWithAssemblyApiController()
     {
         var code =
+            /* lang=c# */
             """
             using Microsoft.AspNetCore.Mvc;
             using RESTyard.AspNetCore.Hypermedia;
@@ -98,6 +103,7 @@ public class ApiControllerAnalyzerTests : VerifyAnalyzer
             [HypermediaObject(Classes = ["SomeHto"])]
             public class SomeHto : IHypermediaObject
             {
+                public string? SirenTitle => null;
             }
             """;
         await Verify(
