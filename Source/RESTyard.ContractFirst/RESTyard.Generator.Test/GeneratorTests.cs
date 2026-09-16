@@ -26,10 +26,6 @@ public class GeneratorTests
         IEnumerable<string>? excludeType = null)
     {
         includeNamespaces ??= [];
-        if (template.Contains("csharp"))
-        {
-            includeNamespaces.Add("RESTyard.Generator.Test.Output");
-        }
 
         var templateNormalized = TemplateToNamespace(template);
         var includeFile = includeNamespaces.Any() ? $"Include_{templateNormalized}.txt" : null;
@@ -106,26 +102,27 @@ public class GeneratorTests
         return template.Replace(".", "._").Replace("/", "._").Replace("-", "_");
     }
 
-    /// <summary>
-    /// Generate into different project such that if the output does not compile, the test can still be executed.
-    /// </summary>
-    /// <param name="file"></param>
-    private async Task VerifyExtern(string file, string outputSuffix = "")
-        => await VerifyFile(file)
-            .UseDirectory($"../RESTyard.Generator.Test.Output{outputSuffix}");
-    
     private async Task Verify(string file)
         => await VerifyFile(file)
             .UseDirectory("Snapshots");
+
+    private static Task VerifyCompilation(
+        string file,
+        RestyardVersion version,
+        string? additionalCode = null,
+        params string[] additionalSources)
+        => GeneratedCodeCompiler.VerifyAsync(version, File.ReadAllText(file), additionalCode, additionalSources);
 
     [Fact]
     public async Task ServerCSharpV4Test()
     {
         await RunGeneratorAsync(
             "server/csharp/v4",
-            outputFile: "server_v4.cs");
+            outputFile: "server_v4.cs",
+            includeNamespaces: [AdditionalCodeNamespace]);
 
-        await VerifyExtern("server_v4.cs");
+        await Verify("server_v4.cs");
+        await VerifyCompilation("server_v4.cs", RestyardVersion.LegacyV4, LegacyV4AdditionalCode);
     }
 
     [Fact]
@@ -134,9 +131,13 @@ public class GeneratorTests
         await RunGeneratorAsync(
             "server/csharp/v5",
             outputFile: "server_v5.cs",
-            includeNamespaces: ["HypermediaQueryResult = RESTyard.Generator.Test.Output.HypermediaQueryResult_V5_0"]);
+            includeNamespaces: [AdditionalCodeNamespace, "HypermediaQueryResult = RESTyard.Generator.Test.Output.HypermediaQueryResult_V5_0"]);
 
-        await VerifyExtern("server_v5.cs", outputSuffix: "V5");
+        await Verify("server_v5.cs");
+        await VerifyCompilation(
+            "server_v5.cs",
+            RestyardVersion.LegacyV5,
+            LegacyV5AdditionalCode);
     }
 
     [Fact]
@@ -144,9 +145,29 @@ public class GeneratorTests
     {
         await RunGeneratorAsync(
             "server/csharp/v5.1",
-            outputFile: "server_v5_1.cs");
+            outputFile: "server_v5_1.cs",
+            includeNamespaces: [AdditionalCodeNamespace]);
 
-        await VerifyExtern("server_v5_1.cs", outputSuffix: "V5");
+        await Verify("server_v5_1.cs");
+        await VerifyCompilation(
+            "server_v5_1.cs",
+            RestyardVersion.LegacyV5_1,
+            CurrentAdditionalCode);
+    }
+
+    [Fact]
+    public async Task ServerCSharpV5_2Test()
+    {
+        await RunGeneratorAsync(
+            "server/csharp/v5.2",
+            outputFile: "server_v5_2.cs",
+            includeNamespaces: [AdditionalCodeNamespace]);
+
+        await Verify("server_v5_2.cs");
+        await VerifyCompilation(
+            "server_v5_2.cs",
+            RestyardVersion.Current,
+            CurrentAdditionalCode);
     }
 
     [Fact]
@@ -155,9 +176,21 @@ public class GeneratorTests
         await RunGeneratorAsync(
             "server/csharp-controller/v5",
             outputFile: "server_controller_v5.cs",
-            includeNamespaces: [TemplateToNamespace("server/csharp/v5")]);
+            includeNamespaces: [AdditionalCodeNamespace, TemplateToNamespace("server/csharp/v5.2")]);
+        await RunGeneratorAsync(
+            "server/csharp/v5.2",
+            outputFile: "server_v5_2_for_controller.cs",
+            includeNamespaces: [AdditionalCodeNamespace]);
 
-        await VerifyExtern("server_controller_v5.cs", outputSuffix: "V5");
+        await Verify("server_controller_v5.cs");
+        await VerifyCompilation(
+            "server_controller_v5.cs",
+            RestyardVersion.Current,
+            CurrentAdditionalCode,
+            additionalSources:
+            [
+                File.ReadAllText("server_v5_2_for_controller.cs"),
+            ]);
     }
 
     [Fact]
@@ -166,9 +199,11 @@ public class GeneratorTests
         await RunGeneratorAsync(
             "server/csharp-policies/v4",
             outputFile: "server_policies_v4.cs",
-            @namespace: TemplateToNamespace("server/csharp/v4"));
+            @namespace: TemplateToNamespace("server/csharp/v4"),
+            includeNamespaces: [AdditionalCodeNamespace]);
 
-        await VerifyExtern("server_policies_v4.cs");
+        await Verify("server_policies_v4.cs");
+        await VerifyCompilation("server_policies_v4.cs", RestyardVersion.LegacyV4, LegacyV4AdditionalCode);
     }
 
     [Fact]
@@ -176,9 +211,11 @@ public class GeneratorTests
     {
         await RunGeneratorAsync(
             "client/csharp/v3",
-            outputFile: "client_v3.cs");
+            outputFile: "client_v3.cs",
+            includeNamespaces: [AdditionalCodeNamespace]);
 
-        await VerifyExtern("client_v3.cs");
+        await Verify("client_v3.cs");
+        await VerifyCompilation("client_v3.cs", RestyardVersion.LegacyV4, LegacyV4AdditionalCode);
     }
 
     [Fact]
@@ -188,7 +225,7 @@ public class GeneratorTests
             "client/typescript/v0",
             outputFile: "client_v0.ts");
 
-        await VerifyExtern("client_v0.ts");
+        await Verify("client_v0.ts");
     }
 
     [Fact]
@@ -211,4 +248,56 @@ public class GeneratorTests
 
         await Verify(outputFile);
     }
+
+    private const string AdditionalCodeNamespace = "RESTyard.Generator.Test.Output";
+
+    private const string LegacyV4AdditionalCode = $$"""
+        using RESTyard.AspNetCore.Hypermedia.Actions;
+
+        namespace {{AdditionalCodeNamespace}};
+
+        public record External() : IHypermediaActionParameter;
+        """;
+
+    private const string LegacyV5AdditionalCode = $$"""
+        using RESTyard.AspNetCore.Hypermedia;
+        using RESTyard.AspNetCore.Hypermedia.Actions;
+        using RESTyard.AspNetCore.Query;
+
+        namespace {{AdditionalCodeNamespace}};
+
+        public record External : IHypermediaActionParameter;
+
+        public class HypermediaQueryResult_V5_0 : IHypermediaQueryResult
+        {
+            public IHypermediaQuery Query { get; }
+            public HypermediaQueryResult_V5_0(IHypermediaQuery query) => Query = query;
+        }
+        """;
+
+    private const string CurrentAdditionalCode = $$"""
+        using RESTyard.AspNetCore.Hypermedia.Actions;
+
+        namespace {{AdditionalCodeNamespace}};
+
+        public record External() : IHypermediaActionParameter;
+        """;
+
+    private const string CurrentControllerAdditionalCode = $$"""
+        using RESTyard.AspNetCore.Hypermedia;
+        using RESTyard.AspNetCore.Hypermedia.Actions;
+        using RESTyard.AspNetCore.Query;
+
+        namespace {{AdditionalCodeNamespace}};
+
+        public record External : IHypermediaActionParameter;
+
+        public class HypermediaQueryResult_V5_0 : IHypermediaQueryResult
+        {
+            public IHypermediaQuery Query { get; }
+            public string? SirenTitle { get; set; }
+
+            public HypermediaQueryResult_V5_0(IHypermediaQuery query) => Query = query;
+        }
+        """;
 }

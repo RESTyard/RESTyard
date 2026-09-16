@@ -12,8 +12,8 @@ using RESTyard.AspNetCore.Hypermedia.Links;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 using RESTyard.Relations;
-using HypermediaQueryResult = RESTyard.Generator.Test.Output.HypermediaQueryResult_V5_0;
 using RESTyard.Generator.Test.Output;
+using HypermediaQueryResult = RESTyard.Generator.Test.Output.HypermediaQueryResult_V5_0;
 
 namespace server._csharp._v5;
 public static class MimeTypes
@@ -33,11 +33,9 @@ public partial record TP14(string? Property = default, string? Property2 = defau
 public partial record WithProperties(string? Property = default, string? HiddenProperty = default, string? KeyProperty = default, string? OptionalProperty = default, string? HiddenKeyProperty = default, string? HiddenOptionalProperty = default, string? KeyOptionalProperty = default, string? HiddenKeyOptionalProperty = default);
 public partial record DerivedWithProperties(string? Property = default, string? HiddenProperty = default, string? KeyProperty = default, string? OptionalProperty = default, string? HiddenKeyProperty = default, string? HiddenOptionalProperty = default, string? KeyOptionalProperty = default, string? HiddenKeyOptionalProperty = default, bool? DerivedProperty = default) : WithProperties(Property, HiddenProperty, KeyProperty, OptionalProperty, HiddenKeyProperty, HiddenOptionalProperty, KeyOptionalProperty, HiddenKeyOptionalProperty);
 public partial record QueryHtoQuery(int? SomeInt = default) : IHypermediaQuery;
-[HypermediaObject(Classes = new string[] { "Base" })]
+[HypermediaObject(Title = "A base document", Classes = new string[] { "Base" })]
 public partial class BaseHto : IHypermediaObject
 {
-    public string? SirenTitle { get; set; } = "A base document";
-
     [Key("id")]
     public double? Id { get; set; }
     public List<int> Property { get; set; }
@@ -147,11 +145,9 @@ public partial class BaseHto : IHypermediaObject
     }
 }
 
-[HypermediaObject(Classes = new string[] { "First", "Second" })]
+[HypermediaObject(Title = "", Classes = new string[] { "First", "Second" })]
 public partial class ChildHto : IHypermediaObject
 {
-    public string? SirenTitle { get; set; } = "";
-
     [Relations([DefaultHypermediaRelations.Self])]
     public ILink<ChildHto> Self { get; set; }
 
@@ -161,10 +157,9 @@ public partial class ChildHto : IHypermediaObject
     }
 }
 
-[HypermediaObject(Classes = new string[] { "Third" })]
+[HypermediaObject(Title = "", Classes = new string[] { "Third" })]
 public partial class DerivedHto : ChildHto
 {
-    public string? SirenTitle { get; set; } = "";
     public string InheritedText { get; set; }
 
     [Relations([DefaultHypermediaRelations.Self])]
@@ -177,11 +172,9 @@ public partial class DerivedHto : ChildHto
     }
 }
 
-[HypermediaObject(Classes = new string[] { "Fourth" })]
+[HypermediaObject(Title = "", Classes = new string[] { "Fourth" })]
 public partial class SecondLevelDerivedHto : DerivedHto
 {
-    public string? SirenTitle { get; set; } = "";
-
     [Relations([DefaultHypermediaRelations.Self])]
     public new ILink<SecondLevelDerivedHto> Self { get; set; }
 
@@ -191,21 +184,17 @@ public partial class SecondLevelDerivedHto : DerivedHto
     }
 }
 
-[HypermediaObject(Classes = new string[] { })]
+[HypermediaObject(Title = "", Classes = new string[] { })]
 public partial class NoSelfLinkHto : IHypermediaObject
 {
-    public string? SirenTitle { get; set; } = "";
-
     public NoSelfLinkHto()
     {
     }
 }
 
-[HypermediaObject(Classes = new string[] { })]
+[HypermediaObject(Title = "", Classes = new string[] { })]
 public partial class QueryHto : HypermediaQueryResult
 {
-    public string? SirenTitle { get; set; } = "";
-
     [Key("normalKey")]
     public int? NormalKey { get; set; }
 
