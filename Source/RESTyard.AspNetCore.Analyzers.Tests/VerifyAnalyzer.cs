@@ -48,6 +48,8 @@ public class VerifyAnalyzer : VerifyBase
         CodeFixProvider codeFixProvider,
         Action<ImmutableArray<Diagnostic>> verifyDiagnostics,
         Action<Diagnostic, CodeAction>? verifyCodeAction = null,
+        bool sourceMustBuild = true,
+        bool fixedDocumentMustBuild = true,
         [CallerMemberName] string callingMethod = "")
     {
         const string TestProjectName = "Test";
@@ -74,9 +76,12 @@ public class VerifyAnalyzer : VerifyBase
 
         var project = solution.GetProject(projectId)!;
         var compilationWithAnalyzers = (await project.GetCompilationAsync())!.WithAnalyzers([analyzer]);
-        compilationWithAnalyzers.Compilation.GetDiagnostics()
-            .Where(d => d.Severity == DiagnosticSeverity.Error)
-            .Should().BeEmpty();
+        if (sourceMustBuild)
+        {
+            compilationWithAnalyzers.Compilation.GetDiagnostics()
+                .Where(d => d.Severity == DiagnosticSeverity.Error)
+                .Should().BeEmpty();
+        }
         var diagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync();
         verifyDiagnostics(diagnostics);
         var document = project.Documents.First();
@@ -93,6 +98,13 @@ public class VerifyAnalyzer : VerifyBase
             actions.Should().NotBeEmpty();
             verifyCodeAction?.Invoke(d, actions[0]);
             var updatedDocument = await ApplyFix(document, actions[0]);
+            if (fixedDocumentMustBuild)
+            {
+                var updatedCompilation = await updatedDocument.Project.GetCompilationAsync();
+                updatedCompilation!.GetDiagnostics()
+                    .Where(d => d.Severity == DiagnosticSeverity.Error)
+                    .Should().BeEmpty();
+            }
             var syntaxTree = await updatedDocument.GetSyntaxRootAsync();
             var updatedCode = syntaxTree.ToFullString();
             var settings = new VerifySettings();

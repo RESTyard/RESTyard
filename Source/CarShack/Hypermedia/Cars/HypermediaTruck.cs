@@ -8,7 +8,7 @@ namespace CarShack.Hypermedia.Cars
     public class HypermediaTruck : IHypermediaObject
     {
         public string? SirenTitle => "A truck";
-
+        
         public string Brand { get; set; }
 
         public int Id { get; set; }
