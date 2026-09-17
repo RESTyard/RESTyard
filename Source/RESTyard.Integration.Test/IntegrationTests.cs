@@ -101,10 +101,11 @@ public class IntegrationTests : IAsyncLifetime
         var customersRootResult = await apiRoot
             .NavigateAsync(l => l.CustomersRoot);
         var customersRoot = customersRootResult.Should().BeOk().Which;
-        (await customersRoot.CreateCustomer!.ExecuteAsync(new CreateCustomerParameters("Name"), this.Resolver)).Should().BeOk();
+        (await customersRoot.CreateCustomer!.ExecuteAsync(new CreateCustomerParameters(Name: "Name", Age: 30), this.Resolver)).Should().BeOk();
         var customersAll = await customersRoot.All.ResolveAsync();
 
-        var customer = customersAll.Should().BeOk().Which.Customers.First(c => !c.IsFavorite);
+        var customer = customersAll.Should().BeOk().Which.Customers.Last(c => !c.IsFavorite);
+        customer.Title.Should().Be("Customer: Name (Age 30)");
         if (!customer.MarkAsFavorite!.CanExecute)
         {
             Assert.Fail("Action can not be run on server, not offered.");

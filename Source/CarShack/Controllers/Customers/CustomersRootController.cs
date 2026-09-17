@@ -114,6 +114,10 @@ namespace CarShack.Controllers.Customers
         {
             var customer = CustomerService.CreateRandomCustomer(isFavorite: false);
             customer.Name = createCustomerParameters.Name;
+            if (createCustomerParameters.Age.HasValue)
+            {
+                customer.Age = createCustomerParameters.Age.Value;
+            }
             await customerRepository.AddEntityAsync(customer).ConfigureAwait(false);
             return customer.ToHto();
         }

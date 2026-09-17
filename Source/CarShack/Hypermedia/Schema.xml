@@ -6,6 +6,7 @@
   <TransferParameters>
     <Parameters typeName="CreateCustomerParameters" usedForQueries="false" usedForActions="true">
       <Property name="Name" type="string" mandatory="true" />
+      <Property name="Age" type="int" mandatory="false" />
     </Parameters>
     <Parameters typeName="BuyCarParameters" usedForQueries="false" usedForActions="true">
       <Property name="Brand" type="string" mandatory="true" />

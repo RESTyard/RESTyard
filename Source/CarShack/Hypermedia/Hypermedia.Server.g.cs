@@ -19,7 +19,7 @@ public static class MimeTypes
     public const string APPLICATION_VND_SIREN_JSON = "application/vnd.siren+json";
 }
 
-public partial record CreateCustomerParameters(string Name) : IHypermediaActionParameter;
+public partial record CreateCustomerParameters(string Name, int? Age = default) : IHypermediaActionParameter;
 public partial record BuyCarParameters(string Brand, int CarId, double? Price = default, double? HiddenProperty = default) : IHypermediaActionParameter;
 public partial record BuyLamborghiniParameters(string Brand, int CarId, string Color, double? Price = default, double? HiddenProperty = default, int? OptionalProperty = default) : BuyCarParameters(Brand, CarId, Price, HiddenProperty), IHypermediaQuery, IHypermediaActionParameter;
 public partial record BuyLamborghinettaParameters(string Brand, int CarId, string Color, int HorsePower, double? Price = default, double? HiddenProperty = default, int? OptionalProperty = default) : BuyLamborghiniParameters(Brand, CarId, Color, Price, HiddenProperty, OptionalProperty), IHypermediaQuery, IHypermediaActionParameter;
