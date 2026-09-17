@@ -33,7 +33,7 @@ else
     
     @if (Version.SirenTitlePropertyExists())
     {
-        <PropertyStatement TypeName="string" PropertyName="SirenTitle" />@: = "@DocumentType.title";
+        @:public string SirenTitle => $"@DocumentType.title";
     }
     
     @foreach (var property in DocumentType.Properties)

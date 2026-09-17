@@ -164,7 +164,7 @@
         <Entity collectionName="Purchases" document="CustomerPurchase"/>
       </Entities>
     </Document>
-    <Document name="HypermediaCustomer">
+    <Document name="HypermediaCustomer" title="Customer: {FullName} (Age {Age})">
       <Classifications>
         <Classification class="Customer" />
       </Classifications>
