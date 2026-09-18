@@ -31,6 +31,6 @@ namespace RESTyard.AspNetCore.Hypermedia
             return (TDerived)this;
         }
 
-        public string? SirenTitle { get; }
+        public string? HtoTitle { get; }
     }
 }

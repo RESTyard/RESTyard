@@ -4,5 +4,5 @@ using RESTyard.AspNetCore.Hypermedia.Attributes;
 [HypermediaObject(Classes = ["Document"])]
 public class Document : IHypermediaObject
 {
-    public string? SirenTitle => "A document";
+    public string? HtoTitle => "A document";
 }

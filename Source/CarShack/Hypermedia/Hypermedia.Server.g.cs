@@ -32,7 +32,7 @@ public partial record UpdateCarInspection(DateOnly NewInspection) : IHypermediaA
 [HypermediaObject(Classes = new string[] { "Entrypoint" })]
 public partial class HypermediaEntrypointHto : IHypermediaObject
 {
-    public string SirenTitle => $"Entry to the Rest API";
+    public string HtoTitle => $"Entry to the Rest API";
 
     [Relations(["CustomersRoot"])]
     public ILink<HypermediaCustomersRootHto> CustomersRoot { get; set; }
@@ -54,7 +54,7 @@ public partial class HypermediaEntrypointHto : IHypermediaObject
 [HypermediaObject(Classes = new string[] { "CarsRoot" })]
 public partial class HypermediaCarsRootHto : IHypermediaObject
 {
-    public string SirenTitle => $"The Cars API";
+    public string HtoTitle => $"The Cars API";
 
     [Relations(["NiceCar"])]
     public ILink<DerivedCarHto> NiceCar { get; set; }
@@ -98,7 +98,7 @@ public partial class HypermediaCarsRootHto : IHypermediaObject
 [HypermediaObject(Classes = new string[] { "Car" })]
 public partial class HypermediaCarHto : IHypermediaObject
 {
-    public string SirenTitle => $"A Car";
+    public string HtoTitle => $"A Car";
 
     [Key("id")]
     public int? Id { get; set; }
@@ -148,7 +148,7 @@ public partial class HypermediaCarHto : IHypermediaObject
 [HypermediaObject(Classes = new string[] { "CarImage" })]
 public partial class CarImageHto : IHypermediaObject
 {
-    public string SirenTitle => $"Image for a car";
+    public string HtoTitle => $"Image for a car";
 
     [Key("filename")]
     [FormatterIgnoreHypermediaProperty]
@@ -175,7 +175,7 @@ public partial class CarImageHto : IHypermediaObject
 [HypermediaObject(Classes = new string[] { "CarInsurance" })]
 public partial class CarInsuranceHto : IHypermediaObject
 {
-    public string SirenTitle => $"Insurance scan for a car";
+    public string HtoTitle => $"Insurance scan for a car";
 
     [Key("filename")]
     [FormatterIgnoreHypermediaProperty]
@@ -202,7 +202,7 @@ public partial class CarInsuranceHto : IHypermediaObject
 [HypermediaObject(Classes = new string[] { "DerivedCar" })]
 public partial class DerivedCarHto : HypermediaCarHto
 {
-    public string SirenTitle => $"Derived Car";
+    public string HtoTitle => $"Derived Car";
     public string? DerivedProperty { get; set; }
 
     [Relations(["DerivedLink"])]
@@ -246,7 +246,7 @@ public partial class DerivedCarHto : HypermediaCarHto
 [HypermediaObject(Classes = new string[] { "NextLevelDerivedCar" })]
 public partial class NextLevelDerivedCarHto : DerivedCarHto
 {
-    public string SirenTitle => $"Derives from Derived Car";
+    public string HtoTitle => $"Derives from Derived Car";
     public string? NextLevelDerivedProperty { get; set; }
 
     [Relations([DefaultHypermediaRelations.Self])]
@@ -271,7 +271,7 @@ public partial class NextLevelDerivedCarHto : DerivedCarHto
 [HypermediaObject(Classes = new string[] { "CustomersRoot" })]
 public partial class HypermediaCustomersRootHto : IHypermediaObject
 {
-    public string SirenTitle => $"The Customers API";
+    public string HtoTitle => $"The Customers API";
 
     [Relations(["all"])]
     public ILink<HypermediaCustomerQueryResultHto> All { get; set; }
@@ -323,7 +323,7 @@ public partial class HypermediaCustomersRootHto : IHypermediaObject
 [HypermediaObject(Classes = new string[] { "CustomerPurchase" })]
 public partial class CustomerPurchaseHto : IHypermediaObject
 {
-    public string SirenTitle => $"";
+    public string HtoTitle => $"";
     public int? Amount { get; set; }
     public string CardNumber { get; set; }
     public string CardType { get; set; }
@@ -341,7 +341,7 @@ public partial class CustomerPurchaseHistoryHto : IHypermediaQueryResult
 {
     [FormatterIgnoreHypermediaProperty]
     public IHypermediaQuery Query { get; set; }
-    public string SirenTitle => $"";
+    public string HtoTitle => $"";
 
     [Key("customerId")]
     [FormatterIgnoreHypermediaProperty]
@@ -373,7 +373,7 @@ public partial class CustomerPurchaseHistoryHto : IHypermediaQueryResult
 [HypermediaObject(Classes = new string[] { "Customer" })]
 public partial class HypermediaCustomerHto : IHypermediaObject
 {
-    public string SirenTitle => $"Customer: {FullName} (Age {Age})";
+    public string HtoTitle => $"Customer: {FullName} (Age {Age})";
 
     [Key("id")]
     [FormatterIgnoreHypermediaProperty]
@@ -458,7 +458,7 @@ public partial class HypermediaCustomerQueryResultHto : IHypermediaQueryResult
 {
     [FormatterIgnoreHypermediaProperty]
     public IHypermediaQuery Query { get; set; }
-    public string SirenTitle => $"Query result on Customer";
+    public string HtoTitle => $"Query result on Customer";
     public int? TotalEntities { get; set; }
     public int? CurrentEntitiesCount { get; set; }
 

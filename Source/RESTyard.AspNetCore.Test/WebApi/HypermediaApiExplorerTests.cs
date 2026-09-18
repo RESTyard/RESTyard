@@ -102,7 +102,7 @@ public class HypermediaApiExplorerTests : AssemblyBasedTestBase
                 [HypermediaObject(Classes = ["{{baseName}}"])]
                 public abstract class {{baseName}} : IHypermediaObject
                 {
-                    public string? SirenTitle => null;
+                    public string? HtoTitle => null;
                     
                     [RESTyard.AspNetCore.WebApi.RouteResolver.Key]
                     public string Key { get; }
@@ -173,7 +173,7 @@ public class HypermediaApiExplorerTests : AssemblyBasedTestBase
                 [HypermediaObject(Classes = ["Some"])]
                 public class SomeHto : IHypermediaObject
                 {
-                    public string? SirenTitle => null;
+                    public string? HtoTitle => null;
                     
                     [Key]
                     public int Key { get; set; }

@@ -15,13 +15,13 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         [Relations(["RelationA", "RelationB"])]
         public List<IEmbeddedEntity<SirenBuilderEntitiesTest.EmbeddedSubEntity>> Multiple { get; } = [];
 
-        public string? SirenTitle => null;
+        public string? HtoTitle => null;
     }
 
     [HypermediaObject(Classes = ["CustomClass1", "CustomClass2"])]
     public class AttributedEmptyHypermediaObject : IHypermediaObject
     {
-        public string? SirenTitle { get; } = "A Title";
+        public string? HtoTitle { get; } = "A Title";
     }
 
     [HypermediaObject(Classes = [nameof(PropertyDuplicateHypermediaObject)])]
@@ -33,14 +33,14 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         [HypermediaProperty(Name = "DuplicateRename")]
         public bool Property2 { get; set; }
 
-        public string? SirenTitle => null;
+        public string? HtoTitle => null;
     }
 
     [HypermediaObject(Classes = [nameof(PropertyNestedClassHypermediaObject)])]
     public class PropertyNestedClassHypermediaObject : IHypermediaObject
     {
         public AttributedPropertyHypermediaObject AChild { get; set; }
-        public string? SirenTitle => null;
+        public string? HtoTitle => null;
     }
 
     [HypermediaObject(Classes = [nameof(AttributedPropertyHypermediaObject)])]
@@ -56,7 +56,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         public bool IgnoredProperty { get; set; }
 
         public bool NotRenamed { get; set; }
-        public string? SirenTitle { get; } = null;
+        public string? HtoTitle { get; } = null;
     }
 
     [HypermediaObject(Classes = [nameof(PropertyHypermediaObject)])]
@@ -83,7 +83,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         public Type AType { get; set; }
         public DateOnly DateOnly { get; set; }
         public TimeOnly TimeOnly { get; set; }
-        public string? SirenTitle => null;
+        public string? HtoTitle => null;
     }
 
     [HypermediaObject(Classes = [nameof(HypermediaObjectWithListProperties)])]
@@ -102,7 +102,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         public IEnumerable<IEnumerable<int>> ListOfLists { get; set; }
         
         public IEnumerable<object> ListOfDownCastObjects { get; set; }
-        public string? SirenTitle => null;
+        public string? HtoTitle => null;
     }
 
     public class Nested

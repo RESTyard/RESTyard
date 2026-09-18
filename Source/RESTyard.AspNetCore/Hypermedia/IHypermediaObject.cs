@@ -2,5 +2,5 @@ namespace RESTyard.AspNetCore.Hypermedia;
 
 public interface IHypermediaObject
 {
-    string? SirenTitle { get; }
+    string? HtoTitle { get; }
 }

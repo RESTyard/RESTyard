@@ -609,7 +609,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             var type = propertyObject.GetType();
             var publicProperties = type.GetTypeInfo()
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(p => !IsRelatedEntityProperty<IRelatedEntity>(p) && !p.Name.Equals(nameof(IHypermediaObject.SirenTitle)));
+                .Where(p => !IsRelatedEntityProperty<IRelatedEntity>(p) && !p.Name.Equals(nameof(IHypermediaObject.HtoTitle)));
 
             var jProperties = new JObject();
             foreach (var publicProperty in publicProperties)
@@ -740,9 +740,9 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
         private static void AddTitle(JObject sirenJson, IHypermediaObject hypermediaObject)
         {
-            if (!string.IsNullOrEmpty(hypermediaObject?.SirenTitle))
+            if (!string.IsNullOrEmpty(hypermediaObject?.HtoTitle))
             {
-                sirenJson.Add("title", hypermediaObject.SirenTitle);
+                sirenJson.Add("title", hypermediaObject.HtoTitle);
             }
         }
     }

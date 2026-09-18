@@ -49,7 +49,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
 
         class ExternalObject : IHypermediaObject
         {
-            public string? SirenTitle { get; }
+            public string? HtoTitle { get; }
         }
     }
 }

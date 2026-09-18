@@ -120,7 +120,7 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
                 [HypermediaObject(Classes = ["Query"])]
                 public class QueryHto : IHypermediaQueryResult
                 {
-                    public string? SirenTitle => null;
+                    public string? HtoTitle => null;
                     public IHypermediaQuery Query { get; }
                     
                     [Key("id")]

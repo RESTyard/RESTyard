@@ -32,7 +32,7 @@ public class HypermediaObjectTitleCodeFixProvider : CodeFixProvider
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Move Title to SirenTitle property",
+                title: "Move Title to HtoTitle property",
                 equivalenceKey: HypermediaObjectTitleAnalyzer.DiagnosticId,
                 createChangedDocument: cancellationToken => MoveTitleToProperty(context.Document, classDeclaration, titleArgument, cancellationToken)),
             diagnostic);
@@ -44,7 +44,7 @@ public class HypermediaObjectTitleCodeFixProvider : CodeFixProvider
         AttributeArgumentSyntax titleArgument,
         CancellationToken cancellationToken)
     {
-        var property = PropertyDeclaration(NullableType(PredefinedType(Token(Microsoft.CodeAnalysis.CSharp.SyntaxKind.StringKeyword))), "SirenTitle")
+        var property = PropertyDeclaration(NullableType(PredefinedType(Token(Microsoft.CodeAnalysis.CSharp.SyntaxKind.StringKeyword))), "HtoTitle")
             .WithModifiers(TokenList(Token(Microsoft.CodeAnalysis.CSharp.SyntaxKind.PublicKeyword)))
             .WithExpressionBody(ArrowExpressionClause(titleArgument.Expression.WithoutTrivia()))
             .WithSemicolonToken(Token(Microsoft.CodeAnalysis.CSharp.SyntaxKind.SemicolonToken));

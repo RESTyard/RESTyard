@@ -26,7 +26,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
             [Key]
             public string Key { get; }
 
-            public string? SirenTitle { get; } = "My Awesome Hypermedia Object";
+            public string? HtoTitle { get; } = "My Awesome Hypermedia Object";
             public MyHypermediaObject(string key1)
             {
                 Key = key1;
@@ -76,7 +76,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
         class MyHypermediaObject : IHypermediaObject
         {
             
-            public string? SirenTitle { get; } = "My Awesome Hypermedia Object";
+            public string? HtoTitle { get; } = "My Awesome Hypermedia Object";
             
             [Key("id1")]
             public string Key1 { get; }

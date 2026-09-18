@@ -32,7 +32,7 @@ public class ApiControllerAnalyzerTests : VerifyAnalyzer
             [HypermediaObject(Classes = ["SomeHto"])]
             public class SomeHto : IHypermediaObject
             {
-                public string? SirenTitle => null;
+                public string? HtoTitle => null;
             }
             """;
         await Verify(
@@ -68,7 +68,7 @@ public class ApiControllerAnalyzerTests : VerifyAnalyzer
             [HypermediaObject(Classes = ["SomeHto"])]
             public class SomeHto : IHypermediaObject
             {
-                public string? SirenTitle => null;
+                public string? HtoTitle => null;
             }
             """;
         await Verify(
@@ -103,7 +103,7 @@ public class ApiControllerAnalyzerTests : VerifyAnalyzer
             [HypermediaObject(Classes = ["SomeHto"])]
             public class SomeHto : IHypermediaObject
             {
-                public string? SirenTitle => null;
+                public string? HtoTitle => null;
             }
             """;
         await Verify(

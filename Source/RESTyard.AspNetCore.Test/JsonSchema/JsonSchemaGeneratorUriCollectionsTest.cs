@@ -70,7 +70,7 @@ public class When_generating_json_schema_from_type_containing_a_list : AsyncTest
 
    class MyHypermediaObject : IHypermediaObject
    {
-       public string? SirenTitle { get; }
+       public string? HtoTitle { get; }
    }
 }
 
@@ -118,7 +118,7 @@ public class When_generating_json_schema_from_type_containing_a_list_and_not_a_l
 
     class MyHypermediaObject : IHypermediaObject
     {
-        public string? SirenTitle => null;
+        public string? HtoTitle => null;
     }
 }
 
@@ -181,12 +181,12 @@ public class When_generating_json_schema_from_type_containing_two_types_and_a_li
 
     class MyHypermediaObject : IHypermediaObject
     {
-        public string? SirenTitle => null;
+        public string? HtoTitle => null;
     }
 
     class MyHypermediaObject2 : IHypermediaObject
     {
-        public string? SirenTitle => null;
+        public string? HtoTitle => null;
     }
 }
 
@@ -222,12 +222,12 @@ public class When_generating_json_schema_with_same_name_for_both_a_collection_an
 
     class MyHypermediaObject : IHypermediaObject
     {
-        public string? SirenTitle => null;
+        public string? HtoTitle => null;
     }
 
     class MyHypermediaObject2 : IHypermediaObject
     {
-        public string? SirenTitle => null;
+        public string? HtoTitle => null;
     }
 }
 
@@ -259,12 +259,12 @@ public class When_generating_json_schema_with_same_name_for_multiple_target_type
 
     class MyHypermediaObject : IHypermediaObject
     {
-        public string? SirenTitle => null;
+        public string? HtoTitle => null;
     }
 
     class MyHypermediaObject2 : IHypermediaObject
     {
-        public string? SirenTitle => null;
+        public string? HtoTitle => null;
     }
 }
 // End: Schema generation tests

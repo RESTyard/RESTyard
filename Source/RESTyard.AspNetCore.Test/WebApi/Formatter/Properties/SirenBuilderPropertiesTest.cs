@@ -97,7 +97,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
                     p.Name != "IgnoredProperty"
                     && p.Name != "Entities"
                     && p.Name != "Links"
-                    && p.Name != nameof(IHypermediaObject.SirenTitle))
+                    && p.Name != nameof(IHypermediaObject.HtoTitle))
                 .ToList();
             Assert.AreEqual(propertiesObject.Properties().Count(), propertyInfos.Count);
 

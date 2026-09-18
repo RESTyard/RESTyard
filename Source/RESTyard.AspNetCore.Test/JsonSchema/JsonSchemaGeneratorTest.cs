@@ -45,7 +45,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
 
         class MyHypermediaObject : IHypermediaObject
         {
-            public string? SirenTitle { get; } = null;
+            public string? HtoTitle { get; } = null;
         }
     }
 
@@ -82,7 +82,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
 
         class MyHypermediaObject : IHypermediaObject
         {
-            public string? SirenTitle => null;
+            public string? HtoTitle => null;
         }
     }
 
@@ -162,7 +162,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
 
         class MyHypermediaObject : IHypermediaObject
         {
-            public string? SirenTitle => null;
+            public string? HtoTitle => null;
         }
     }
 

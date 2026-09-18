@@ -16,5 +16,5 @@ public class ExampleHto : IHypermediaObject
 
     public record BasicParameter() : IHypermediaActionParameter;
 
-    public string? SirenTitle { get; }
+    public string? HtoTitle { get; }
 }

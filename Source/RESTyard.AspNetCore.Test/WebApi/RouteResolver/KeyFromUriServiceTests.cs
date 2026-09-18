@@ -217,7 +217,7 @@ public class KeyFromUriServiceTests
     [HypermediaObject(Classes = [nameof(TestHto)])]
     public class TestHto : IHypermediaObject
     {
-        public string? SirenTitle => null;
+        public string? HtoTitle => null;
         public TestHto(string key)
         {
             Key = key;
@@ -250,7 +250,7 @@ public class KeyFromUriServiceTests
     [HypermediaObject(Classes = ["AllKeyTypes"])]
     public class AllKeyTypesHto : IHypermediaObject
     {
-        public string? SirenTitle => null;
+        public string? HtoTitle => null;
         [Key]
         public int IntKey { get; set; }
         
@@ -263,7 +263,7 @@ public class KeyFromUriServiceTests
     [HypermediaObject(Classes = [nameof(HtoWithoutGet)])]
     public class HtoWithoutGet : IHypermediaObject
     {
-        public string? SirenTitle => null;
+        public string? HtoTitle => null;
     }
 
     public class ClassWithoutPublicConstructor
