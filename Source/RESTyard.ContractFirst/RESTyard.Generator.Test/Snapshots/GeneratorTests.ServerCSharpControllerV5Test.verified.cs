@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using RESTyard.AspNetCore.WebApi;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
-using server._csharp._v5;
 using RESTyard.Generator.Test.Output;
+using server._csharp._v5._2;
 
 namespace server._csharp_controller._v5;
 [Route("api/[controller]")]

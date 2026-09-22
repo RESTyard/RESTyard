@@ -318,6 +318,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
                 
                 ActionWithClass = new HypermediaActionNoArgument(() => true);
             }
+
+            public string? HtoTitle => null;
         }
     }
 

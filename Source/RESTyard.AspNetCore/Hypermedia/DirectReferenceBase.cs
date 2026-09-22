@@ -30,5 +30,7 @@ namespace RESTyard.AspNetCore.Hypermedia
             this.AvailableMediaTypes = availableMediaTypes;
             return (TDerived)this;
         }
+
+        public string? HtoTitle { get; }
     }
 }

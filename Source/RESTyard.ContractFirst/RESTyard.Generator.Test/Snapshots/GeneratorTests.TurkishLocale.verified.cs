@@ -7,7 +7,6 @@ using RESTyard.Client.Builder;
 using RESTyard.Client.Hypermedia;
 using RESTyard.Client.Hypermedia.Attributes;
 using RESTyard.Client.Hypermedia.Commands;
-using RESTyard.Generator.Test.Output;
 
 namespace client._csharp._v3;
 public class DefaultHypermediaClientBuilder

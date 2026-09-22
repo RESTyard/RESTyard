@@ -62,7 +62,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
             var hypermediaObjectAttribute = GetHypermediaObjectAttribute(hypermediaObject);
             AddClasses(hypermediaObject, sirenJson, hypermediaObjectAttribute);
-            AddTitle(sirenJson, hypermediaObjectAttribute);
+            AddTitle(sirenJson, hypermediaObject);
 
             if (isEmbedded)
             {
@@ -609,7 +609,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             var type = propertyObject.GetType();
             var publicProperties = type.GetTypeInfo()
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(p => !IsRelatedEntityProperty<IRelatedEntity>(p));
+                .Where(p => !IsRelatedEntityProperty<IRelatedEntity>(p) && !p.Name.Equals(nameof(IHypermediaObject.HtoTitle)));
 
             var jProperties = new JObject();
             foreach (var publicProperty in publicProperties)
@@ -738,11 +738,11 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
             jEmbeddedEntity.Add("rel", rels);
         }
 
-        private static void AddTitle(JObject sirenJson, HypermediaObjectAttribute? hypermediaObjectAttribute)
+        private static void AddTitle(JObject sirenJson, IHypermediaObject hypermediaObject)
         {
-            if (!string.IsNullOrEmpty(hypermediaObjectAttribute?.Title))
+            if (!string.IsNullOrEmpty(hypermediaObject?.HtoTitle))
             {
-                sirenJson.Add("title", hypermediaObjectAttribute.Title);
+                sirenJson.Add("title", hypermediaObject.HtoTitle);
             }
         }
     }

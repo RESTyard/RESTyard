@@ -427,11 +427,13 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     [HypermediaObject(Classes = [nameof(NoSelfLinkHypermediaObject)])]
     public class NoSelfLinkHypermediaObject : IHypermediaObject
     {
+        public string? HtoTitle => null;
     }
 
     [HypermediaObject(Classes = [nameof(LinkingHypermediaObject)])]
     public class LinkingHypermediaObject : IHypermediaObject
     {
+        public string? HtoTitle => null;
         [Relations(["Link1"])]
         public ILink<Linked1HypermediaObject> Link1 { get; set; }
         
@@ -445,6 +447,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     [HypermediaObject(Classes = [nameof(DuplicateLinkingHypermediaObject)])]
     public class DuplicateLinkingHypermediaObject : IHypermediaObject
     {
+        public string? HtoTitle => null;
         [Relations(["Duplicate"])]
         public ILink<Linked1HypermediaObject> Link1 { get; set; }
         
@@ -458,6 +461,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     [HypermediaObject(Classes = [nameof(MultiRelLinkingHypermediaObject)])]
     public class MultiRelLinkingHypermediaObject : IHypermediaObject
     {
+        public string? HtoTitle => null;
         [Relations(["RelA", "RelB"])]
         public ILink<Linked1HypermediaObject> Link1 { get; set; }
 
@@ -468,6 +472,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     [HypermediaObject(Classes = [nameof(ExternalUsingHypermediaObject)])]
     public class ExternalUsingHypermediaObject : IHypermediaObject
     {
+        public string? HtoTitle => null;
         [Relations(["External0"])]
         public ILink<ExternalReference> Link1 { get; set; }
         
@@ -484,6 +489,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     [HypermediaObject(Classes = [nameof(InternalUsingHypermediaObject)])]
     public class InternalUsingHypermediaObject : IHypermediaObject
     {
+        public string? HtoTitle => null;
         [Relations(["External0"])]
         public ILink<InternalReference> Link1 { get; set; }
         
@@ -500,6 +506,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     [HypermediaObject(Classes = [nameof(Linked1HypermediaObject)])]
     public class Linked1HypermediaObject : IHypermediaObject, IHypermediaQueryResult
     {
+        public string? HtoTitle => null;
         public IHypermediaQuery Query => new QueryForLinkHto(1);
         
         public record Key(int Id) : HypermediaObjectKeyBase<Linked1HypermediaObject>
@@ -514,6 +521,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     [HypermediaObject(Classes = [nameof(Linked2HypermediaObject)])]
     public class Linked2HypermediaObject : IHypermediaObject, IHypermediaQueryResult
     {
+        public string? HtoTitle => null;
         public IHypermediaQuery Query => new QueryForLinkHto(2);
         public record Key(string Text) : HypermediaObjectKeyBase<Linked2HypermediaObject>
         {
@@ -529,6 +537,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
     [HypermediaObject(Classes = [nameof(Linked3HypermediaObject)])]
     public class Linked3HypermediaObject : IHypermediaObject
     {
+        public string? HtoTitle => null;
     }
 
     public class Linked1HypermediaObjectWithKeyRouteKeyProvider : IKeyProducer

@@ -1,3 +1,6 @@
 namespace RESTyard.AspNetCore.Hypermedia;
 
-public interface IHypermediaObject;
+public interface IHypermediaObject
+{
+    string? HtoTitle { get; }
+}
