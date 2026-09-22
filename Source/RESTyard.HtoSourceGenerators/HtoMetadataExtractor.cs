@@ -294,13 +294,12 @@ internal static class HtoMetadataExtractor
         var mediaTypes = GetMediaTypes(member);
         var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
 
-        // Title: [Title] attribute > XML doc <summary>
-        var linkTitle = GetAttributeStringArgument(member, WellKnownTypeNames.TitleAttributeFullName)
-                        ?? GetXmlDocElement(member, "summary");
+        // Title: [Title] attribute only (no XML doc fallback: <summary> is description text)
+        var linkTitle = GetAttributeStringArgument(member, WellKnownTypeNames.TitleAttributeFullName);
 
-        // Description: [Description] attribute > XML doc <remarks>
+        // Description: [Description] attribute > XML doc <summary> followed by <remarks>
         var linkDescription = GetAttributeStringArgument(member, WellKnownTypeNames.DescriptionAttributeFullName)
-                              ?? GetXmlDocElement(member, "remarks");
+                              ?? JoinParagraphs(GetXmlDocElement(member, "summary"), GetXmlDocElement(member, "remarks"));
 
         var (linkIsDeprecated, linkDeprecationMessage) = GetDeprecation(member);
         var linkAccessGroups = GetAccessGroups(member);
@@ -327,14 +326,13 @@ internal static class HtoMetadataExtractor
 
         var name = GetNamedArgumentString(actionAttr, "Name") ?? member.Name;
 
-        // Title: [HypermediaAction(Title)] > [Title] attribute > XML doc <summary>
+        // Title: [HypermediaAction(Title)] > [Title] attribute (no XML doc fallback: <summary> is description text)
         var actionTitle = GetNamedArgumentString(actionAttr, "Title")
-                          ?? GetAttributeStringArgument(member, WellKnownTypeNames.TitleAttributeFullName)
-                          ?? GetXmlDocElement(member, "summary");
+                          ?? GetAttributeStringArgument(member, WellKnownTypeNames.TitleAttributeFullName);
 
-        // Description: [Description] attribute > XML doc <remarks>
+        // Description: [Description] attribute > XML doc <summary> followed by <remarks>
         var actionDescription = GetAttributeStringArgument(member, WellKnownTypeNames.DescriptionAttributeFullName)
-                                ?? GetXmlDocElement(member, "remarks");
+                                ?? JoinParagraphs(GetXmlDocElement(member, "summary"), GetXmlDocElement(member, "remarks"));
 
         var (actionIsDeprecated, actionDeprecationMessage) = GetDeprecation(member);
 
@@ -361,13 +359,12 @@ internal static class HtoMetadataExtractor
         var targetClasses = GetTargetClasses(targetType);
         var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
 
-        // Title: [Title] attribute > XML doc <summary>
-        var embeddedTitle = GetAttributeStringArgument(member, WellKnownTypeNames.TitleAttributeFullName)
-                            ?? GetXmlDocElement(member, "summary");
+        // Title: [Title] attribute only (no XML doc fallback: <summary> is description text)
+        var embeddedTitle = GetAttributeStringArgument(member, WellKnownTypeNames.TitleAttributeFullName);
 
-        // Description: [Description] attribute > XML doc <remarks>
+        // Description: [Description] attribute > XML doc <summary> followed by <remarks>
         var embeddedDescription = GetAttributeStringArgument(member, WellKnownTypeNames.DescriptionAttributeFullName)
-                                  ?? GetXmlDocElement(member, "remarks");
+                                  ?? JoinParagraphs(GetXmlDocElement(member, "summary"), GetXmlDocElement(member, "remarks"));
 
         var (embeddedIsDeprecated, embeddedDeprecationMessage) = GetDeprecation(member);
         var embeddedAccessGroups = GetAccessGroups(member);

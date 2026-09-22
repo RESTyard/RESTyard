@@ -46,7 +46,8 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
   name from `[Title]` only, not the Siren title; `description` source changes), `SourceGenerator.md`
   (title/description source tables ~l.211, l.286–295), migration guide: `HypermediaObject(Title)` →
   `HtoTitle` (Siren, runtime, optional) + `[Title]` (schema display name); class `<summary>` now feeds
-  `description`; `GenerateDocumentationFile=true` required for XML-doc sourcing.
+  `description`; same rule for links / actions / embedded (member `<summary>` no longer a title);
+  `GenerateDocumentationFile=true` required for XML-doc sourcing.
 - [ ] Decide one attribute family for schema metadata: JsonSchema.Net (`[Title]`, `[Description]`, used by
   the generator) vs BCL `System.ComponentModel` (`[DisplayName]`, `[Description]`, mapped by
   `JsonSchemaFactory` for parameters). Today both coexist.

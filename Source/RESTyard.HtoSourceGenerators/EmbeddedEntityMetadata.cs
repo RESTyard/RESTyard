@@ -10,8 +10,8 @@ namespace RESTyard.HtoSourceGenerators;
 /// <param name="TargetFullyQualifiedName">Fully qualified type name of the target HTO (e.g. "MyApp.HypermediaCustomerHto").</param>
 /// <param name="TargetClasses">Siren classes of the target HTO from <c>[HypermediaObject(Classes)]</c>.</param>
 /// <param name="IsCollection">Whether this embedded entity represents a collection.</param>
-/// <param name="Title">Title from <c>[Title]</c> attribute or XML doc summary.</param>
-/// <param name="Description">Description from <c>[Description]</c> attribute or XML doc remarks.</param>
+/// <param name="Title">Title from <c>[Title]</c> attribute only (no XML doc fallback).</param>
+/// <param name="Description">Description from <c>[Description]</c> attribute, or XML doc summary followed by remarks.</param>
 /// <param name="IsDeprecated">Whether the embedded entity is marked as deprecated.</param>
 /// <param name="DeprecationMessage">Deprecation message, if any.</param>
 /// <param name="IsMandatory">Whether the embedded entity property is non-nullable (mandatory).</param>

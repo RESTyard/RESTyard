@@ -9,8 +9,8 @@ namespace RESTyard.HtoSourceGenerators;
 /// mappings keyed by the base HTO (fully qualified so same-named HTOs in different namespaces
 /// cannot receive each other's mapping).</param>
 /// <param name="Name">Action name from <c>[HypermediaAction(Name)]</c>, falling back to C# property name.</param>
-/// <param name="Title">Action title from <c>[HypermediaAction(Title)]</c>, <c>[Title]</c> attribute, or XML doc summary.</param>
-/// <param name="Description">Description from <c>[Description]</c> attribute or XML doc remarks.</param>
+/// <param name="Title">Action title from <c>[HypermediaAction(Title)]</c> or <c>[Title]</c> attribute (no XML doc fallback).</param>
+/// <param name="Description">Description from <c>[Description]</c> attribute, or XML doc summary followed by remarks.</param>
 /// <param name="ParameterTypeFullName">Fully qualified CLR type name of the parameter type, or null if parameterless.</param>
 /// <param name="IsFileUpload">Whether the action accepts file uploads.</param>
 /// <param name="IsDeprecated">Whether the action is marked as deprecated.</param>
