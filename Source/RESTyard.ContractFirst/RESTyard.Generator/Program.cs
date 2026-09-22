@@ -31,6 +31,8 @@ public static class Program
                             /csharp
                               /v4
                               /v5
+                              /v5.1
+                              /v5.2
                             /csharp-controller
                               /v5
                             /csharp-policies

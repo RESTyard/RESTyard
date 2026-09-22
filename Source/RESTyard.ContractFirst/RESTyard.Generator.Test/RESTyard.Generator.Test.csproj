@@ -22,18 +22,6 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="xunit.v3" Version="2.0.2" />
-        <PackageReference Include="RESTyard.AspNetCore"
-                          Version="4.4.0-develop-20250414.1"
-                          PrivateAssets="all"
-                          ExcludeAssets="all" />
-        <PackageReference Include="RESTyard.AspNetCore"
-                          Version="5.0.0-develop-20250515.1"
-                          PrivateAssets="all"
-                          ExcludeAssets="all" />
-        <PackageReference Include="RESTyard.AspNetCore"
-                          Version="6.0.2-develop-20260827.3"
-                          PrivateAssets="all"
-                          ExcludeAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
@@ -44,6 +32,9 @@
       <ProjectReference Include="..\RESTyard.Generator\RESTyard.Generator.csproj" />
       <ProjectReference Include="..\..\RESTyard.AspNetCore\RESTyard.AspNetCore.csproj" />
       <ProjectReference Include="..\..\RESTyard.Client\RESTyard.Client.csproj" />
+      <ProjectReference Include="..\LegacyV4Packages\LegacyV4Packages.csproj" ReferenceOutputAssembly="false" />
+      <ProjectReference Include="..\LegacyV5Packages\LegacyV5Packages.csproj" ReferenceOutputAssembly="false" />
+      <ProjectReference Include="..\LegacyV5_1Packages\LegacyV5_1Packages.csproj" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
     <ItemGroup>
