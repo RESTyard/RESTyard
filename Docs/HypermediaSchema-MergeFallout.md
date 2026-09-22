@@ -39,6 +39,10 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
   server/csharp-controller/v4`, which #131 deleted — switch to `v5`.
 - [ ] `CustomersRootController.NewQueryAction` comment "Provides a link to the result Query." is stale
   (result is returned inline).
+- [ ] Remove the obsolete sourcelink#572 `TargetFrameworkMonikerAssemblyAttributesPath` workaround from
+  `Source/Directory.Build.props` (done on the branch). Evaluated in props, before the SDK sets its inputs, so it
+  resolves to `<projectdir>/.AssemblyAttributes`, which all TFMs of a project share. Parallel multi-TFM builds
+  (Rider) race on that file → `CS2001`. The SDK default already puts it in `obj/`.
 
 **Docs**
 
