@@ -34,9 +34,12 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        [Title("Customer")]
+        [HypermediaObject(Classes = ["Customer"])]
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer";
+
             public string Name { get; set; } = string.Empty;
             public int Age { get; set; }
         }
@@ -51,9 +54,12 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        [Title("Customer")]
+        [HypermediaObject(Classes = ["Customer"])]
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer";
+
             public string Name { get; set; } = string.Empty;
             public int Age { get; set; }
         }
@@ -68,9 +74,11 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Empty", Classes = ["Empty"])]
-        public class HypermediaEmptyHto : HypermediaObject
+        [Title("Empty")]
+        [HypermediaObject(Classes = ["Empty"])]
+        public class HypermediaEmptyHto : IHypermediaObject
         {
+            public string? HtoTitle => "Empty";
         }
         """;
 
@@ -83,9 +91,12 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "A Widget")]
-        public class HypermediaWidgetHto : HypermediaObject
+        [Title("A Widget")]
+        [HypermediaObject]
+        public class HypermediaWidgetHto : IHypermediaObject
         {
+            public string? HtoTitle => "A Widget";
+
             public string Label { get; set; } = string.Empty;
         }
         """;
@@ -99,9 +110,12 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        [Title("Customer")]
+        [HypermediaObject(Classes = ["Customer"])]
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer";
+
             public string Name { get; set; } = string.Empty;
 
             [Relations(["self"])]
@@ -122,9 +136,12 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        [Title("Customer")]
+        [HypermediaObject(Classes = ["Customer"])]
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer";
+
             public string Name { get; set; } = string.Empty;
 
             [Relations(["self"])]
@@ -157,9 +174,12 @@ internal static class TestHtoSources
             public MarkAsFavoriteOp() : base(() => true) { }
         }
 
-        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        [Title("Customer")]
+        [HypermediaObject(Classes = ["Customer"])]
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer";
+
             public string Name { get; set; } = string.Empty;
 
             [HypermediaAction(Name = "MarkAsFavorite", Title = "Mark as Favorite")]
@@ -179,15 +199,21 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Address", Classes = ["Address"])]
-        public class HypermediaAddressHto : HypermediaObject
+        [Title("Address")]
+        [HypermediaObject(Classes = ["Address"])]
+        public class HypermediaAddressHto : IHypermediaObject
         {
+            public string? HtoTitle => "Address";
+
             public string Street { get; set; } = string.Empty;
         }
 
-        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        [Title("Customer")]
+        [HypermediaObject(Classes = ["Customer"])]
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer";
+
             public string Name { get; set; } = string.Empty;
 
             [Relations(["address"])]
@@ -222,9 +248,12 @@ internal static class TestHtoSources
             public BuyCarAction() : base() { }
         }
 
-        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        [Title("Customer")]
+        [HypermediaObject(Classes = ["Customer"])]
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer";
+
             public string Name { get; set; } = string.Empty;
 
             [HypermediaAction]
@@ -244,15 +273,21 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Address", Classes = ["Address"])]
-        public class HypermediaAddressHto : HypermediaObject
+        [Title("Address")]
+        [HypermediaObject(Classes = ["Address"])]
+        public class HypermediaAddressHto : IHypermediaObject
         {
+            public string? HtoTitle => "Address";
+
             public string Street { get; set; } = string.Empty;
         }
 
-        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        [Title("Customer")]
+        [HypermediaObject(Classes = ["Customer"])]
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer";
+
             public string Name { get; set; } = string.Empty;
 
             [Relations(["address"])]
@@ -272,9 +307,12 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "AllTypes", Classes = ["AllTypes"])]
-        public class HypermediaAllTypesHto : HypermediaObject
+        [Title("AllTypes")]
+        [HypermediaObject(Classes = ["AllTypes"])]
+        public class HypermediaAllTypesHto : IHypermediaObject
         {
+            public string? HtoTitle => "AllTypes";
+
             public string Text { get; set; } = string.Empty;
             public bool IsActive { get; set; }
             public int Count { get; set; }
@@ -300,9 +338,12 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Nullable", Classes = ["Nullable"])]
-        public class HypermediaNullableHto : HypermediaObject
+        [Title("Nullable")]
+        [HypermediaObject(Classes = ["Nullable"])]
+        public class HypermediaNullableHto : IHypermediaObject
         {
+            public string? HtoTitle => "Nullable";
+
             public int? OptionalCount { get; set; }
             public bool? OptionalFlag { get; set; }
             public DateTime? OptionalDate { get; set; }
@@ -336,9 +377,12 @@ internal static class TestHtoSources
             High
         }
 
-        [HypermediaObject(Title = "WithEnum", Classes = ["WithEnum"])]
-        public class HypermediaWithEnumHto : HypermediaObject
+        [Title("WithEnum")]
+        [HypermediaObject(Classes = ["WithEnum"])]
+        public class HypermediaWithEnumHto : IHypermediaObject
         {
+            public string? HtoTitle => "WithEnum";
+
             public Status CurrentStatus { get; set; }
             public Priority CurrentPriority { get; set; }
         }
@@ -353,9 +397,12 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "WithCollections", Classes = ["WithCollections"])]
-        public class HypermediaWithCollectionsHto : HypermediaObject
+        [Title("WithCollections")]
+        [HypermediaObject(Classes = ["WithCollections"])]
+        public class HypermediaWithCollectionsHto : IHypermediaObject
         {
+            public string? HtoTitle => "WithCollections";
+
             public string[] Tags { get; set; } = Array.Empty<string>();
             public List<int> Scores { get; set; } = new();
             public IEnumerable<bool> Flags { get; set; } = Array.Empty<bool>();
@@ -377,9 +424,12 @@ internal static class TestHtoSources
             public string City { get; set; } = string.Empty;
         }
 
-        [HypermediaObject(Title = "WithNested", Classes = ["WithNested"])]
-        public class HypermediaWithNestedHto : HypermediaObject
+        [Title("WithNested")]
+        [HypermediaObject(Classes = ["WithNested"])]
+        public class HypermediaWithNestedHto : IHypermediaObject
         {
+            public string? HtoTitle => "WithNested";
+
             public string Name { get; set; } = string.Empty;
             public Address HomeAddress { get; set; } = default!;
         }
@@ -394,9 +444,12 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "WithAttributes", Classes = ["WithAttributes"])]
-        public class HypermediaWithAttributesHto : HypermediaObject
+        [Title("WithAttributes")]
+        [HypermediaObject(Classes = ["WithAttributes"])]
+        public class HypermediaWithAttributesHto : IHypermediaObject
         {
+            public string? HtoTitle => "WithAttributes";
+
             [HypermediaProperty(Name = "FullName")]
             public string Name { get; set; } = string.Empty;
 
@@ -421,9 +474,12 @@ internal static class TestHtoSources
             public UploadAction() : base(() => true) { }
         }
 
-        [HypermediaObject(Title = "Document", Classes = ["Document"])]
-        public class HypermediaDocumentHto : HypermediaObject
+        [Title("Document")]
+        [HypermediaObject(Classes = ["Document"])]
+        public class HypermediaDocumentHto : IHypermediaObject
         {
+            public string? HtoTitle => "Document";
+
             public string Title { get; set; } = string.Empty;
 
             [HypermediaAction(Name = "Upload", Title = "Upload File")]
@@ -440,9 +496,12 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Address", Classes = ["Address"])]
-        public class HypermediaAddressHto : HypermediaObject
+        [Title("Address")]
+        [HypermediaObject(Classes = ["Address"])]
+        public class HypermediaAddressHto : IHypermediaObject
         {
+            public string? HtoTitle => "Address";
+
             public string Street { get; set; } = string.Empty;
         }
 
@@ -454,8 +513,10 @@ internal static class TestHtoSources
         [Title("Customer Entity")]
         [Description("Represents a customer in the system.")]
         [HypermediaObject(Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => null;
+
             public string Name { get; set; } = string.Empty;
 
             [Title("Best Friend Link")]
@@ -484,9 +545,12 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Address", Classes = ["Address"])]
-        public class HypermediaAddressHto : HypermediaObject
+        [Title("Address")]
+        [HypermediaObject(Classes = ["Address"])]
+        public class HypermediaAddressHto : IHypermediaObject
         {
+            public string? HtoTitle => "Address";
+
             public string Street { get; set; } = string.Empty;
         }
 
@@ -498,8 +562,10 @@ internal static class TestHtoSources
         /// <summary>A customer with profile and order history.</summary>
         /// <remarks>Represents an active customer account in the system.</remarks>
         [HypermediaObject(Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => null;
+
             public string Name { get; set; } = string.Empty;
 
             /// <summary>Link to the customer's best friend.</summary>
@@ -533,25 +599,10 @@ internal static class TestHtoSources
         [Title("Attribute Title")]
         [Description("Attribute Description")]
         [HypermediaObject(Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        public class HypermediaCustomerHto : IHypermediaObject
         {
-            public string Name { get; set; } = string.Empty;
-        }
-        """;
+            public string? HtoTitle => null;
 
-    /// <summary>
-    /// HTO where [HypermediaObject(Title)] takes precedence over [Title] attribute.
-    /// </summary>
-    internal const string HtoWithHypermediaObjectTitleOverridingTitleAttribute = $$"""
-        {{Usings}}
-        {{AssemblyAttribute}}
-
-        namespace TestHtos;
-
-        [Title("Should Be Ignored")]
-        [HypermediaObject(Title = "HypermediaObject Title", Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
-        {
             public string Name { get; set; } = string.Empty;
         }
         """;
@@ -565,9 +616,12 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Address", Classes = ["Address"])]
-        public class HypermediaAddressHto : HypermediaObject
+        [Title("Address")]
+        [HypermediaObject(Classes = ["Address"])]
+        public class HypermediaAddressHto : IHypermediaObject
         {
+            public string? HtoTitle => "Address";
+
             public string Street { get; set; } = string.Empty;
         }
 
@@ -577,9 +631,12 @@ internal static class TestHtoSources
         }
 
         [Obsolete("Use HypermediaCustomerV2Hto instead.")]
-        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        [Title("Customer")]
+        [HypermediaObject(Classes = ["Customer"])]
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer";
+
             public string Name { get; set; } = string.Empty;
 
             [Obsolete("Use preferredFriend instead.")]
@@ -614,9 +671,12 @@ internal static class TestHtoSources
             public override void Write(System.Text.Json.Utf8JsonWriter writer, string value, System.Text.Json.JsonSerializerOptions options) => writer.WriteStringValue(value);
         }
 
-        [HypermediaObject(Title = "Product", Classes = ["Product"])]
-        public class HypermediaProductHto : HypermediaObject
+        [Title("Product")]
+        [HypermediaObject(Classes = ["Product"])]
+        public class HypermediaProductHto : IHypermediaObject
         {
+            public string? HtoTitle => "Product";
+
             /// <summary>The product display name.</summary>
             [JsonPropertyName("display_name")]
             [HypermediaProperty(Name = "DisplayName")]
@@ -669,9 +729,12 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Address", Classes = ["Address"])]
-        public class HypermediaAddressHto : HypermediaObject
+        [Title("Address")]
+        [HypermediaObject(Classes = ["Address"])]
+        public class HypermediaAddressHto : IHypermediaObject
         {
+            public string? HtoTitle => "Address";
+
             public string Street { get; set; } = string.Empty;
         }
 
@@ -680,10 +743,13 @@ internal static class TestHtoSources
             public DeleteAction() : base(() => true) { }
         }
 
-        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+        [Title("Customer")]
+        [HypermediaObject(Classes = ["Customer"])]
         [HypermediaAccessGroup("admin", "sales")]
-        public class HypermediaCustomerHto : HypermediaObject
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer";
+
             public string Name { get; set; } = string.Empty;
 
             [Relations(["self"])]
@@ -712,9 +778,12 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Simple", Classes = ["Simple"])]
-        public class HypermediaSimpleHto : HypermediaObject
+        [Title("Simple")]
+        [HypermediaObject(Classes = ["Simple"])]
+        public class HypermediaSimpleHto : IHypermediaObject
         {
+            public string? HtoTitle => "Simple";
+
             public string Name { get; set; } = string.Empty;
 
             [Relations(["self"])]
@@ -728,9 +797,12 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Address", Classes = ["Address"])]
-        public class HypermediaAddressHto : HypermediaObject
+        [Title("Address")]
+        [HypermediaObject(Classes = ["Address"])]
+        public class HypermediaAddressHto : IHypermediaObject
         {
+            public string? HtoTitle => "Address";
+
             public string Street { get; set; } = string.Empty;
             public string City { get; set; } = string.Empty;
         }
@@ -750,9 +822,12 @@ internal static class TestHtoSources
             public BuyCarAction() : base() { }
         }
 
-        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        [Title("Customer")]
+        [HypermediaObject(Classes = ["Customer"])]
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer";
+
             public string Name { get; set; } = string.Empty;
             public int Age { get; set; }
 

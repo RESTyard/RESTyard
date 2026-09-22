@@ -22,7 +22,7 @@ public class BaseController : ControllerBase
     }
 
     [HttpPatch("<stub>"), HypermediaActionEndpoint<BaseHto>(nameof(BaseHto.WithParameter))]
-    public Task<IActionResult> WithParameterAsync([HypermediaActionParameterFromBody] TP2 tP2)
+    public Task<IActionResult> WithParameterAsync([FromBody] TP2 tP2)
     {
         throw new NotImplementedException();
     }
@@ -34,7 +34,7 @@ public class BaseController : ControllerBase
     }
 
     [HttpPatch("<stub>"), HypermediaActionEndpoint<BaseHto>(nameof(BaseHto.WithParameterAndResult))]
-    public Task<IActionResult> WithParameterAndResultAsync([HypermediaActionParameterFromBody] External external)
+    public Task<IActionResult> WithParameterAndResultAsync([FromBody] External external)
     {
         throw new NotImplementedException();
     }
@@ -46,7 +46,13 @@ public class BaseController : ControllerBase
     }
 
     [HttpPost("<stub>"), HypermediaActionEndpoint<BaseHto>(nameof(BaseHto.UploadWithParameter))]
-    public Task<IActionResult> UploadWithParameterAsync([HypermediaActionParameterFromBody] TP12 tP12)
+    public Task<IActionResult> UploadWithParameterAsync([FromBody] TP12 tP12)
+    {
+        throw new NotImplementedException();
+    }
+
+    [HttpPost("<stub>"), HypermediaActionEndpoint<BaseHto>(nameof(BaseHto.Optional))]
+    public Task<IActionResult> OptionalAsync()
     {
         throw new NotImplementedException();
     }

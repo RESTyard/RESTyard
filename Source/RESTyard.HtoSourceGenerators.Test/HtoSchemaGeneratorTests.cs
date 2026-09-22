@@ -67,8 +67,10 @@ public class HtoSchemaGeneratorTests
             namespace TestHtos;
 
             [HypermediaObject(Classes = ["Truck"])]
-            public class HypermediaTruckHto : HypermediaObject
+            public class HypermediaTruckHto : IHypermediaObject
             {
+                public string? HtoTitle => null;
+
                 public string Brand { get; set; } = string.Empty;
             }
             """;
@@ -86,14 +88,18 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "", Classes = ["Truck"])]
-            public class HypermediaTruckHto : HypermediaObject
+            [Title("")]
+            [HypermediaObject(Classes = ["Truck"])]
+            public class HypermediaTruckHto : IHypermediaObject
             {
+                public string? HtoTitle => null;
+
                 public string Brand { get; set; } = string.Empty;
             }
             """;
@@ -110,14 +116,17 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Cars Root", Classes = ["CarsRoot", "CollectionRoot"])]
-            public class HypermediaCarsRootHto : HypermediaObject
+            [Title("Cars Root")]
+            [HypermediaObject(Classes = ["CarsRoot", "CollectionRoot"])]
+            public class HypermediaCarsRootHto : IHypermediaObject
             {
+                public string? HtoTitle => "Cars Root";
             }
             """;
 
@@ -133,12 +142,14 @@ public class HtoSchemaGeneratorTests
     {
         const string source = """
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Not an HTO", Classes = ["Fake"])]
+            [Title("Not an HTO")]
+            [HypermediaObject(Classes = ["Fake"])]
             public class NotAnHto
             {
             }
@@ -191,14 +202,18 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 public string Name { get; set; } = string.Empty;
 
                 public string? Nickname { get; set; }
@@ -221,14 +236,18 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 public string Name { get; set; } = string.Empty;
 
                 public string? Nickname { get; set; }
@@ -306,14 +325,17 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Empty", Classes = ["Empty"])]
-            public class HypermediaEmptyHto : HypermediaObject
+            [Title("Empty")]
+            [HypermediaObject(Classes = ["Empty"])]
+            public class HypermediaEmptyHto : IHypermediaObject
             {
+                public string? HtoTitle => "Empty";
             }
             """;
 
@@ -424,20 +446,27 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Order", Classes = ["Order", "Document"])]
-            public class HypermediaOrderHto : HypermediaObject
+            [Title("Order")]
+            [HypermediaObject(Classes = ["Order", "Document"])]
+            public class HypermediaOrderHto : IHypermediaObject
             {
+                public string? HtoTitle => "Order";
+
                 public string OrderNumber { get; set; } = string.Empty;
             }
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 public string Name { get; set; } = string.Empty;
 
                 [Relations(["latestOrder"])]
@@ -469,6 +498,7 @@ public class HtoSchemaGeneratorTests
         using System;
         using RESTyard.AspNetCore.Hypermedia;
         using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using Json.Schema.Generation;
         using RESTyard.AspNetCore.Hypermedia.Links;
         using RESTyard.Schema.Model;
 
@@ -476,9 +506,12 @@ public class HtoSchemaGeneratorTests
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        [Title("Customer")]
+        [HypermediaObject(Classes = ["Customer"])]
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer";
+
             public string Name { get; set; } = string.Empty;
 
             [Relations(["invoice-pdf"])]
@@ -539,14 +572,18 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 public string Name { get; set; } = string.Empty;
 
                 public ExternalLink? MissingRelExternalLink { get; set; }
@@ -604,6 +641,7 @@ public class HtoSchemaGeneratorTests
         using System;
         using RESTyard.AspNetCore.Hypermedia;
         using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using Json.Schema.Generation;
         using RESTyard.AspNetCore.Hypermedia.Links;
         using RESTyard.Schema.Model;
 
@@ -611,9 +649,12 @@ public class HtoSchemaGeneratorTests
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        [Title("Customer")]
+        [HypermediaObject(Classes = ["Customer"])]
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer";
+
             [Relations(["invoice-pdf"])]
             [HypermediaMediaType("application/pdf")]
             public ExternalLink Invoice { get; set; } = Link.External(
@@ -690,6 +731,7 @@ public class HtoSchemaGeneratorTests
             using System;
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
             using RESTyard.AspNetCore.Hypermedia.Links;
             using RESTyard.Schema.Model;
 
@@ -697,9 +739,12 @@ public class HtoSchemaGeneratorTests
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 [Relations(["invoice-pdf"])]
                 [HypermediaMediaType("application/pdf", "text/html")]
                 public ExternalLink Invoice { get; set; } = Link.External(
@@ -784,6 +829,7 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Actions;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
@@ -794,9 +840,12 @@ public class HtoSchemaGeneratorTests
                 public DoSomethingAction() : base(() => true) { }
             }
 
-            [HypermediaObject(Title = "Thing", Classes = ["Thing"])]
-            public class HypermediaThingHto : HypermediaObject
+            [Title("Thing")]
+            [HypermediaObject(Classes = ["Thing"])]
+            public class HypermediaThingHto : IHypermediaObject
             {
+                public string? HtoTitle => "Thing";
+
                 [HypermediaAction(Name = "CustomName", Title = "Custom Title")]
                 public DoSomethingAction? DoIt { get; set; }
             }
@@ -849,6 +898,7 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Actions;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
@@ -864,9 +914,12 @@ public class HtoSchemaGeneratorTests
                 public SearchAction() : base() { }
             }
 
-            [HypermediaObject(Title = "Search", Classes = ["Search"])]
-            public class HypermediaSearchHto : HypermediaObject
+            [Title("Search")]
+            [HypermediaObject(Classes = ["Search"])]
+            public class HypermediaSearchHto : IHypermediaObject
             {
+                public string? HtoTitle => "Search";
+
                 [HypermediaAction(Name = "Search")]
                 public SearchAction? Search { get; set; }
             }
@@ -927,20 +980,27 @@ public class HtoSchemaGeneratorTests
             using System.Collections.Generic;
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Order", Classes = ["Order", "Document"])]
-            public class HypermediaOrderHto : HypermediaObject
+            [Title("Order")]
+            [HypermediaObject(Classes = ["Order", "Document"])]
+            public class HypermediaOrderHto : IHypermediaObject
             {
+                public string? HtoTitle => "Order";
+
                 public string OrderNumber { get; set; } = string.Empty;
             }
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 public string Name { get; set; } = string.Empty;
 
                 [Relations(["orders"])]
@@ -993,20 +1053,27 @@ public class HtoSchemaGeneratorTests
             using System.Collections.Generic;
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Address", Classes = ["Address"])]
-            public class HypermediaAddressHto : HypermediaObject
+            [Title("Address")]
+            [HypermediaObject(Classes = ["Address"])]
+            public class HypermediaAddressHto : IHypermediaObject
             {
+                public string? HtoTitle => "Address";
+
                 public string Street { get; set; } = string.Empty;
             }
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 public string Name { get; set; } = string.Empty;
 
                 public IEmbeddedEntity<HypermediaAddressHto>? MissingRelations { get; set; }
@@ -1034,17 +1101,22 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Other", Classes = ["Other"])]
-            public class HypermediaOtherHto : HypermediaObject { }
+            [Title("Other")]
+            [HypermediaObject(Classes = ["Other"])]
+            public class HypermediaOtherHto : IHypermediaObject { public string? HtoTitle => "Other"; }
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 public string Name { get; set; } = string.Empty;
 
                 public ILink<HypermediaOtherHto>? MissingRelLink { get; set; }
@@ -1069,17 +1141,22 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Other", Classes = ["Other"])]
-            public class HypermediaOtherHto : HypermediaObject { }
+            [Title("Other")]
+            [HypermediaObject(Classes = ["Other"])]
+            public class HypermediaOtherHto : IHypermediaObject { public string? HtoTitle => "Other"; }
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 public string Name { get; set; } = string.Empty;
 
                 public ILink<HypermediaOtherHto>? OrphanLink { get; set; }
@@ -1103,20 +1180,27 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Address", Classes = ["Address"])]
-            public class HypermediaAddressHto : HypermediaObject
+            [Title("Address")]
+            [HypermediaObject(Classes = ["Address"])]
+            public class HypermediaAddressHto : IHypermediaObject
             {
+                public string? HtoTitle => "Address";
+
                 public string Street { get; set; } = string.Empty;
             }
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 public string Name { get; set; } = string.Empty;
 
                 public IEmbeddedEntity<HypermediaAddressHto>? Orphan { get; set; }
@@ -1200,13 +1284,14 @@ public class HtoSchemaGeneratorTests
     }
 
     [Fact]
-    public void HtoWithXmlDocs_entity_has_title_and_description()
+    public void HtoWithXmlDocs_entity_has_description_from_summary_and_remarks()
     {
         var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
             "HypermediaCustomerHto", TestHtoSources.HtoWithXmlDocs);
 
-        schema.Title.Should().Be("A customer with profile and order history.");
-        schema.Description.Should().Be("Represents an active customer account in the system.");
+        schema.Title.Should().BeNull();
+        schema.Description.Should().Be(
+            "A customer with profile and order history.\n\nRepresents an active customer account in the system.");
     }
 
     [Fact]
@@ -1216,36 +1301,39 @@ public class HtoSchemaGeneratorTests
     }
 
     [Fact]
-    public void HtoWithXmlDocs_link_has_title_and_description()
+    public void HtoWithXmlDocs_link_has_description_from_summary_and_remarks()
     {
         var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
             "HypermediaCustomerHto", TestHtoSources.HtoWithXmlDocs);
 
         var link = schema.Links.Single(l => l.Relations.Contains("bestFriend"));
-        link.Title.Should().Be("Link to the customer's best friend.");
-        link.Description.Should().Be("Only present when a best friend is set.");
+        link.Title.Should().BeNull();
+        link.Description.Should().Be(
+            "Link to the customer's best friend.\n\nOnly present when a best friend is set.");
     }
 
     [Fact]
-    public void HtoWithXmlDocs_action_has_title_and_description()
+    public void HtoWithXmlDocs_action_has_description_from_summary_and_remarks()
     {
         var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
             "HypermediaCustomerHto", TestHtoSources.HtoWithXmlDocs);
 
         var action = schema.Actions.Single(a => a.Name == "MarkAsFavorite");
-        action.Title.Should().Be("Marks this customer as a favorite.");
-        action.Description.Should().Be("Can only be executed by admins.");
+        action.Title.Should().BeNull();
+        action.Description.Should().Be(
+            "Marks this customer as a favorite.\n\nCan only be executed by admins.");
     }
 
     [Fact]
-    public void HtoWithXmlDocs_embedded_has_title_and_description()
+    public void HtoWithXmlDocs_embedded_has_description_from_summary_and_remarks()
     {
         var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
             "HypermediaCustomerHto", TestHtoSources.HtoWithXmlDocs);
 
         var embedded = schema.EmbeddedEntities.Single(e => e.Relations.Contains("address"));
-        embedded.Title.Should().Be("The customer's home address.");
-        embedded.Description.Should().Be("Primary residential address.");
+        embedded.Title.Should().BeNull();
+        embedded.Description.Should().Be(
+            "The customer's home address.\n\nPrimary residential address.");
     }
 
     [Fact]
@@ -1262,21 +1350,6 @@ public class HtoSchemaGeneratorTests
     public void HtoWithAttributeOverridingXmlDocs_compiles()
     {
         GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithAttributeOverridingXmlDocs);
-    }
-
-    [Fact]
-    public void HtoWithHypermediaObjectTitle_overrides_TitleAttribute()
-    {
-        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
-            "HypermediaCustomerHto", TestHtoSources.HtoWithHypermediaObjectTitleOverridingTitleAttribute);
-
-        schema.Title.Should().Be("HypermediaObject Title");
-    }
-
-    [Fact]
-    public void HtoWithHypermediaObjectTitle_overrides_TitleAttribute_compiles()
-    {
-        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithHypermediaObjectTitleOverridingTitleAttribute);
     }
 
     [Fact]
@@ -1298,6 +1371,7 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Actions;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
             using RESTyard.AspNetCore.WebApi.AttributedRoutes;
             using Microsoft.AspNetCore.Mvc;
 
@@ -1305,9 +1379,12 @@ public class HtoSchemaGeneratorTests
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "QueryResult", Classes = ["QueryResult"])]
-            public class HypermediaQueryResultHto : HypermediaObject
+            [Title("QueryResult")]
+            [HypermediaObject(Classes = ["QueryResult"])]
+            public class HypermediaQueryResultHto : IHypermediaObject
             {
+                public string? HtoTitle => "QueryResult";
+
                 public string ResultData { get; set; } = string.Empty;
             }
 
@@ -1316,9 +1393,12 @@ public class HtoSchemaGeneratorTests
                 public CreateQueryAction() : base(() => true) { }
             }
 
-            [HypermediaObject(Title = "Root", Classes = ["Root"])]
-            public class HypermediaRootHto : HypermediaObject
+            [Title("Root")]
+            [HypermediaObject(Classes = ["Root"])]
+            public class HypermediaRootHto : IHypermediaObject
             {
+                public string? HtoTitle => "Root";
+
                 [HypermediaAction(Name = "CreateQuery")]
                 public CreateQueryAction? CreateQuery { get; set; }
             }
@@ -1350,6 +1430,7 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Actions;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
             using RESTyard.AspNetCore.WebApi.AttributedRoutes;
             using Microsoft.AspNetCore.Mvc;
 
@@ -1357,9 +1438,12 @@ public class HtoSchemaGeneratorTests
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "QueryResult", Classes = ["QueryResult"])]
-            public class HypermediaQueryResultHto : HypermediaObject
+            [Title("QueryResult")]
+            [HypermediaObject(Classes = ["QueryResult"])]
+            public class HypermediaQueryResultHto : IHypermediaObject
             {
+                public string? HtoTitle => "QueryResult";
+
                 public string ResultData { get; set; } = string.Empty;
             }
 
@@ -1368,9 +1452,12 @@ public class HtoSchemaGeneratorTests
                 public CreateQueryAction() : base(() => true) { }
             }
 
-            [HypermediaObject(Title = "Root", Classes = ["Root"])]
-            public class HypermediaRootHto : HypermediaObject
+            [Title("Root")]
+            [HypermediaObject(Classes = ["Root"])]
+            public class HypermediaRootHto : IHypermediaObject
             {
+                public string? HtoTitle => "Root";
+
                 [HypermediaAction(Name = "CreateQuery")]
                 public CreateQueryAction? CreateQuery { get; set; }
             }
@@ -1402,6 +1489,7 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Actions;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
             using RESTyard.AspNetCore.WebApi.AttributedRoutes;
             using Microsoft.AspNetCore.Mvc;
 
@@ -1419,9 +1507,12 @@ public class HtoSchemaGeneratorTests
                 public SomeAction() : base(() => true) { }
             }
 
-            [HypermediaObject(Title = "Root", Classes = ["Root"])]
-            public class HypermediaRootHto : HypermediaObject
+            [Title("Root")]
+            [HypermediaObject(Classes = ["Root"])]
+            public class HypermediaRootHto : IHypermediaObject
             {
+                public string? HtoTitle => "Root";
+
                 [HypermediaAction(Name = "DoStuff")]
                 public SomeAction? DoStuff { get; set; }
             }
@@ -1448,6 +1539,7 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Actions;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
             using RESTyard.AspNetCore.WebApi.AttributedRoutes;
             using Microsoft.AspNetCore.Mvc;
 
@@ -1460,9 +1552,12 @@ public class HtoSchemaGeneratorTests
                 public SomeAction() : base(() => true) { }
             }
 
-            [HypermediaObject(Title = "Root", Classes = ["Root"])]
-            public class HypermediaRootHto : HypermediaObject
+            [Title("Root")]
+            [HypermediaObject(Classes = ["Root"])]
+            public class HypermediaRootHto : IHypermediaObject
             {
+                public string? HtoTitle => "Root";
+
                 [HypermediaAction(Name = "Create")]
                 public SomeAction? Create { get; set; }
             }
@@ -1504,6 +1599,7 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Actions;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
             using RESTyard.AspNetCore.WebApi.AttributedRoutes;
             using Microsoft.AspNetCore.Mvc;
 
@@ -1511,9 +1607,12 @@ public class HtoSchemaGeneratorTests
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "QueryResult", Classes = ["QueryResult"])]
-            public class HypermediaQueryResultHto : HypermediaObject
+            [Title("QueryResult")]
+            [HypermediaObject(Classes = ["QueryResult"])]
+            public class HypermediaQueryResultHto : IHypermediaObject
             {
+                public string? HtoTitle => "QueryResult";
+
                 public string ResultData { get; set; } = string.Empty;
             }
 
@@ -1522,9 +1621,12 @@ public class HtoSchemaGeneratorTests
                 public CreateQueryAction() : base(() => true) { }
             }
 
-            [HypermediaObject(Title = "Root", Classes = ["Root"])]
-            public class HypermediaRootHto : HypermediaObject
+            [Title("Root")]
+            [HypermediaObject(Classes = ["Root"])]
+            public class HypermediaRootHto : IHypermediaObject
             {
+                public string? HtoTitle => "Root";
+
                 [HypermediaAction(Name = "startQuery")]
                 public CreateQueryAction? CreateQuery { get; set; }
             }
@@ -1558,6 +1660,7 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Actions;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
             using RESTyard.AspNetCore.WebApi.AttributedRoutes;
             using Microsoft.AspNetCore.Mvc;
 
@@ -1565,9 +1668,12 @@ public class HtoSchemaGeneratorTests
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "QueryResult", Classes = ["QueryResult"])]
-            public class HypermediaQueryResultHto : HypermediaObject
+            [Title("QueryResult")]
+            [HypermediaObject(Classes = ["QueryResult"])]
+            public class HypermediaQueryResultHto : IHypermediaObject
             {
+                public string? HtoTitle => "QueryResult";
+
                 public string ResultData { get; set; } = string.Empty;
             }
 
@@ -1576,19 +1682,24 @@ public class HtoSchemaGeneratorTests
                 public CreateQueryAction() : base(() => true) { }
             }
 
-            [HypermediaObject(Title = "Base", Classes = ["Base"])]
-            public class HypermediaBaseHto : HypermediaObject
+            [Title("Base")]
+            [HypermediaObject(Classes = ["Base"])]
+            public class HypermediaBaseHto : IHypermediaObject
             {
+                public string? HtoTitle => "Base";
+
                 [HypermediaAction(Name = "CreateQuery")]
                 public CreateQueryAction? CreateQuery { get; set; }
             }
 
-            [HypermediaObject(Title = "Derived", Classes = ["Derived"])]
+            [Title("Derived")]
+            [HypermediaObject(Classes = ["Derived"])]
             public class HypermediaDerivedHto : HypermediaBaseHto
             {
             }
 
-            [HypermediaObject(Title = "NextLevel", Classes = ["NextLevel"])]
+            [Title("NextLevel")]
+            [HypermediaObject(Classes = ["NextLevel"])]
             public class HypermediaNextLevelHto : HypermediaDerivedHto
             {
             }
@@ -1624,6 +1735,7 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Actions;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
             using RESTyard.AspNetCore.WebApi.AttributedRoutes;
             using Microsoft.AspNetCore.Mvc;
 
@@ -1641,22 +1753,31 @@ public class HtoSchemaGeneratorTests
                 public SomeAction() : base(() => true) { }
             }
 
-            [HypermediaObject(Title = "First", Classes = ["First"])]
-            public class HypermediaFirstHto : HypermediaObject
+            [Title("First")]
+            [HypermediaObject(Classes = ["First"])]
+            public class HypermediaFirstHto : IHypermediaObject
             {
+                public string? HtoTitle => "First";
+
                 [HypermediaAction(Name = "DoStuff")]
                 public SomeAction? DoStuff { get; set; }
             }
 
-            [HypermediaObject(Title = "Second", Classes = ["Second"])]
-            public class HypermediaSecondHto : HypermediaObject
+            [Title("Second")]
+            [HypermediaObject(Classes = ["Second"])]
+            public class HypermediaSecondHto : IHypermediaObject
             {
+                public string? HtoTitle => "Second";
+
                 public string Value { get; set; } = string.Empty;
             }
 
-            [HypermediaObject(Title = "Third", Classes = ["Third"])]
-            public class HypermediaThirdHto : HypermediaObject
+            [Title("Third")]
+            [HypermediaObject(Classes = ["Third"])]
+            public class HypermediaThirdHto : IHypermediaObject
             {
+                public string? HtoTitle => "Third";
+
                 public string Value { get; set; } = string.Empty;
             }
 
@@ -1685,6 +1806,7 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Actions;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
             using RESTyard.AspNetCore.WebApi.AttributedRoutes;
             using Microsoft.AspNetCore.Mvc;
 
@@ -1700,9 +1822,12 @@ public class HtoSchemaGeneratorTests
                 public SomeAction() : base(() => true) { }
             }
 
-            [HypermediaObject(Title = "Root", Classes = ["Root"])]
-            public class HypermediaRootHto : HypermediaObject
+            [Title("Root")]
+            [HypermediaObject(Classes = ["Root"])]
+            public class HypermediaRootHto : IHypermediaObject
             {
+                public string? HtoTitle => "Root";
+
                 [HypermediaAction(Name = "DoStuff")]
                 public SomeAction? DoStuff { get; set; }
             }
@@ -1731,12 +1856,16 @@ public class HtoSchemaGeneratorTests
         using RESTyard.AspNetCore.Hypermedia;
         using RESTyard.AspNetCore.Hypermedia.Actions;
         using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using Json.Schema.Generation;
 
         namespace ReferencedHtos;
 
-        [HypermediaObject(Title = "QueryResult", Classes = ["QueryResult"])]
-        public class HypermediaQueryResultHto : HypermediaObject
+        [Title("QueryResult")]
+        [HypermediaObject(Classes = ["QueryResult"])]
+        public class HypermediaQueryResultHto : IHypermediaObject
         {
+            public string? HtoTitle => "QueryResult";
+
             public string ResultData { get; set; } = string.Empty;
         }
 
@@ -1745,9 +1874,12 @@ public class HtoSchemaGeneratorTests
             public CreateQueryAction() : base(() => true) { }
         }
 
-        [HypermediaObject(Title = "Root", Classes = ["Root"])]
-        public class HypermediaRootHto : HypermediaObject
+        [Title("Root")]
+        [HypermediaObject(Classes = ["Root"])]
+        public class HypermediaRootHto : IHypermediaObject
         {
+            public string? HtoTitle => "Root";
+
             [HypermediaAction(Name = "startQuery")]
             public CreateQueryAction? CreateQuery { get; set; }
         }
@@ -1835,6 +1967,7 @@ public class HtoSchemaGeneratorTests
         using RESTyard.AspNetCore.Hypermedia;
         using RESTyard.AspNetCore.Hypermedia.Actions;
         using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using Json.Schema.Generation;
         using RESTyard.AspNetCore.WebApi.AttributedRoutes;
         using Microsoft.AspNetCore.Mvc;
 
@@ -1842,9 +1975,12 @@ public class HtoSchemaGeneratorTests
 
         namespace NsA
         {
-            [HypermediaObject(Title = "QueryResult", Classes = ["QueryResult"])]
-            public class HypermediaQueryResultHto : HypermediaObject
+            [Title("QueryResult")]
+            [HypermediaObject(Classes = ["QueryResult"])]
+            public class HypermediaQueryResultHto : IHypermediaObject
             {
+                public string? HtoTitle => "QueryResult";
+
                 public string ResultData { get; set; } = string.Empty;
             }
 
@@ -1853,9 +1989,12 @@ public class HtoSchemaGeneratorTests
                 public DoStuffAction() : base(() => true) { }
             }
 
-            [HypermediaObject(Title = "Item A", Classes = ["ItemA"])]
-            public class HypermediaItemHto : HypermediaObject
+            [Title("Item A")]
+            [HypermediaObject(Classes = ["ItemA"])]
+            public class HypermediaItemHto : IHypermediaObject
             {
+                public string? HtoTitle => "Item A";
+
                 public string Value { get; set; } = string.Empty;
 
                 [HypermediaAction(Name = "DoStuff")]
@@ -1876,10 +2015,13 @@ public class HtoSchemaGeneratorTests
         namespace NsB
         {
             // [HypermediaSchemaName] disambiguates — both HTOs would derive "Item" (RY0024)
-            [HypermediaObject(Title = "Item B", Classes = ["ItemB"])]
+            [Title("Item B")]
+            [HypermediaObject(Classes = ["ItemB"])]
             [RESTyard.Schema.Model.HypermediaSchemaName("ItemB")]
-            public class HypermediaItemHto : HypermediaObject
+            public class HypermediaItemHto : IHypermediaObject
             {
+                public string? HtoTitle => "Item B";
+
                 public string Value { get; set; } = string.Empty;
 
                 [HypermediaAction(Name = "DoStuff")]
@@ -1923,14 +2065,18 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Line1\nLine2\tEnd", Classes = ["Truck"])]
-            public class HypermediaTruckHto : HypermediaObject
+            [Title("Line1\nLine2\tEnd")]
+            [HypermediaObject(Classes = ["Truck"])]
+            public class HypermediaTruckHto : IHypermediaObject
             {
+                public string? HtoTitle => "Line1\nLine2\tEnd";
+
                 public string Value { get; set; } = string.Empty;
             }
             """;
@@ -1949,6 +2095,7 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
@@ -1959,9 +2106,12 @@ public class HtoSchemaGeneratorTests
                 public NumericAttribute(double d, float f, long l, char c) { }
             }
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 [Numeric(1.5, 2.5f, 5L, 'x')]
                 public string Value { get; set; } = string.Empty;
             }
@@ -1986,14 +2136,18 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 [HypermediaProperty(Name = "class")]
                 public string Kind { get; set; } = string.Empty;
             }
@@ -2015,14 +2169,18 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 [HypermediaProperty(Name = "full-name")]
                 public string FullName { get; set; } = string.Empty;
             }
@@ -2045,6 +2203,7 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
@@ -2054,9 +2213,12 @@ public class HtoSchemaGeneratorTests
             {
             }
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 public string Name { get; set; } = string.Empty;
             }
             """;
@@ -2078,6 +2240,7 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly(Siren = true)]
 
@@ -2087,9 +2250,12 @@ public class HtoSchemaGeneratorTests
 
             namespace TestHtos
             {
-                [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-                public class HypermediaCustomerHto : HypermediaObject
+                [Title("Customer")]
+                [HypermediaObject(Classes = ["Customer"])]
+                public class HypermediaCustomerHto : IHypermediaObject
                 {
+                    public string? HtoTitle => "Customer";
+
                     public string Name { get; set; } = string.Empty;
                 }
             }
@@ -2111,6 +2277,7 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Actions;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
             using RESTyard.AspNetCore.WebApi.AttributedRoutes;
             using Microsoft.AspNetCore.Mvc;
 
@@ -2128,9 +2295,12 @@ public class HtoSchemaGeneratorTests
                 public SomeAction() : base(() => true) { }
             }
 
-            [HypermediaObject(Title = "Root", Classes = ["Root"])]
-            public class HypermediaRootHto : HypermediaObject
+            [Title("Root")]
+            [HypermediaObject(Classes = ["Root"])]
+            public class HypermediaRootHto : IHypermediaObject
             {
+                public string? HtoTitle => "Root";
+
                 [HypermediaAction(Name = "Create")]
                 public SomeAction? Create { get; set; }
             }
@@ -2159,20 +2329,27 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Address", Classes = ["Address"])]
-            public class HypermediaAddressHto : HypermediaObject
+            [Title("Address")]
+            [HypermediaObject(Classes = ["Address"])]
+            public class HypermediaAddressHto : IHypermediaObject
             {
+                public string? HtoTitle => "Address";
+
                 public string Street { get; set; } = string.Empty;
             }
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 [Relations(["address"])]
                 public IEmbeddedEntity<HypermediaAddressHto>? HomeAddress { get; set; }
 
@@ -2198,18 +2375,22 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            public abstract class CustomerBase : HypermediaObject
+            public abstract class CustomerBase : IHypermediaObject
             {
+                public string? HtoTitle => null;
+
                 /// <summary>The customer's display name.</summary>
                 public virtual string Name { get; set; } = string.Empty;
             }
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
             public class HypermediaCustomerHto : CustomerBase
             {
                 /// <inheritdoc/>
@@ -2232,17 +2413,22 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Other", Classes = ["Other"])]
-            public class HypermediaOtherHto : HypermediaObject { }
+            [Title("Other")]
+            [HypermediaObject(Classes = ["Other"])]
+            public class HypermediaOtherHto : IHypermediaObject { public string? HtoTitle => "Other"; }
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 public ILink<HypermediaOtherHto>? MissingRelLink { get; set; }
             }
             """;
@@ -2284,19 +2470,25 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Empty", Classes = ["Empty"])]
-            public class HypermediaEmptyHto : HypermediaObject
+            [Title("Empty")]
+            [HypermediaObject(Classes = ["Empty"])]
+            public class HypermediaEmptyHto : IHypermediaObject
             {
+                public string? HtoTitle => "Empty";
             }
 
-            [HypermediaObject(Title = "Other", Classes = ["Other"])]
-            public class HypermediaOtherHto : HypermediaObject
+            [Title("Other")]
+            [HypermediaObject(Classes = ["Other"])]
+            public class HypermediaOtherHto : IHypermediaObject
             {
+                public string? HtoTitle => "Other";
+
                 public string Name { get; set; } = string.Empty;
             }
             """;
@@ -2328,12 +2520,16 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 public string Name { get; set; } = string.Empty;
             }
             """;
@@ -2350,12 +2546,16 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 public string Name { get; set; } = string.Empty;
             }
             """;
@@ -2371,14 +2571,18 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly(Schema = false)]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 public string Name { get; set; } = string.Empty;
             }
             """;
@@ -2393,14 +2597,18 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly(Siren = true, Schema = false)]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 public string Name { get; set; } = string.Empty;
             }
             """;
@@ -2503,14 +2711,17 @@ public class HtoSchemaGeneratorTests
         const string source = """
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Empty", Classes = ["Empty"])]
-            public class HypermediaEmptyHto : HypermediaObject
+            [Title("Empty")]
+            [HypermediaObject(Classes = ["Empty"])]
+            public class HypermediaEmptyHto : IHypermediaObject
             {
+                public string? HtoTitle => "Empty";
             }
             """;
 
@@ -2630,22 +2841,29 @@ public class HtoSchemaGeneratorTests
     private const string SchemaNameOverrideSource = """
         using RESTyard.AspNetCore.Hypermedia;
         using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using Json.Schema.Generation;
         using RESTyard.Schema.Model;
 
         [assembly: HypermediaAssembly]
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+        [Title("Customer")]
+        [HypermediaObject(Classes = ["Customer"])]
         [HypermediaSchemaName("CrmCustomer")]
-        public class HypermediaCustomerHto : HypermediaObject
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer";
+
             public string Name { get; set; } = string.Empty;
         }
 
-        [HypermediaObject(Title = "Root", Classes = ["Root"])]
-        public class HypermediaRootHto : HypermediaObject
+        [Title("Root")]
+        [HypermediaObject(Classes = ["Root"])]
+        public class HypermediaRootHto : IHypermediaObject
         {
+            public string? HtoTitle => "Root";
+
             [Relations(["customer"])]
             public ILink<HypermediaCustomerHto>? Customer { get; set; }
         }
@@ -2672,6 +2890,7 @@ public class HtoSchemaGeneratorTests
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Actions;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
             using RESTyard.AspNetCore.WebApi.AttributedRoutes;
             using RESTyard.Schema.Model;
             using Microsoft.AspNetCore.Mvc;
@@ -2680,10 +2899,13 @@ public class HtoSchemaGeneratorTests
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "QueryResult", Classes = ["QueryResult"])]
+            [Title("QueryResult")]
+            [HypermediaObject(Classes = ["QueryResult"])]
             [HypermediaSchemaName("SearchResult")]
-            public class HypermediaQueryResultHto : HypermediaObject
+            public class HypermediaQueryResultHto : IHypermediaObject
             {
+                public string? HtoTitle => "QueryResult";
+
                 public string ResultData { get; set; } = string.Empty;
             }
 
@@ -2692,9 +2914,12 @@ public class HtoSchemaGeneratorTests
                 public DoStuffAction() : base(() => true) { }
             }
 
-            [HypermediaObject(Title = "Item", Classes = ["Item"])]
-            public class HypermediaItemHto : HypermediaObject
+            [Title("Item")]
+            [HypermediaObject(Classes = ["Item"])]
+            public class HypermediaItemHto : IHypermediaObject
             {
+                public string? HtoTitle => "Item";
+
                 [HypermediaAction(Name = "DoStuff")]
                 public DoStuffAction? DoStuff { get; set; }
             }
@@ -2720,20 +2945,27 @@ public class HtoSchemaGeneratorTests
     private const string DuplicateSchemaNamesSource = """
         using RESTyard.AspNetCore.Hypermedia;
         using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using Json.Schema.Generation;
 
         [assembly: HypermediaAssembly]
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Customer A", Classes = ["CustomerA"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        [Title("Customer A")]
+        [HypermediaObject(Classes = ["CustomerA"])]
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer A";
+
             public string Name { get; set; } = string.Empty;
         }
 
-        [HypermediaObject(Title = "Customer B", Classes = ["CustomerB"])]
-        public class CustomerHto : HypermediaObject
+        [Title("Customer B")]
+        [HypermediaObject(Classes = ["CustomerB"])]
+        public class CustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer B";
+
             public string OtherName { get; set; } = string.Empty;
         }
         """;
@@ -2756,9 +2988,9 @@ public class HtoSchemaGeneratorTests
     public void Duplicate_schema_names_resolved_by_attribute_are_silent()
     {
         var source = DuplicateSchemaNamesSource.Replace(
-            "[HypermediaObject(Title = \"Customer B\", Classes = [\"CustomerB\"])]",
+            "[HypermediaObject(Classes = [\"CustomerB\"])]",
             """
-            [HypermediaObject(Title = "Customer B", Classes = ["CustomerB"])]
+            [HypermediaObject(Classes = ["CustomerB"])]
             [RESTyard.Schema.Model.HypermediaSchemaName("LegacyCustomer")]
             """);
 
@@ -2772,14 +3004,18 @@ public class HtoSchemaGeneratorTests
     private const string RecordHtoSource = """
         using RESTyard.AspNetCore.Hypermedia;
         using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using Json.Schema.Generation;
 
         [assembly: HypermediaAssembly]
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+        [Title("Customer")]
+        [HypermediaObject(Classes = ["Customer"])]
         public record HypermediaCustomerHto(string Name, int Age) : IHypermediaObject
         {
+            public string? HtoTitle => "Customer";
+
             public string? Nickname { get; init; }
         }
         """;
@@ -2815,20 +3051,27 @@ public class HtoSchemaGeneratorTests
     private const string ArrayEmbeddedSource = """
         using RESTyard.AspNetCore.Hypermedia;
         using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using Json.Schema.Generation;
 
         [assembly: HypermediaAssembly]
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "Order", Classes = ["Order"])]
-        public class HypermediaOrderHto : HypermediaObject
+        [Title("Order")]
+        [HypermediaObject(Classes = ["Order"])]
+        public class HypermediaOrderHto : IHypermediaObject
         {
+            public string? HtoTitle => "Order";
+
             public string OrderNumber { get; set; } = string.Empty;
         }
 
-        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        [Title("Customer")]
+        [HypermediaObject(Classes = ["Customer"])]
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer";
+
             public string Name { get; set; } = string.Empty;
 
             [Relations(["orders"])]
@@ -2877,20 +3120,27 @@ public class HtoSchemaGeneratorTests
             using System.Collections.Generic;
             using RESTyard.AspNetCore.Hypermedia;
             using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
 
             [assembly: HypermediaAssembly]
 
             namespace TestHtos;
 
-            [HypermediaObject(Title = "Order", Classes = ["Order"])]
-            public class HypermediaOrderHto : HypermediaObject
+            [Title("Order")]
+            [HypermediaObject(Classes = ["Order"])]
+            public class HypermediaOrderHto : IHypermediaObject
             {
+                public string? HtoTitle => "Order";
+
                 public string OrderNumber { get; set; } = string.Empty;
             }
 
-            [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-            public class HypermediaCustomerHto : HypermediaObject
+            [Title("Customer")]
+            [HypermediaObject(Classes = ["Customer"])]
+            public class HypermediaCustomerHto : IHypermediaObject
             {
+                public string? HtoTitle => "Customer";
+
                 public string Name { get; set; } = string.Empty;
 
                 [FormatterIgnoreHypermediaProperty]
@@ -3044,7 +3294,7 @@ public class HtoSchemaGeneratorTests
 
         var sirenSource = GetGeneratedSirenSource(result, "HypermediaCustomerHto");
         sirenSource.Should().Contain("Class = new[] { \"Customer\" }");
-        sirenSource.Should().Contain("Title = \"Customer\"");
+        sirenSource.Should().Contain("Title = string.IsNullOrEmpty(hto.HtoTitle) ? null : hto.HtoTitle,");
     }
 
     [Fact]
@@ -3264,6 +3514,7 @@ public class HtoSchemaGeneratorTests
         using RESTyard.AspNetCore.Hypermedia;
         using RESTyard.AspNetCore.Hypermedia.Actions;
         using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using Json.Schema.Generation;
         using RESTyard.Schema.Model;
 
         [assembly: HypermediaAssembly(Siren = true)]
@@ -3275,9 +3526,12 @@ public class HtoSchemaGeneratorTests
             public MarkAsFavoriteOp() : base(() => true) { }
         }
 
-        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        [Title("Customer")]
+        [HypermediaObject(Classes = ["Customer"])]
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer";
+
             [HypermediaAction(Name = "MarkAsFavorite", Title = "Mark as Favorite")]
             public MarkAsFavoriteOp MarkAsFavorite { get; set; } = default!;
         }
@@ -3288,6 +3542,7 @@ public class HtoSchemaGeneratorTests
         using RESTyard.AspNetCore.Hypermedia;
         using RESTyard.AspNetCore.Hypermedia.Actions;
         using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using Json.Schema.Generation;
         using RESTyard.Schema.Model;
 
         [assembly: HypermediaAssembly(Siren = true)]
@@ -3299,9 +3554,12 @@ public class HtoSchemaGeneratorTests
             public DisableOp() : base(() => false) { }
         }
 
-        [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-        public class HypermediaCustomerHto : HypermediaObject
+        [Title("Customer")]
+        [HypermediaObject(Classes = ["Customer"])]
+        public class HypermediaCustomerHto : IHypermediaObject
         {
+            public string? HtoTitle => "Customer";
+
             [HypermediaAction(Name = "Disable", Title = "Never available")]
             public DisableOp Disable { get; set; } = new DisableOp();
         }
@@ -3402,6 +3660,7 @@ public class HtoSchemaGeneratorTests
         using RESTyard.AspNetCore.Hypermedia;
         using RESTyard.AspNetCore.Hypermedia.Actions;
         using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using Json.Schema.Generation;
         using RESTyard.AspNetCore.WebApi.AttributedRoutes;
         using Microsoft.AspNetCore.Mvc;
 
@@ -3414,9 +3673,12 @@ public class HtoSchemaGeneratorTests
             public CreateOp() : base(() => true) { }
         }
 
-        [HypermediaObject(Title = "Root", Classes = ["Root"])]
-        public class HypermediaRootHto : HypermediaObject
+        [Title("Root")]
+        [HypermediaObject(Classes = ["Root"])]
+        public class HypermediaRootHto : IHypermediaObject
         {
+            public string? HtoTitle => "Root";
+
             [HypermediaAction(Name = "Create")]
             public CreateOp? Create { get; set; }
         }

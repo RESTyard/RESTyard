@@ -75,7 +75,10 @@ public partial class BaseHto : IHypermediaObject
     [HypermediaAction(Name = "UploadWithParameter", Title = "")]
     public UploadWithParameterOp UploadWithParameter { get; set; }
 
-    public BaseHto(double? id, List<int> property, OperationOp operation, WithParameterOp withParameter, WithResultOp withResult, WithParameterAndResultOp withParameterAndResult, UploadOp upload, UploadWithParameterOp uploadWithParameter, IEnumerable<ChildHto> item, Option<Unit> dependency2Key, (QueryHtoQuery Query, QueryHto.Key Key) byQueryReference, HypermediaObjectReferenceBase external)
+    [HypermediaAction(Name = "Optional", Title = "Optional operation")]
+    public OptionalOp? Optional { get; set; }
+
+    public BaseHto(double? id, List<int> property, OperationOp operation, WithParameterOp withParameter, WithResultOp withResult, WithParameterAndResultOp withParameterAndResult, UploadOp upload, UploadWithParameterOp uploadWithParameter, OptionalOp? optional, IEnumerable<ChildHto> item, Option<Unit> dependency2Key, (QueryHtoQuery Query, QueryHto.Key Key) byQueryReference, HypermediaObjectReferenceBase external)
     {
         this.Id = id;
         this.Property = property;
@@ -85,6 +88,7 @@ public partial class BaseHto : IHypermediaObject
         this.WithParameterAndResult = withParameterAndResult;
         this.Upload = upload;
         this.UploadWithParameter = uploadWithParameter;
+        this.Optional = optional;
         this.Item = item.Select(x => EmbeddedEntity.Embed<ChildHto>(x)).ToList();
         this.Dependency = Link.ByKey<ChildHto>(null);
         this.Dependency2 = dependency2Key.Map(some => Link.ByKey<ChildHto>(null)).GetValueOrDefault();
@@ -139,6 +143,13 @@ public partial class BaseHto : IHypermediaObject
     public partial class UploadWithParameterOp : FileUploadHypermediaAction<TP12>
     {
         public UploadWithParameterOp(Func<bool> canExecuteUploadWithParameter, FileUploadConfiguration? fileUploadConfiguration = null, TP12? prefilledValues = default) : base(canExecuteUploadWithParameter, fileUploadConfiguration, prefilledValues)
+        {
+        }
+    }
+
+    public partial class OptionalOp : HypermediaAction
+    {
+        public OptionalOp(Func<bool> canExecuteOptional) : base(canExecuteOptional)
         {
         }
     }

@@ -17,6 +17,7 @@ public class IncrementalCacheabilityTests
         using RESTyard.AspNetCore.Hypermedia;
         using RESTyard.AspNetCore.Hypermedia.Actions;
         using RESTyard.AspNetCore.Hypermedia.Attributes;
+        using Json.Schema.Generation;
         using RESTyard.AspNetCore.WebApi.AttributedRoutes;
         using Microsoft.AspNetCore.Mvc;
 
@@ -24,9 +25,12 @@ public class IncrementalCacheabilityTests
 
         namespace TestHtos;
 
-        [HypermediaObject(Title = "QueryResult", Classes = ["QueryResult"])]
-        public class HypermediaQueryResultHto : HypermediaObject
+        [Title("QueryResult")]
+        [HypermediaObject(Classes = ["QueryResult"])]
+        public class HypermediaQueryResultHto : IHypermediaObject
         {
+            public string? HtoTitle => "QueryResult";
+
             public string ResultData { get; set; } = string.Empty;
         }
 
@@ -35,9 +39,12 @@ public class IncrementalCacheabilityTests
             public CreateQueryAction() : base(() => true) { }
         }
 
-        [HypermediaObject(Title = "Root", Classes = ["Root"])]
-        public class HypermediaRootHto : HypermediaObject
+        [Title("Root")]
+        [HypermediaObject(Classes = ["Root"])]
+        public class HypermediaRootHto : IHypermediaObject
         {
+            public string? HtoTitle => "Root";
+
             [HypermediaAction(Name = "CreateQuery")]
             public CreateQueryAction? CreateQuery { get; set; }
         }
