@@ -594,6 +594,19 @@ internal static class TestHtoSources
 
         namespace TestHtos;
 
+        [HypermediaObject(Classes = ["Address"])]
+        public class HypermediaAddressHto : IHypermediaObject
+        {
+            public string? HtoTitle => null;
+
+            public string Street { get; set; } = string.Empty;
+        }
+
+        public class MarkAsFavoriteAction : HypermediaAction
+        {
+            public MarkAsFavoriteAction() : base(() => true) { }
+        }
+
         /// <summary>XML doc title that should be overridden.</summary>
         /// <remarks>XML doc description that should be overridden.</remarks>
         [Title("Attribute Title")]
@@ -602,6 +615,89 @@ internal static class TestHtoSources
         public class HypermediaCustomerHto : IHypermediaObject
         {
             public string? HtoTitle => null;
+
+            public string Name { get; set; } = string.Empty;
+
+            /// <summary>XML doc summary that should be overridden.</summary>
+            /// <remarks>XML doc remarks that should be overridden.</remarks>
+            [Title("Link Title")]
+            [Description("Link Description")]
+            [Relations(["bestFriend"])]
+            public ILink<HypermediaCustomerHto>? BestFriend { get; set; }
+
+            /// <summary>XML doc summary that should be overridden.</summary>
+            /// <remarks>XML doc remarks that should be overridden.</remarks>
+            [Title("Action Title")]
+            [Description("Action Description")]
+            [HypermediaAction]
+            public MarkAsFavoriteAction? MarkAsFavorite { get; set; }
+
+            /// <summary>XML doc summary that should be overridden.</summary>
+            /// <remarks>XML doc remarks that should be overridden.</remarks>
+            [Title("Embedded Title")]
+            [Description("Embedded Description")]
+            [Relations(["address"])]
+            public IEmbeddedEntity<HypermediaAddressHto>? Address { get; set; }
+        }
+        """;
+
+    /// <summary>
+    /// HTO where each element has only one of &lt;summary&gt; / &lt;remarks&gt;.
+    /// </summary>
+    internal const string HtoWithPartialXmlDocs = $$"""
+        {{Usings}}
+        {{AssemblyAttribute}}
+
+        namespace TestHtos;
+
+        [HypermediaObject(Classes = ["Address"])]
+        public class HypermediaAddressHto : IHypermediaObject
+        {
+            public string? HtoTitle => null;
+
+            public string Street { get; set; } = string.Empty;
+        }
+
+        public class MarkAsFavoriteAction : HypermediaAction
+        {
+            public MarkAsFavoriteAction() : base(() => true) { }
+        }
+
+        /// <summary>Entity summary only.</summary>
+        [HypermediaObject(Classes = ["Customer"])]
+        public class HypermediaCustomerHto : IHypermediaObject
+        {
+            public string? HtoTitle => null;
+
+            public string Name { get; set; } = string.Empty;
+
+            /// <summary>Link summary only.</summary>
+            [Relations(["bestFriend"])]
+            public ILink<HypermediaCustomerHto>? BestFriend { get; set; }
+
+            /// <remarks>Action remarks only.</remarks>
+            [HypermediaAction]
+            public MarkAsFavoriteAction? MarkAsFavorite { get; set; }
+
+            /// <remarks>Embedded remarks only.</remarks>
+            [Relations(["address"])]
+            public IEmbeddedEntity<HypermediaAddressHto>? Address { get; set; }
+        }
+        """;
+
+    /// <summary>
+    /// Siren-enabled HTO whose HtoTitle is set at runtime.
+    /// </summary>
+    internal const string HtoWithRuntimeTitleWithSiren = $$"""
+        {{Usings}}
+        {{AssemblyAttributeWithSiren}}
+
+        namespace TestHtos;
+
+        [HypermediaObject(Classes = ["Customer"])]
+        public class HypermediaCustomerHto : IHypermediaObject
+        {
+            public string? HtoTitle { get; set; }
 
             public string Name { get; set; } = string.Empty;
         }

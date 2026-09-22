@@ -59,8 +59,11 @@ public class SirenConverter_ToSiren_ParityTests
         // Class
         AssertElementEqual(gen.GetProperty("class"), conv.GetProperty("class"), "$.class");
 
-        // Title
-        if (gen.TryGetProperty("title", out var genTitle) && conv.TryGetProperty("title", out var convTitle))
+        // Title — presence must match too (both omit it for a null/empty HtoTitle)
+        var genHasTitle = gen.TryGetProperty("title", out var genTitle);
+        var convHasTitle = conv.TryGetProperty("title", out var convTitle);
+        genHasTitle.Should().Be(convHasTitle, "title presence differs at $.title");
+        if (genHasTitle)
         {
             AssertElementEqual(genTitle, convTitle, "$.title");
         }

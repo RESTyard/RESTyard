@@ -861,6 +861,40 @@ public class HtoSchemaGeneratorTests
     }
 
     [Fact]
+    public void HypermediaAction_Title_wins_over_TitleAttribute()
+    {
+        const string source = """
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Actions;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using Json.Schema.Generation;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            public class DoSomethingAction : HypermediaAction
+            {
+                public DoSomethingAction() : base(() => true) { }
+            }
+
+            [HypermediaObject(Classes = ["Thing"])]
+            public class HypermediaThingHto : IHypermediaObject
+            {
+                public string? HtoTitle => null;
+
+                [Title("Attribute Title")]
+                [HypermediaAction(Title = "Action Attribute Title")]
+                public DoSomethingAction? DoIt { get; set; }
+            }
+            """;
+
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema("HypermediaThingHto", source);
+
+        schema.Actions.Single().Title.Should().Be("Action Attribute Title");
+    }
+
+    [Fact]
     public void HtoWithFileUpload_generates_file_upload_action()
     {
         var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
@@ -1350,6 +1384,111 @@ public class HtoSchemaGeneratorTests
     public void HtoWithAttributeOverridingXmlDocs_compiles()
     {
         GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithAttributeOverridingXmlDocs);
+    }
+
+    [Fact]
+    public void HtoWithAttributeOverridingXmlDocs_link_attribute_wins()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithAttributeOverridingXmlDocs);
+
+        var link = schema.Links.Single(l => l.Relations.Contains("bestFriend"));
+        link.Title.Should().Be("Link Title");
+        link.Description.Should().Be("Link Description");
+    }
+
+    [Fact]
+    public void HtoWithAttributeOverridingXmlDocs_action_attribute_wins()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithAttributeOverridingXmlDocs);
+
+        var action = schema.Actions.Single(a => a.Name == "MarkAsFavorite");
+        action.Title.Should().Be("Action Title");
+        action.Description.Should().Be("Action Description");
+    }
+
+    [Fact]
+    public void HtoWithAttributeOverridingXmlDocs_embedded_attribute_wins()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithAttributeOverridingXmlDocs);
+
+        var embedded = schema.EmbeddedEntities.Single(e => e.Relations.Contains("address"));
+        embedded.Title.Should().Be("Embedded Title");
+        embedded.Description.Should().Be("Embedded Description");
+    }
+
+    [Fact]
+    public void HtoWithPartialXmlDocs_summary_only_becomes_description()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithPartialXmlDocs);
+
+        schema.Title.Should().BeNull();
+        schema.Description.Should().Be("Entity summary only.");
+
+        var link = schema.Links.Single(l => l.Relations.Contains("bestFriend"));
+        link.Title.Should().BeNull();
+        link.Description.Should().Be("Link summary only.");
+    }
+
+    [Fact]
+    public void HtoWithPartialXmlDocs_remarks_only_becomes_description()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithPartialXmlDocs);
+
+        var action = schema.Actions.Single(a => a.Name == "MarkAsFavorite");
+        action.Title.Should().BeNull();
+        action.Description.Should().Be("Action remarks only.");
+
+        var embedded = schema.EmbeddedEntities.Single(e => e.Relations.Contains("address"));
+        embedded.Title.Should().BeNull();
+        embedded.Description.Should().Be("Embedded remarks only.");
+    }
+
+    [Fact]
+    public void HtoTitle_is_not_a_data_property()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.SimpleHtoWithSiren);
+        var props = schema.PropertiesSchema!.RootElement.GetProperty("properties");
+        props.TryGetProperty("HtoTitle", out _).Should().BeFalse();
+
+        var result = GeneratorTestHelper.RunGenerator(TestHtoSources.SimpleHtoWithSiren);
+        GetGeneratedPoco(result, "HypermediaCustomerHto").Should().NotContain("HtoTitle");
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ToSiren_omits_title_when_HtoTitle_is_null_or_empty(string? htoTitle)
+    {
+        var json = RunToSirenWithHtoTitle(htoTitle);
+
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.TryGetProperty("title", out _).Should().BeFalse();
+    }
+
+    [Fact]
+    public void ToSiren_maps_runtime_HtoTitle_to_title()
+    {
+        var json = RunToSirenWithHtoTitle("Runtime Title");
+
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("title").GetString().Should().Be("Runtime Title");
+    }
+
+    private static string RunToSirenWithHtoTitle(string? htoTitle)
+    {
+        var resolver = new StubRouteResolver(
+            new RESTyard.AspNetCore.WebApi.RouteResolver.ResolvedRoute("http://test/self", "GET"));
+
+        return GeneratorTestHelper.RunGeneratorAndGetSirenJson(
+            "HypermediaCustomerHto", resolver,
+            configureHto: hto => hto.GetType().GetProperty("HtoTitle")!.SetValue(hto, htoTitle),
+            options: null, TestHtoSources.HtoWithRuntimeTitleWithSiren);
     }
 
     [Fact]
