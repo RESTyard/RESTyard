@@ -32,9 +32,9 @@
       <ProjectReference Include="..\RESTyard.Generator\RESTyard.Generator.csproj" />
       <ProjectReference Include="..\..\RESTyard.AspNetCore\RESTyard.AspNetCore.csproj" />
       <ProjectReference Include="..\..\RESTyard.Client\RESTyard.Client.csproj" />
-      <ProjectReference Include="LegacyV4Packages\LegacyV4Packages.csproj" ReferenceOutputAssembly="false" />
-      <ProjectReference Include="LegacyV5Packages\LegacyV5Packages.csproj" ReferenceOutputAssembly="false" />
-      <ProjectReference Include="LegacyV5_1Packages\LegacyV5_1Packages.csproj" ReferenceOutputAssembly="false" />
+      <ProjectReference Include="..\LegacyV4Packages\LegacyV4Packages.csproj" ReferenceOutputAssembly="false" />
+      <ProjectReference Include="..\LegacyV5Packages\LegacyV5Packages.csproj" ReferenceOutputAssembly="false" />
+      <ProjectReference Include="..\LegacyV5_1Packages\LegacyV5_1Packages.csproj" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
     <ItemGroup>
