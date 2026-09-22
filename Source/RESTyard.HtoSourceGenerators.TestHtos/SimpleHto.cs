@@ -1,3 +1,4 @@
+using Json.Schema.Generation;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.Hypermedia.Links;
@@ -8,9 +9,12 @@ namespace RESTyard.HtoSourceGenerators.TestHtos;
 /// Minimal HTO: class, title, properties, self link.
 /// Used as embedded entity target too.
 /// </summary>
-[HypermediaObject(Title = "A Customer", Classes = ["Customer"])]
-public class SimpleCustomerHto : HypermediaObject
+[Title("A Customer")]
+[HypermediaObject(Classes = ["Customer"])]
+public class SimpleCustomerHto : IHypermediaObject
 {
+    public string? HtoTitle => "A Customer";
+
     public string Name { get; set; } = string.Empty;
     public int Age { get; set; }
 
@@ -26,9 +30,12 @@ public class SimpleCustomerHto : HypermediaObject
 /// <summary>
 /// Tiny HTO for nested embedded entity testing.
 /// </summary>
-[HypermediaObject(Title = "An Address", Classes = ["Address"])]
-public class AddressHto : HypermediaObject
+[Title("An Address")]
+[HypermediaObject(Classes = ["Address"])]
+public class AddressHto : IHypermediaObject
 {
+    public string? HtoTitle => "An Address";
+
     public string Street { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;
 

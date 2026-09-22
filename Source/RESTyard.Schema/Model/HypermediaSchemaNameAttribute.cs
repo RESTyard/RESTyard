@@ -17,7 +17,7 @@ namespace RESTyard.Schema.Model;
 /// </summary>
 /// <example>
 /// <code>
-/// [HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+/// [HypermediaObject(Classes = ["Customer"])]
 /// [HypermediaSchemaName("CrmCustomer")]
 /// public class HypermediaCustomerHto : IHypermediaObject { }
 /// </code>

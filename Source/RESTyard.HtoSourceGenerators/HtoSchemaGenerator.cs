@@ -46,17 +46,8 @@ public class HtoSchemaGenerator : IIncrementalGenerator
                 transform: static (ctx, _) => ActionResultMappingExtractor.ExtractFromEndpointAttributes(ctx))
             .WithTrackingName(TrackingNames.EndpointResultMappings);
 
-        // Legacy HttpMethodHypermediaAction-derived attributes are matched by base type, which
-        // ForAttributeWithMetadataName cannot express — scan the source assembly per compilation.
-        // The scan re-runs on every edit, but its output is equatable so downstream caching survives.
-        var legacyResultMappings = context.CompilationProvider
-            .Select(static (compilation, _) =>
-                ActionResultMappingExtractor.ExtractLegacyActionResults(compilation))
-            .WithTrackingName(TrackingNames.LegacyResultMappings);
-
         var actionResultMappings = endpointResultMappings.Collect()
-            .Combine(legacyResultMappings)
-            .Select(static (combined, _) => ActionResultMappingExtractor.Merge(combined.Left, combined.Right))
+            .Select(static (fragments, _) => ActionResultMappingExtractor.Merge(fragments))
             .WithTrackingName(TrackingNames.ActionResultMappings);
 
         // [HypermediaObjectEndpoint<THto>] applications — tracked only for duplicate-endpoint

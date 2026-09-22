@@ -1,3 +1,4 @@
+using Json.Schema.Generation;
 using System;
 using System.Collections.Generic;
 using RESTyard.AspNetCore.Hypermedia;
@@ -14,9 +15,12 @@ namespace RESTyard.HtoSourceGenerators.TestHtos;
 /// - Unresolved internal → SirenLinkedEntity with class + href from resolver
 /// - Unresolved external → SirenLinkedEntity with "External" class + URI
 /// </summary>
-[HypermediaObject(Title = "Embedded Test", Classes = ["EmbeddedTest"])]
-public class HtoWithAllEmbeddedTypes : HypermediaObject
+[Title("Embedded Test")]
+[HypermediaObject(Classes = ["EmbeddedTest"])]
+public class HtoWithAllEmbeddedTypes : IHypermediaObject
 {
+    public string? HtoTitle => "Embedded Test";
+
     public string Description { get; set; } = string.Empty;
 
     /// <summary>Single resolved embedded entity.</summary>

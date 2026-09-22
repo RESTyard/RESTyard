@@ -1,3 +1,4 @@
+using Json.Schema.Generation;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -34,9 +35,12 @@ public class NestedAddress
 /// - IEnumerable (list of strings)
 /// - FormatterIgnoreHypermediaProperty (excluded from output)
 /// </summary>
-[HypermediaObject(Title = "All Property Types", Classes = ["AllTypes"])]
-public class HtoWithVariousProperties : HypermediaObject
+[Title("All Property Types")]
+[HypermediaObject(Classes = ["AllTypes"])]
+public class HtoWithVariousProperties : IHypermediaObject
 {
+    public string? HtoTitle => "All Property Types";
+
     public string Text { get; set; } = string.Empty;
     public int Count { get; set; }
     public bool IsActive { get; set; }

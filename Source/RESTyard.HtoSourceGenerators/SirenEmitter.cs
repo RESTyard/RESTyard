@@ -145,10 +145,8 @@ internal static class SirenEmitter
 
                 EmitClassAssignment(w, metadata);
 
-                if (metadata.Title != null)
-                {
-                    w.Line($"Title = \"{EscapeString(metadata.Title)}\",");
-                }
+                // Same rule as SirenConverter: title omitted when null or empty
+                w.Line("Title = string.IsNullOrEmpty(hto.HtoTitle) ? null : hto.HtoTitle,");
 
                 if (metadata.Properties.Length > 0)
                 {

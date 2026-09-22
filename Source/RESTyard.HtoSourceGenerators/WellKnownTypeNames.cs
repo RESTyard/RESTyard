@@ -14,6 +14,8 @@ internal static class WellKnownTypeNames
     internal const string IHypermediaObjectFullName =
         "RESTyard.AspNetCore.Hypermedia.IHypermediaObject";
 
+    internal const string HtoTitlePropertyName = "HtoTitle";
+
     internal const string FormatterIgnoreAttributeFullName =
         "RESTyard.AspNetCore.Hypermedia.Attributes.FormatterIgnoreHypermediaPropertyAttribute";
 
@@ -70,13 +72,6 @@ internal static class WellKnownTypeNames
     /// <summary>Metadata name of the generic object endpoint attribute for <c>ForAttributeWithMetadataName</c>.</summary>
     internal const string HypermediaObjectEndpointAttributeMetadataName =
         "RESTyard.AspNetCore.WebApi.AttributedRoutes.HypermediaObjectEndpointAttribute`1";
-
-    // Legacy attribute support — remove this block when HttpMethodHypermediaAction is removed.
-    // If you remove the legacy attribute, also remove
-    // ActionResultMappingExtractor.ExtractLegacyActionResults (and its InheritsFrom scan)
-    // and the Has201ResponseAttribute check for legacy patterns.
-    internal const string HttpMethodHypermediaActionBaseFullName =
-        "RESTyard.AspNetCore.WebApi.AttributedRoutes.HttpMethodHypermediaAction";
 
     internal const string KeyAttributeFullName =
         "RESTyard.AspNetCore.WebApi.RouteResolver.KeyAttribute";

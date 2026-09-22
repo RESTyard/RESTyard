@@ -190,6 +190,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
             [Relations([DefaultHypermediaRelations.Self])]
             public ILink<EmbeddedSubEntity2> Self => Link.To(this);
+
+            public string? HtoTitle => null;
         }
 
         [HypermediaObject(Classes = [nameof(DuplicateRelEmbeddingHypermediaObject)])]
@@ -200,6 +202,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
             [Relations(["Duplicate"])]
             public IEmbeddedEntity<EmbeddedSubEntity2>? Embedded2 { get; set; }
+
+            public string? HtoTitle => null;
         }
 
         public class EmbeddedEntityRouteKeyProducer : IKeyProducer

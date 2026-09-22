@@ -99,7 +99,7 @@ public class ParameterConverterTests : IAsyncLifetime
             new HypermediaFileUploadActionParameter<UploadCarImageParameters>(
                 FileDefinitions: new List<FileDefinition>
                 {
-                    new(() => Task.FromResult<Stream>(new MemoryStream([1, 2, 3, 4])), "Bytes", "Bytes.txt"),
+                    new(_ => Task.FromResult<Stream>(new MemoryStream([1, 2, 3, 4])), "Bytes", "Bytes.txt"),
                 },
                 new("Text", true)),
             this.Resolver);

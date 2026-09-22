@@ -39,29 +39,14 @@ internal static class HtoMetadataExtractor
 
         var attribute = context.Attributes[0];
 
-        var title = GetNamedArgumentString(attribute, "Title");
-        if (string.IsNullOrEmpty(title))
-        {
-            title = null;
-        }
+        // Title: display name of the entity type from [Title] only. Not the Siren title, which is a
+        // per-instance runtime value (IHypermediaObject.HtoTitle). No XML doc fallback: a class
+        // <summary> is description text.
+        var title = GetAttributeStringArgument(symbol, WellKnownTypeNames.TitleAttributeFullName);
 
-        // Title fallback: [Title] attribute > XML doc <summary>
-        if (title == null)
-        {
-            title = GetAttributeStringArgument(symbol, WellKnownTypeNames.TitleAttributeFullName);
-        }
-
-        if (title == null)
-        {
-            title = GetXmlDocElement(symbol, "summary");
-        }
-
-        // Description: [Description] attribute > XML doc <remarks>
-        var description = GetAttributeStringArgument(symbol, WellKnownTypeNames.DescriptionAttributeFullName);
-        if (description == null)
-        {
-            description = GetXmlDocElement(symbol, "remarks");
-        }
+        // Description: [Description] attribute > XML doc <summary> followed by <remarks>
+        var description = GetAttributeStringArgument(symbol, WellKnownTypeNames.DescriptionAttributeFullName)
+            ?? JoinParagraphs(GetXmlDocElement(symbol, "summary"), GetXmlDocElement(symbol, "remarks"));
 
         // Deprecation: [Obsolete("message")]
         var (isDeprecated, deprecationMessage) = GetDeprecation(symbol);
@@ -252,9 +237,11 @@ internal static class HtoMetadataExtractor
 
         // [HypermediaAction] on a non-action type, [Relations] on a non-link/non-embedded type,
         // and [FormatterIgnore] all exclude the property from the data properties.
+        // IHypermediaObject.HtoTitle is rendered as the Siren title, never as a data property.
         if (hasActionAttribute
             || hasRelations
-            || HasAttribute(attributes, WellKnownTypeNames.FormatterIgnoreAttributeFullName))
+            || HasAttribute(attributes, WellKnownTypeNames.FormatterIgnoreAttributeFullName)
+            || member.Name == WellKnownTypeNames.HtoTitlePropertyName)
         {
             return PropertyCategory.Excluded;
         }
@@ -864,6 +851,16 @@ internal static class HtoMetadataExtractor
     /// (e.g., "summary", "remarks") from a symbol's XML doc comment.
     /// Returns null if the element is not present or empty.
     /// </summary>
+    private static string? JoinParagraphs(string? first, string? second)
+    {
+        if (first == null)
+        {
+            return second;
+        }
+
+        return second == null ? first : first + "\n\n" + second;
+    }
+
     private static string? GetXmlDocElement(ISymbol symbol, string elementName)
     {
         var xml = symbol.GetDocumentationCommentXml();

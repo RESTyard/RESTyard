@@ -23,7 +23,8 @@ public class EntityTypeSchema
     public IReadOnlyList<string> Classes { get; set; } = Array.Empty<string>();
 
     /// <summary>
-    /// Human-readable title.
+    /// Human-readable display name of the entity type (e.g. a domain term instead of the C# class name).
+    /// Not the Siren <c>title</c> of a response — that is a per-instance runtime value.
     /// </summary>
     [JsonPropertyName("title")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

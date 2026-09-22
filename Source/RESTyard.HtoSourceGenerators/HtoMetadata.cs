@@ -9,8 +9,8 @@ namespace RESTyard.HtoSourceGenerators;
 /// <param name="Namespace">The namespace of the HTO class.</param>
 /// <param name="ClassName">The class name of the HTO.</param>
 /// <param name="SchemaName">The schema name derived from the class name, or the <c>[HypermediaSchemaName]</c> override.</param>
-/// <param name="Title">Title from <c>[HypermediaObject(Title)]</c> or XML doc summary.</param>
-/// <param name="Description">Description from <c>[Description]</c> or XML doc remarks.</param>
+/// <param name="Title">Display name of the entity type from <c>[Title]</c> only (no XML doc fallback; not the Siren title).</param>
+/// <param name="Description">Description from <c>[Description]</c>, or XML doc summary followed by remarks.</param>
 /// <param name="IsDeprecated">Whether the HTO is marked as deprecated.</param>
 /// <param name="DeprecationMessage">Deprecation message, if any.</param>
 /// <param name="Classes">Siren classes from <c>[HypermediaObject(Classes)]</c>.</param>

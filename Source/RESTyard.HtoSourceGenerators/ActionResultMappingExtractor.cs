@@ -10,9 +10,7 @@ namespace RESTyard.HtoSourceGenerators;
 /// Extracts <c>ResultType</c> declarations from controller endpoint attributes and
 /// enriches extracted HTO action metadata with the resulting schema names/classes.
 /// Modern <c>[HypermediaActionEndpoint&lt;THto&gt;]</c> attributes are matched incrementally via
-/// <c>ForAttributeWithMetadataName</c>; legacy <c>HttpMethodHypermediaAction</c>-derived attributes
-/// are found by a scan restricted to the source assembly (they are matched by base type,
-/// which <c>ForAttributeWithMetadataName</c> cannot express).
+/// <c>ForAttributeWithMetadataName</c>.
 /// </summary>
 internal static class ActionResultMappingExtractor
 {
@@ -153,95 +151,10 @@ internal static class ActionResultMappingExtractor
     }
 
     /// <summary>
-    /// Scans the source assembly for legacy <c>HttpMethodHypermediaAction</c>-derived attributes
-    /// with <c>ResultType</c> set. Referenced assemblies are deliberately not scanned.
+    /// Merges the per-method endpoint fragments into one deterministic <see cref="ActionResultData"/>.
+    /// Duplicate (HTO, action) keys are last-wins; mappings are sorted for stable output ordering.
     /// </summary>
-    internal static ActionResultData ExtractLegacyActionResults(Compilation compilation)
-    {
-        var mappings = ImmutableArray.CreateBuilder<ActionResultMapping>();
-        var notHtoWarnings = ImmutableArray.CreateBuilder<ResultTypeNotHtoWarning>();
-        var occurrences = ImmutableArray.CreateBuilder<EndpointOccurrence>();
-
-        foreach (var type in GetAllTypes(compilation.Assembly.GlobalNamespace))
-        {
-            foreach (var member in type.GetMembers().OfType<IMethodSymbol>())
-            {
-                foreach (var attr in member.GetAttributes())
-                {
-                    var attrClass = attr.AttributeClass;
-                    if (attrClass == null)
-                        continue;
-
-                    // Check if this attribute inherits from HttpMethodHypermediaAction
-                    if (!InheritsFrom(attrClass, WellKnownTypeNames.HttpMethodHypermediaActionBaseFullName))
-                        continue;
-
-                    // Get the action type from the second constructor argument: typeof(HtoName.ActionOp)
-                    if (attr.ConstructorArguments.Length < 2 || attr.ConstructorArguments[1].Value is not INamedTypeSymbol actionOpType)
-                        continue;
-
-                    var declaringType = actionOpType.ContainingType;
-                    if (declaringType == null)
-                        continue;
-
-                    var htoClassName = declaringType.Name;
-                    var actionName = actionOpType.Name.EndsWith("Op")
-                        ? actionOpType.Name.Substring(0, actionOpType.Name.Length - 2)
-                        : actionOpType.Name;
-
-                    // Track every attribute application for duplicate-endpoint detection (RY0033),
-                    // regardless of whether it declares a ResultType. The action key is the
-                    // Op-type-derived action name — for the usual property-named-like-its-Op-type
-                    // convention this also catches modern/legacy duplicates for the same action.
-                    occurrences.Add(new EndpointOccurrence(
-                        $"action:{HtoMetadataExtractor.GetNamespaceQualifiedName(declaringType)}.{actionName}",
-                        $"{htoClassName}.{actionName}",
-                        LocationInfo.FromAttribute(attr)));
-
-                    // Get ResultType (named argument)
-                    var resultTypeArg = attr.NamedArguments.FirstOrDefault(a => a.Key == "ResultType");
-                    if (resultTypeArg.Key != "ResultType" || resultTypeArg.Value.Value is not INamedTypeSymbol resultType)
-                        continue;
-
-                    var hasHypermediaObject = resultType.GetAttributes()
-                        .Any(a => a.AttributeClass?.ToDisplayString() == WellKnownTypeNames.HypermediaObjectAttributeFullName);
-
-                    if (!hasHypermediaObject)
-                    {
-                        notHtoWarnings.Add(new ResultTypeNotHtoWarning(
-                            resultType.ToDisplayString(), htoClassName, actionName,
-                            LocationInfo.FromAttribute(attr)));
-                    }
-                    else
-                    {
-                        var resultSchemaName = HtoMetadataExtractor.GetSchemaName(resultType);
-                        var resultClasses = HtoMetadataExtractor.GetTargetClasses(resultType);
-                        mappings.Add(new ActionResultMapping(
-                            HtoMetadataExtractor.GetNamespaceQualifiedName(declaringType),
-                            actionName,
-                            HtoMetadataExtractor.GetSchemaName(declaringType),
-                            ResolveActionName(declaringType, actionName),
-                            resultSchemaName,
-                            new EquatableArray<string>(resultClasses)));
-                    }
-                }
-            }
-        }
-
-        return new ActionResultData(
-            new EquatableArray<ActionResultMapping>(mappings.ToImmutable()),
-            new EquatableArray<ResultTypeNotHtoWarning>(notHtoWarnings.ToImmutable()),
-            new EquatableArray<Missing201Warning>(ImmutableArray<Missing201Warning>.Empty),
-            new EquatableArray<EndpointOccurrence>(occurrences.ToImmutable()));
-    }
-
-    /// <summary>
-    /// Merges the per-method endpoint fragments with the legacy scan result into one
-    /// deterministic <see cref="ActionResultData"/>. Duplicate (HTO, action) keys are
-    /// last-wins with legacy mappings applied after modern ones (preserving the previous
-    /// single-dictionary behavior); mappings are sorted for stable output ordering.
-    /// </summary>
-    internal static ActionResultData Merge(ImmutableArray<ActionResultData> endpointFragments, ActionResultData legacy)
+    internal static ActionResultData Merge(ImmutableArray<ActionResultData> endpointFragments)
     {
         var mappingsByKey = new Dictionary<(string HtoClassName, string ActionPropertyName), ActionResultMapping>();
         var notHtoWarnings = ImmutableArray.CreateBuilder<ResultTypeNotHtoWarning>();
@@ -256,12 +169,6 @@ internal static class ActionResultMappingExtractor
             missing201Warnings.AddRange(fragment.Missing201Warnings);
             occurrences.AddRange(fragment.EndpointOccurrences);
         }
-
-        foreach (var mapping in legacy.Mappings)
-            mappingsByKey[(mapping.HtoClassName, mapping.ActionPropertyName)] = mapping;
-        notHtoWarnings.AddRange(legacy.NotHtoWarnings);
-        missing201Warnings.AddRange(legacy.Missing201Warnings);
-        occurrences.AddRange(legacy.EndpointOccurrences);
 
         var orderedMappings = mappingsByKey.Values
             .OrderBy(m => m.HtoClassName, StringComparer.Ordinal)
@@ -314,11 +221,8 @@ internal static class ActionResultMappingExtractor
         // Class keys are namespace-qualified (GEN-05). Modern endpoint attributes key mappings by
         // the action's C# property name; the attribute may name a base HTO for inherited actions,
         // so the declaring class is tried as well.
-        // Legacy attributes key by the Op-type-derived action name — hence the Name fallbacks.
         return TryFindByKey(htoClassName, action.PropertyName, mappings, out mapping)
-               || TryFindByKey(action.DeclaringClassName, action.PropertyName, mappings, out mapping)
-               || TryFindByKey(htoClassName, action.Name, mappings, out mapping)
-               || TryFindByKey(action.DeclaringClassName, action.Name, mappings, out mapping);
+               || TryFindByKey(action.DeclaringClassName, action.PropertyName, mappings, out mapping);
     }
 
     private static bool TryFindByKey(
@@ -366,18 +270,6 @@ internal static class ActionResultMappingExtractor
         return actionPropertyName;
     }
 
-    private static bool InheritsFrom(INamedTypeSymbol type, string baseFullName)
-    {
-        var current = type.BaseType;
-        while (current != null)
-        {
-            if (current.ToDisplayString() == baseFullName)
-                return true;
-            current = current.BaseType;
-        }
-        return false;
-    }
-
     /// <summary>
     /// Checks if a method has a 201-related response attribute (ProducesResponseType, SwaggerResponse, etc.)
     /// by checking attribute name plus constructor and named arguments for value 201.
@@ -409,39 +301,5 @@ internal static class ActionResultMappingExtractor
         }
 
         return false;
-    }
-
-    private static IEnumerable<INamedTypeSymbol> GetAllTypes(INamespaceSymbol root)
-    {
-        var namespaces = new Stack<INamespaceSymbol>();
-        namespaces.Push(root);
-
-        var nestedTypes = new Stack<INamedTypeSymbol>();
-
-        while (namespaces.Count > 0)
-        {
-            var ns = namespaces.Pop();
-            foreach (var type in ns.GetTypeMembers())
-            {
-                nestedTypes.Push(type);
-            }
-
-            foreach (var childNs in ns.GetNamespaceMembers())
-            {
-                namespaces.Push(childNs);
-            }
-
-            // Recurse into nested types (e.g. controllers declared as nested classes)
-            while (nestedTypes.Count > 0)
-            {
-                var type = nestedTypes.Pop();
-                yield return type;
-
-                foreach (var nested in type.GetTypeMembers())
-                {
-                    nestedTypes.Push(nested);
-                }
-            }
-        }
     }
 }

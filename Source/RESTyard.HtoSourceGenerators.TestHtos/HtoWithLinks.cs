@@ -1,3 +1,4 @@
+using Json.Schema.Generation;
 using System;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
@@ -13,9 +14,12 @@ namespace RESTyard.HtoSourceGenerators.TestHtos;
 /// - Self link
 /// - Link deduplication (SirenConverter deduplicates by rel)
 /// </summary>
-[HypermediaObject(Title = "Links Test", Classes = ["LinksTest"])]
-public class HtoWithAllLinkTypes : HypermediaObject
+[Title("Links Test")]
+[HypermediaObject(Classes = ["LinksTest"])]
+public class HtoWithAllLinkTypes : IHypermediaObject
 {
+    public string? HtoTitle => "Links Test";
+
     public string Label { get; set; } = string.Empty;
 
     /// <summary>Internal link via Link.To.</summary>

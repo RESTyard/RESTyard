@@ -1,3 +1,4 @@
+using Json.Schema.Generation;
 using System;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
@@ -17,9 +18,12 @@ namespace RESTyard.HtoSourceGenerators.TestHtos;
 /// - File upload (with parameter)
 /// - User-defined action classes
 /// </summary>
-[HypermediaObject(Title = "Actions Test", Classes = ["ActionsTest"])]
-public class HtoWithAllActionTypes : HypermediaObject
+[Title("Actions Test")]
+[HypermediaObject(Classes = ["ActionsTest"])]
+public class HtoWithAllActionTypes : IHypermediaObject
 {
+    public string? HtoTitle => "Actions Test";
+
     [HypermediaAction(Name = "DoNothing", Title = "Parameterless action")]
     public MarkAsFavoriteOp? DoNothing { get; set; }
 

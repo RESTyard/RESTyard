@@ -2254,17 +2254,6 @@ public class HtoSchemaGeneratorTests
         source.Substring(span.Start, span.Length).Should().Be("MissingRelLink");
     }
 
-    // --- Legacy attribute existence check ---
-    // If this test fails, the legacy HttpMethodHypermediaAction was removed.
-    // Remove ActionResultMappingExtractor.ExtractLegacyActionResults (and its InheritsFrom
-    // check), and delete this test.
-    [Fact]
-    public void Legacy_HttpMethodHypermediaAction_type_exists()
-    {
-        typeof(RESTyard.AspNetCore.WebApi.AttributedRoutes.HttpMethodHypermediaAction)
-            .Should().NotBeNull();
-    }
-
     // --- Step 2.9.1: Schema registry generation ---
 
     [Fact]
@@ -3547,49 +3536,5 @@ public class HtoSchemaGeneratorTests
         var result = GeneratorTestHelper.RunGenerator(source);
 
         result.Diagnostics.Should().NotContain(d => d.Id == "RY0033");
-    }
-
-    [Fact]
-    public void Duplicate_legacy_action_endpoints_report_RY0033_error()
-    {
-        const string source = """
-            using RESTyard.AspNetCore.Hypermedia;
-            using RESTyard.AspNetCore.Hypermedia.Actions;
-            using RESTyard.AspNetCore.Hypermedia.Attributes;
-            using RESTyard.AspNetCore.WebApi.AttributedRoutes;
-            using Microsoft.AspNetCore.Mvc;
-
-            [assembly: HypermediaAssembly]
-
-            namespace TestHtos;
-
-            [HypermediaObject(Title = "Root", Classes = ["Root"])]
-            public class HypermediaRootHto : HypermediaObject
-            {
-                [HypermediaAction(Name = "Create")]
-                public CreateOp? Create { get; set; }
-
-                public class CreateOp : HypermediaAction
-                {
-                    public CreateOp() : base(() => true) { }
-                }
-            }
-
-            [ApiController]
-            [Route("api")]
-            public class RootController : ControllerBase
-            {
-                [HttpPostHypermediaAction("create", typeof(HypermediaRootHto.CreateOp))]
-                public IActionResult Create() => Ok();
-
-                [HttpPostHypermediaAction("create2", typeof(HypermediaRootHto.CreateOp))]
-                public IActionResult CreateAgain() => Ok();
-            }
-            """;
-
-        var result = GeneratorTestHelper.RunGenerator(source);
-
-        var diagnostic = result.Diagnostics.Should().ContainSingle(d => d.Id == "RY0033").Which;
-        diagnostic.GetMessage().Should().Contain("HypermediaRootHto.Create");
     }
 }
