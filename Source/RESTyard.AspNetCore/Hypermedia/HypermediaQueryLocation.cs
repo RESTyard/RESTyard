@@ -12,9 +12,9 @@ namespace RESTyard.AspNetCore.Hypermedia
 
         public HypermediaQueryLocation(Type queryType, IHypermediaQuery? queryParameter = null)
         {
-            if (!typeof(HypermediaQueryResult).GetTypeInfo().IsAssignableFrom(queryType))
+            if (!typeof(IHypermediaQueryResult).GetTypeInfo().IsAssignableFrom(queryType))
             {
-                throw new HypermediaQueryException($"HypermediaQueryLocation requires a type derived from '{typeof(HypermediaQueryResult)}'");
+                throw new HypermediaQueryException($"HypermediaQueryLocation requires a type derived from '{typeof(IHypermediaQueryResult)}'");
             }
 
             QueryType = queryType;

@@ -12,17 +12,6 @@ public abstract class ExternalFileUploadHypermediaAction : HypermediaExternalAct
 {
     public FileUploadConfiguration FileUploadConfiguration { get; set; }
     
-    [Obsolete($"Use overload without {nameof(HttpMethod)} enum")]
-    protected ExternalFileUploadHypermediaAction(
-        Func<bool> canExecute,
-        Uri externalUri,
-        HttpMethod httpMethod,
-        string acceptedMediaType = DefaultMediaTypes.ApplicationJson,
-        FileUploadConfiguration? fileUploadConfiguration = null)
-        : this(canExecute, externalUri, httpMethod.ToString(), acceptedMediaType, fileUploadConfiguration)
-    {
-    }
-    
     protected ExternalFileUploadHypermediaAction(
         Func<bool> canExecute,
         Uri externalUri,
@@ -32,16 +21,6 @@ public abstract class ExternalFileUploadHypermediaAction : HypermediaExternalAct
         : base(canExecute, externalUri, httpMethod, acceptedMediaType)
     {
         FileUploadConfiguration = fileUploadConfiguration ?? new FileUploadConfiguration();
-    }
-    
-    [Obsolete($"Use overload without {nameof(HttpMethod)} enum")]
-    protected ExternalFileUploadHypermediaAction(
-        Uri externalUri,
-        HttpMethod httpMethod,
-        string acceptedMediaType = DefaultMediaTypes.ApplicationJson,
-        FileUploadConfiguration? fileUploadConfiguration = null)
-        : this(() => true, externalUri, httpMethod.ToString(), acceptedMediaType, fileUploadConfiguration)
-    {
     }
     
     protected ExternalFileUploadHypermediaAction(

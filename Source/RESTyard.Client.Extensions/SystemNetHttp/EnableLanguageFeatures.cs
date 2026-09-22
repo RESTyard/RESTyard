@@ -1,4 +1,5 @@
-﻿namespace System.Runtime.CompilerServices
+﻿#if NETSTANDARD
+namespace System.Runtime.CompilerServices
 {
     internal class IsExternalInit
     {
@@ -19,3 +20,4 @@ namespace System.Diagnostics.CodeAnalysis
         public bool ReturnValue { get; }
     }
 }
+#endif

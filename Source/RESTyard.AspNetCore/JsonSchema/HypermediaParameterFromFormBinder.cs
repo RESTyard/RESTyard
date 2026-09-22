@@ -42,12 +42,12 @@ public class HypermediaParameterFromFormBinderProvider : IModelBinderProvider
     {
         return !this.explicitUsage
                && context.BindingInfo.BinderType == null
-               && DataIsInTheBodyOrNull(context);
+               && DataIsInForm(context);
     }
 
-    private static bool DataIsInTheBodyOrNull(ModelBinderProviderContext context)
+    private static bool DataIsInForm(ModelBinderProviderContext context)
     {
-        return (context.BindingInfo.BindingSource == null || context.BindingInfo.BindingSource == BindingSource.Body);
+        return (context.BindingInfo.BindingSource == BindingSource.Form || context.BindingInfo.BindingSource == BindingSource.FormFile);
     }
 
     private static bool ThisBinderIsSelectedOnMethod(ModelBinderProviderContext context)
@@ -103,7 +103,10 @@ public class HypermediaParameterFromFormBinder : IModelBinder
     private Result<ModelBindingContext> CheckRequestMethod(ModelBindingContext bindingContext)
     {
         var requestMethod = bindingContext.ActionContext.HttpContext.Request.Method;
-        if (requestMethod == HttpMethods.Post || requestMethod == HttpMethods.Patch || requestMethod == HttpMethods.Put)
+        if (HttpMethods.IsPost(requestMethod)
+            || HttpMethods.IsPatch(requestMethod)
+            || HttpMethods.IsPut(requestMethod)
+            || HttpMethods.IsQuery(requestMethod)) 
         {
             return Result.Ok(bindingContext);
         }

@@ -5,4 +5,5 @@ public interface ITemplateBase
     HypermediaType Schema { get; set; }
     string? Namespace { get; set; }
     string Includes { get; set; }
+    Version Version { get; set; }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using RESTyard.AspNetCore.Exceptions;
+﻿using RESTyard.AspNetCore.Exceptions;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 
@@ -48,7 +47,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Links
 
         public override IHypermediaQuery? GetQuery()
         {
-            return null;
+            return this.reference is IHypermediaQueryResult hqr ? hqr.Query : null;
         }
     }
 }

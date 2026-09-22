@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using RESTyard.Client.Extensions.SystemTextJson.Extensions;
 using RESTyard.Client.Reader;
@@ -19,9 +20,9 @@ namespace RESTyard.Client.Extensions.SystemTextJson
             return JsonElementWrapper.Wrap(document.RootElement);
         }
 
-        public async Task<IToken?> ParseAsync(Stream contentStream)
+        public async Task<IToken?> ParseAsync(Stream contentStream, CancellationToken cancellationToken = default)
         {
-            var document = await JsonDocument.ParseAsync(contentStream);
+            var document = await JsonDocument.ParseAsync(contentStream, cancellationToken: cancellationToken);
             return JsonElementWrapper.Wrap(document.RootElement);
         }
 

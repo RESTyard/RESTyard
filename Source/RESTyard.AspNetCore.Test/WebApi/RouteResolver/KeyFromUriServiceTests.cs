@@ -217,6 +217,7 @@ public class KeyFromUriServiceTests
     [HypermediaObject(Classes = [nameof(TestHto)])]
     public class TestHto : IHypermediaObject
     {
+        public string? HtoTitle => null;
         public TestHto(string key)
         {
             Key = key;
@@ -249,6 +250,7 @@ public class KeyFromUriServiceTests
     [HypermediaObject(Classes = ["AllKeyTypes"])]
     public class AllKeyTypesHto : IHypermediaObject
     {
+        public string? HtoTitle => null;
         [Key]
         public int IntKey { get; set; }
         
@@ -261,7 +263,7 @@ public class KeyFromUriServiceTests
     [HypermediaObject(Classes = [nameof(HtoWithoutGet)])]
     public class HtoWithoutGet : IHypermediaObject
     {
-        
+        public string? HtoTitle => null;
     }
 
     public class ClassWithoutPublicConstructor
@@ -293,14 +295,14 @@ public class KeyFromUriServiceTests
     [Route("Test")]
     public class Controller : ControllerBase
     {
-        [HttpGetHypermediaObject("{intKey:int}/{key}", typeof(TestHto))]
+        [HttpGet("{intKey:int}/{key}"), HypermediaObjectEndpoint<TestHto>]
         public async Task<IActionResult> Get(string key, int intKey)
         {
             await Task.Delay(5);
             return this.Problem("not implemented");
         }
 
-        [HttpGetHypermediaObject("AllTypes/{intKey}/{guidKey}", typeof(AllKeyTypesHto))]
+        [HttpGet("AllTypes/{intKey}/{guidKey}"), HypermediaObjectEndpoint<AllKeyTypesHto>]
         public IActionResult GetAllKeyTypesHto(int intKey, Guid guidKey)
         {
             return this.Ok();

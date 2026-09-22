@@ -1,25 +1,11 @@
-﻿using System;
-using RESTyard.Client.Extensions;
+﻿using FunicularSwitch.Generators;
 
-namespace RESTyard.Client.Resolver.Caching
+namespace RESTyard.Client.Resolver.Caching;
+
+[UnionType(CaseOrder = CaseOrder.AsDeclared)]
+public abstract partial record CacheEntryVerificationResult<TNetworkResponseMessage>
 {
-    public abstract record CacheEntryVerificationResult<TNetworkResponseMessage>
-    {
-        public void Match(
-            Action<CacheEntryMayBeUsed> mayBeUsed,
-            Action<CacheEntryMayNotBeUsed> mayNotBeUsed,
-            Action<UseThisResponseInstead> useResponse)
-            => this.TypeMatch(mayBeUsed, mayNotBeUsed, useResponse);
-
-        public TMatchResult Match<TMatchResult>(
-            Func<CacheEntryMayBeUsed, TMatchResult> mayBeUsed,
-            Func<CacheEntryMayNotBeUsed, TMatchResult> mayNotBeUsed,
-            Func<UseThisResponseInstead, TMatchResult> useResponse)
-            => this.TypeMatch(mayBeUsed, mayNotBeUsed, useResponse);
-
-        public sealed record CacheEntryMayBeUsed : CacheEntryVerificationResult<TNetworkResponseMessage>;
-        public sealed record CacheEntryMayNotBeUsed : CacheEntryVerificationResult<TNetworkResponseMessage>;
-        public sealed record UseThisResponseInstead
-            (TNetworkResponseMessage Response) : CacheEntryVerificationResult<TNetworkResponseMessage>;
-    }
+    public sealed record CacheEntryMayBeUsed_ : CacheEntryVerificationResult<TNetworkResponseMessage>;
+    public sealed record CacheEntryMayNotBeUsed_ : CacheEntryVerificationResult<TNetworkResponseMessage>;
+    public sealed record UseThisResponseInstead_(TNetworkResponseMessage Response) : CacheEntryVerificationResult<TNetworkResponseMessage>;
 }

@@ -15,4 +15,6 @@ public class ExampleHto : IHypermediaObject
         : HypermediaAction<BasicParameter>(canExecute, prefilledValues);
 
     public record BasicParameter() : IHypermediaActionParameter;
+
+    public string? HtoTitle { get; }
 }

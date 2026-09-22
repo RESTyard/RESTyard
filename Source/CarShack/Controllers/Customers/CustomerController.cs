@@ -154,7 +154,7 @@ public class CustomerController : Controller
         }
     }
 
-    [HttpPost("{key:int}/Moves"),
+    [HttpPut("{key:int}/Moves"),
      HypermediaActionEndpoint<HypermediaCustomerHto>(nameof(HypermediaCustomerHto.CustomerMove))]
     public async Task<ActionResult> CustomerMove(int key, NewAddress newAddress)
     {

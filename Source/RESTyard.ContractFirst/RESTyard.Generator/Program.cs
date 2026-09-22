@@ -31,8 +31,10 @@ public static class Program
                             /csharp
                               /v4
                               /v5
+                              /v5.1
+                              /v5.2
                             /csharp-controller
-                              /v4
+                              /v5
                             /csharp-policies
                               /v4
                           client
@@ -106,7 +108,7 @@ public static class Program
         var code = await template.Match(
             scribanTemplate: sbn => ScribanTemplate.Render(schema, sbn.FileInfo, @namespace, includeContent),
             razorTemplate: razor =>
-                RazorTemplate.Render(schema, razor.RazorType, @namespace, includeContent));
+                RazorTemplate.Render(schema, razor.RazorType, razor.Version, @namespace, includeContent));
         string formattedCode;
         if (templatePath.Contains("csharp"))
         {
@@ -162,9 +164,23 @@ public static class Program
 
         return template.Split('/', '\\') switch
         {
-            ["server", "csharp", "v5"] => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp.V5)),
+            ["server", "csharp", var version] when version is "v5" or "v5.1" or "v5.2" => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp.V5), ParseVersion(version)),
+            ["server", "csharp-controller", "v5"] => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp_controller.V5), new Version(5,0)),
             _ => null,
         };
+
+        static Version ParseVersion(string version)
+        {
+            var trimmed = version.AsSpan()[1..];
+            if (int.TryParse(trimmed, out var major))
+            {
+                return new Version(major, 0);
+            }
+            else
+            {
+                return Version.Parse(trimmed);
+            }
+        }
     }
 
     private static void NormalizeSchema(HypermediaType schema)
@@ -199,5 +215,5 @@ internal abstract partial record TemplateInfo
 {
     public sealed record ScribanTemplate_(FileInfo FileInfo) : TemplateInfo;
 
-    public sealed record RazorTemplate_(Type RazorType) : TemplateInfo;
+    public sealed record RazorTemplate_(Type RazorType, Version Version) : TemplateInfo;
 }

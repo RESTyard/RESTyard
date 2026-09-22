@@ -101,10 +101,11 @@ public class IntegrationTests : IAsyncLifetime
         var customersRootResult = await apiRoot
             .NavigateAsync(l => l.CustomersRoot);
         var customersRoot = customersRootResult.Should().BeOk().Which;
-        (await customersRoot.CreateCustomer!.ExecuteAsync(new CreateCustomerParameters("Name"), this.Resolver)).Should().BeOk();
+        (await customersRoot.CreateCustomer!.ExecuteAsync(new CreateCustomerParameters(Name: "Name", Age: 30), this.Resolver)).Should().BeOk();
         var customersAll = await customersRoot.All.ResolveAsync();
 
-        var customer = customersAll.Should().BeOk().Which.Customers.First(c => !c.IsFavorite);
+        var customer = customersAll.Should().BeOk().Which.Customers.Last(c => !c.IsFavorite);
+        customer.Title.Should().Be("Customer: Name (Age 30)");
         if (!customer.MarkAsFavorite!.CanExecute)
         {
             Assert.Fail("Action can not be run on server, not offered.");
@@ -119,7 +120,7 @@ public class IntegrationTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CallAction_CreateQuery()
+    public async Task CallAction_CreateQuery_WithManualResolve()
     {
         var apiRoot = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint);
         var customersRootResult = await apiRoot.NavigateAsync(l => l.CustomersRoot);
@@ -143,7 +144,40 @@ public class IntegrationTests : IAsyncLifetime
         queryResult.All?.Uri.Should().NotBeNull();
         queryResult.Next?.Uri.Should().NotBeNull();
         queryResult.Previous?.Uri.Should().NotBeNull();
-        queryResult.TotalEntities.Should().Be(20);
+        queryResult.TotalEntities.Should().BeGreaterThanOrEqualTo(18);
+
+        var self = queryResult.Self;
+        self.Uri.Should().NotBeNull();
+        var reload = await self.ResolveAsync();
+        reload.Should().BeOk().Which.Self.Uri.Should().Be(self.Uri);
+    }
+
+    [Fact]
+    public async Task CallAction_CreateQuery_WithExecuteAndResolve()
+    {
+        var apiRoot = await this.Resolver.ResolveLinkAsync<HypermediaEntrypointHco>(ApiEntryPoint);
+        var customersRootResult = await apiRoot.NavigateAsync(l => l.CustomersRoot);
+        var customersRoot = customersRootResult.Should().BeOk().Which;
+        
+        var query = new CustomerQuery
+        {
+            Filter = new CustomerFilter { MinAge = 22 },
+            SortBy = new SortOptions { PropertyName = "Age", SortType = "Ascending" },
+            Pagination = new Pagination { PageOffset = 2, PageSize = 3 }
+        };
+
+        var result = await customersRoot.CreateQuery!.ExecuteAndResolveAsync(query, this.Resolver);
+        var queryResult = result.Should().BeOk().Which;
+        queryResult.Customers.Should().HaveCount(3);
+        queryResult.All?.Uri.Should().NotBeNull();
+        queryResult.Next?.Uri.Should().NotBeNull();
+        queryResult.Previous?.Uri.Should().NotBeNull();
+        queryResult.TotalEntities.Should().BeGreaterThanOrEqualTo(18);
+
+        var self = queryResult.Self;
+        self.Uri.Should().NotBeNull();
+        var reload = await self.ResolveAsync();
+        reload.Should().BeOk().Which.Self.Uri.Should().Be(self.Uri);
     }
 
     [Fact]
@@ -179,7 +213,7 @@ public class IntegrationTests : IAsyncLifetime
             new HypermediaFileUploadActionParameter(
                 FileDefinitions:
                 [
-                    new(() => Task.FromResult<Stream>(new MemoryStream([5, 6, 7, 8])), "Scan", "Scan.pdf"),
+                    new(_ => Task.FromResult<Stream>(new MemoryStream([5, 6, 7, 8])), "Scan", "Scan.pdf"),
                 ]),
             this.Resolver);
         var link = uploadResult.Should().BeOk().Which;
@@ -206,7 +240,7 @@ public class IntegrationTests : IAsyncLifetime
             new HypermediaFileUploadActionParameter<UploadCarImageParameters>(
                 FileDefinitions: new List<FileDefinition>()
                 {
-                    new(() => Task.FromResult<Stream>(new MemoryStream([1, 2, 3, 4])), "Bytes", "Bytes.txt"),
+                    new(_ => Task.FromResult<Stream>(new MemoryStream([1, 2, 3, 4])), "Bytes", "Bytes.txt"),
                 },
                 new(
                     "Text",

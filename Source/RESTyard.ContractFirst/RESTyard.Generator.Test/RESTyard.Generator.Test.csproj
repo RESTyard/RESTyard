@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
@@ -15,6 +15,7 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.13.0" />
         <PackageReference Include="Verify.XunitV3" Version="30.0.0" />
         <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
           <PrivateAssets>all</PrivateAssets>
@@ -29,6 +30,15 @@
 
     <ItemGroup>
       <ProjectReference Include="..\RESTyard.Generator\RESTyard.Generator.csproj" />
+      <ProjectReference Include="..\..\RESTyard.AspNetCore\RESTyard.AspNetCore.csproj" />
+      <ProjectReference Include="..\..\RESTyard.Client\RESTyard.Client.csproj" />
+      <ProjectReference Include="..\LegacyV4Packages\LegacyV4Packages.csproj" ReferenceOutputAssembly="false" />
+      <ProjectReference Include="..\LegacyV5Packages\LegacyV5Packages.csproj" ReferenceOutputAssembly="false" />
+      <ProjectReference Include="..\LegacyV5_1Packages\LegacyV5_1Packages.csproj" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
     <ItemGroup>

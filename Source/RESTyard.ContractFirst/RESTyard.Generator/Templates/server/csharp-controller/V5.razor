@@ -1,0 +1,39 @@
+﻿@using Scriban.Functions
+@using RESTyard.Generator.Templates.csharp_base
+@inherits RazorTemplateBase
+@implements ITemplateBase
+
+#nullable enable
+using Microsoft.AspNetCore.Mvc;
+using RESTyard.AspNetCore.WebApi;
+using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+@Includes
+
+@if (!string.IsNullOrEmpty(Namespace))
+{
+    @:namespace @Namespace;
+}
+
+@foreach (var document in Schema.Documents)
+{
+    <Attribute>Route("api/[controller]")</Attribute>
+    <Class Name="@(document.name + "Controller")" Inherits="ControllerBase" IsPartial="false">
+        @if (document.hasSelfLink)
+        {
+            <Attribute>HttpGet("@("<stub>")"), HypermediaObjectEndpoint@($"<{document.name}Hto>")</Attribute>
+            <ControllerMethod Name="Get" />
+        }
+        
+        @foreach (var operation in document.Operations)
+        {
+            <Attribute>Http@(operation.method)("@("<stub>")"), HypermediaActionEndpoint@($"<{document.name}Hto>")(nameof(@(document.name + "Hto." + operation.name)))</Attribute>
+            <ControllerMethod Name="@operation.name" ParameterName="@operation.parameterTypeName" />
+        }
+    </Class>
+}
+
+@code {
+    [Parameter] public string? Namespace { get; set; }
+    [Parameter] public string Includes { get; set; } = null!;
+
+}

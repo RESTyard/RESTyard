@@ -1,3 +1,8 @@
-﻿namespace RESTyard.AspNetCore.Hypermedia;
+﻿using RESTyard.AspNetCore.Query;
 
-public interface IHypermediaQueryResult : IHypermediaObject;
+namespace RESTyard.AspNetCore.Hypermedia;
+
+public interface IHypermediaQueryResult : IHypermediaObject
+{
+    IHypermediaQuery Query { get; }
+}

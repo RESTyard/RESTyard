@@ -6,6 +6,7 @@
   <TransferParameters>
     <Parameters typeName="CreateCustomerParameters" usedForQueries="false" usedForActions="true">
       <Property name="Name" type="string" mandatory="true" />
+      <Property name="Age" type="int" mandatory="false" />
     </Parameters>
     <Parameters typeName="BuyCarParameters" usedForQueries="false" usedForActions="true">
       <Property name="Brand" type="string" mandatory="true" />
@@ -133,7 +134,7 @@
       <Operations>
         <Operation name="CreateCustomer" method="Post" title="Request creation of a new Customer."
                    parameterTypeName="CreateCustomerParameters" resultDocument="HypermediaCustomer" />
-        <Operation name="CreateQuery" method="Post" title="Query the Customers collection."
+        <Operation name="CreateQuery" method="Query" title="Query the Customers collection."
                    parameterTypeName="CustomerQuery" resultDocument="HypermediaCustomerQueryResult" />
       </Operations>
       <Links>
@@ -164,7 +165,7 @@
         <Entity collectionName="Purchases" document="CustomerPurchase"/>
       </Entities>
     </Document>
-    <Document name="HypermediaCustomer">
+    <Document name="HypermediaCustomer" title="Customer: {FullName} (Age {Age})">
       <Classifications>
         <Classification class="Customer" />
       </Classifications>
@@ -176,7 +177,7 @@
         <Property name="IsFavorite" type="bool" mandatory="true" />
       </Properties>
       <Operations>
-        <Operation name="CustomerMove" method="Post" title="A Customer moved to a new location."
+        <Operation name="CustomerMove" method="Put" title="A Customer moved to a new location."
                    parameterTypeName="NewAddress" />
         <Operation name="CustomerRemove" method="Delete" title="Remove a Customer." />
         <Operation name="MarkAsFavorite" method="Post" title="Marks a Customer as a favorite buyer."

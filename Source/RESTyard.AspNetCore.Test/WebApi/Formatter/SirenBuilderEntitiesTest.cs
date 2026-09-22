@@ -170,6 +170,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         [HypermediaObject(Classes = [nameof(EmbeddedSubEntity)])]
         public class EmbeddedSubEntity : IHypermediaObject
         {
+            public string? HtoTitle => null;
             public bool ABool { get; set; }
             public int AInt { get; set; }
 

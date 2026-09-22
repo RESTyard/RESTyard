@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json.Nodes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Test.Helpers;
 using RESTyard.AspNetCore.Util.Enum;
 
@@ -21,7 +22,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         public static void CompareHypermediaPropertiesAndJson(JsonObject propertiesObject, PropertyHypermediaObject ho)
         {
             var propertyInfos = ho.GetType().GetProperties()
-                .Where(p => p.Name != "Entities" && p.Name != "Links")
+                .Where(p => p.Name != "Entities" && p.Name != "Links" && p.Name != nameof(IHypermediaObject.HtoTitle))
                 .ToList();
             Assert.AreEqual(propertiesObject.Count, propertyInfos.Count);
 
@@ -57,7 +58,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         public static void CompareHypermediaPropertiesAndJsonNoNullProperties(JsonObject propertiesObject, PropertyHypermediaObject ho)
         {
             var propertyInfos = typeof(PropertyHypermediaObject).GetProperties()
-                .Where(p => p.Name != "Entities" && p.Name != "Links")
+                .Where(p => p.Name != "Entities" && p.Name != "Links" && p.Name != nameof(IHypermediaObject.HtoTitle))
                 .ToList();
             Assert.AreEqual(propertiesObject.Count, propertyInfos.Count - 5);
 
@@ -73,7 +74,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         public static void CompareHypermediaListPropertiesAndJson(JsonObject propertiesObject, HypermediaObjectWithListProperties ho)
         {
             var propertyInfos = ho.GetType().GetProperties()
-                .Where(p => p.Name != "Entities" && p.Name != "Links")
+                .Where(p => p.Name != "Entities" && p.Name != "Links" && p.Name != nameof(IHypermediaObject.HtoTitle))
                 .ToList();
             Assert.AreEqual(propertiesObject.Count, propertyInfos.Count);
 

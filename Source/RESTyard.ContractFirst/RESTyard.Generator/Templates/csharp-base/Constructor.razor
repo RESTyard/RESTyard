@@ -8,7 +8,7 @@
     var parentArgumentsString = string.Join(", ", parentArguments.Select(pa => pa.Split(' ').Last()));
     if (parentArguments.Count == 0)
     {
-        if (Document.isQueryResult)
+        if (Document.isQueryResult && Version.HypermediaQueryResultParentExists())
         {
             parentArgumentsString = "query";
         }
@@ -135,6 +135,10 @@ public @typeName (@allArgumentsString)@parentArgumentsString
             @:this.@(Capitalize(rel)) = @match@(".")Map(some => @value).GetValueOrDefault();
         }
     }
+    @if (Document.isQueryResult && !Version.HypermediaQueryResultParentExists())
+    {
+        @:this.Query = query;
+    }
     @if (Document.hasSelfLink)
     {
         @:this.Self = Link.To(this);
@@ -143,5 +147,4 @@ public @typeName (@allArgumentsString)@parentArgumentsString
 
 @code {
     [Parameter] public DocumentType Document { get; set; } = null!;
-    [Parameter] public Version Version { get; set; } = null!;
 }
