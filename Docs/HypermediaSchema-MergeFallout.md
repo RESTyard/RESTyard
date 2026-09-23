@@ -5,8 +5,10 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
 
 **Code — branch**
 
-- [ ] `HypermediaActionEndpoint.ResultType` XML doc says "produces a `Location` header" — extend to inline
+- [x] `HypermediaActionEndpoint.ResultType` XML doc says "produces a `Location` header" — extend to inline
   results (`InlineQueryResult`, #131). Relates to Plan 8.6 (Location-header helper).
+- [x] `server/csharp-controller/v4.sbn` was re-added by accident in `f0a3d2a` (#131 deleted it) — `git rm` it.
+  *Cause: modify/delete conflict left the branch copy on disk as untracked; the next commit picked it up.*
 - [ ] Represent the HTTP `QUERY` action with inline (embedded) result in the hypermedia schema (#131).
   Today `ActionDescription` only has the method and `resultName`, implicitly meaning "`Location` points to
   it". Needed: how the result is delivered (inline body + `Content-Location` via `InlineQueryResult`
@@ -20,10 +22,10 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
 - [x] Target frameworks: #131 bumped all projects net8 → net10. Align the branch-added projects
   (`RESTyard.Schema`, `RESTyard.HtoSourceGenerators*`, `RESTyard.Schema.Test`) — keep `netstandard2.0`
   where required (generator, analyzers). *Done in `5aaba94`.*
-- [ ] `HypermediaExtensionsOptions.ImplicitHypermediaActionParameterBinders` XML doc (~line 40) still describes
+- [x] `HypermediaExtensionsOptions.ImplicitHypermediaActionParameterBinders` XML doc (~line 40) still describes
   the removed body binder (`HypermediaActionParameterFromBodyAttribute`, `KeyFromUri`). The option itself is
   still live — it switches the form binder between implicit and attributed-only (`StartupExtensions.cs:176`) —
-  so keep it and fix the doc only.
+  so keep it and fix the doc only. *Also fixed the same text on `AddHypermediaParameterBinders`.*
 - [x] Integration test: `QUERY` action + `[FromBody]` parameter binding (CarShack `NewQueryAction`). *Covered by
   `CallAction_CreateQuery_WithManualResolve` / `_WithExecuteAndResolve` (green).*
 - [x] `HypermediaParameterFromFormBinder`: B1 ported it to System.Text.Json, #131 restricted it to explicit
@@ -42,6 +44,8 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
   restore after the merge (NU1201). Refactoring for all projects; do it on `develop`, then merge.
 - [ ] `RESTyard.Generator/Properties/launchSettings.json` profile still uses `--template
   server/csharp-controller/v4`, which #131 deleted — switch to `v5`.
+- [ ] Unresolved crefs to the removed `HttpGetHypermediaActionParameterInfo` (#131, CS1574):
+  `HypermediaExtensionsOptions.cs:30`, `DynamicHypermediaAction.cs:9` — point to `HypermediaActionParameterInfoEndpoint<T>`.
 - [ ] `CustomersRootController.NewQueryAction` comment "Provides a link to the result Query." is stale
   (result is returned inline).
 - [ ] Remove the obsolete sourcelink#572 `TargetFrameworkMonikerAssemblyAttributesPath` workaround from
@@ -68,6 +72,7 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
   not `v4`; analyzers RY0010–RY0015 removed; `Generator.Test.Output`/`OutputV5` removed from the
   test-project table; .NET version is 10 (project descriptions l.36–53, AspNetCore.Test row "net8.0 +
   net9.0", Key Technical Details).
-- [ ] `HypermediaSchema-Plan.md` Step 8.4 references `server/csharp-controller/v4`.
+- [x] `HypermediaSchema-Plan.md` Step 8.4 references `server/csharp-controller/v4`. *Step 8.4 is otherwise
+  outdated too: `V5.razor` already emits `HypermediaActionEndpoint<T>` (#131); only `ResultType` is left.*
 - [ ] `migration-guide.md`: mention `HtoTitle` replacing `HypermediaObject(Title)` for anyone migrating
   HTOs together with the schema opt-in.

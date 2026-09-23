@@ -35,8 +35,9 @@ public class HypermediaActionEndpointAttribute<THto> : HypermediaEndpointAttribu
     public override string EndpointName { get; }
 
     /// <summary>
-    /// Indicates that this action endpoint produces a <c>Location</c> header pointing to
-    /// an entity of the specified HTO type. Used by schema generation to populate
+    /// Indicates that this action endpoint results in an entity of the specified HTO type, either
+    /// referenced by a <c>Location</c> header or returned inline in the response body
+    /// (see <see cref="ExtensionMethods.ControllerExtensions.InlineQueryResult"/>). Used by schema generation to populate
     /// <c>ActionDescription.ResultName</c> and <c>ResultClasses</c>.
     /// When null (default), no result type is recorded.
     /// </summary>

@@ -909,7 +909,7 @@ silently producing subtly different JSON via the reflection path.
 #### Step 8.4: Update contract-first generator to emit `ResultType` and migrate to `[HypermediaActionEndpoint<T>]`
 - **Deferred from Step 2.13.1** — the contract-first generator currently emits legacy `[Http*HypermediaAction]` attributes, not `[HypermediaActionEndpoint<T>]`. Updating `ResultType` on the legacy attributes was done as part of Step 2.13, but the template should be migrated to the new attribute pattern as part of the overall migration.
 - **only new template engine** make sure only to update new aproach using razor templates (v5). also regenerate onyl using this
-- Update the server controller template (`server/csharp-controller/v4` or new `v5`) to emit `[HypermediaActionEndpoint<THto>]` instead of `[Http*HypermediaAction]`
+- Update the server controller template (`server/csharp-controller/v5`, `V5.razor`; `v4` was removed in #131) to emit `[HypermediaActionEndpoint<THto>]` instead of `[Http*HypermediaAction]`
 - Emit `ResultType = typeof(...)` on the new attribute when `operation.resultDocument` is set in the XML schema
 - **Implementation insights from Step 2.13.1:**
   - The XML schema's `OperationType.resultDocument` contains the result document name — access via `operation.resultDocument` in Scriban (not `operation.result_document` — Scriban uses the exact C# property name on .NET objects)

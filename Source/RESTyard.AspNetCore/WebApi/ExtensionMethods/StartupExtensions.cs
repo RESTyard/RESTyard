@@ -163,8 +163,9 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         }
 
         /// <summary>
-        /// Add custom binder for parameters of hypermedia actions that derive from <see cref="IHypermediaActionParameter"/>. 
-        /// Enables usage of <see cref="KeyFromUriAttribute"/> for properties of those parameter types. 
+        /// Add the multipart/form-data binder for file upload action parameters
+        /// (<see cref="HypermediaFileUploadActionParameter"/>), see
+        /// <see cref="HypermediaExtensionsOptions.ImplicitHypermediaActionParameterBinders"/>.
         /// </summary>
         /// <param name="options"></param>
         /// <param name="hypermediaOptions"></param>
