@@ -82,9 +82,12 @@ Given this HTO:
 
 ```csharp
 /// <summary>A customer in the system.</summary>
-[HypermediaObject(Title = "Customer", Classes = ["Customer"])]
-public class HypermediaCustomerHto : HypermediaObject
+[Title("Customer")]
+[HypermediaObject(Classes = ["Customer"])]
+public class HypermediaCustomerHto : IHypermediaObject
 {
+    public string? HtoTitle => $"Customer {Name}";
+
     [HypermediaProperty(Name = "FullName")]
     public string Name { get; set; } = string.Empty;
 
@@ -119,7 +122,7 @@ public static EntityTypeSchema GetSchema(IJsonSchemaFactory schemaFactory)
     return new EntityTypeSchema
     {
         Name = "Customer",
-        Title = "Customer",
+        Title = "Customer",                         // from [Title]
         Description = "A customer in the system.",  // from XML doc <summary>
         Classes = new[] { "Customer" },
         PropertiesSchema = propertiesSchema,
@@ -128,6 +131,9 @@ public static EntityTypeSchema GetSchema(IJsonSchemaFactory schemaFactory)
     };
 }
 ```
+
+`HtoTitle` is excluded from the Properties POCO and the schema; `ToSiren()` emits it as the Siren
+`title` (omitted when null or empty).
 
 ## Attribute Reference
 
@@ -159,7 +165,7 @@ Because of the stripping, different classes can derive the same name — `Hyperm
 `[HypermediaSchemaName]` (`RESTyard.Schema.Model`) on one of the classes:
 
 ```csharp
-[HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+[HypermediaObject(Classes = ["Customer"])]
 [HypermediaSchemaName("CrmCustomer")]
 public class HypermediaCustomerHto : IHypermediaObject { ... }
 ```
@@ -173,8 +179,6 @@ surface when the aggregated schema is composed at runtime.
 
 `record` HTOs work like class HTOs: positional (primary-constructor) properties and body
 properties become data properties; the compiler-generated `EqualityContract` is excluded.
-Note that a `record` cannot derive from the (obsolete) `HypermediaObject` base class — implement
-`IHypermediaObject` directly.
 
 ### Embedded Entity Collections
 
@@ -204,14 +208,16 @@ Enable nullable reference types and mark optional members with `?`.
 
 The generator extracts title and description for entity types, links, actions, and embedded entities:
 
-| Source | Priority | Maps to |
+| Element | Title | Description |
 |---|---|---|
-| `[HypermediaObject(Title)]` | 1st (entity title) | `EntityTypeSchema.Title` |
-| `[HypermediaAction(Title)]` | 1st (action title) | `ActionDescription.Title` |
-| `[Title("...")]` (`JsonSchema.Net.Generation`) | 2nd | Title on any element |
-| XML doc `<summary>` | 3rd (fallback) | Title on any element |
-| `[Description("...")]` (`JsonSchema.Net.Generation`) | 1st | Description on any element |
-| XML doc `<remarks>` | 2nd (fallback) | Description on any element |
+| Entity, link, embedded | `[Title]` | `[Description]`, else XML doc `<summary>` followed by `<remarks>` (as paragraphs) |
+| Action | `[HypermediaAction(Title)]`, else `[Title]` | same |
+
+- There is no XML doc or name fallback for titles; consumers use `title ?? name` (or the relation).
+- The entity title is the schema display name, not the Siren `title` — that comes from `HtoTitle` at runtime.
+- `[Title]` / `[Description]` are the `Json.Schema.Generation` attributes.
+- XML docs need `GenerateDocumentationFile=true` in the HTO project; without it the compiler hands the
+  generator no doc comments and descriptions stay null (no warning).
 
 ### Deprecation
 
@@ -226,10 +232,12 @@ On properties within the generated Properties POCO (entity data properties and a
 **Semantics:** OR — any matching group grants access. Elements without the attribute are public.
 
 ```csharp
-[HypermediaObject(Title = "Admin", Classes = ["Admin"])]
+[HypermediaObject(Classes = ["Admin"])]
 [HypermediaAccessGroup("admin")]
-public class HypermediaAdminHto : HypermediaObject
+public class HypermediaAdminHto : IHypermediaObject
 {
+    public string? HtoTitle => "Admin";
+
     [HypermediaAction(Name = "Delete")]
     [HypermediaAccessGroup("admin", "sales")]
     public HypermediaAction? Delete { get; set; }

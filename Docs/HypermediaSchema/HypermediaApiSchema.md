@@ -60,8 +60,8 @@ Describes one type of Siren entity — its data shape and hypermedia connections
 |---|---|---|
 | `name` | `string` | Unique identifier for cross-references. Derived from the C# class name (stripping `Hypermedia` prefix and `Hto` suffix). |
 | `classes` | `string[]` | Siren classes that identify this entity type at runtime. Used for wire-format matching. |
-| `title` | `string?` | From `[HypermediaObject(Title)]`, `[Title]` attribute, or XML doc `<summary>`. |
-| `description` | `string?` | From `[Description]` attribute or XML doc `<remarks>`. |
+| `title` | `string?` | Display name of the entity type, from `[Title]`. **Not** the Siren `title` (see below). Null if not set; consumers use `title ?? name`. |
+| `description` | `string?` | From `[Description]`, else XML doc `<summary>` followed by `<remarks>` (as paragraphs). |
 | `propertiesSchema` | `JsonSchema?` | JSON Schema describing the Siren `properties` bag. Null for entities with no data properties. |
 | `links` | `LinkDescription[]` | Hypermedia links this entity type exposes. |
 | `actions` | `ActionDescription[]` | Hypermedia actions available on this entity type. |
@@ -69,6 +69,10 @@ Describes one type of Siren entity — its data shape and hypermedia connections
 | `accessGroups` | `string[]?` | Access groups from `[HypermediaAccessGroup]`. Null = public (no restriction). OR semantics: any matching group grants access. |
 | `isDeprecated` | `bool` | `true` when the HTO class has `[Obsolete]`. |
 | `deprecationMessage` | `string?` | The message from `[Obsolete("message")]`. |
+
+The Siren `title` is a per-instance runtime value (`IHypermediaObject.HtoTitle`) and is not part of the
+schema. XML doc sourcing for `description` needs `GenerateDocumentationFile=true` in the HTO project;
+without it the compiler hands the source generator no doc comments and `description` stays null.
 
 **Example:**
 
@@ -101,8 +105,8 @@ Describes a hypermedia link from one entity type to another.
 | `targetName` | `string?` | Name of the target entity type (references another `EntityTypeSchema.Name`). **Absent for external links** — the link points outside the API and has no entity type in the schema. |
 | `targetClasses` | `string[]` | Siren classes of the target entity type. Empty for external links. |
 | `isExternal` | `bool` | `true` for external links (`ExternalLink` properties). Explicit marker — consumers don't need to infer externality from a missing `targetName`. Omitted (false) for entity links. |
-| `title` | `string?` | From `[Title]` attribute or XML doc `<summary>`. |
-| `description` | `string?` | From `[Description]` attribute or XML doc `<remarks>`. |
+| `title` | `string?` | From `[Title]`. No XML doc fallback. |
+| `description` | `string?` | From `[Description]`, else XML doc `<summary>` followed by `<remarks>` (as paragraphs). |
 | `accessGroups` | `string[]?` | Access groups from `[HypermediaAccessGroup]`. Null = public. |
 | `isMandatory` | `bool` | `true` when the link property is non-nullable — always present on the entity. |
 | `mediaTypes` | `string[]` | Media types the linked resource may be served as, from `[HypermediaMediaType]` (e.g., `["application/pdf", "text/html"]`). Defaults to `["application/vnd.siren+json"]` when not declared. |
@@ -159,8 +163,8 @@ Describes a hypermedia action (state transition) on an entity type.
 | Field | Type | Description |
 |---|---|---|
 | `name` | `string` | Action name from `[HypermediaAction(Name)]` or the property name. |
-| `title` | `string?` | Human-readable title from `[HypermediaAction(Title)]`, `[Title]`, or XML doc `<summary>`. |
-| `description` | `string?` | From `[Description]` attribute or XML doc `<remarks>`. |
+| `title` | `string?` | Human-readable title from `[HypermediaAction(Title)]`, else `[Title]`. No XML doc fallback. |
+| `description` | `string?` | From `[Description]`, else XML doc `<summary>` followed by `<remarks>` (as paragraphs). |
 | `parameterSchema` | `JsonSchema?` | JSON Schema for the action's parameter type. Null for parameterless actions. |
 | `contentType` | `string?` | Content type for the action request (e.g., `"multipart/form-data"` for file uploads). |
 | `accessGroups` | `string[]?` | Access groups from `[HypermediaAccessGroup]`. Null = public. |
@@ -206,8 +210,8 @@ Describes an embedded sub-entity within a parent entity type.
 | `isCollection` | `bool` | `true` when the property is a `List<IEmbeddedEntity<T>>` (collection of embedded entities). |
 | `accessGroups` | `string[]?` | Access groups from `[HypermediaAccessGroup]`. Null = public. |
 | `isMandatory` | `bool` | `true` when the property is non-nullable. |
-| `title` | `string?` | From `[Title]` attribute or XML doc `<summary>`. |
-| `description` | `string?` | From `[Description]` attribute or XML doc `<remarks>`. |
+| `title` | `string?` | From `[Title]`. No XML doc fallback. |
+| `description` | `string?` | From `[Description]`, else XML doc `<summary>` followed by `<remarks>` (as paragraphs). |
 | `isDeprecated` | `bool` | `true` when the property has `[Obsolete]`. |
 | `deprecationMessage` | `string?` | The message from `[Obsolete("message")]`. |
 
@@ -284,10 +288,12 @@ Access groups describe which permissions are needed to see specific entity types
 Declare access groups on HTO classes (entity types) and properties (actions, links, embedded entities):
 
 ```csharp
-[HypermediaObject(Title = "Customer", Classes = ["Customer"])]
+[HypermediaObject(Classes = ["Customer"])]
 [HypermediaAccessGroup("customer")]
-public class HypermediaCustomerHto : HypermediaObject
+public class HypermediaCustomerHto : IHypermediaObject
 {
+    public string? HtoTitle => "Customer";
+
     [HypermediaAction(Name = "Delete")]
     [HypermediaAccessGroup("admin", "sales")]
     public HypermediaAction? Delete { get; set; }

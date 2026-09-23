@@ -31,6 +31,7 @@ new capability, no action for existing servers.
 | [Non-nullable actions](#non-nullable-actions-must-always-render-new-behavior) | Non-nullable action null or `CanExecute()==false` now throws | **Conditional** | Declare optional actions nullable |
 | [Contract-first optional operations](#contract-first-migration) | `mandatory="false"` on `<Operation>` for optional actions | **Conditional** | Add `mandatory="false"` to conditionally-available operations |
 | [`required` in schema](#schema-required-derived-from-non-nullability-new-behavior) | `required` now derived from non-nullability | **Info** | Regenerate schema consumers/clients |
+| [Titles](#titles-htotitle-vs-title-new-behavior) | Siren `title` = `HtoTitle` (runtime); schema `title` = `[Title]` only; XML docs feed `description` | **Conditional** | Add `[Title]` where a schema label is wanted; enable `GenerateDocumentationFile` for XML docs |
 | [Schema names / RY0024](#schema-names-hypermediaschemaname-and-collision-errors-new-behavior) | Duplicate derived schema names now error | **Conditional** | Apply `[HypermediaSchemaName]` on a collision |
 | [Unresolved references](#schema-dangling-reference-validation-new-behavior) | Dangling `targetName`/`resultName` now logged; optional placeholders | **Info** | Set `AllowUnresolvedReferences` while building incrementally |
 | [External links in schema](#schema-external-links-now-included-new-behavior) | `ExternalLink` now appears in the schema (`isExternal`) | **Info** | None (Siren wire unchanged) |
@@ -287,6 +288,20 @@ outside the declared list, the mapper warns by default (`SirenMapperOptions.Medi
 
 **Action required:** none for servers. To silence mismatch warnings, either fix the declaration or
 set `MediaTypeMismatch = MediaTypeMismatchBehavior.Ignore`.
+
+## Titles: `HtoTitle` vs. `[Title]` (new behavior)
+
+The Siren `title` and the schema `title` are separate:
+
+- **Siren `title`** comes from `IHypermediaObject.HtoTitle`, a per-instance value evaluated at render time
+  (both `SirenConverter` and `ToSiren()`), omitted when null or empty. `[HypermediaObject(Title)]` is gone;
+  the `RY0002` code fix moves it into `HtoTitle`.
+- **Schema `title`** (entity, link, action, embedded) comes from `[Title]` only; actions use
+  `[HypermediaAction(Title)]` first. There is no XML doc or name fallback.
+- **Schema `description`** comes from `[Description]`, else XML doc `<summary>` followed by `<remarks>`.
+
+**Action required:** add `[Title]` where schema consumers should see a display name. XML doc sourcing
+needs `GenerateDocumentationFile=true` in the HTO project; without it descriptions stay null, silently.
 
 ## Schema Names: `[HypermediaSchemaName]` and Collision Errors (new behavior)
 

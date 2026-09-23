@@ -55,14 +55,15 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
 
 **Docs**
 
-- [ ] Title mechanics (see *Title handling*): `HypermediaApiSchema.md` (entity `title` row ~l.63: display
+- [x] Title mechanics (see *Title handling*): `HypermediaApiSchema.md` (entity `title` row ~l.63: display
   name from `[Title]` only, not the Siren title; `description` source changes), `SourceGenerator.md`
   (title/description source tables ~l.211, l.286–295), migration guide: `HypermediaObject(Title)` →
   `HtoTitle` (Siren, runtime, optional) + `[Title]` (schema display name); class `<summary>` now feeds
   `description`; same rule for links / actions / embedded (member `<summary>` no longer a title);
   `GenerateDocumentationFile=true` required for XML-doc sourcing. Code examples still using
   `[HypermediaObject(Title = ...)]` / `: HypermediaObject`: `HypermediaApiSchema.md:287`,
-  `SourceGenerator.md:85, 162, 229`.
+  `SourceGenerator.md:85, 162, 229`. *Done; `GenerateDocumentationFile` requirement verified with a scratch
+  build (without it: no `Description` emitted, no warning).*
 - [ ] Decide one attribute family for schema metadata: JsonSchema.Net (`[Title]`, `[Description]`, used by
   the generator) vs BCL `System.ComponentModel` (`[DisplayName]`, `[Description]`, mapped by
   `JsonSchemaFactory` for parameters). Today both coexist.
@@ -74,5 +75,5 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
   net9.0", Key Technical Details).
 - [x] `HypermediaSchema-Plan.md` Step 8.4 references `server/csharp-controller/v4`. *Step 8.4 is otherwise
   outdated too: `V5.razor` already emits `HypermediaActionEndpoint<T>` (#131); only `ResultType` is left.*
-- [ ] `migration-guide.md`: mention `HtoTitle` replacing `HypermediaObject(Title)` for anyone migrating
+- [x] `migration-guide.md`: mention `HtoTitle` replacing `HypermediaObject(Title)` for anyone migrating
   HTOs together with the schema opt-in.
