@@ -68,11 +68,11 @@ internal static class JsonSchemaExtensions
     /// Produces a human-readable type string for a property schema.
     /// Resolves array item types and <c>$ref</c> to definition names.
     /// </summary>
-    internal static string SchemaToTypeString(JsonSchema propSchema)
-        => SchemaToTypeString(propSchema, linkDefinitions: false);
+    internal static string SchemaToTypeString(JsonSchema propSchema, JsonSchema? parentSchema = null)
+        => SchemaToTypeString(propSchema, linkDefinitions: false, parentSchema: parentSchema);
 
     /// <summary>
-    /// Like <see cref="SchemaToTypeString(JsonSchema)"/> but wraps <c>$ref</c> definition names
+    /// Like <see cref="SchemaToTypeString(JsonSchema, JsonSchema)"/> but wraps <c>$ref</c> definition names
     /// in Markdown links (e.g., <c>[Address](#definition-address)</c>).
     /// </summary>
     internal static string SchemaToLinkedTypeString(JsonSchema propSchema, JsonSchema? parentSchema = null)

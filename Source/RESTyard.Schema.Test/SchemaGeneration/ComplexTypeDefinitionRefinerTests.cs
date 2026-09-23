@@ -236,6 +236,9 @@ public class ComplexTypeDefinitionRefinerTests
         var homeColumn = TypeColumn(markdown, "| HomeAddress |");
         homeColumn.Should().StartWith("[");
         TypeColumn(markdown, "| OtherAddress |").Should().Be(homeColumn);
+
+        // Both renderers resolve the display name from the definition's $id
+        homeColumn.Should().StartWith($"[{homeType}]");
     }
 
     private static string TypeColumn(string markdown, string rowStart)

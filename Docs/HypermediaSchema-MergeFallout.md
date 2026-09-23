@@ -48,15 +48,16 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
   `IJsonSchemaFactory`). *Traced (HUI `main`, formly 7.0.0): `anyOf [X, null]` becomes an unlabeled
   multi-select of alternatives; `oneOf [X, null]` is flattened by `SchemaSimplifier.fixNullablesInOneOf`
   to a nullable object, same as the previous inline shape → emit `oneOf`. Not executed in a browser.*
+- [x] Mermaid shows the `$defs` key fallback (`AddressInComplexTypeDefinitionRefinerTests`) where Markdown
+  shows the `$id` name (`ComplexTypeDefinitionRefinerTests+Address`): `MermaidMapper.cs:126` calls
+  `SchemaToTypeString` without the parent schema. Only visible for nested classes. *Fixed: parent schema
+  passed; CarShack output unchanged.*
 
 **RESTyard-HUI (raise there)**
 
 - [ ] `SchemaSimplifier`: treat `anyOf [X, { type: null }]` like `oneOf` (extend `fixNullablesInOneOf`), so
   schemas from other generators (e.g. OpenAPI 3.1 style) render as a nullable object instead of an
   unlabeled multi-select. Also keep a sibling `description` when hoisting the non-null branch (dropped today).
-- [ ] Mermaid shows the `$defs` key fallback (`AddressInComplexTypeDefinitionRefinerTests`) where Markdown
-  shows the `$id` name (`ComplexTypeDefinitionRefinerTests+Address`): `MermaidMapper.cs:126` calls
-  `SchemaToTypeString` without the parent schema. Only visible for nested classes.
 
 **Code — `develop` (raise there, not on the branch)**
 

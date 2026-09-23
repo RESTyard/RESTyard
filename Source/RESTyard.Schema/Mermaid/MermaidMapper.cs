@@ -119,11 +119,12 @@ public static class MermaidMapper
 
             if (opts.IncludeProperties
                 && entity.PropertiesSchema is { } propDoc
-                && propDoc.ToJsonSchema().GetProperties() is { } props)
+                && propDoc.ToJsonSchema() is var propSchema
+                && propSchema.GetProperties() is { } props)
             {
                 foreach (var prop in props)
                 {
-                    var typeName = JsonSchemaExtensions.SchemaToTypeString(prop.Value);
+                    var typeName = JsonSchemaExtensions.SchemaToTypeString(prop.Value, propSchema);
                     sb.AppendLine($"        +{typeName} {prop.Key}");
                 }
             }
