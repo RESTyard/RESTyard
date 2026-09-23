@@ -10,10 +10,9 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
 - [x] `server/csharp-controller/v4.sbn` was re-added by accident in `f0a3d2a` (#131 deleted it) — `git rm` it.
   *Cause: modify/delete conflict left the branch copy on disk as untracked; the next commit picked it up.*
 - [ ] Represent the HTTP `QUERY` action with inline (embedded) result in the hypermedia schema (#131).
-  Today `ActionDescription` only has the method and `resultName`, implicitly meaning "`Location` points to
-  it". Needed: how the result is delivered (inline body + `Content-Location` via `InlineQueryResult`
-  vs. `201`/`Location`), derived from the controller endpoint (e.g. an endpoint-attribute flag or the
-  `HttpQuery` verb), carried through `ActionDescription`, JSON, Markdown and Mermaid renderers.
+  Today `ActionDescription` only has `resultName`, implicitly meaning "`Location` points to it".
+  Design decided, see [Design: action result delivery](#design-action-result-delivery). Timing open
+  (before S1 recommended: it changes the S1 model).
 - [x] `HypermediaQueryResult` base type removed (#131); generated query-result HTOs now carry `Query`
   themselves — verify the source generator's property classification (schema data properties,
   Properties POCO, `ToSiren()`) handles `Query` correctly. *Verified by inspection: CarShack's
@@ -80,6 +79,18 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
   `HypermediaExtensionsOptions.cs:30`, `DynamicHypermediaAction.cs:9` — point to `HypermediaActionParameterInfoEndpoint<T>`.
 - [ ] `RY0002` title/message say "SirenTitle" (and the analyzer test name), but the property is `HtoTitle`
   (`HypermediaObjectTitleAnalyzer.cs:17-18`).
+- [ ] Move `HttpQueryAttribute` from CarShack (`CustomersRootController.cs:128`) into `RESTyard.AspNetCore`
+  (namespace `RESTyard.AspNetCore.WebApi.AttributedRoutes`). Contract-first is broken without it: the XSD
+  allows `method="Query"` (`Hypermedia.xsd:167`), `V5.razor:29` emits `[HttpQuery(...)]`, and no library
+  type exists, so generated controllers do not compile unless the user writes one (#131). ASP.NET 10 ships
+  only the `HttpMethods.Query` constant, no MVC attribute. Decisions:
+  - keep the name `HttpQuery`; XML doc states it is a placeholder until ASP.NET Core ships its own
+    `[HttpQuery]`, then it becomes `[Obsolete]` pointing to the built-in one (CS0104 risk when both
+    namespaces are imported is accepted)
+  - use `HttpMethods.Query` instead of the `"QUERY"` literal
+  - delete the CarShack copy; add a Generator.Test snapshot with `method="Query"` that compiles
+  - CHANGELOG (Added): `[HttpQuery]`; contract-first `method="Query"` compiles without a user-defined attribute
+  - prerequisite for the RY0035 hint in [Design: action result delivery](#design-action-result-delivery)
 - [ ] `CustomersRootController.NewQueryAction` comment "Provides a link to the result Query." is stale
   (result is returned inline).
 - [ ] Remove the obsolete sourcelink#572 `TargetFrameworkMonikerAssemblyAttributesPath` workaround from
@@ -113,3 +124,92 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
   outdated too: `V5.razor` already emits `HypermediaActionEndpoint<T>` (#131); only `ResultType` is left.*
 - [x] `migration-guide.md`: mention `HtoTitle` replacing `HypermediaObject(Title)` for anyone migrating
   HTOs together with the schema opt-in.
+
+---
+
+## Design: action result delivery
+
+**Problem:** a generated client must know how an action's result arrives to parse it. #131 added inline
+QUERY results (`InlineQueryResult()`: `200` + Siren body + `Content-Location`) next to the existing
+`Created()` shape (`201` + `Location`). The schema only has `resultName`, which implicitly means "follow
+`Location`".
+
+**Why not inferred:** the verb does not decide delivery (QUERY may return `Location`, POST may return
+inline), `[HttpQuery]` hides its verb in a static field, the result type (`IHypermediaQueryResult`) was
+delivered via `Location` before #131, and scanning method bodies for `InlineQueryResult()` is brittle.
+So delivery is **declared explicitly** on the endpoint.
+
+**Endpoint attribute** (`RESTyard.AspNetCore`):
+
+```csharp
+public enum ActionResultDelivery { Location, Inline }
+
+[HttpQuery("Queries"), HypermediaActionEndpoint<HypermediaCustomersRootHto>(
+    nameof(HypermediaCustomersRootHto.CreateQuery),
+    ResultType = typeof(HypermediaCustomerQueryResultHto),
+    ResultDelivery = ActionResultDelivery.Inline)]
+```
+
+- `ResultDelivery` defaults to `Location`; only meaningful with `ResultType`.
+- XML doc names the HTTP shapes: `Location` = `201` + `Location` header (`Created()`),
+  `Inline` = `200` + Siren body + `Content-Location` (`InlineQueryResult()`).
+- Enum, not bool: room for e.g. `303 See Other` later.
+
+**Hypermedia schema** — nested `result` object replaces the flat `resultName` / `resultClasses`
+(the model is unreleased, so restructuring is free until S1 ships):
+
+```json
+{
+  "name": "CreateQuery",
+  "parameterSchema": { "...": "..." },
+  "result": {
+    "name": "CustomerQueryResult",
+    "classes": ["CustomerQueryResult"],
+    "delivery": "inline"
+  },
+  "isMandatory": true
+}
+```
+
+- `result` omitted = the action returns no entity. `delivery` is always written when `result` is present.
+- `delivery` values are lowercase strings: `location`, `inline`.
+
+**What a client derives from it**
+
+| `delivery` | Expected response | Client behaviour | Typed signature (e.g.) |
+|---|---|---|---|
+| `location` | `201`, empty body, `Location` | follow `Location` → GET → parse Siren | `Task<Link<ResultHco>>` |
+| `inline` | `200`, Siren body of `result.name`, `Content-Location` | parse the body; `Content-Location` is the entity URI | `Task<ResultHco>` + URI |
+| no `result` | `200` / `204` | nothing to parse | `Task` |
+
+- The schema is a promise, not enforced at runtime: generated clients still check the status code and fail
+  clearly on a mismatch. `RESTyard.Client`'s `LinkOrEntity<T>` (`Link_` / `Entity_(Value, Location)`)
+  already handles both at runtime; the schema lets generated clients pick the precise type.
+- `Content-Location` is required for `inline` (set by `InlineQueryResult()`); document it in
+  `HypermediaApiSchema.md` so clients can rely on it.
+
+**Diagnostics** (source generator):
+
+- **RY0034** (warning): `ResultDelivery = Inline` without `ResultType`, or `ResultType` does not implement
+  `IHypermediaQueryResult` (what `InlineQueryResult()` accepts).
+- **RY0035** (info): endpoint uses `[HttpQuery]` with a `ResultType` but no explicit `ResultDelivery` —
+  hint that QUERY results are usually `Inline`. Needs the library `HttpQueryAttribute` (develop item above)
+  as a well-known type name.
+
+**Touch points**
+
+| Layer | Change |
+|---|---|
+| `HypermediaActionEndpointAttribute` | `ResultDelivery` property + XML doc |
+| `ActionResultMappingExtractor` | read the named argument (int → string constant); RY0034/RY0035 |
+| `ActionResultMapping` / `ActionMetadata` / `SchemaEmitter` | carry delivery; emit the nested `result` |
+| `ActionDescription` | `Result` (`ActionResultDescription { Name, Classes, Delivery }`) replaces `ResultName` / `ResultClasses` |
+| `HypermediaSchemaBuilder` (cross-assembly mapping, dangling check), `HypermediaSchemaFilter` | read `Result.Name` |
+| Markdown | `**Returns:** [X](#x) (inline)` / `(via Location)` |
+| Mermaid | no change (does not render action results) |
+| Docs | `HypermediaApiSchema.md` (action table, JSON example, client guidance), `SourceGenerator.md` (RY0034/35) |
+| CarShack | `ResultDelivery = Inline` on `NewQueryAction`; regenerate `schema-output` |
+| Contract-first (develop, Plan 8.4) | XSD attribute for delivery, emitted by `V5.razor` together with `ResultType` |
+
+**Order:** develop `HttpQueryAttribute` item → merge `develop` back → this design on the branch.
+RY0034 and the schema change do not need the develop item; only RY0035 does.
