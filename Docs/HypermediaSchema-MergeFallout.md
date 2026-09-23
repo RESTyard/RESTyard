@@ -78,6 +78,8 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
   server/csharp-controller/v4`, which #131 deleted — switch to `v5`.
 - [ ] Unresolved crefs to the removed `HttpGetHypermediaActionParameterInfo` (#131, CS1574):
   `HypermediaExtensionsOptions.cs:30`, `DynamicHypermediaAction.cs:9` — point to `HypermediaActionParameterInfoEndpoint<T>`.
+- [ ] `RY0002` title/message say "SirenTitle" (and the analyzer test name), but the property is `HtoTitle`
+  (`HypermediaObjectTitleAnalyzer.cs:17-18`).
 - [ ] `CustomersRootController.NewQueryAction` comment "Provides a link to the result Query." is stale
   (result is returned inline).
 - [ ] Remove the obsolete sourcelink#572 `TargetFrameworkMonikerAssemblyAttributesPath` workaround from
@@ -103,7 +105,7 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
   documented in `SourceGenerator.md` (Metadata attribute families).*
 - [x] `RESTyard.Schema/Model/HypermediaSchemaNameAttribute.cs` XML doc example still uses
   `[HypermediaObject(Title = ...)]`. *Done in the fallout commit.*
-- [ ] `CLAUDE.md` (repo + root): controller template is now `server/csharp-controller/v5` (`V5.razor`),
+- [x] `CLAUDE.md` (repo root): controller template is now `server/csharp-controller/v5` (`V5.razor`),
   not `v4`; analyzers RY0010–RY0015 removed; `Generator.Test.Output`/`OutputV5` removed from the
   test-project table; .NET version is 10 (project descriptions l.36–53, AspNetCore.Test row "net8.0 +
   net9.0", Key Technical Details).
