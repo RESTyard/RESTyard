@@ -31,11 +31,42 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
 - [x] `HypermediaParameterFromFormBinder`: B1 ported it to System.Text.Json, #131 restricted it to explicit
   form / form-file usage — merged cleanly, verify with the file-upload Integration tests that both
   changes survived together. *Covered by `FileUpload` integration test (green).*
-- [ ] Regenerate CarShack schema artifacts (`Source/CarShack/schema-output`) — title/description sourcing
+- [x] Regenerate CarShack schema artifacts (`Source/CarShack/schema-output`) — title/description sourcing
   changed (no `<summary>` titles; description = `[Description]` or summary + remarks). Not because of
   `QUERY`: `ActionDescription` carries no HTTP method.
 
+- [x] Nullable complex properties (`Country? MostPopularIn`, `AddressTo? Address`) are inlined in the JSON
+  Schema instead of `$ref` since `f9f82d0` (GEN-16: Properties POCO keeps nullable annotations). Effects:
+  the `$id` is repeated at every use (invalid), the schema is bloated, and Markdown/Mermaid show `object`
+  (`JsonSchemaExtensions.SchemaToTypeString` needs a `$ref`). Found while regenerating the CarShack
+  schema output — do not commit that output until fixed. Belongs to S0. *Fixed: JsonSchema.Net (5.1.1 and
+  6.0.0, `MemberGenerationContext.GenerateIntents`) always inlines nullable reference members; the
+  refiner's use-site `$id` is load-bearing (it defeats the library's single-use inlining), so
+  `DefinitionReferenceNormalizer` post-processes the finished schema: nullable → `oneOf [$ref, null]`,
+  use-site `$id` removed. Renderers unwrap `oneOf`/`anyOf [X, null]`.*
+- [x] Check HUI with the nullable reference shape in action `parameterSchema` (served at runtime via
+  `IJsonSchemaFactory`). *Traced (HUI `main`, formly 7.0.0): `anyOf [X, null]` becomes an unlabeled
+  multi-select of alternatives; `oneOf [X, null]` is flattened by `SchemaSimplifier.fixNullablesInOneOf`
+  to a nullable object, same as the previous inline shape → emit `oneOf`. Not executed in a browser.*
+
+**RESTyard-HUI (raise there)**
+
+- [ ] `SchemaSimplifier`: treat `anyOf [X, { type: null }]` like `oneOf` (extend `fixNullablesInOneOf`), so
+  schemas from other generators (e.g. OpenAPI 3.1 style) render as a nullable object instead of an
+  unlabeled multi-select. Also keep a sibling `description` when hoisting the non-null branch (dropped today).
+- [ ] Mermaid shows the `$defs` key fallback (`AddressInComplexTypeDefinitionRefinerTests`) where Markdown
+  shows the `$id` name (`ComplexTypeDefinitionRefinerTests+Address`): `MermaidMapper.cs:126` calls
+  `SchemaToTypeString` without the parent schema. Only visible for nested classes.
+
 **Code — `develop` (raise there, not on the branch)**
+
+- [ ] Contract-first derived HTOs hide `HtoTitle` (CS0108 in CarShack `Hypermedia.Server.g.cs:205, 249`):
+  `csharp-base/Document.razor:36` emits `public string HtoTitle` on every document, including derived ones.
+  The interface stays mapped to the base class member, so the Siren title of a `DerivedCar` is the base
+  title "A Car" (#132). Fix: emit `virtual` on base documents and `override` on derived ones.
+- [ ] Contract-first: the XML `title` is now only the Siren title (`HtoTitle`), so generated HTOs have no
+  schema display name. Add a separate attribute (e.g. `displayName="Customers"`) to the XSD that the
+  templates emit as `[Title]`. The CarShack API docs lost their titles because of this.
 
 - [ ] `InlineQueryResult` sets `Location` on a `200` response — non-standard per RFC 9110 (`Content-Location`
   is the correct header, and it is set too). Either document the compat reason or drop `Location`.

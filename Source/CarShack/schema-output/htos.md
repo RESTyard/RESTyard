@@ -35,7 +35,7 @@ classDiagram
         +Country MostPopularIn
         +string LastInspection
         +DerivedOperation()
-        +UpdateInspection(params)
+        +UpdateInspection(params) Car
     }
     class NextLevelDerivedCar {
         +string NextLevelDerivedProperty
@@ -47,7 +47,7 @@ classDiagram
         +Country MostPopularIn
         +string LastInspection
         +DerivedOperation()
-        +UpdateInspection(params)
+        +UpdateInspection(params) Car
     }
     class CustomersRoot {
         +CreateCustomer(params) Customer
@@ -75,6 +75,13 @@ classDiagram
         +integer TotalEntities
         +integer CurrentEntitiesCount
     }
+    class _external["External"] {
+        <<external>>
+    }
+    Entrypoint --> _external : schema
+    Entrypoint --> _external : schema-customer
+    Entrypoint --> _external : access-groups
+    Entrypoint --> _external : api-guide
     Entrypoint --> CustomersRoot : CustomersRoot
     Entrypoint --> CarsRoot : CarsRoot
     CarsRoot --> DerivedCar : NiceCar
@@ -85,6 +92,8 @@ classDiagram
     NextLevelDerivedCar --> Customer : item
     CustomersRoot --> CustomerQueryResult : all
     CustomersRoot --> Customer : BestCustomer
+    CustomersRoot --> _external : GreatSite
+    CustomersRoot --> _external : OkaySite
     CustomerPurchaseHistory --> CustomerPurchase : Purchases
     Customer --> CustomerPurchaseHistory : PurchaseHistory
     CustomerQueryResult --> CustomerQueryResult : Next

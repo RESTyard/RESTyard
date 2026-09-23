@@ -157,6 +157,117 @@ public class ComplexTypeDefinitionRefinerTests
         addressDefs.Should().HaveCount(1);
     }
 
+    [Fact]
+    public void Nullable_complex_property_references_definition_with_null_alternative()
+    {
+        var root = _factory.Generate(typeof(ParentWithNullableObject)).RootElement;
+
+        var oneOf = root.GetProperty("properties").GetProperty("OtherAddress").GetProperty("oneOf");
+        oneOf.GetArrayLength().Should().Be(2);
+        oneOf[0].GetProperty("$ref").GetString().Should().StartWith("#/$defs/");
+        oneOf[1].GetProperty("type").GetString().Should().Be("null");
+    }
+
+    [Fact]
+    public void Type_used_only_as_nullable_is_moved_to_defs()
+    {
+        var root = _factory.Generate(typeof(ParentWithOnlyNullableObject)).RootElement;
+
+        var reference = root.GetProperty("properties").GetProperty("MaybeAddress")
+            .GetProperty("oneOf")[0].GetProperty("$ref").GetString()!;
+        var definition = root.GetProperty("$defs").GetProperty(reference.Substring("#/$defs/".Length));
+        definition.GetProperty("type").GetString().Should().Be("object");
+        definition.GetProperty("properties").TryGetProperty("Street", out _).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Each_type_id_occurs_once()
+    {
+        var root = _factory.Generate(typeof(ParentWithNullableObject)).RootElement;
+
+        var ids = CollectIds(root).ToList();
+        ids.Should().OnlyHaveUniqueItems();
+        ids.Should().Contain(id => id.EndsWith("+Address"));
+    }
+
+    [Fact]
+    public void Member_annotation_is_kept_next_to_nullable_reference()
+    {
+        var root = _factory.Generate(typeof(ParentWithNullableObject)).RootElement;
+
+        var otherAddress = root.GetProperty("properties").GetProperty("OtherAddress");
+        otherAddress.GetProperty("description").GetString().Should().Be("Used when shipping elsewhere");
+        otherAddress.TryGetProperty("properties", out _).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Nullable_complex_property_without_refiner_is_inlined()
+    {
+        var root = _factoryWithoutRefiner.Generate(typeof(ParentWithNullableObject)).RootElement;
+
+        var otherAddress = root.GetProperty("properties").GetProperty("OtherAddress");
+        otherAddress.TryGetProperty("oneOf", out _).Should().BeFalse();
+        otherAddress.TryGetProperty("properties", out _).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Mermaid_and_Markdown_show_type_name_for_nullable_complex_property()
+    {
+        var schema = HypermediaSchemaBuilder.ComposeSchema(
+            new List<EntityTypeSchema>
+            {
+                new()
+                {
+                    Name = "Parent",
+                    Classes = ["Parent"],
+                    PropertiesSchema = _factory.Generate(typeof(ParentWithNullableObject)),
+                },
+            },
+            new HypermediaSchemaOptions { EntryPointName = "Parent" },
+            null);
+
+        // The nullable member renders the same type as the non-nullable one, not "object"
+        var mermaid = schema.ToClassDiagram();
+        var homeType = TypeBefore(mermaid, " HomeAddress");
+        homeType.Should().NotBe("object");
+        TypeBefore(mermaid, " OtherAddress").Should().Be(homeType);
+
+        var markdown = schema.ToDocumentation();
+        var homeColumn = TypeColumn(markdown, "| HomeAddress |");
+        homeColumn.Should().StartWith("[");
+        TypeColumn(markdown, "| OtherAddress |").Should().Be(homeColumn);
+    }
+
+    private static string TypeColumn(string markdown, string rowStart)
+        => markdown.Split('\n').First(l => l.StartsWith(rowStart)).Split('|')[2].Trim();
+
+    private static string TypeBefore(string text, string memberSuffix)
+    {
+        var line = text.Split('\n').Single(l => l.TrimEnd().EndsWith(memberSuffix));
+        return line.Trim().TrimStart('+').Split(' ')[0];
+    }
+
+    private static IEnumerable<string> CollectIds(JsonElement element)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Object:
+                foreach (var property in element.EnumerateObject())
+                {
+                    if (property.Name == "$id")
+                        yield return property.Value.GetString()!;
+                    foreach (var id in CollectIds(property.Value))
+                        yield return id;
+                }
+                break;
+            case JsonValueKind.Array:
+                foreach (var item in element.EnumerateArray())
+                foreach (var id in CollectIds(item))
+                    yield return id;
+                break;
+        }
+    }
+
     private HypermediaApiSchema BuildSchemaWithNestedObject()
     {
         var propertiesSchema = _factory.Generate(typeof(ParentWithNestedObject));
@@ -200,6 +311,19 @@ public class ComplexTypeDefinitionRefinerTests
     {
         public string OrderNumber { get; set; } = string.Empty;
         public Address ShippingAddress { get; set; } = new();
+    }
+
+    private class ParentWithNullableObject
+    {
+        public Address HomeAddress { get; set; } = new();
+
+        [Json.Schema.Generation.Description("Used when shipping elsewhere")]
+        public Address? OtherAddress { get; set; }
+    }
+
+    private class ParentWithOnlyNullableObject
+    {
+        public Address? MaybeAddress { get; set; }
     }
 
     private class ParentWithEnum

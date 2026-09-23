@@ -40,6 +40,21 @@ internal static class JsonSchemaExtensions
     internal static Uri? GetRef(this JsonSchema schema)
         => schema.Keywords?.OfType<RefKeyword>().FirstOrDefault()?.Reference;
 
+    /// <summary>
+    /// Unwraps a nullable reference (<c>oneOf</c> or <c>anyOf</c> of <c>[X, { "type": "null" }]</c>) to <c>X</c>.
+    /// Returns the schema itself for any other shape.
+    /// </summary>
+    internal static JsonSchema UnwrapNullable(this JsonSchema schema)
+    {
+        var alternatives = schema.Keywords?.OfType<OneOfKeyword>().FirstOrDefault()?.Schemas
+                           ?? schema.Keywords?.OfType<AnyOfKeyword>().FirstOrDefault()?.Schemas;
+        if (alternatives is not { Count: 2 })
+            return schema;
+
+        var nonNull = alternatives.Where(s => s.GetSchemaType() != SchemaValueType.Null).ToList();
+        return nonNull.Count == 1 ? nonNull[0] : schema;
+    }
+
     internal static string? GetFormat(this JsonSchema schema)
         => schema.Keywords?.OfType<FormatKeyword>().FirstOrDefault()?.Value.Key;
 
@@ -65,6 +80,8 @@ internal static class JsonSchemaExtensions
 
     private static string SchemaToTypeString(JsonSchema propSchema, bool linkDefinitions, JsonSchema? parentSchema = null)
     {
+        propSchema = propSchema.UnwrapNullable();
+
         // $ref → extract definition name from path (e.g., "#/$defs/address" → "address")
         var refUri = propSchema.GetRef();
         if (refUri != null)

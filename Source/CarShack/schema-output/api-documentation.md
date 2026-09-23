@@ -52,7 +52,12 @@ graph LR
     CustomerPurchaseHistory["CustomerPurchaseHistory"]
     Customer["Customer [customer]"]
     CustomerQueryResult["CustomerQueryResult"]
+    _external[/"External"/]
 
+    Entrypoint -- "schema" --> _external
+    Entrypoint -- "schema-customer" --> _external
+    Entrypoint -- "access-groups" --> _external
+    Entrypoint -- "api-guide" --> _external
     Entrypoint -- "CustomersRoot" --> CustomersRoot
     Entrypoint -- "CarsRoot" --> CarsRoot
     CarsRoot -- "NiceCar" --> DerivedCar
@@ -62,10 +67,14 @@ graph LR
     Car -. "action: UpdateInspection" .-> Car
     DerivedCar -- "DerivedLink" --> Customer
     DerivedCar -- "item" --> Customer
+    DerivedCar -. "action: UpdateInspection" .-> Car
     NextLevelDerivedCar -- "DerivedLink" --> Customer
     NextLevelDerivedCar -- "item" --> Customer
+    NextLevelDerivedCar -. "action: UpdateInspection" .-> Car
     CustomersRoot -- "all" --> CustomerQueryResult
     CustomersRoot -- "BestCustomer" --> Customer
+    CustomersRoot -- "GreatSite" --> _external
+    CustomersRoot -- "OkaySite" --> _external
     CustomersRoot -. "action: CreateCustomer" .-> Customer
     CustomersRoot -. "action: CreateQuery" .-> CustomerQueryResult
     CustomerPurchaseHistory -- "Purchases" --> CustomerPurchase
@@ -80,10 +89,6 @@ graph LR
 
 ## Entrypoint
 
-#### Title
-
-Entry to the Rest API
-
 #### Classes
 
 - `Entrypoint`
@@ -94,15 +99,15 @@ Entry to the Rest API
 
 | Relation | Target | Access Groups | Description |
 |---|---|---|---|
+| schema | *external* (`application/vnd.siren+json`) |  |  |
+| schema-customer | *external* (`application/vnd.siren+json`) |  |  |
+| access-groups | *external* (`application/vnd.siren+json`) |  |  |
+| api-guide | *external* (`application/vnd.siren+json`) |  |  |
 | CustomersRoot | [CustomersRoot](#customersroot) |  |  |
 | CarsRoot | [CarsRoot](#carsroot) |  |  |
 | self | [Entrypoint](#entrypoint) |  |  |
 
 ## CustomersRoot
-
-#### Title
-
-The Customers API
 
 #### Classes
 
@@ -116,6 +121,8 @@ The Customers API
 |---|---|---|---|
 | all | [CustomerQueryResult](#customerqueryresult) |  |  |
 | BestCustomer | [Customer](#customer) |  |  |
+| GreatSite | *external* (`application/vnd.siren+json`) |  |  |
+| OkaySite *(optional)* | *external* (`application/vnd.siren+json`) |  |  |
 | self | [CustomersRoot](#customersroot) |  |  |
 
 ### Actions
@@ -132,7 +139,8 @@ Request creation of a new Customer.
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| Name | string | no |  |
+| Name | string | yes |  |
+| Age | integer | no |  |
 
 <a id="customersroot-createquery"></a>
 
@@ -146,19 +154,15 @@ Query the Customers collection.
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| Pagination | [Pagination](#definition-pagination) | no |  |
-| SortBy | [SortParameter<CustomerSortProperties>](#definition-sortparameterofcustomersortproperties) | no |  |
-| Filter | [CustomerFilter](#definition-customerfilter) | no |  |
+| Pagination | [Pagination](#definition-pagination) | yes |  |
+| SortBy | [SortParameter<CustomerSortProperties>](#definition-sortparameterofcustomersortproperties) | yes |  |
+| Filter | [CustomerFilter](#definition-customerfilter) | yes |  |
 
 **Referenced by:**
 
 - [Entrypoint](#entrypoint-links) (link: CustomersRoot)
 
 ## CarsRoot
-
-#### Title
-
-The Cars API
 
 #### Classes
 
@@ -192,8 +196,8 @@ Upload image for car
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| Text | string | no |  |
-| Flag | boolean | no |  |
+| Text | string | yes |  |
+| Flag | boolean | yes |  |
 
 <a id="carsroot-uploadinsurancescan"></a>
 
@@ -210,10 +214,6 @@ Upload scan of insurance for the car
 - [Entrypoint](#entrypoint-links) (link: CarsRoot)
 
 ## CustomerQueryResult
-
-#### Title
-
-Query result on Customer
 
 #### Classes
 
@@ -274,7 +274,7 @@ Query result on Customer
 | Age | integer | no |  |
 | FullName | string | no |  |
 | Address | [AddressTo](#definition-addressto) | no |  |
-| IsFavorite | boolean | no |  |
+| IsFavorite | boolean | yes |  |
 
 <a id="customer-links"></a>
 
@@ -297,7 +297,7 @@ A Customer moved to a new location.
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| Address | [AddressTo](#definition-addressto) | no |  |
+| Address | [AddressTo](#definition-addressto) | yes |  |
 
 <a id="customer-customerremove"></a>
 
@@ -315,7 +315,7 @@ Marks a Customer as a favorite buyer.
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| Customer | string | no | Format: `uri` |
+| Customer | string | yes | Format: `uri` |
 
 <a id="customer-buycar"></a>
 
@@ -329,8 +329,8 @@ Buy a car.
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| Brand | string | no |  |
-| CarId | integer | no |  |
+| Brand | string | yes |  |
+| CarId | integer | yes |  |
 | Price | number | no |  |
 | HiddenProperty | number | no |  |
 
@@ -345,10 +345,6 @@ Buy a car.
 - [CustomerQueryResult](#customerqueryresult-embedded) (embedded: Customers)
 
 ## DerivedCar
-
-#### Title
-
-Derived Car
 
 #### Classes
 
@@ -391,11 +387,13 @@ Derived Operation
 
 
 
+**Returns:** [Car](#car)
+
 **Parameters:**
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| NewInspection | string | no | Format: `date` |
+| NewInspection | string | yes | Format: `date` |
 
 <a id="derivedcar-embedded"></a>
 
@@ -410,10 +408,6 @@ Derived Operation
 - [CarsRoot](#carsroot-links) (link: NiceCar)
 
 ## Car
-
-#### Title
-
-A Car
 
 #### Classes
 
@@ -454,12 +448,14 @@ A Car
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| NewInspection | string | no | Format: `date` |
+| NewInspection | string | yes | Format: `date` |
 
 **Referenced by:**
 
 - [CarsRoot](#carsroot-links) (link: SuperCar)
 - [Car → UpdateInspection](#car-updateinspection) (action result)
+- [DerivedCar → UpdateInspection](#derivedcar-updateinspection) (action result)
+- [NextLevelDerivedCar → UpdateInspection](#nextlevelderivedcar-updateinspection) (action result)
 - [Customer → BuyCar](#customer-buycar) (action result)
 
 ## CustomerPurchaseHistory
@@ -501,8 +497,8 @@ A Car
 | Property | Type | Required | Description |
 |---|---|---|---|
 | Amount | integer | no |  |
-| CardNumber | string | no |  |
-| CardType | string | no |  |
+| CardNumber | string | yes |  |
+| CardType | string | yes |  |
 
 **Referenced by:**
 
@@ -512,7 +508,13 @@ A Car
 
 #### Title
 
-A truck
+Truck
+
+#### Description
+
+A truck offered by the car shack.
+
+Has no route; links to it resolve to the default route.
 
 #### Classes
 
@@ -524,14 +526,10 @@ A truck
 
 | Property | Type | Required | Description |
 |---|---|---|---|
-| Brand | string | no |  |
-| Id | integer | no |  |
+| Brand | string | yes |  |
+| Id | integer | yes |  |
 
 ## CarImage
-
-#### Title
-
-Image for a car
 
 #### Classes
 
@@ -551,10 +549,6 @@ Image for a car
 
 ## CarInsurance
 
-#### Title
-
-Insurance scan for a car
-
 #### Classes
 
 - `CarInsurance`
@@ -572,10 +566,6 @@ Insurance scan for a car
 - [CarsRoot → UploadInsuranceScan](#carsroot-uploadinsurancescan) (action result)
 
 ## NextLevelDerivedCar
-
-#### Title
-
-Derives from Derived Car
 
 #### Classes
 
@@ -619,11 +609,13 @@ Derived Operation
 
 
 
+**Returns:** [Car](#car)
+
 **Parameters:**
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| NewInspection | string | no | Format: `date` |
+| NewInspection | string | yes | Format: `date` |
 
 <a id="nextlevelderivedcar-embedded"></a>
 
@@ -647,9 +639,9 @@ Derived Operation
 
 | Property | Type | Required | Description |
 |---|---|---|---|
-| Name | string | no |  |
-| EstimatedPopulation | integer | no |  |
-| LanguageCode | string | no |  |
+| Name | string | yes |  |
+| EstimatedPopulation | integer | yes |  |
+| LanguageCode | string | yes |  |
 
 <a id="definition-pagination"></a>
 
@@ -661,8 +653,8 @@ Derived Operation
 
 | Property | Type | Required | Description |
 |---|---|---|---|
-| PageSize | integer | no |  |
-| PageOffset | integer | no |  |
+| PageSize | integer | yes |  |
+| PageOffset | integer | yes |  |
 
 <a id="definition-sortparameterofcustomersortproperties"></a>
 
@@ -675,7 +667,7 @@ Derived Operation
 | Property | Type | Required | Description |
 |---|---|---|---|
 | PropertyName | object | no | Values: `Age`, `Name`, `null` |
-| SortType | object | no | Values: `None`, `Ascending`, `Descending` |
+| SortType | object | yes | Values: `None`, `Ascending`, `Descending` |
 
 <a id="definition-customerfilter"></a>
 
@@ -700,10 +692,10 @@ Derived Operation
 
 | Property | Type | Required | Description |
 |---|---|---|---|
-| Street | string | no |  |
-| Number | string | no |  |
-| City | string | no |  |
-| ZipCode | string | no |  |
+| Street | string | yes |  |
+| Number | string | yes |  |
+| City | string | yes |  |
+| ZipCode | string | yes |  |
 
 ## Access Groups
 

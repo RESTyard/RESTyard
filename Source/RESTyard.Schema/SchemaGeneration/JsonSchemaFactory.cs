@@ -17,6 +17,7 @@ namespace RESTyard.Schema.SchemaGeneration
         private static volatile bool attributeHandlersRegistered;
 
         private readonly SchemaGeneratorConfiguration config;
+        private readonly bool extractComplexTypesToDefs;
         private readonly ConcurrentDictionary<Type, JsonDocument> cache = new();
 
         /// <summary>
@@ -25,7 +26,8 @@ namespace RESTyard.Schema.SchemaGeneration
         /// <param name="extractComplexTypesToDefs">
         /// When true (default), complex object types are extracted to <c>$defs</c> with <c>$ref</c>
         /// instead of being inlined. This enables mappers and tooling to display type names
-        /// instead of <c>object</c>. Set to false to get the default <c>JsonSchema.Net</c> inline behavior.
+        /// instead of <c>object</c>. Nullable references become <c>oneOf: [{ "$ref" }, { "type": "null" }]</c>.
+        /// Set to false to get the default <c>JsonSchema.Net</c> inline behavior.
         /// </param>
         /// <param name="deriveRequiredFromNonNullable">
         /// When true (default), non-nullable properties are emitted in the schema's <c>required</c>
@@ -47,6 +49,7 @@ namespace RESTyard.Schema.SchemaGeneration
                 },
             };
 
+            this.extractComplexTypesToDefs = extractComplexTypesToDefs;
             if (extractComplexTypesToDefs)
             {
                 config.Refiners.Add(new ComplexTypeDefinitionRefiner());
@@ -86,7 +89,14 @@ namespace RESTyard.Schema.SchemaGeneration
                 .Schema(MetaSchemas.Draft202012Id)
                 .FromType(type, config)
                 .Build();
-            return JsonSerializer.SerializeToDocument(schema);
+            if (!extractComplexTypesToDefs)
+            {
+                return JsonSerializer.SerializeToDocument(schema);
+            }
+
+            var node = JsonSerializer.SerializeToNode(schema)!.AsObject();
+            DefinitionReferenceNormalizer.Normalize(node);
+            return JsonSerializer.SerializeToDocument(node);
         }
 
         public Json.Schema.JsonSchema GenerateSchema(Type type)

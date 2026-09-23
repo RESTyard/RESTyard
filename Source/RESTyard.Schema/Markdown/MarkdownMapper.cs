@@ -496,6 +496,7 @@ public static class MarkdownMapper
 
     private static string? ExtractRefDefinitionName(Json.Schema.JsonSchema propSchema)
     {
+        propSchema = propSchema.UnwrapNullable();
         var refUri = propSchema.GetRef();
         if (refUri != null)
         {

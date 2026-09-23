@@ -10,7 +10,8 @@
       "classes": [
         "Truck"
       ],
-      "title": "A truck",
+      "title": "Truck",
+      "description": "A truck offered by the car shack.\n\nHas no route; links to it resolve to the default route.",
       "propertiesSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
@@ -22,7 +23,11 @@
             "type": "integer"
           }
         },
-        "$id": "type:CarShack.Hypermedia.Cars.HypermediaTruckProperties"
+        "$id": "type:CarShack.Hypermedia.Cars.HypermediaTruckProperties",
+        "required": [
+          "Brand",
+          "Id"
+        ]
       },
       "links": [],
       "actions": [],
@@ -34,8 +39,55 @@
       "classes": [
         "Entrypoint"
       ],
-      "title": "Entry to the Rest API",
       "links": [
+        {
+          "relations": [
+            "schema"
+          ],
+          "isExternal": true,
+          "targetClasses": [],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        },
+        {
+          "relations": [
+            "schema-customer"
+          ],
+          "isExternal": true,
+          "targetClasses": [],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        },
+        {
+          "relations": [
+            "access-groups"
+          ],
+          "isExternal": true,
+          "targetClasses": [],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        },
+        {
+          "relations": [
+            "api-guide"
+          ],
+          "isExternal": true,
+          "targetClasses": [],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        },
         {
           "relations": [
             "CustomersRoot"
@@ -43,6 +95,9 @@
           "targetName": "CustomersRoot",
           "targetClasses": [
             "CustomersRoot"
+          ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
           ],
           "isMandatory": true,
           "isDeprecated": false
@@ -55,6 +110,9 @@
           "targetClasses": [
             "CarsRoot"
           ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
+          ],
           "isMandatory": true,
           "isDeprecated": false
         },
@@ -65,6 +123,9 @@
           "targetName": "Entrypoint",
           "targetClasses": [
             "Entrypoint"
+          ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
           ],
           "isMandatory": true,
           "isDeprecated": false
@@ -79,7 +140,6 @@
       "classes": [
         "CarsRoot"
       ],
-      "title": "The Cars API",
       "links": [
         {
           "relations": [
@@ -88,6 +148,9 @@
           "targetName": "DerivedCar",
           "targetClasses": [
             "DerivedCar"
+          ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
           ],
           "isMandatory": true,
           "isDeprecated": false
@@ -100,6 +163,9 @@
           "targetClasses": [
             "Car"
           ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
+          ],
           "isMandatory": true,
           "isDeprecated": false
         },
@@ -110,6 +176,9 @@
           "targetName": "CarsRoot",
           "targetClasses": [
             "CarsRoot"
+          ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
           ],
           "isMandatory": true,
           "isDeprecated": false
@@ -131,7 +200,11 @@
                 "type": "boolean"
               }
             },
-            "$id": "type:CarShack.Hypermedia.UploadCarImageParameters"
+            "$id": "type:CarShack.Hypermedia.UploadCarImageParameters",
+            "required": [
+              "Text",
+              "Flag"
+            ]
           },
           "resultName": "CarImage",
           "resultClasses": [
@@ -165,7 +238,6 @@
       "classes": [
         "Car"
       ],
-      "title": "A Car",
       "propertiesSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
@@ -177,24 +249,38 @@
             ]
           },
           "Brand": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "PriceDevelopment": {
-            "type": "array",
+            "type": [
+              "array",
+              "null"
+            ],
             "items": {
               "type": "number"
             }
           },
           "PopularCountries": {
-            "type": "array",
+            "type": [
+              "array",
+              "null"
+            ],
             "items": {
-              "$ref": "#/$defs/country",
-              "$id": "type:CarShack.Hypermedia.Country"
+              "$ref": "#/$defs/country"
             }
           },
           "MostPopularIn": {
-            "$ref": "#/$defs/country",
-            "$id": "type:CarShack.Hypermedia.Country"
+            "oneOf": [
+              {
+                "$ref": "#/$defs/country"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "LastInspection": {
             "type": [
@@ -219,7 +305,12 @@
                 "type": "string"
               }
             },
-            "$id": "type:CarShack.Hypermedia.Country"
+            "$id": "type:CarShack.Hypermedia.Country",
+            "required": [
+              "Name",
+              "EstimatedPopulation",
+              "LanguageCode"
+            ]
           }
         }
       },
@@ -231,6 +322,9 @@
           "targetName": "Car",
           "targetClasses": [
             "Car"
+          ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
           ],
           "isMandatory": true,
           "isDeprecated": false
@@ -249,7 +343,10 @@
                 "format": "date"
               }
             },
-            "$id": "type:CarShack.Hypermedia.UpdateCarInspection"
+            "$id": "type:CarShack.Hypermedia.UpdateCarInspection",
+            "required": [
+              "NewInspection"
+            ]
           },
           "resultName": "Car",
           "resultClasses": [
@@ -268,7 +365,6 @@
       "classes": [
         "CarImage"
       ],
-      "title": "Image for a car",
       "links": [
         {
           "relations": [
@@ -277,6 +373,9 @@
           "targetName": "CarImage",
           "targetClasses": [
             "CarImage"
+          ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
           ],
           "isMandatory": true,
           "isDeprecated": false
@@ -291,7 +390,6 @@
       "classes": [
         "CarInsurance"
       ],
-      "title": "Insurance scan for a car",
       "links": [
         {
           "relations": [
@@ -300,6 +398,9 @@
           "targetName": "CarInsurance",
           "targetClasses": [
             "CarInsurance"
+          ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
           ],
           "isMandatory": true,
           "isDeprecated": false
@@ -314,13 +415,15 @@
       "classes": [
         "DerivedCar"
       ],
-      "title": "Derived Car",
       "propertiesSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
         "properties": {
           "DerivedProperty": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "Id": {
             "type": [
@@ -329,24 +432,38 @@
             ]
           },
           "Brand": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "PriceDevelopment": {
-            "type": "array",
+            "type": [
+              "array",
+              "null"
+            ],
             "items": {
               "type": "number"
             }
           },
           "PopularCountries": {
-            "type": "array",
+            "type": [
+              "array",
+              "null"
+            ],
             "items": {
-              "$ref": "#/$defs/country",
-              "$id": "type:CarShack.Hypermedia.Country"
+              "$ref": "#/$defs/country"
             }
           },
           "MostPopularIn": {
-            "$ref": "#/$defs/country",
-            "$id": "type:CarShack.Hypermedia.Country"
+            "oneOf": [
+              {
+                "$ref": "#/$defs/country"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "LastInspection": {
             "type": [
@@ -371,7 +488,12 @@
                 "type": "string"
               }
             },
-            "$id": "type:CarShack.Hypermedia.Country"
+            "$id": "type:CarShack.Hypermedia.Country",
+            "required": [
+              "Name",
+              "EstimatedPopulation",
+              "LanguageCode"
+            ]
           }
         }
       },
@@ -384,6 +506,9 @@
           "targetClasses": [
             "Customer"
           ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
+          ],
           "isMandatory": false,
           "isDeprecated": false
         },
@@ -394,6 +519,9 @@
           "targetName": "DerivedCar",
           "targetClasses": [
             "DerivedCar"
+          ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
           ],
           "isMandatory": true,
           "isDeprecated": false
@@ -419,8 +547,15 @@
                 "format": "date"
               }
             },
-            "$id": "type:CarShack.Hypermedia.UpdateCarInspection"
+            "$id": "type:CarShack.Hypermedia.UpdateCarInspection",
+            "required": [
+              "NewInspection"
+            ]
           },
+          "resultName": "Car",
+          "resultClasses": [
+            "Car"
+          ],
           "isMandatory": true,
           "isFileUpload": false,
           "isDeprecated": false
@@ -447,16 +582,21 @@
       "classes": [
         "NextLevelDerivedCar"
       ],
-      "title": "Derives from Derived Car",
       "propertiesSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
         "properties": {
           "NextLevelDerivedProperty": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "DerivedProperty": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "Id": {
             "type": [
@@ -465,24 +605,38 @@
             ]
           },
           "Brand": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "PriceDevelopment": {
-            "type": "array",
+            "type": [
+              "array",
+              "null"
+            ],
             "items": {
               "type": "number"
             }
           },
           "PopularCountries": {
-            "type": "array",
+            "type": [
+              "array",
+              "null"
+            ],
             "items": {
-              "$ref": "#/$defs/country",
-              "$id": "type:CarShack.Hypermedia.Country"
+              "$ref": "#/$defs/country"
             }
           },
           "MostPopularIn": {
-            "$ref": "#/$defs/country",
-            "$id": "type:CarShack.Hypermedia.Country"
+            "oneOf": [
+              {
+                "$ref": "#/$defs/country"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "LastInspection": {
             "type": [
@@ -507,7 +661,12 @@
                 "type": "string"
               }
             },
-            "$id": "type:CarShack.Hypermedia.Country"
+            "$id": "type:CarShack.Hypermedia.Country",
+            "required": [
+              "Name",
+              "EstimatedPopulation",
+              "LanguageCode"
+            ]
           }
         }
       },
@@ -520,6 +679,9 @@
           "targetClasses": [
             "NextLevelDerivedCar"
           ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
+          ],
           "isMandatory": true,
           "isDeprecated": false
         },
@@ -530,6 +692,9 @@
           "targetName": "Customer",
           "targetClasses": [
             "Customer"
+          ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
           ],
           "isMandatory": false,
           "isDeprecated": false
@@ -555,8 +720,15 @@
                 "format": "date"
               }
             },
-            "$id": "type:CarShack.Hypermedia.UpdateCarInspection"
+            "$id": "type:CarShack.Hypermedia.UpdateCarInspection",
+            "required": [
+              "NewInspection"
+            ]
           },
+          "resultName": "Car",
+          "resultClasses": [
+            "Car"
+          ],
           "isMandatory": true,
           "isFileUpload": false,
           "isDeprecated": false
@@ -583,7 +755,6 @@
       "classes": [
         "CustomersRoot"
       ],
-      "title": "The Customers API",
       "links": [
         {
           "relations": [
@@ -592,6 +763,9 @@
           "targetName": "CustomerQueryResult",
           "targetClasses": [
             "CustomersQueryResult"
+          ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
           ],
           "isMandatory": true,
           "isDeprecated": false
@@ -604,7 +778,34 @@
           "targetClasses": [
             "Customer"
           ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
+          ],
           "isMandatory": true,
+          "isDeprecated": false
+        },
+        {
+          "relations": [
+            "GreatSite"
+          ],
+          "isExternal": true,
+          "targetClasses": [],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
+          ],
+          "isMandatory": true,
+          "isDeprecated": false
+        },
+        {
+          "relations": [
+            "OkaySite"
+          ],
+          "isExternal": true,
+          "targetClasses": [],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
+          ],
+          "isMandatory": false,
           "isDeprecated": false
         },
         {
@@ -614,6 +815,9 @@
           "targetName": "CustomersRoot",
           "targetClasses": [
             "CustomersRoot"
+          ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
           ],
           "isMandatory": true,
           "isDeprecated": false
@@ -629,9 +833,18 @@
             "properties": {
               "Name": {
                 "type": "string"
+              },
+              "Age": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
               }
             },
-            "$id": "type:CarShack.Hypermedia.CreateCustomerParameters"
+            "$id": "type:CarShack.Hypermedia.CreateCustomerParameters",
+            "required": [
+              "Name"
+            ]
           },
           "resultName": "Customer",
           "resultClasses": [
@@ -649,19 +862,21 @@
             "type": "object",
             "properties": {
               "Pagination": {
-                "$ref": "#/$defs/pagination",
-                "$id": "type:RESTyard.AspNetCore.Util.Repository.Pagination"
+                "$ref": "#/$defs/pagination"
               },
               "SortBy": {
-                "$ref": "#/$defs/sortParameterOfCustomerSortProperties",
-                "$id": "type:RESTyard.AspNetCore.Util.Repository.SortParameter\u00601[[CarShack.Hypermedia.CustomerSortProperties, CarShack, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                "$ref": "#/$defs/sortParameterOfCustomerSortProperties"
               },
               "Filter": {
-                "$ref": "#/$defs/customerFilter",
-                "$id": "type:CarShack.Hypermedia.CustomerFilter"
+                "$ref": "#/$defs/customerFilter"
               }
             },
             "$id": "type:CarShack.Hypermedia.CustomerQuery",
+            "required": [
+              "Pagination",
+              "SortBy",
+              "Filter"
+            ],
             "$defs": {
               "pagination": {
                 "type": "object",
@@ -673,7 +888,11 @@
                     "type": "integer"
                   }
                 },
-                "$id": "type:RESTyard.AspNetCore.Util.Repository.Pagination"
+                "$id": "type:RESTyard.AspNetCore.Util.Repository.Pagination",
+                "required": [
+                  "PageSize",
+                  "PageOffset"
+                ]
               },
               "sortParameterOfCustomerSortProperties": {
                 "type": "object",
@@ -693,7 +912,10 @@
                     ]
                   }
                 },
-                "$id": "type:RESTyard.AspNetCore.Util.Repository.SortParameter\u00601[[CarShack.Hypermedia.CustomerSortProperties, CarShack, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                "$id": "type:RESTyard.AspNetCore.Util.Repository.SortParameter\u00601[[CarShack.Hypermedia.CustomerSortProperties, CarShack, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+                "required": [
+                  "SortType"
+                ]
               },
               "customerFilter": {
                 "type": "object",
@@ -743,7 +965,11 @@
             "type": "string"
           }
         },
-        "$id": "type:CarShack.Hypermedia.CustomerPurchaseHtoProperties"
+        "$id": "type:CarShack.Hypermedia.CustomerPurchaseHtoProperties",
+        "required": [
+          "CardNumber",
+          "CardType"
+        ]
       },
       "links": [],
       "actions": [],
@@ -763,6 +989,9 @@
           "targetName": "CustomerPurchaseHistory",
           "targetClasses": [
             "CustomerPurchaseHistory"
+          ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
           ],
           "isMandatory": true,
           "isDeprecated": false
@@ -801,17 +1030,29 @@
             ]
           },
           "FullName": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "Address": {
-            "$ref": "#/$defs/addressTo",
-            "$id": "type:CarShack.Hypermedia.AddressTo"
+            "oneOf": [
+              {
+                "$ref": "#/$defs/addressTo"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "IsFavorite": {
             "type": "boolean"
           }
         },
         "$id": "type:CarShack.Hypermedia.HypermediaCustomerHtoProperties",
+        "required": [
+          "IsFavorite"
+        ],
         "$defs": {
           "addressTo": {
             "type": "object",
@@ -829,7 +1070,13 @@
                 "type": "string"
               }
             },
-            "$id": "type:CarShack.Hypermedia.AddressTo"
+            "$id": "type:CarShack.Hypermedia.AddressTo",
+            "required": [
+              "Street",
+              "Number",
+              "City",
+              "ZipCode"
+            ]
           }
         }
       },
@@ -842,6 +1089,9 @@
           "targetClasses": [
             "CustomerPurchaseHistory"
           ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
+          ],
           "isMandatory": true,
           "isDeprecated": false
         },
@@ -852,6 +1102,9 @@
           "targetName": "Customer",
           "targetClasses": [
             "Customer"
+          ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
           ],
           "isMandatory": true,
           "isDeprecated": false
@@ -866,11 +1119,13 @@
             "type": "object",
             "properties": {
               "Address": {
-                "$ref": "#/$defs/addressTo",
-                "$id": "type:CarShack.Hypermedia.AddressTo"
+                "$ref": "#/$defs/addressTo"
               }
             },
             "$id": "type:CarShack.Hypermedia.NewAddress",
+            "required": [
+              "Address"
+            ],
             "$defs": {
               "addressTo": {
                 "type": "object",
@@ -888,7 +1143,13 @@
                     "type": "string"
                   }
                 },
-                "$id": "type:CarShack.Hypermedia.AddressTo"
+                "$id": "type:CarShack.Hypermedia.AddressTo",
+                "required": [
+                  "Street",
+                  "Number",
+                  "City",
+                  "ZipCode"
+                ]
               }
             }
           },
@@ -915,7 +1176,10 @@
                 "format": "uri"
               }
             },
-            "$id": "type:CarShack.Hypermedia.MarkAsFavoriteParameters"
+            "$id": "type:CarShack.Hypermedia.MarkAsFavoriteParameters",
+            "required": [
+              "Customer"
+            ]
           },
           "isMandatory": true,
           "isFileUpload": false,
@@ -947,7 +1211,11 @@
                 ]
               }
             },
-            "$id": "type:CarShack.Hypermedia.BuyCarParameters"
+            "$id": "type:CarShack.Hypermedia.BuyCarParameters",
+            "required": [
+              "Brand",
+              "CarId"
+            ]
           },
           "resultName": "Car",
           "resultClasses": [
@@ -969,7 +1237,6 @@
       "classes": [
         "CustomersQueryResult"
       ],
-      "title": "Query result on Customer",
       "propertiesSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
@@ -998,6 +1265,9 @@
           "targetClasses": [
             "CustomersQueryResult"
           ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
+          ],
           "isMandatory": false,
           "isDeprecated": false
         },
@@ -1008,6 +1278,9 @@
           "targetName": "CustomerQueryResult",
           "targetClasses": [
             "CustomersQueryResult"
+          ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
           ],
           "isMandatory": false,
           "isDeprecated": false
@@ -1020,6 +1293,9 @@
           "targetClasses": [
             "CustomersQueryResult"
           ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
+          ],
           "isMandatory": false,
           "isDeprecated": false
         },
@@ -1031,6 +1307,9 @@
           "targetClasses": [
             "CustomersQueryResult"
           ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
+          ],
           "isMandatory": false,
           "isDeprecated": false
         },
@@ -1041,6 +1320,9 @@
           "targetName": "CustomerQueryResult",
           "targetClasses": [
             "CustomersQueryResult"
+          ],
+          "mediaTypes": [
+            "application/vnd.siren\u002Bjson"
           ],
           "isMandatory": true,
           "isDeprecated": false
@@ -1078,7 +1360,12 @@
           "type": "string"
         }
       },
-      "$id": "type:CarShack.Hypermedia.Country"
+      "$id": "type:CarShack.Hypermedia.Country",
+      "required": [
+        "Name",
+        "EstimatedPopulation",
+        "LanguageCode"
+      ]
     },
     "pagination": {
       "type": "object",
@@ -1090,7 +1377,11 @@
           "type": "integer"
         }
       },
-      "$id": "type:RESTyard.AspNetCore.Util.Repository.Pagination"
+      "$id": "type:RESTyard.AspNetCore.Util.Repository.Pagination",
+      "required": [
+        "PageSize",
+        "PageOffset"
+      ]
     },
     "sortParameterOfCustomerSortProperties": {
       "type": "object",
@@ -1110,7 +1401,10 @@
           ]
         }
       },
-      "$id": "type:RESTyard.AspNetCore.Util.Repository.SortParameter\u00601[[CarShack.Hypermedia.CustomerSortProperties, CarShack, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+      "$id": "type:RESTyard.AspNetCore.Util.Repository.SortParameter\u00601[[CarShack.Hypermedia.CustomerSortProperties, CarShack, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+      "required": [
+        "SortType"
+      ]
     },
     "customerFilter": {
       "type": "object",
@@ -1140,7 +1434,13 @@
           "type": "string"
         }
       },
-      "$id": "type:CarShack.Hypermedia.AddressTo"
+      "$id": "type:CarShack.Hypermedia.AddressTo",
+      "required": [
+        "Street",
+        "Number",
+        "City",
+        "ZipCode"
+      ]
     }
   },
   "declaredAccessGroups": [

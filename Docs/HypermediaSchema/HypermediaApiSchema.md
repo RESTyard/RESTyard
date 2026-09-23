@@ -231,10 +231,14 @@ Each `propertiesSchema` and `parameterSchema` is a **valid, self-contained JSON 
   },
   "properties": {
     "Name": { "type": "string" },
-    "HomeAddress": { "$ref": "#/$defs/address" }
+    "HomeAddress": { "$ref": "#/$defs/address" },
+    "OtherAddress": { "oneOf": [ { "$ref": "#/$defs/address" }, { "type": "null" } ] }
   }
 }
 ```
+
+A nullable complex property (`Address? OtherAddress`) references the same definition, with `null` as the
+alternative.
 
 ### Top-Level `definitions` Catalog
 
