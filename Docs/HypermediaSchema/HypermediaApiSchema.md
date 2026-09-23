@@ -74,6 +74,11 @@ The Siren `title` is a per-instance runtime value (`IHypermediaObject.HtoTitle`)
 schema. XML doc sourcing for `description` needs `GenerateDocumentationFile=true` in the HTO project;
 without it the compiler hands the source generator no doc comments and `description` stays null.
 
+`[Title]` and `[Description]` in these tables stand for either attribute family: JsonSchema.Net
+(`[Title]`, `[Description]`, preferred) or `System.ComponentModel` (`[DisplayName]`, `[Description]`).
+JsonSchema.Net wins when both are present. See
+[Metadata attribute families](SourceGenerator.md#metadata-attribute-families).
+
 **Example:**
 
 ```json
@@ -255,6 +260,7 @@ The duplication (definitions in both local `$defs` and top-level `definitions`) 
 The JSON Schema is generated at runtime by `IJsonSchemaFactory`, which supports:
 - `[Title]` / `[Description]` attributes → JSON Schema `title` / `description` keywords
 - `[DisplayName]` / `[Description]` from `System.ComponentModel` → `title` / `description`
+  (the JsonSchema.Net attribute wins when both are present)
 - `[Obsolete]` → JSON Schema `deprecated: true`
 - Non-nullable properties → listed in the `required` keyword (C# semantics: `string` is required,
   `string?` is optional; opt-out via `new JsonSchemaFactory(deriveRequiredFromNonNullable: false)`)

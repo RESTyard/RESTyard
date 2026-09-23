@@ -1318,6 +1318,64 @@ public class HtoSchemaGeneratorTests
     }
 
     [Fact]
+    public void HtoWithComponentModelAttributes_harvests_DisplayName_and_Description()
+    {
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(
+            "HypermediaCustomerHto", TestHtoSources.HtoWithComponentModelAttributes);
+
+        schema.Title.Should().Be("Customer Entity");
+        schema.Description.Should().Be("Represents a customer in the system.");
+
+        var link = schema.Links.Single(l => l.Relations.Contains("bestFriend"));
+        link.Title.Should().Be("Best Friend Link");
+        link.Description.Should().Be("Link to the customer's best friend.");
+
+        var action = schema.Actions.Single(a => a.Name == "MarkAsFavorite");
+        action.Title.Should().Be("Mark As Favorite");
+        action.Description.Should().Be("Marks this customer as a favorite.");
+
+        var embedded = schema.EmbeddedEntities.Single(e => e.Relations.Contains("address"));
+        embedded.Title.Should().Be("Home Address");
+        embedded.Description.Should().Be("The customer's home address.");
+    }
+
+    [Fact]
+    public void HtoWithComponentModelAttributes_compiles()
+    {
+        GeneratorTestHelper.AssertOutputCompiles(TestHtoSources.HtoWithComponentModelAttributes);
+    }
+
+    [Fact]
+    public void JsonSchemaNet_attributes_win_over_ComponentModel_attributes()
+    {
+        const string source = """
+            using Json.Schema.Generation;
+            using RESTyard.AspNetCore.Hypermedia;
+            using RESTyard.AspNetCore.Hypermedia.Attributes;
+            using CM = System.ComponentModel;
+
+            [assembly: HypermediaAssembly]
+
+            namespace TestHtos;
+
+            [Title("Schema Title")]
+            [CM.DisplayName("BCL Title")]
+            [Description("Schema Description")]
+            [CM.Description("BCL Description")]
+            [HypermediaObject(Classes = ["Thing"])]
+            public class HypermediaThingHto : IHypermediaObject
+            {
+                public string? HtoTitle => null;
+            }
+            """;
+
+        var schema = GeneratorTestHelper.RunGeneratorAndGetSchema("HypermediaThingHto", source);
+
+        schema.Title.Should().Be("Schema Title");
+        schema.Description.Should().Be("Schema Description");
+    }
+
+    [Fact]
     public void HtoWithXmlDocs_entity_has_description_from_summary_and_remarks()
     {
         var schema = GeneratorTestHelper.RunGeneratorAndGetSchema(

@@ -215,9 +215,25 @@ The generator extracts title and description for entity types, links, actions, a
 
 - There is no XML doc or name fallback for titles; consumers use `title ?? name` (or the relation).
 - The entity title is the schema display name, not the Siren `title` — that comes from `HtoTitle` at runtime.
-- `[Title]` / `[Description]` are the `Json.Schema.Generation` attributes.
+- Two attribute families are accepted (see [Metadata attribute families](#metadata-attribute-families)).
 - XML docs need `GenerateDocumentationFile=true` in the HTO project; without it the compiler hands the
   generator no doc comments and descriptions stay null (no warning).
+
+### Metadata attribute families
+
+Titles and descriptions can be set with either attribute family, on HTOs, links, actions, embedded
+entities, data properties and action parameters alike:
+
+| | JsonSchema.Net (preferred) | BCL |
+|---|---|---|
+| Namespace | `Json.Schema.Generation` | `System.ComponentModel` |
+| Title | `[Title("...")]` | `[DisplayName("...")]` |
+| Description | `[Description("...")]` | `[Description("...")]` |
+| Use when | default; the library the schema is generated with | types shared with code that should not reference JsonSchema.Net (e.g. parameter DTOs shared with clients) |
+
+- When both are present on the same element, the JsonSchema.Net attribute wins.
+- Both families name their attribute `DescriptionAttribute`: importing both namespaces in one file gives
+  `CS0104` (ambiguous reference). Pick one per file, or alias one (`using CM = System.ComponentModel;`).
 
 ### Deprecation
 
@@ -291,7 +307,7 @@ The legacy reflection-based `SirenConverter` is unchanged: it only emits runtime
 | `[FormatterIgnoreHypermediaProperty]` | Property excluded entirely |
 | `[Key]` | Property included (it's a data property), `[Key]` attribute not forwarded |
 | `[JsonConverter]`, `[JsonPropertyName]`, etc. | Forwarded verbatim |
-| `[Title]`, `[Description]`, `[Obsolete]` | Forwarded verbatim |
+| `[Title]`, `[Description]`, `[DisplayName]` (both families), `[Obsolete]` | Forwarded verbatim |
 | `[Relations]`, `[HypermediaAction]`, `[HypermediaAccessGroup]` | Not forwarded (consumed by generator) |
 
 ### JSON Schema on Properties
@@ -305,6 +321,8 @@ The following attributes on data properties and action parameter members are pic
 | `[DisplayName("...")]` (`System.ComponentModel`) | `title` |
 | `[Description("...")]` (`System.ComponentModel`) | `description` |
 | `[Obsolete]` | `deprecated: true` |
+
+The JsonSchema.Net attribute wins when both families are present (see [Metadata attribute families](#metadata-attribute-families)).
 
 **Nullability → `required`:** non-nullable properties are listed in the schema's `required` keyword
 (`string Name` is required, `string? Nickname` is optional). Nullable reference annotations from the

@@ -537,6 +537,54 @@ internal static class TestHtoSources
         """;
 
     /// <summary>
+    /// Same shape as <see cref="HtoWithTitleDescriptionAttributes"/>, using the BCL
+    /// <c>System.ComponentModel</c> attributes (<c>[DisplayName]</c>, <c>[Description]</c>).
+    /// </summary>
+    internal const string HtoWithComponentModelAttributes = $$"""
+        {{Usings}}
+        using CM = System.ComponentModel;
+        {{AssemblyAttribute}}
+
+        namespace TestHtos;
+
+        [HypermediaObject(Classes = ["Address"])]
+        public class HypermediaAddressHto : IHypermediaObject
+        {
+            public string? HtoTitle => "Address";
+
+            public string Street { get; set; } = string.Empty;
+        }
+
+        public class MarkAsFavoriteAction : HypermediaAction
+        {
+            public MarkAsFavoriteAction() : base(() => true) { }
+        }
+
+        [CM.DisplayName("Customer Entity")]
+        [CM.Description("Represents a customer in the system.")]
+        [HypermediaObject(Classes = ["Customer"])]
+        public class HypermediaCustomerHto : IHypermediaObject
+        {
+            public string? HtoTitle => null;
+
+            [CM.DisplayName("Best Friend Link")]
+            [CM.Description("Link to the customer's best friend.")]
+            [Relations(["bestFriend"])]
+            public ILink<HypermediaCustomerHto>? BestFriend { get; set; }
+
+            [CM.DisplayName("Mark As Favorite")]
+            [CM.Description("Marks this customer as a favorite.")]
+            [HypermediaAction]
+            public MarkAsFavoriteAction? MarkAsFavorite { get; set; }
+
+            [CM.DisplayName("Home Address")]
+            [CM.Description("The customer's home address.")]
+            [Relations(["address"])]
+            public IEmbeddedEntity<HypermediaAddressHto>? Address { get; set; }
+        }
+        """;
+
+    /// <summary>
     /// HTO with XML doc comments for title/description harvesting.
     /// </summary>
     internal const string HtoWithXmlDocs = $$"""

@@ -35,6 +35,7 @@ internal static class GeneratorTestHelper
         MetadataReference.CreateFromFile(typeof(JsonDocument).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(EnumMemberAttribute).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(TitleAttribute).Assembly.Location),
+        MetadataReference.CreateFromFile(typeof(System.ComponentModel.DisplayNameAttribute).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(System.Uri).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(ControllerBase).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Mvc.IActionResult).Assembly.Location),

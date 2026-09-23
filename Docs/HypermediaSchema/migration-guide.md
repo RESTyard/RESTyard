@@ -299,6 +299,9 @@ The Siren `title` and the schema `title` are separate:
 - **Schema `title`** (entity, link, action, embedded) comes from `[Title]` only; actions use
   `[HypermediaAction(Title)]` first. There is no XML doc or name fallback.
 - **Schema `description`** comes from `[Description]`, else XML doc `<summary>` followed by `<remarks>`.
+- `[Title]` / `[Description]` can be the JsonSchema.Net or the `System.ComponentModel` attributes
+  (`[DisplayName]` for the title); JsonSchema.Net wins when both are present. Existing
+  `System.ComponentModel` attributes on action parameters keep working.
 
 **Action required:** add `[Title]` where schema consumers should see a display name. XML doc sourcing
 needs `GenerateDocumentationFile=true` in the HTO project; without it descriptions stay null, silently.

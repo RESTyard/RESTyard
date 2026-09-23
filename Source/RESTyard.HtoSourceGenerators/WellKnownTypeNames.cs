@@ -82,6 +82,14 @@ internal static class WellKnownTypeNames
     internal const string DescriptionAttributeFullName =
         "Json.Schema.Generation.DescriptionAttribute";
 
+    // BCL alternatives, also mapped by JsonSchemaFactory for runtime-generated schemas.
+    // Used when the JsonSchema.Net attribute is absent.
+    internal const string DisplayNameAttributeFullName =
+        "System.ComponentModel.DisplayNameAttribute";
+
+    internal const string ComponentModelDescriptionAttributeFullName =
+        "System.ComponentModel.DescriptionAttribute";
+
     internal const string HypermediaActionGenericFullName =
         "RESTyard.AspNetCore.Hypermedia.Actions.HypermediaAction<TParameter>";
 

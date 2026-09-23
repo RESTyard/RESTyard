@@ -39,13 +39,13 @@ internal static class HtoMetadataExtractor
 
         var attribute = context.Attributes[0];
 
-        // Title: display name of the entity type from [Title] only. Not the Siren title, which is a
+        // Title: display name of the entity type from [Title] / [DisplayName] only. Not the Siren title, which is a
         // per-instance runtime value (IHypermediaObject.HtoTitle). No XML doc fallback: a class
         // <summary> is description text.
-        var title = GetAttributeStringArgument(symbol, WellKnownTypeNames.TitleAttributeFullName);
+        var title = GetTitleAttribute(symbol);
 
         // Description: [Description] attribute > XML doc <summary> followed by <remarks>
-        var description = GetAttributeStringArgument(symbol, WellKnownTypeNames.DescriptionAttributeFullName)
+        var description = GetDescriptionAttribute(symbol)
             ?? JoinParagraphs(GetXmlDocElement(symbol, "summary"), GetXmlDocElement(symbol, "remarks"));
 
         // Deprecation: [Obsolete("message")]
@@ -295,10 +295,10 @@ internal static class HtoMetadataExtractor
         var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
 
         // Title: [Title] attribute only (no XML doc fallback: <summary> is description text)
-        var linkTitle = GetAttributeStringArgument(member, WellKnownTypeNames.TitleAttributeFullName);
+        var linkTitle = GetTitleAttribute(member);
 
         // Description: [Description] attribute > XML doc <summary> followed by <remarks>
-        var linkDescription = GetAttributeStringArgument(member, WellKnownTypeNames.DescriptionAttributeFullName)
+        var linkDescription = GetDescriptionAttribute(member)
                               ?? JoinParagraphs(GetXmlDocElement(member, "summary"), GetXmlDocElement(member, "remarks"));
 
         var (linkIsDeprecated, linkDeprecationMessage) = GetDeprecation(member);
@@ -328,10 +328,10 @@ internal static class HtoMetadataExtractor
 
         // Title: [HypermediaAction(Title)] > [Title] attribute (no XML doc fallback: <summary> is description text)
         var actionTitle = GetNamedArgumentString(actionAttr, "Title")
-                          ?? GetAttributeStringArgument(member, WellKnownTypeNames.TitleAttributeFullName);
+                          ?? GetTitleAttribute(member);
 
         // Description: [Description] attribute > XML doc <summary> followed by <remarks>
-        var actionDescription = GetAttributeStringArgument(member, WellKnownTypeNames.DescriptionAttributeFullName)
+        var actionDescription = GetDescriptionAttribute(member)
                                 ?? JoinParagraphs(GetXmlDocElement(member, "summary"), GetXmlDocElement(member, "remarks"));
 
         var (actionIsDeprecated, actionDeprecationMessage) = GetDeprecation(member);
@@ -360,10 +360,10 @@ internal static class HtoMetadataExtractor
         var isMandatory = member.NullableAnnotation != NullableAnnotation.Annotated;
 
         // Title: [Title] attribute only (no XML doc fallback: <summary> is description text)
-        var embeddedTitle = GetAttributeStringArgument(member, WellKnownTypeNames.TitleAttributeFullName);
+        var embeddedTitle = GetTitleAttribute(member);
 
         // Description: [Description] attribute > XML doc <summary> followed by <remarks>
-        var embeddedDescription = GetAttributeStringArgument(member, WellKnownTypeNames.DescriptionAttributeFullName)
+        var embeddedDescription = GetDescriptionAttribute(member)
                                   ?? JoinParagraphs(GetXmlDocElement(member, "summary"), GetXmlDocElement(member, "remarks"));
 
         var (embeddedIsDeprecated, embeddedDeprecationMessage) = GetDeprecation(member);
@@ -842,6 +842,20 @@ internal static class HtoMetadataExtractor
         var value = attr.ConstructorArguments[0].Value as string;
         return string.IsNullOrEmpty(value) ? null : value;
     }
+
+    /// <summary>
+    /// Title from <c>[Json.Schema.Generation.Title]</c>, else <c>[System.ComponentModel.DisplayName]</c>.
+    /// </summary>
+    private static string? GetTitleAttribute(ISymbol symbol)
+        => GetAttributeStringArgument(symbol, WellKnownTypeNames.TitleAttributeFullName)
+           ?? GetAttributeStringArgument(symbol, WellKnownTypeNames.DisplayNameAttributeFullName);
+
+    /// <summary>
+    /// Description from <c>[Json.Schema.Generation.Description]</c>, else <c>[System.ComponentModel.Description]</c>.
+    /// </summary>
+    private static string? GetDescriptionAttribute(ISymbol symbol)
+        => GetAttributeStringArgument(symbol, WellKnownTypeNames.DescriptionAttributeFullName)
+           ?? GetAttributeStringArgument(symbol, WellKnownTypeNames.ComponentModelDescriptionAttributeFullName);
 
     /// <summary>
     /// Extracts the text content of the specified XML documentation element

@@ -96,9 +96,11 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
   `[HypermediaObject(Title = ...)]` / `: HypermediaObject`: `HypermediaApiSchema.md:287`,
   `SourceGenerator.md:85, 162, 229`. *Done; `GenerateDocumentationFile` requirement verified with a scratch
   build (without it: no `Description` emitted, no warning).*
-- [ ] Decide one attribute family for schema metadata: JsonSchema.Net (`[Title]`, `[Description]`, used by
+- [x] Decide one attribute family for schema metadata: JsonSchema.Net (`[Title]`, `[Description]`, used by
   the generator) vs BCL `System.ComponentModel` (`[DisplayName]`, `[Description]`, mapped by
-  `JsonSchemaFactory` for parameters). Today both coexist.
+  `JsonSchemaFactory` for parameters). Today both coexist. *Decided: accept both everywhere, JsonSchema.Net
+  preferred and wins when both are set. The generator now also reads the BCL pair (was silently ignored);
+  documented in `SourceGenerator.md` (Metadata attribute families).*
 - [x] `RESTyard.Schema/Model/HypermediaSchemaNameAttribute.cs` XML doc example still uses
   `[HypermediaObject(Title = ...)]`. *Done in the fallout commit.*
 - [ ] `CLAUDE.md` (repo + root): controller template is now `server/csharp-controller/v5` (`V5.razor`),
