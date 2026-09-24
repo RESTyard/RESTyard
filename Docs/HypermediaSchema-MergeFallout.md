@@ -68,11 +68,13 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
   schema display name. Add a separate attribute (e.g. `displayName="Customers"`) to the XSD that the
   templates emit as `[Title]`. The CarShack API docs lost their titles because of this.
 
-- [ ] `InlineQueryResult` sets `Location` on a `200` response — non-standard per RFC 9110 (`Content-Location`
+- [x] `InlineQueryResult` sets `Location` on a `200` response — non-standard per RFC 9110 (`Content-Location`
   is the correct header, and it is set too). Either document the compat reason or drop `Location`.
-- [ ] Centralize target frameworks in `Directory.Build.props` (e.g. `$(RestyardAppTfm)`) instead of per
+  resolved: this is intentional. keep it
+- [x] Centralize target frameworks in `Directory.Build.props` (e.g. `$(RestyardAppTfm)`) instead of per
   `.csproj` — #131's net8 → net10 bump could not reach projects created on feature branches, which broke
   restore after the merge (NU1201). Refactoring for all projects; do it on `develop`, then merge.
+  resolved: by design, keep it
 - [ ] `RESTyard.Generator/Properties/launchSettings.json` profile still uses `--template
   server/csharp-controller/v4`, which #131 deleted — switch to `v5`.
 - [ ] Unresolved crefs to the removed `HttpGetHypermediaActionParameterInfo` (#131, CS1574):
@@ -144,11 +146,15 @@ So delivery is **declared explicitly** on the endpoint.
 ```csharp
 public enum ActionResultDelivery { Location, Inline }
 
-[HttpQuery("Queries"), HypermediaActionEndpoint<HypermediaCustomersRootHto>(
+[HttpQuery("Queries")]                                   // verb + route only, no RESTyard metadata
+[HypermediaActionEndpoint<HypermediaCustomersRootHto>(
     nameof(HypermediaCustomersRootHto.CreateQuery),
     ResultType = typeof(HypermediaCustomerQueryResultHto),
-    ResultDelivery = ActionResultDelivery.Inline)]
+    ResultDelivery = ActionResultDelivery.Inline)]       // result metadata, same place for every verb
 ```
+
+- Result metadata lives on `HypermediaActionEndpoint` for every verb, never on `HttpQuery`: that attribute is
+  routing-only (MVC convention) and a placeholder to be swapped for the built-in one.
 
 - `ResultDelivery` defaults to `Location`; only meaningful with `ResultType`.
 - XML doc names the HTTP shapes: `Location` = `201` + `Location` header (`Created()`),
