@@ -1,0 +1,15 @@
+using System.Threading;
+using System.Threading.Tasks;
+using FunicularSwitch;
+using RESTyard.Client.Extensions;
+using RESTyard.Client.Hypermedia;
+using RESTyard.Client.Hypermedia.Commands;
+using RESTyard.Client.Resolver;
+
+public class Result : HypermediaClientObject { }
+
+public class Test
+{
+    public Task<HypermediaResult<Result>> Execute(IHypermediaClientFunction<Result, object> hco, IHypermediaResolver resolver, CancellationToken cancellationToken)
+        => hco.ExecuteAndResolveAsync(new object(), resolver, cancellationToken);
+}

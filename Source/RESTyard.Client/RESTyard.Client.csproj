@@ -46,6 +46,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <None Include="..\RESTyard.Client.Analyzers\bin\$(Configuration)\netstandard2.0\RESTyard.Client.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    </ItemGroup>
+
+    <ItemGroup>
       <PackageReference Include="FunicularSwitch" Version="6.4.1" />
       <PackageReference Include="FunicularSwitch.Generators" Version="4.6.0">
         <PrivateAssets>all</PrivateAssets>

@@ -52,6 +52,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.AspNetCore.Analyze
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.AspNetCore.Analyzers.Tests", "RESTyard.AspNetCore.Analyzers.Tests\RESTyard.AspNetCore.Analyzers.Tests.csproj", "{17A49645-391D-4992-AD59-EC59A1BB249B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.Client.Analyzers", "RESTyard.Client.Analyzers\RESTyard.Client.Analyzers.csproj", "{A8C9C40D-05B0-4C71-9AE6-D7EAB89F0E68}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.Client.Analyzers.Tests", "RESTyard.Client.Analyzers.Tests\RESTyard.Client.Analyzers.Tests.csproj", "{B6F1B1F3-AE96-4A10-9615-C752653A2A5F}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegacyV4Packages", "RESTyard.ContractFirst\LegacyV4Packages\LegacyV4Packages.csproj", "{DD274378-8D9E-4BED-8E9F-2A1617360432}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegacyV5_1Packages", "RESTyard.ContractFirst\LegacyV5_1Packages\LegacyV5_1Packages.csproj", "{E6F650F6-C912-4214-9D60-3AEE0DC58B4F}"
@@ -132,6 +136,14 @@ Global
 		{17A49645-391D-4992-AD59-EC59A1BB249B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17A49645-391D-4992-AD59-EC59A1BB249B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17A49645-391D-4992-AD59-EC59A1BB249B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8C9C40D-05B0-4C71-9AE6-D7EAB89F0E68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8C9C40D-05B0-4C71-9AE6-D7EAB89F0E68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8C9C40D-05B0-4C71-9AE6-D7EAB89F0E68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8C9C40D-05B0-4C71-9AE6-D7EAB89F0E68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6F1B1F3-AE96-4A10-9615-C752653A2A5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6F1B1F3-AE96-4A10-9615-C752653A2A5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6F1B1F3-AE96-4A10-9615-C752653A2A5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6F1B1F3-AE96-4A10-9615-C752653A2A5F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DD274378-8D9E-4BED-8E9F-2A1617360432}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DD274378-8D9E-4BED-8E9F-2A1617360432}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD274378-8D9E-4BED-8E9F-2A1617360432}.Release|Any CPU.ActiveCfg = Release|Any CPU
