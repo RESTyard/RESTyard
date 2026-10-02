@@ -44,8 +44,7 @@ public class ExecuteAndResolveAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        if (bindInvocation.ArgumentList.Arguments[0].Expression is not LambdaExpressionSyntax lambda
-            || !ResolvesLambdaParameter(lambda, context.SemanticModel, context.CancellationToken))
+        if (bindInvocation.ArgumentList.Arguments[0].Expression is not LambdaExpressionSyntax lambda)
         {
             return;
         }
@@ -68,16 +67,24 @@ public class ExecuteAndResolveAnalyzer : DiagnosticAnalyzer
             return;
         }
 
+        if (!ResolvesLambdaParameter(lambda, executeInvocation, context.SemanticModel, context.CancellationToken))
+        {
+            return;
+        }
+
         context.ReportDiagnostic(Diagnostic.Create(Rule, ((MemberAccessExpressionSyntax)executeInvocation.Expression).Name.GetLocation()));
     }
 
-    private static bool ResolvesLambdaParameter(LambdaExpressionSyntax lambda, SemanticModel semanticModel, System.Threading.CancellationToken cancellationToken)
+    private static bool ResolvesLambdaParameter(
+        LambdaExpressionSyntax lambda,
+        InvocationExpressionSyntax executeInvocation,
+        SemanticModel semanticModel,
+        System.Threading.CancellationToken cancellationToken)
     {
         if (lambda.Body is not InvocationExpressionSyntax
             {
                 Expression: MemberAccessExpressionSyntax { Name.Identifier.ValueText: "ResolveAsync" } resolveAccess,
-                ArgumentList.Arguments.Count: 0,
-            })
+            } resolveInvocation)
         {
             return false;
         }
@@ -89,8 +96,25 @@ public class ExecuteAndResolveAnalyzer : DiagnosticAnalyzer
             _ => null,
         };
 
-        return lambdaParameter is not null &&
-               semanticModel.GetSymbolInfo(resolveAccess.Expression, cancellationToken).Symbol is IParameterSymbol parameter &&
-               SymbolEqualityComparer.Default.Equals(parameter, semanticModel.GetDeclaredSymbol(lambdaParameter, cancellationToken));
+        if (lambdaParameter is null ||
+            semanticModel.GetSymbolInfo(resolveAccess.Expression, cancellationToken).Symbol is not IParameterSymbol parameter ||
+            !SymbolEqualityComparer.Default.Equals(parameter, semanticModel.GetDeclaredSymbol(lambdaParameter, cancellationToken)))
+        {
+            return false;
+        }
+
+        if (resolveInvocation.ArgumentList.Arguments.Count == 0)
+        {
+            return true;
+        }
+
+        if (resolveInvocation.ArgumentList.Arguments.Count != 1 || executeInvocation.ArgumentList.Arguments.Count == 0)
+        {
+            return false;
+        }
+
+        var resolveCancellationToken = semanticModel.GetSymbolInfo(resolveInvocation.ArgumentList.Arguments[0].Expression, cancellationToken).Symbol;
+        var executeCancellationToken = semanticModel.GetSymbolInfo(executeInvocation.ArgumentList.Arguments[executeInvocation.ArgumentList.Arguments.Count - 1].Expression, cancellationToken).Symbol;
+        return resolveCancellationToken is not null && SymbolEqualityComparer.Default.Equals(resolveCancellationToken, executeCancellationToken);
     }
 }
