@@ -32,6 +32,7 @@
     <ItemGroup>
       <ProjectReference Include="..\CarShack\CarShack.csproj" />
       <ProjectReference Include="..\RESTyard.AspNetCore\RESTyard.AspNetCore.csproj" />
+      <ProjectReference Include="..\RESTyard.Client.Analyzers\RESTyard.Client.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
       <ProjectReference Include="..\RESTyard.Client.Extensions\SystemNetHttp\SystemNetHttp.csproj" />
       <ProjectReference Include="..\RESTyard.Client.Extensions\SystemTextJson\SystemTextJson.csproj" />
       <ProjectReference Include="..\RESTyard.Client\RESTyard.Client.csproj" />
