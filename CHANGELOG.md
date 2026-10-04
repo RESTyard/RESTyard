@@ -62,3 +62,5 @@ Versions follow `RESTyard.AspNetCore`; changes to other packages are listed unde
 - **RESTyard.AspNetCore:** a relative URI passed to a key-from-URI parameter now produces an error result instead of throwing. (#126)
 - **RESTyard.Client.Extensions.SystemNetHttp:** a network error while revalidating a cached response is returned as an error
   result instead of being thrown from `ResolveLinkAsync`. (#130)
+- **RESTyard.Generator:** controllers generated for upload operations (`isUploadAction="true"`) now receive the uploaded files
+  and parameters. They declared a JSON body parameter (or none), so the multipart form was not bound.

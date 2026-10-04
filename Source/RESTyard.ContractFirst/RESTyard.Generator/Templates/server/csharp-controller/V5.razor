@@ -7,6 +7,7 @@
 using Microsoft.AspNetCore.Mvc;
 using RESTyard.AspNetCore.WebApi;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+using RESTyard.AspNetCore.JsonSchema;
 @Includes
 
 @if (!string.IsNullOrEmpty(Namespace))
@@ -26,8 +27,9 @@ using RESTyard.AspNetCore.WebApi.AttributedRoutes;
         
         @foreach (var operation in document.Operations)
         {
-            <Attribute>Http@(operation.method)("@("<stub>")"), HypermediaActionEndpoint@($"<{document.name}Hto>")(nameof(@(document.name + "Hto." + operation.name)))</Attribute>
-            <ControllerMethod Name="@operation.name" ParameterName="@operation.parameterTypeName" />
+            var mediaTypeArgument = operation.isUploadAction ? ", System.Net.Mime.MediaTypeNames.Multipart.FormData" : "";
+            <Attribute>Http@(operation.method)("@("<stub>")"), HypermediaActionEndpoint@($"<{document.name}Hto>")(nameof(@(document.name + "Hto." + operation.name))@(mediaTypeArgument))</Attribute>
+            <ControllerMethod Name="@operation.name" ParameterName="@operation.parameterTypeName" IsUpload="@operation.isUploadAction" />
         }
     </Class>
 }

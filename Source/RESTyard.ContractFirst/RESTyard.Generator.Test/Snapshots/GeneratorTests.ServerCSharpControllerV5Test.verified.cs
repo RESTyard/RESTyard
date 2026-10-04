@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using RESTyard.AspNetCore.WebApi;
 using RESTyard.AspNetCore.WebApi.AttributedRoutes;
+using RESTyard.AspNetCore.JsonSchema;
 using RESTyard.Generator.Test.Output;
 using server._csharp._v5._2;
 
@@ -39,14 +40,14 @@ public class BaseController : ControllerBase
         throw new NotImplementedException();
     }
 
-    [HttpDelete("<stub>"), HypermediaActionEndpoint<BaseHto>(nameof(BaseHto.Upload))]
-    public Task<IActionResult> UploadAsync()
+    [HttpDelete("<stub>"), HypermediaActionEndpoint<BaseHto>(nameof(BaseHto.Upload), System.Net.Mime.MediaTypeNames.Multipart.FormData)]
+    public Task<IActionResult> UploadAsync([HypermediaUploadParameterFromForm] HypermediaFileUploadActionParameter parameters)
     {
         throw new NotImplementedException();
     }
 
-    [HttpPost("<stub>"), HypermediaActionEndpoint<BaseHto>(nameof(BaseHto.UploadWithParameter))]
-    public Task<IActionResult> UploadWithParameterAsync([FromBody] TP12 tP12)
+    [HttpPost("<stub>"), HypermediaActionEndpoint<BaseHto>(nameof(BaseHto.UploadWithParameter), System.Net.Mime.MediaTypeNames.Multipart.FormData)]
+    public Task<IActionResult> UploadWithParameterAsync([HypermediaUploadParameterFromForm] HypermediaFileUploadActionParameter<TP12> parameters)
     {
         throw new NotImplementedException();
     }
