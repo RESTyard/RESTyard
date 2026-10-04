@@ -130,7 +130,7 @@ public partial class ChildHto : HypermediaObject
     }
 }
 
-[HypermediaObject(Title = "", Classes = new string[] { "Third" })]
+[HypermediaObject(Title = "A derived document", Classes = new string[] { "Third" })]
 public partial class DerivedHto : ChildHto
 {
     public string InheritedText { get; set; }

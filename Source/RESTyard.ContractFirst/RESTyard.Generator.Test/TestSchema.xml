@@ -82,7 +82,7 @@
                 <Classification class="Second"/>
             </Classifications>
         </Document>
-        <Document name="Derived" parentDocument="Child">
+        <Document name="Derived" parentDocument="Child" title="A derived document">
             <Classifications>
                 <Classification class="Third"/>
             </Classifications>

@@ -35,7 +35,7 @@ public partial record QueryHtoQuery(int? SomeInt = default) : IHypermediaQuery;
 [HypermediaObject(Classes = new string[] { "Base" })]
 public partial class BaseHto : IHypermediaObject
 {
-    public string HtoTitle => $"A base document";
+    public virtual string HtoTitle => $"A base document";
 
     [Key("id")]
     public double? Id { get; set; }
@@ -149,7 +149,7 @@ public partial class BaseHto : IHypermediaObject
 [HypermediaObject(Classes = new string[] { "First", "Second" })]
 public partial class ChildHto : IHypermediaObject
 {
-    public string HtoTitle => $"";
+    public virtual string HtoTitle => $"";
 
     [Relations([DefaultHypermediaRelations.Self])]
     public ILink<ChildHto> Self { get; set; }
@@ -163,7 +163,7 @@ public partial class ChildHto : IHypermediaObject
 [HypermediaObject(Classes = new string[] { "Third" })]
 public partial class DerivedHto : ChildHto
 {
-    public string HtoTitle => $"";
+    public override string HtoTitle => $"A derived document";
     public string InheritedText { get; set; }
 
     [Relations([DefaultHypermediaRelations.Self])]
@@ -179,8 +179,6 @@ public partial class DerivedHto : ChildHto
 [HypermediaObject(Classes = new string[] { "Fourth" })]
 public partial class SecondLevelDerivedHto : DerivedHto
 {
-    public string HtoTitle => $"";
-
     [Relations([DefaultHypermediaRelations.Self])]
     public new ILink<SecondLevelDerivedHto> Self { get; set; }
 
@@ -193,7 +191,7 @@ public partial class SecondLevelDerivedHto : DerivedHto
 [HypermediaObject(Classes = new string[] { })]
 public partial class NoSelfLinkHto : IHypermediaObject
 {
-    public string HtoTitle => $"";
+    public virtual string HtoTitle => $"";
 
     public NoSelfLinkHto()
     {
@@ -205,7 +203,7 @@ public partial class QueryHto : IHypermediaQueryResult
 {
     [FormatterIgnoreHypermediaProperty]
     public IHypermediaQuery Query { get; set; }
-    public string HtoTitle => $"";
+    public virtual string HtoTitle => $"";
 
     [Key("normalKey")]
     public int? NormalKey { get; set; }
