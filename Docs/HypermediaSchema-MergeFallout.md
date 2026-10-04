@@ -115,6 +115,12 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
   `Source/Directory.Build.props` (done on the branch, still to raise on `develop`). Evaluated in props, before the SDK sets its inputs, so it
   resolves to `<projectdir>/.AssemblyAttributes`, which all TFMs of a project share. Parallel multi-TFM builds
   (Rider) race on that file → `CS2001`. The SDK default already puts it in `obj/`.
+- [ ] `RESTyard.MediaTypes.DefaultMediaTypes` (`Source/Shared/DefaultMediaTypes.cs`) is compiled into both
+  `RESTyard.AspNetCore` and `RESTyard.Client` as a public type, so any project referencing both packages (server
+  with integration tests, BFF) gets `CS0433` when using it. Found in B4: generated upload controllers use
+  `System.Net.Mime.MediaTypeNames.Multipart.FormData` instead. Fix options: move it to a shared package (e.g.
+  `RESTyard.Schema` or a new `RESTyard.Abstractions`), or make one copy `internal` — breaking either way, CHANGELOG
+  + migration step.
 
 **Docs**
 
