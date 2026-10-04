@@ -11,7 +11,7 @@ public class HypermediaObjectTitleAnalyzerTests : VerifyAnalyzer
     }
 
     [Fact]
-    public async Task MovesLegacyTitleToSirenTitlePropertyAndBuilds()
+    public async Task MovesLegacyTitleToHtoTitlePropertyAndBuilds()
     {
         var code =
             /* lang=c# */

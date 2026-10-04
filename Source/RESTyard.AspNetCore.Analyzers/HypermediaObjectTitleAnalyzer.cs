@@ -14,8 +14,8 @@ public class HypermediaObjectTitleAnalyzer : DiagnosticAnalyzer
 
     private static readonly DiagnosticDescriptor Rule = new(
         id: DiagnosticId,
-        title: "Move HypermediaObject title to SirenTitle",
-        messageFormat: "Move the HypermediaObject Title attribute argument to a SirenTitle property",
+        title: "Move HypermediaObject title to HtoTitle",
+        messageFormat: "Move the HypermediaObject Title attribute argument to the HtoTitle property",
         category: "Migration",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);

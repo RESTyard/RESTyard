@@ -52,5 +52,6 @@ Versions follow `RESTyard.AspNetCore`; changes to other packages are listed unde
 - **RESTyard.AspNetCore:** a relative URI passed to a key-from-URI parameter now produces an error result instead of throwing. (#126)
 - **RESTyard.AspNetCore:** an action whose parameter type has no schema route (`AutoDeliverJsonSchemaForActionParameterTypes`
   off and no custom route) now fails with an error naming the type and the fix, instead of an obscure JSON serialization error.
+- **RESTyard.AspNetCore:** analyzer `RY0002` told users to move the title to a `SirenTitle` property; it now names `HtoTitle`.
 - **RESTyard.Client.Extensions.SystemNetHttp:** a network error while revalidating a cached response is returned as an error
   result instead of being thrown from `ResolveLinkAsync`. (#130)
