@@ -9,8 +9,9 @@ Versions follow `RESTyard.AspNetCore`; changes to other packages are listed unde
 
 ### Added
 
-- **RESTyard.AspNetCore:** actions and functions can use the HTTP `QUERY` verb. ASP.NET Core has no built-in attribute for it;
-  CarShack defines an `HttpQueryAttribute` as an example. A query result can be returned inline in the response body
+- **RESTyard.AspNetCore:** actions and functions can use the HTTP `QUERY` verb via `[HttpQuery]`
+  (`RESTyard.AspNetCore.WebApi.AttributedRoutes`), until ASP.NET Core ships its own; controllers generated from
+  `method="Query"` use it. A query result can be returned inline in the response body
   (`this.InlineQueryResult(result)`) instead of via a `Location` header. (#131)
 - **RESTyard.AspNetCore:** the Siren `title` is now set per instance through `IHypermediaObject.HtoTitle`, so it can include
   property values. Analyzer `RY0002` with a code fix migrates `[HypermediaObject(Title = ...)]`. (#132)

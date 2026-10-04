@@ -81,6 +81,9 @@ public partial class BaseHco : HypermediaClientObject
 
     [HypermediaCommand("UploadWithParameter")]
     public IHypermediaClientFileUploadAction<TP12>? UploadWithParameter { get; set; }
+
+    [HypermediaCommand("QueryOperation")]
+    public IHypermediaClientFunction<QueryHco, TP4>? QueryOperation { get; set; }
 }
 
 [HypermediaClientObject("First", "Second")]
