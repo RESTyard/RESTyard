@@ -6,6 +6,7 @@ using RESTyard.Client.ParameterSerializer;
 
 namespace RESTyard.Client.Extensions.SystemTextJson
 {
+    [Obsolete("Use " + nameof(SystemTextJsonObjectParameterSerializer) + " instead. The legacy array-wrapper format is no longer required by the server.")]
     public class SingleSystemTextJsonObjectParameterSerializer : IParameterSerializer
     {
         private readonly JsonWriterOptions options;

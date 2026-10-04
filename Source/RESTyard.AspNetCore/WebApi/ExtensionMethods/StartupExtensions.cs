@@ -143,8 +143,7 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         {
             var forAttributedActionParametersOnly = !hypermediaOptions.ImplicitHypermediaActionParameterBinders;
 
-            options.ModelBinderProviders.Insert(0, new HypermediaParameterFromBodyBinderProvider(forAttributedActionParametersOnly));
-            options.ModelBinderProviders.Insert(1, new HypermediaParameterFromFormBinderProvider(forAttributedActionParametersOnly));
+            options.ModelBinderProviders.Insert(0, new HypermediaParameterFromFormBinderProvider(forAttributedActionParametersOnly));
 
             return options;
         }

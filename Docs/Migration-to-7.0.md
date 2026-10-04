@@ -55,3 +55,52 @@ Each section lists the steps a consumer must take. Each step has a **Find** (wha
 1. **Use the v5 controller template.** `server/csharp-controller/v4` is removed.
    - Find: `--template server/csharp-controller/v4` in scripts, build targets and launch profiles.
    - Do: use `server/csharp-controller/v5` and regenerate.
+
+## Action parameters are deserialized with System.Text.Json
+
+The Newtonsoft-based action-parameter body binder is gone. Action bodies bind through standard ASP.NET Core `[FromBody]`.
+
+### Server
+
+1. **Send plain JSON objects.** The server no longer unwraps the legacy Siren array wrapper `[{ "TypeName": { … } }]`.
+   - Find: clients that send action bodies wrapped in an array.
+   - Do: send the parameter object itself, e.g. `{ "Name": "x" }`.
+2. **Replace `[HypermediaActionParameterFromBody]` with `[FromBody]`.** The old attribute still compiles but is obsolete.
+   - Find: `HypermediaActionParameterFromBody`
+   - Do: replace it with `[FromBody]` (`Microsoft.AspNetCore.Mvc`). Regenerate contract-first controllers; the generator now
+     emits `[FromBody]`.
+3. **Register enum names.** Newtonsoft parsed enum names by default; System.Text.Json does not.
+   - Find: action parameter or query types that have enum properties, and clients that send their names (`"Age"`).
+   - Do: register `JsonStringEnumConverter` as in step 4.
+4. **Register converters where the parameters are bound.** RESTyard does not share converters between the two ASP.NET Core JSON
+   configurations. Note that the MVC `JsonOptions` also apply to the JSON output of controllers (not to Siren responses).
+
+   | Parameters bound by | Register with |
+   |---|---|
+   | controller `[FromBody]` | `AddControllers().AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(...))` |
+   | file-upload form binder (`HypermediaFileUploadActionParameter<T>`) | `ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(...))` |
+   | minimal-API bodies | `ConfigureHttpJsonOptions(...)` |
+
+   - Find: Newtonsoft `JsonConverter`s written for action parameters.
+   - Do: port them to `System.Text.Json.Serialization.JsonConverter` and register them as above.
+5. **Update code that uses the removed or changed API surface.**
+
+   | Find | Do |
+   |---|---|
+   | `HypermediaParameterFromBodyBinder`, `HypermediaParameterFromBodyBinderProvider` | remove; nothing to register |
+   | `SingleParameterBinder` | use `[FromBody]` |
+   | `JObjectExtensions` | no replacement; use `System.Text.Json.Nodes` |
+   | `IHypermediaJsonConverter.ConvertToJson` returning `JObject` | it returns `JsonObject` now |
+   | `JsonDeserializer.Deserialize(Stream)` / `(JObject)` | `Deserialize(Stream, JsonSerializerOptions)` / `(JsonNode, JsonSerializerOptions)` |
+   | transitive `Newtonsoft.Json` from `RESTyard.AspNetCore` | add a direct package reference if your app still uses it |
+
+### Client
+
+6. **Switch to the plain-object parameter serializers.** The array-wrapper serializers are obsolete.
+
+   | Find | Do |
+   |---|---|
+   | `SingleNewtonsoftJsonObjectParameterSerializer` | `NewtonsoftJsonObjectParameterSerializer` |
+   | `SingleSystemTextJsonObjectParameterSerializer` | `SystemTextJsonObjectParameterSerializer` |
+   | `WithSingleNewtonsoftJsonObjectParameterSerializer()` | `WithNewtonsoftJsonObjectParameterSerializer()` |
+   | `WithSingleSystemTextJsonObjectParameterSerializer()` | `WithSystemTextJsonObjectParameterSerializer()` |

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
+using System.Text.Json.Nodes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
@@ -73,11 +73,10 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertEmptyEntities(siren);
             AssertHasNoLinks(siren);
 
-            var actions = siren["actions"]
-                .Should().NotBeNull()
-                    .And.HaveCount(12)
-                    .And.AllBeAssignableTo<JObject>()
-                    .Which.ToList();
+            siren["actions"].Should().NotBeNull();
+            var actionsArray = siren["actions"]!.AsArray();
+            actionsArray.Should().HaveCount(12);
+            var actions = actionsArray.Select(n => n!.AsObject()).ToList();
             
             AssertActionBasic(actions[0], "RenamedAction", "POST", routeNameHypermediaActionNoArgument, 5,  ActionClasses.ParameterLessActionClass, "A Title");
             AssertActionBasic(actions[1], "ActionNoArgument", "POST", routeNameHypermediaActionNoArgument, 4,  ActionClasses.ParameterLessActionClass);
@@ -115,63 +114,63 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertActionBasic(actions[11], "RenamedActionWithClasses", "POST", routeNameHypermediaActionNoArgument, 5,  ActionClasses.ParameterLessActionClass, "A Title",  ["Destructive", "FeatureFlag1"]);
         }
 
-        private void AssertFileUploadAction(JObject action, FileUploadConfiguration fileUploadConfiguration, string type, bool hasParameter = false)
+        private void AssertFileUploadAction(JsonObject action, FileUploadConfiguration fileUploadConfiguration, string type, bool hasParameter = false)
         {
-            action["type"].Value<string>().Should().Be(type);
-            var fields = action["fields"];
-            fields.Count().Should().Be(hasParameter ? 2 : 1);
+            action["type"]!.GetValue<string>().Should().Be(type);
+            var fields = action["fields"]!.AsArray();
+            fields.Count.Should().Be(hasParameter ? 2 : 1);
             var fileUploadAction = fields[0];
             fileUploadAction.Should().NotBeNull();
-            fileUploadAction!["type"]!.Value<string>().Should().Be("file");
-            fileUploadAction!["accept"]!.Value<string>().Should().Be(string.Join(",", fileUploadConfiguration.Accept));
-            fileUploadAction!["maxFileSizeBytes"]!.Value<long>().Should().Be(fileUploadConfiguration.MaxFileSizeBytes);
-            (fileUploadAction!["allowMultiple"]?.Value<bool>() ?? false).Should().Be(fileUploadConfiguration.AllowMultiple);
+            fileUploadAction!["type"]!.GetValue<string>().Should().Be("file");
+            fileUploadAction!["accept"]!.GetValue<string>().Should().Be(string.Join(",", fileUploadConfiguration.Accept));
+            fileUploadAction!["maxFileSizeBytes"]!.GetValue<long>().Should().Be(fileUploadConfiguration.MaxFileSizeBytes);
+            (fileUploadAction!["allowMultiple"]?.GetValue<bool>() ?? false).Should().Be(fileUploadConfiguration.AllowMultiple);
         }
 
-        private void AssertDefaultValues(JObject action, ActionParameter expectedDefaultValues)
+        private void AssertDefaultValues(JsonObject action, ActionParameter expectedDefaultValues)
         {
-            var fields = action["fields"];
-            var value = fields[0]["value"];
-            var aInt = value["AInt"].Value<int>();
-         
-            Assert.AreEqual(1, fields.Count());
+            var fields = action["fields"]!.AsArray();
+            var value = fields[0]!["value"];
+            var aInt = value!["AInt"]!.GetValue<int>();
+
+            Assert.AreEqual(1, fields.Count);
             Assert.AreEqual(expectedDefaultValues.AInt, aInt);
         }
-        
-        private void AssertDynamicDefaultValues(JObject action, string expectedValue)
+
+        private void AssertDynamicDefaultValues(JsonObject action, string expectedValue)
         {
-            var fields = action["fields"];
-            var value = fields[0]["value"];
-            var property1 = value["Property1"].Value<string>();
-         
-            Assert.AreEqual(1, fields.Count());
+            var fields = action["fields"]!.AsArray();
+            var value = fields[0]!["value"];
+            var property1 = value!["Property1"]!.GetValue<string>();
+
+            Assert.AreEqual(1, fields.Count);
             Assert.AreEqual(expectedValue, property1);
         }
 
-        private void AssertActionArgument(JObject action, string contentType, string actionParameterName, string actionParameterClass, bool hasDefaultValues = false, string  parameterTypeRouteName = RouteNames.ActionParameterTypes, string objectKeyString = null)
+        private void AssertActionArgument(JsonObject action, string contentType, string actionParameterName, string actionParameterClass, bool hasDefaultValues = false, string  parameterTypeRouteName = RouteNames.ActionParameterTypes, string objectKeyString = null)
         {
-            Assert.AreEqual(contentType, action["type"]);
-            var fields = (JArray) action["fields"];
+            Assert.AreEqual(contentType, action["type"]!.GetValue<string>());
+            var fields = action["fields"]!.AsArray();
             Assert.AreEqual(fields.Count, 1);
 
-            var singleField = (JObject)fields[0];
-            
+            var singleField = fields[0]!.AsObject();
+
             var expectedProperties = 3;
             if (hasDefaultValues)
             {
                 expectedProperties++;
             }
-            
-            Assert.AreEqual(expectedProperties, singleField.Properties().Count());
 
-            Assert.AreEqual(actionParameterName, singleField["name"]);
-            Assert.AreEqual(DefaultMediaTypes.ApplicationJson, singleField["type"]);
+            Assert.AreEqual(expectedProperties, singleField.Count);
 
-            var actionsArray = (JArray)singleField["class"];
+            Assert.AreEqual(actionParameterName, singleField["name"]!.GetValue<string>());
+            Assert.AreEqual(DefaultMediaTypes.ApplicationJson, singleField["type"]!.GetValue<string>());
+
+            var actionsArray = singleField["class"]!.AsArray();
             Assert.AreEqual(1, actionsArray.Count);
 
-            var route = ((JValue)actionsArray[0]).Value<string>();
-            
+            var route = actionsArray[0]!.GetValue<string>();
+
             if (objectKeyString == null)
             {
                 AssertRoute(route, parameterTypeRouteName, $"{{ parameterTypeName = {actionParameterClass} }}");
@@ -182,30 +181,30 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             }
         }
 
-        private void AssertFileUploadActionArgument(JObject action, string contentType, string actionParameterName, string actionParameterClass, bool hasDefaultValues = false, string  parameterTypeRouteName = RouteNames.ActionParameterTypes, string objectKeyString = null)
+        private void AssertFileUploadActionArgument(JsonObject action, string contentType, string actionParameterName, string actionParameterClass, bool hasDefaultValues = false, string  parameterTypeRouteName = RouteNames.ActionParameterTypes, string objectKeyString = null)
         {
-            var fields = (JArray) action["fields"];
+            var fields = action["fields"]!.AsArray();
             fields.Should().HaveCount(2);
 
-            var field = (JObject)fields[1];
-            Assert.AreEqual(contentType, field["type"]);
-            
+            var field = fields[1]!.AsObject();
+            Assert.AreEqual(contentType, field["type"]!.GetValue<string>());
+
             var expectedProperties = 3;
             if (hasDefaultValues)
             {
                 expectedProperties++;
             }
-            
-            Assert.AreEqual(expectedProperties, field.Properties().Count());
 
-            Assert.AreEqual(actionParameterName, field["name"]);
-            Assert.AreEqual(DefaultMediaTypes.ApplicationJson, field["type"]);
+            Assert.AreEqual(expectedProperties, field.Count);
 
-            var actionsArray = (JArray)field["class"];
+            Assert.AreEqual(actionParameterName, field["name"]!.GetValue<string>());
+            Assert.AreEqual(DefaultMediaTypes.ApplicationJson, field["type"]!.GetValue<string>());
+
+            var actionsArray = field["class"]!.AsArray();
             Assert.AreEqual(1, actionsArray.Count);
 
-            var route = ((JValue)actionsArray[0]).Value<string>();
-            
+            var route = actionsArray[0]!.GetValue<string>();
+
             if (objectKeyString == null)
             {
                 AssertRoute(route, parameterTypeRouteName, $"{{ parameterTypeName = {actionParameterClass} }}");
@@ -216,25 +215,25 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             }
         }
 
-        private void AssertActionBasic(JObject action, string actionName, string method, string routeName, int propertyCount, string actionClass, string? actionTitle = null, List<string>? expectedAdditionalClasses = null)
+        private void AssertActionBasic(JsonObject action, string actionName, string method, string routeName, int propertyCount, string actionClass, string? actionTitle = null, List<string>? expectedAdditionalClasses = null)
         {
-            Assert.AreEqual(propertyCount, action.Properties().Count());
-            Assert.AreEqual(actionName, action["name"]);
-            Assert.AreEqual(method, action["method"]);
+            Assert.AreEqual(propertyCount, action.Count);
+            Assert.AreEqual(actionName, action["name"]!.GetValue<string>());
+            Assert.AreEqual(method, action["method"]!.GetValue<string>());
 
-            var actionClasses = action["class"] as  JArray;
+            var actionClasses = action["class"] as JsonArray;
             actionClasses.Should().NotBeNull();
             actionClasses!.Count.Should().Be(1 + (expectedAdditionalClasses?.Count ?? 0), "Classes are added by attribute");
-            var existingActionClasses = actionClasses.ToObject<List<string>>()!;
+            var existingActionClasses = actionClasses.Select(n => n!.GetValue<string>()).ToList();
             existingActionClasses.Contains(actionClass).Should().BeTrue();
-            expectedAdditionalClasses?.All(expectedClass => 
+            expectedAdditionalClasses?.All(expectedClass =>
                 existingActionClasses.Contains(expectedClass)).Should().BeTrue("Classes from attribute must be in generated JSON");
-            
-            AssertRoute(((JValue)action["href"]).Value<string>(), routeName);
+
+            AssertRoute(action["href"]!.GetValue<string>(), routeName);
 
             if (!string.IsNullOrEmpty(actionTitle))
             {
-                Assert.AreEqual(actionTitle, action["title"]);
+                Assert.AreEqual(actionTitle, action["title"]!.GetValue<string>());
             }
         }
 

@@ -1,7 +1,7 @@
 ﻿@{
     var parameterExpression = string.IsNullOrEmpty(ParameterName)
         ? ""
-        : $"[HypermediaActionParameterFromBody] {ParameterName} {RazorTemplateBase.Uncapitalize(ParameterName)}";
+        : $"[FromBody] {ParameterName} {RazorTemplateBase.Uncapitalize(ParameterName)}";
 }
 
 public Task@("<IActionResult>") @(Name)Async(@(parameterExpression))

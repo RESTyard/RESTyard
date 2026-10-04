@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using System.Text.Json.Nodes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.Query;
@@ -39,8 +39,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
 
-            Assert.IsTrue(siren["links"].Type == JTokenType.Array);
-            var linksArray = (JArray)siren["links"];
+            Assert.IsTrue(siren["links"] is JsonArray);
+            var linksArray = siren["links"]!.AsArray();
             Assert.AreEqual(linksArray.Count, 0);
         }
 
@@ -72,8 +72,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
 
-            Assert.IsTrue(siren["links"].Type == JTokenType.Array);
-            var linksArray = (JArray)siren["links"];
+            Assert.IsTrue(siren["links"] is JsonArray);
+            var linksArray = siren["links"]!.AsArray();
             Assert.AreEqual(linksArray.Count, 3);
 
             AssertHasLink(linksArray, DefaultHypermediaRelations.Self, routeNameLinking);
@@ -103,8 +103,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
 
-            Assert.IsTrue(siren["links"].Type == JTokenType.Array);
-            var linksArray = (JArray)siren["links"];
+            Assert.IsTrue(siren["links"] is JsonArray);
+            var linksArray = siren["links"]!.AsArray();
             Assert.AreEqual(linksArray.Count, 2);
 
             AssertHasLink(linksArray, DefaultHypermediaRelations.Self, routeNameLinking);
@@ -137,8 +137,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
 
-            Assert.IsTrue(siren["links"].Type == JTokenType.Array);
-            var linksArray = (JArray)siren["links"];
+            Assert.IsTrue(siren["links"] is JsonArray);
+            var linksArray = siren["links"]!.AsArray();
             Assert.AreEqual(linksArray.Count, 2);
 
             AssertHasLink(linksArray, duplicateRel, routeNameLinked2);
@@ -165,8 +165,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
 
-            Assert.IsTrue(siren["links"].Type == JTokenType.Array);
-            var linksArray = (JArray)siren["links"];
+            Assert.IsTrue(siren["links"] is JsonArray);
+            var linksArray = siren["links"]!.AsArray();
             Assert.AreEqual(linksArray.Count, 2);
 
             AssertHasLink(linksArray, multiRel, routeNameLinked1);
@@ -199,8 +199,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
 
-            Assert.IsTrue(siren["links"].Type == JTokenType.Array);
-            var linksArray = (JArray)siren["links"];
+            Assert.IsTrue(siren["links"] is JsonArray);
+            var linksArray = siren["links"]!.AsArray();
             Assert.AreEqual(linksArray.Count, 3);
 
             AssertHasLink(linksArray, DefaultHypermediaRelations.Self, routeNameLinking);
@@ -237,8 +237,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
 
-            Assert.IsTrue(siren["links"].Type == JTokenType.Array);
-            var linksArray = (JArray)siren["links"];
+            Assert.IsTrue(siren["links"] is JsonArray);
+            var linksArray = siren["links"]!.AsArray();
             Assert.AreEqual(linksArray.Count, 3);
 
             AssertHasLink(linksArray, DefaultHypermediaRelations.Self, routeNameLinking);
@@ -284,14 +284,14 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
 
-            Assert.IsTrue(siren["links"].Type == JTokenType.Array);
-            var linksArray = (JArray)siren["links"];
+            Assert.IsTrue(siren["links"] is JsonArray);
+            var linksArray = siren["links"]!.AsArray();
             Assert.AreEqual(linksArray.Count, 4);
 
             var i = 0;
             foreach (var jToken in linksArray)
             {
-                if (!(linksArray[i] is JObject linkObject))
+                if (!(linksArray[i] is JsonObject linkObject))
                 {
                     throw new Exception("Link array item should be a JObject");
                 }
@@ -302,15 +302,15 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
            
         }
 
-        private static void AssertLink(JObject linkObject, string rel, string expectedUrl, IReadOnlyCollection<string> expectedAvailableMediaTypes)
+        private static void AssertLink(JsonObject linkObject, string rel, string expectedUrl, IReadOnlyCollection<string> expectedAvailableMediaTypes)
         {
-            var relationArray = (JArray)linkObject["rel"];
-            var sirenRelations = relationArray.Values<string>().ToList();
+            var relationArray = linkObject["rel"]!.AsArray();
+            var sirenRelations = relationArray.Select(n => n!.GetValue<string>()).ToList();
             var stringListComparer = new StringReadOnlyCollectionComparer();
             var hasDesiredRelations = stringListComparer.Equals(sirenRelations, new List<string> { rel });
 
             Assert.IsTrue(hasDesiredRelations);
-            Assert.AreEqual(expectedUrl, ((JValue)linkObject["href"]).Value<string>());
+            Assert.AreEqual(expectedUrl, linkObject["href"]!.GetValue<string>());
 
             var typeParameter = linkObject["type"];
             if (typeParameter == null)
@@ -319,7 +319,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             }
             else
             {
-                AssertMediaTypes(expectedAvailableMediaTypes, linkObject["type"]);
+                AssertMediaTypes(expectedAvailableMediaTypes, linkObject["type"]!);
             }
         }
         
@@ -361,15 +361,15 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertEmptyEntities(siren);
             AssertEmptyActions(siren);
 
-            Assert.IsTrue(siren["links"].Type == JTokenType.Array);
-            var linksArray = (JArray)siren["links"];
+            Assert.IsTrue(siren["links"] is JsonArray);
+            var linksArray = siren["links"]!.AsArray();
             Assert.AreEqual(linksArray.Count, 4);
 
             var internalRoute = $"{TestUrlConfig.Scheme}://{TestUrlConfig.Host}/{routeName}";
             var i = 0;
             foreach (var jToken in linksArray)
             {
-                if (!(linksArray[i] is JObject linkObject))
+                if (!(linksArray[i] is JsonObject linkObject))
                 {
                     throw new Exception("Link array item should be a JObject");
                 }
@@ -380,9 +380,9 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
            
         }
 
-        private static void AssertMediaTypes(IReadOnlyCollection<string> expectedAvailableMediaType, JToken typeToken)
+        private static void AssertMediaTypes(IReadOnlyCollection<string> expectedAvailableMediaType, JsonNode typeToken)
         {
-            var mediaTypesFromJToken = typeToken.Value<string>().Split(',').ToList();
+            var mediaTypesFromJToken = typeToken.GetValue<string>().Split(',').ToList();
             var stringReadOnlyCollectionComparer = new StringReadOnlyCollectionComparer();
             var hasDesiredMediaTypes = stringReadOnlyCollectionComparer.Equals(expectedAvailableMediaType, mediaTypesFromJToken);
 
