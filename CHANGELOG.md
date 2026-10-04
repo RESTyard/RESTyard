@@ -30,9 +30,9 @@ Versions follow `RESTyard.AspNetCore`; changes to other packages are listed unde
 - **RESTyard.AspNetCore:** the hypermedia form binder only binds parameters that are explicitly bound from a form or form file.
   All other action parameters use standard ASP.NET Core binding. (#131)
 - **Breaking — RESTyard.AspNetCore:** action parameter bodies are bound with System.Text.Json through standard `[FromBody]`.
-  The Siren array wrapper `[{ "TypeName": { … } }]` is no longer accepted; send the plain object. Enum names in bodies need
-  `JsonStringEnumConverter`. Register converters with `AddJsonOptions` for controller bodies and with `ConfigureHttpJsonOptions`
-  for file-upload forms. `[HypermediaActionParameterFromBody]` is obsolete; use `[FromBody]`.
+  The Siren array wrapper `[{ "TypeName": { … } }]` is no longer accepted, neither in bodies nor in the parameter part of
+  file uploads; send the plain object. Enum names need `JsonStringEnumConverter`. Register converters with `AddJsonOptions`;
+  file uploads use the same options. `[HypermediaActionParameterFromBody]` is obsolete; use `[FromBody]`.
   The package no longer depends on `Newtonsoft.Json`. See `Docs/Migration-to-7.0.md`.
 - **RESTyard.Client.Extensions:** the array-wrapper parameter serializers (`WithSingle…ObjectParameterSerializer`) are obsolete;
   use `WithSystemTextJsonObjectParameterSerializer` / `WithNewtonsoftJsonObjectParameterSerializer`.

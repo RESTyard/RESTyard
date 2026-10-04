@@ -62,8 +62,9 @@ The Newtonsoft-based action-parameter body binder is gone. Action bodies bind th
 
 ### Server
 
-1. **Send plain JSON objects.** The server no longer unwraps the legacy Siren array wrapper `[{ "TypeName": { … } }]`.
-   - Find: clients that send action bodies wrapped in an array.
+1. **Send plain JSON objects.** The server no longer unwraps the legacy Siren array wrapper `[{ "TypeName": { … } }]`,
+   neither in action bodies nor in the parameter part of file uploads.
+   - Find: clients that send action bodies or file-upload parameters wrapped in an array.
    - Do: send the parameter object itself, e.g. `{ "Name": "x" }`.
 2. **Replace `[HypermediaActionParameterFromBody]` with `[FromBody]`.** The old attribute still compiles but is obsolete.
    - Find: `HypermediaActionParameterFromBody`
@@ -72,17 +73,12 @@ The Newtonsoft-based action-parameter body binder is gone. Action bodies bind th
 3. **Register enum names.** Newtonsoft parsed enum names by default; System.Text.Json does not.
    - Find: action parameter or query types that have enum properties, and clients that send their names (`"Age"`).
    - Do: register `JsonStringEnumConverter` as in step 4.
-4. **Register converters where the parameters are bound.** RESTyard does not share converters between the two ASP.NET Core JSON
-   configurations. Note that the MVC `JsonOptions` also apply to the JSON output of controllers (not to Siren responses).
-
-   | Parameters bound by | Register with |
-   |---|---|
-   | controller `[FromBody]` | `AddControllers().AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(...))` |
-   | file-upload form binder (`HypermediaFileUploadActionParameter<T>`) | `ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(...))` |
-   | minimal-API bodies | `ConfigureHttpJsonOptions(...)` |
-
+4. **Register converters with `AddJsonOptions`.** Controller `[FromBody]` and file uploads (`HypermediaFileUploadActionParameter<T>`)
+   both use the MVC `JsonOptions`. These also apply to the JSON output of controllers (not to Siren responses).
+   `ConfigureHttpJsonOptions` only affects minimal APIs.
    - Find: Newtonsoft `JsonConverter`s written for action parameters.
-   - Do: port them to `System.Text.Json.Serialization.JsonConverter` and register them as above.
+   - Do: port them to `System.Text.Json.Serialization.JsonConverter` and register them with
+     `AddControllers().AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(...))`.
 5. **Update code that uses the removed or changed API surface.**
 
    | Find | Do |

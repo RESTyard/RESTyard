@@ -3,7 +3,6 @@ using RESTyard.AspNetCore.Hypermedia.Actions;
 using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
@@ -160,33 +159,13 @@ public class HypermediaParameterFromFormBinder : IModelBinder
                     var typeName = some.ParameterModelType.BeautifulName();
                     if (request.Form.TryGetValue(typeName, out var parameters))
                     {
-                        JsonNode? parsed;
                         try
                         {
-                            parsed = JsonNode.Parse(parameters.ToString());
+                            return Result.Ok(JsonNode.Parse(parameters.ToString()));
                         }
                         catch (Exception e)
                         {
                             return Result.Error<JsonNode?>($"Invalid Json: {e.Message}");
-                        }
-
-                        // The plain JSON object is the supported wire format. The legacy Siren
-                        // array-wrapper [{ "TypeName": {...} }] is still unwrapped here for
-                        // backwards compatibility with clients using the (now obsolete) Single*
-                        // parameter serializers.
-                        if (parsed is JsonArray wrapperArray)
-                        {
-                            if (!TryUnwrapArray(wrapperArray, typeName, out var jObject))
-                            {
-                                return Result.Error<JsonNode?>(
-                                    $"Invalid Json. Expected an object or an array containing one element with one object property '{typeName}'");
-                            }
-
-                            return Result.Ok<JsonNode?>(jObject);
-                        }
-                        else
-                        {
-                            return Result.Ok(parsed);
                         }
                     }
                     else
@@ -226,27 +205,10 @@ public class HypermediaParameterFromFormBinder : IModelBinder
 
     private static JsonSerializerOptions ResolveSerializerOptions(HttpContext httpContext)
     {
-        // Http.Json.JsonOptions, configured via ConfigureHttpJsonOptions.
+        // Same options as controller [FromBody], configured via AddJsonOptions.
         var options = httpContext.RequestServices
-            .GetService<IOptions<Microsoft.AspNetCore.Http.Json.JsonOptions>>()
-            ?.Value.SerializerOptions;
+            .GetService<IOptions<Microsoft.AspNetCore.Mvc.JsonOptions>>()
+            ?.Value.JsonSerializerOptions;
         return options ?? new JsonSerializerOptions(JsonSerializerDefaults.Web);
-    }
-
-    private static bool TryUnwrapArray(JsonArray wrapperArray, string modelTypeName, [NotNullWhen(true)] out JsonNode? jObject)
-    {
-        jObject = null;
-        if (wrapperArray.Count != 1)
-        {
-            return false;
-        }
-
-        if (wrapperArray[0] is not JsonObject container)
-        {
-            return false;
-        }
-
-        jObject = container[modelTypeName];
-        return jObject is not null;
     }
 }

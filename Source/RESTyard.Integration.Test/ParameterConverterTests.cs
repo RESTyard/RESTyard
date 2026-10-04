@@ -19,8 +19,8 @@ namespace RESTyard.Integration.Test;
 
 /// <summary>
 /// Verifies that custom <see cref="JsonConverter"/>s are applied when deserializing hypermedia action
-/// parameters, both on the controller <c>[FromBody]</c> path (MVC JsonOptions) and on the file-upload
-/// form binder path (Http.Json.JsonOptions). Each converter rejects the value it handles, so a request that
+/// parameters, both on the controller <c>[FromBody]</c> path and on the file-upload form binder path
+/// (both use the MVC JsonOptions). Each converter rejects the value it handles, so a request that
 /// reaches deserialization on that path is rejected — proving the converter participated.
 /// </summary>
 public class ParameterConverterTests : IAsyncLifetime
@@ -35,16 +35,15 @@ public class ParameterConverterTests : IAsyncLifetime
     {
         this.carShackFactory = new(outputHelper);
 
-        // Derive a factory that registers the custom converters on top of the base CarShack host configuration:
-        // MVC JsonOptions for controller [FromBody], Http.Json.JsonOptions for the file-upload form binder.
+        // Derive a factory that registers the custom converters on top of the base CarShack host configuration.
+        // Both paths read the MVC JsonOptions (AddJsonOptions).
         this.factoryWithConverters = this.carShackFactory.WithWebHostBuilder(builder =>
             builder.ConfigureTestServices(services =>
-            {
                 services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
-                    options.JsonSerializerOptions.Converters.Add(new RejectingDateOnlyConverter()));
-                services.ConfigureHttpJsonOptions(options =>
-                    options.SerializerOptions.Converters.Add(new RejectingStringConverter()));
-            }));
+                {
+                    options.JsonSerializerOptions.Converters.Add(new RejectingDateOnlyConverter());
+                    options.JsonSerializerOptions.Converters.Add(new RejectingStringConverter());
+                })));
 
         this.apiResolverFactory = DefaultHypermediaClientBuilder
             .CreateBuilder()
@@ -95,7 +94,7 @@ public class ParameterConverterTests : IAsyncLifetime
         var cars = (await apiRoot.NavigateAsync(l => l.CarsRoot)).Should().BeOk().Which;
 
         // UploadCarImageParameters has a string property; the rejecting string converter must run when the
-        // form binder deserializes the parameter object using the Http.Json.JsonOptions from request services.
+        // form binder deserializes the parameter object using the MVC JsonOptions from request services.
         var result = await cars.UploadCarImage!.ExecuteAsync(
             new HypermediaFileUploadActionParameter<UploadCarImageParameters>(
                 FileDefinitions: new List<FileDefinition>
@@ -106,7 +105,7 @@ public class ParameterConverterTests : IAsyncLifetime
             this.Resolver);
 
         result.Match(_ => false, _ => true)
-            .Should().BeTrue("the string converter from ConfigureHttpJsonOptions should reject the parameter object on the form binder path");
+            .Should().BeTrue("the string converter from the MVC JsonOptions should reject the parameter object on the form binder path");
     }
 
     private sealed class RejectingDateOnlyConverter : JsonConverter<DateOnly>
