@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 		..\Roadmap-WAHE.md = ..\Roadmap-WAHE.md
 		..\TODO.md = ..\TODO.md
+		..\CHANGELOG.md = ..\CHANGELOG.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTyard.AspNetCore", "RESTyard.AspNetCore\RESTyard.AspNetCore.csproj", "{36257B82-6BB5-434E-856E-A02FCBE83570}"
@@ -71,6 +72,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{3CB6FE53-5
 		..\Docs\HypermediaSchema-Generator-Findings.md = ..\Docs\HypermediaSchema-Generator-Findings.md
 		..\Docs\HypermediaSchema-Plan.md = ..\Docs\HypermediaSchema-Plan.md
 	EndProjectSection
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegacyV4Packages", "RESTyard.ContractFirst\LegacyV4Packages\LegacyV4Packages.csproj", "{DD274378-8D9E-4BED-8E9F-2A1617360432}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegacyV5_1Packages", "RESTyard.ContractFirst\LegacyV5_1Packages\LegacyV5_1Packages.csproj", "{E6F650F6-C912-4214-9D60-3AEE0DC58B4F}"

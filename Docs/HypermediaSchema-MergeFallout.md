@@ -51,6 +51,20 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
   shows the `$id` name (`ComplexTypeDefinitionRefinerTests+Address`): `MermaidMapper.cs:126` calls
   `SchemaToTypeString` without the parent schema. Only visible for nested classes. *Fixed: parent schema
   passed; CarShack output unchanged.*
+- [ ] Enum wire format: one rule for Siren output, action input and schema. Works today only when the app
+  registers `JsonStringEnumConverter` via `AddJsonOptions` (B6), and only for values without `[EnumMember]`.
+  - `[EnumMember]` handling: `SirenConverter` writes `[EnumMember]` values (`EnumHelper`), but
+    `JsonStringEnumConverter` ignores them, so a renamed value is written as `"Value1Rename"` and only binds as
+    `"Value1"` (regression from B1; Newtonsoft honoured it). Also check which name the parameter schema
+    (`JsonSchemaFactory`) and the source generator's `GetSchema()` emit for renamed values. Test with
+    `TestEnumWithNames`.
+  - Optional RESTyard enum converter: writes names, honours `[EnumMember]` and `[JsonStringEnumMemberName]`,
+    reads names (and numbers). `AddHypermediaExtensions` registers it on MVC `JsonOptions` when enabled by an
+    option (e.g. `UseRestyardEnumConverter`, default open). Side effect to document: plain-JSON controller output
+    then uses names too.
+  - `ToSiren()` must use the same converter: it serializes with the app's `JsonSerializerOptions`, so without
+    a converter enums become numbers while the schema advertises names (`migration-guide.md`, Enum Serialization).
+  - Schema generators keep names, fixed (no detection of app options: `GetSchema()` is compile-time).
 
 **RESTyard-HUI (raise there)**
 
@@ -60,10 +74,11 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
 
 **Code — `develop` (raise there, not on the branch)**
 
-- [ ] Contract-first derived HTOs hide `HtoTitle` (CS0108 in CarShack `Hypermedia.Server.g.cs:205, 249`):
+- [x] Contract-first derived HTOs hide `HtoTitle` (CS0108 in CarShack `Hypermedia.Server.g.cs:205, 249`):
   `csharp-base/Document.razor:36` emits `public string HtoTitle` on every document, including derived ones.
   The interface stays mapped to the base class member, so the Siren title of a `DerivedCar` is the base
-  title "A Car" (#132). Fix: emit `virtual` on base documents and `override` on derived ones.
+  title "A Car" (#132). Fix: emit `virtual` on base documents and `override` on derived ones
+  with their own title; derived ones without a title emit nothing and inherit the parent's.
 - [ ] Contract-first: the XML `title` is now only the Siren title (`HtoTitle`), so generated HTOs have no
   schema display name. Add a separate attribute (e.g. `displayName="Customers"`) to the XSD that the
   templates emit as `[Title]`. The CarShack API docs lost their titles because of this.
@@ -75,13 +90,14 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
   `.csproj` — #131's net8 → net10 bump could not reach projects created on feature branches, which broke
   restore after the merge (NU1201). Refactoring for all projects; do it on `develop`, then merge.
   resolved: by design, keep it
-- [ ] `RESTyard.Generator/Properties/launchSettings.json` profile still uses `--template
-  server/csharp-controller/v4`, which #131 deleted — switch to `v5`.
-- [ ] Unresolved crefs to the removed `HttpGetHypermediaActionParameterInfo` (#131, CS1574):
+- [x] `RESTyard.Generator/Properties/launchSettings.json` profile still uses `--template
+  server/csharp-controller/v4`, which #131 deleted. Removed the profile: with `v5` it would write conflicting stub
+  controllers into CarShack; the template is covered by the Generator.Test snapshot.
+- [x] Unresolved crefs to the removed `HttpGetHypermediaActionParameterInfo` (#131, CS1574):
   `HypermediaExtensionsOptions.cs:30`, `DynamicHypermediaAction.cs:9` — point to `HypermediaActionParameterInfoEndpoint<T>`.
-- [ ] `RY0002` title/message say "SirenTitle" (and the analyzer test name), but the property is `HtoTitle`
+- [x] `RY0002` title/message say "SirenTitle" (and the analyzer test name), but the property is `HtoTitle`
   (`HypermediaObjectTitleAnalyzer.cs:17-18`).
-- [ ] Move `HttpQueryAttribute` from CarShack (`CustomersRootController.cs:128`) into `RESTyard.AspNetCore`
+- [x] Move `HttpQueryAttribute` from CarShack (`CustomersRootController.cs:128`) into `RESTyard.AspNetCore`
   (namespace `RESTyard.AspNetCore.WebApi.AttributedRoutes`). Contract-first is broken without it: the XSD
   allows `method="Query"` (`Hypermedia.xsd:167`), `V5.razor:29` emits `[HttpQuery(...)]`, and no library
   type exists, so generated controllers do not compile unless the user writes one (#131). ASP.NET 10 ships
@@ -93,9 +109,9 @@ Semantic fallout that blocks the build is tracked in the Step 0 table of [`Hyper
   - delete the CarShack copy; add a Generator.Test snapshot with `method="Query"` that compiles
   - CHANGELOG (Added): `[HttpQuery]`; contract-first `method="Query"` compiles without a user-defined attribute
   - prerequisite for the RY0035 hint in [Design: action result delivery](#design-action-result-delivery)
-- [ ] `CustomersRootController.NewQueryAction` comment "Provides a link to the result Query." is stale
+- [x] `CustomersRootController.NewQueryAction` comment "Provides a link to the result Query." is stale
   (result is returned inline).
-- [ ] Remove the obsolete sourcelink#572 `TargetFrameworkMonikerAssemblyAttributesPath` workaround from
+- [x] Remove the obsolete sourcelink#572 `TargetFrameworkMonikerAssemblyAttributesPath` workaround from
   `Source/Directory.Build.props` (done on the branch, still to raise on `develop`). Evaluated in props, before the SDK sets its inputs, so it
   resolves to `<projectdir>/.AssemblyAttributes`, which all TFMs of a project share. Parallel multi-TFM builds
   (Rider) race on that file → `CS2001`. The SDK default already puts it in `obj/`.
