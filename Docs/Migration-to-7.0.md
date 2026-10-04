@@ -70,8 +70,9 @@ The Newtonsoft-based action-parameter body binder is gone. Action bodies bind th
    - Find: `HypermediaActionParameterFromBody`
    - Do: replace it with `[FromBody]` (`Microsoft.AspNetCore.Mvc`). Regenerate contract-first controllers; the generator now
      emits `[FromBody]`.
-3. **Register enum names.** Newtonsoft parsed enum names by default; System.Text.Json does not.
-   - Find: action parameter or query types that have enum properties, and clients that send their names (`"Age"`).
+3. **Register enum names.** Newtonsoft parsed enum names by default; System.Text.Json does not. The action-parameter schema
+   advertises enum values by name, so clients that follow it send names (`"Age"`) and get a 400 without the converter.
+   - Find: action parameter types that have enum properties.
    - Do: register `JsonStringEnumConverter` as in step 4.
 4. **Register converters with `AddJsonOptions`.** Controller `[FromBody]` and file uploads (`HypermediaFileUploadActionParameter<T>`)
    both use the MVC `JsonOptions`. These also apply to the JSON output of controllers (not to Siren responses).
