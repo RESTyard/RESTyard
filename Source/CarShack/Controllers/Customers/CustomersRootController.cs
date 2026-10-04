@@ -74,7 +74,7 @@ namespace CarShack.Controllers.Customers
 #endregion
 
 #region Actions
-        // Provides a link to the result Query.
+        // Executes the query and returns the result inline in the response body.
         [HttpQuery("Queries"), HypermediaActionEndpoint<HypermediaCustomersRootHto>(nameof(HypermediaCustomersRootHto.CreateQuery))]
         public async Task<ActionResult> NewQueryAction(CustomerQuery query)
         {
