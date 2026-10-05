@@ -5,12 +5,7 @@
     <TargetFrameworks>net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
 
-    <VersionSuffixLocal></VersionSuffixLocal>
-    <!--When variable is set we are building a prerelease package-->
-    <VersionSuffixLocal Condition="'$(IsPreRelease)'!='' AND  '$(IsPreRelease)'">
-      $(VersionSuffix)
-    </VersionSuffixLocal>
-    <Version>0.12.1$(VersionSuffixLocal)</Version>
+    <Version>$(RESTyardGeneratorVersion)</Version>
 
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>restyard-generator</ToolCommandName>
