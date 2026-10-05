@@ -1,0 +1,14 @@
+<Project>
+  <PropertyGroup>
+    <VersionSuffixLocal></VersionSuffixLocal>
+    <!--When variable is set we are building a prerelease package-->
+    <VersionSuffixLocal Condition="'$(IsPreRelease)'!='' AND  '$(IsPreRelease)'">
+      $(VersionSuffix)
+    </VersionSuffixLocal>
+    
+    <!-- Bump a component's base version deliberately when preparing its next release. -->
+    <RESTyardAspNetCoreVersion>7.0.0$(VersionSuffixLocal)</RESTyardAspNetCoreVersion>
+    <RESTyardClientVersion>4.0.0$(VersionSuffixLocal)</RESTyardClientVersion>
+    <RESTyardGeneratorVersion>0.13.0$(VersionSuffixLocal)</RESTyardGeneratorVersion>
+  </PropertyGroup>
+</Project>
