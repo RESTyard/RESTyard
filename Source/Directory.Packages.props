@@ -7,8 +7,8 @@
     </VersionSuffixLocal>
     
     <!-- Bump a component's base version deliberately when preparing its next release. -->
-    <RESTyardAspNetCoreVersion>6.0.2$(VersionSuffixLocal)</RESTyardAspNetCoreVersion>
-    <RESTyardClientVersion>3.1.0$(VersionSuffixLocal)</RESTyardClientVersion>
-    <RESTyardGeneratorVersion>0.13.1$(VersionSuffixLocal)</RESTyardGeneratorVersion>
+    <RESTyardAspNetCoreVersion>7.0.0$(VersionSuffixLocal)</RESTyardAspNetCoreVersion>
+    <RESTyardClientVersion>4.0.0$(VersionSuffixLocal)</RESTyardClientVersion>
+    <RESTyardGeneratorVersion>0.13.0$(VersionSuffixLocal)</RESTyardGeneratorVersion>
   </PropertyGroup>
 </Project>
