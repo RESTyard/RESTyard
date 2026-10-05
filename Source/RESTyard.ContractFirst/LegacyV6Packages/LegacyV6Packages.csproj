@@ -2,7 +2,6 @@
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <IsPackable>false</IsPackable>
-        <RootNamespace>LegacyV5_1Packages</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
