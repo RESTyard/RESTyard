@@ -12,7 +12,7 @@ public enum RestyardVersion
 {
     LegacyV4,
     LegacyV5,
-    LegacyV5_1,
+    LegacyV6,
     Current,
 }
 
@@ -20,7 +20,7 @@ public static class GeneratedCodeCompiler
 {
     private const string LegacyV4PackageVersion = "4.4.0-develop-20250414.1";
     private const string LegacyV5PackageVersion = "5.0.0-develop-20250515.1";
-    private const string LegacyV5_1PackageVersion = "6.0.2-develop-20260827.3";
+    private const string LegacyV6PackageVersion = "6.0.2-develop-20260827.3";
 
     public static async Task VerifyAsync(
         RestyardVersion version,
@@ -100,7 +100,7 @@ public static class GeneratedCodeCompiler
         {
             RestyardVersion.LegacyV4 => LegacyV4PackageVersion,
             RestyardVersion.LegacyV5 => LegacyV5PackageVersion,
-            RestyardVersion.LegacyV5_1 => LegacyV5_1PackageVersion,
+            RestyardVersion.LegacyV6 => LegacyV6PackageVersion,
             _ => throw new ArgumentOutOfRangeException(nameof(version), version, ""),
         };
         var packageRoot = Environment.GetEnvironmentVariable("NUGET_PACKAGES")

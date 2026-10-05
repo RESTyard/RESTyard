@@ -14,7 +14,7 @@
     CheckProperties(DocumentType.name, DocumentType.Properties);
 }
 
-@if (Version.SirenTitlePropertyExists())
+@if (Version.HtoTitlePropertyExists())
 {
     <Attribute>HypermediaObject(Classes = new string[] { @classes })</Attribute>    
 }
@@ -31,7 +31,7 @@ else
         <Property Schema="Schema" PropertyType="@(new PropertyType() { mandatory = true, name = "Query", type = "IHypermediaQuery" })"/>
     }
     
-    @if (Version.SirenTitlePropertyExists())
+    @if (Version.HtoTitlePropertyExists())
     {
         @:public string HtoTitle => $"@DocumentType.title";
     }

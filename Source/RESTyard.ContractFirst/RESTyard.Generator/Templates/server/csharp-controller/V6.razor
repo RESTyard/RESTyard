@@ -21,14 +21,14 @@ using RESTyard.AspNetCore.JsonSchema;
     <Class Name="@(document.name + "Controller")" Inherits="ControllerBase" IsPartial="false">
         @if (document.hasSelfLink)
         {
-            <Attribute>HttpGetHypermediaObject("@($"<stub>")", typeof(@(document.name)Hto))</Attribute>
+            <Attribute>HttpGet("@("<stub>")"), HypermediaObjectEndpoint@($"<{document.name}Hto>")</Attribute>
             <ControllerMethod Name="Get" />
         }
         
         @foreach (var operation in document.Operations)
         {
             var mediaTypeArgument = operation.isUploadAction ? ", System.Net.Mime.MediaTypeNames.Multipart.FormData" : "";
-            <Attribute>Http@(operation.method)HypermediaAction("@("<stub>")", typeof(@(document.name)Hto.@(operation.name)Op))</Attribute>
+            <Attribute>Http@(operation.method)("@("<stub>")"), HypermediaActionEndpoint@($"<{document.name}Hto>")(nameof(@(document.name + "Hto." + operation.name))@(mediaTypeArgument))</Attribute>
             <ControllerMethod Name="@operation.name" ParameterName="@operation.parameterTypeName" IsUpload="@operation.isUploadAction" Version="@Version" />
         }
     </Class>

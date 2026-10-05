@@ -14,7 +14,7 @@ using RESTyard.AspNetCore.WebApi.RouteResolver;
 using RESTyard.Relations;
 using RESTyard.Generator.Test.Output;
 
-namespace server._csharp._v5._2;
+namespace server._csharp._v7;
 public static class MimeTypes
 {
     public const string APPLICATION_JSON = "application/json";

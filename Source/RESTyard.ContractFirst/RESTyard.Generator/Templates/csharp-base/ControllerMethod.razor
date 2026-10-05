@@ -1,11 +1,12 @@
 ﻿@{
-    var parameterExpression = IsUpload
-        ? string.IsNullOrEmpty(ParameterName)
-            ? "[HypermediaUploadParameterFromForm] HypermediaFileUploadActionParameter parameters"
-            : $"[HypermediaUploadParameterFromForm] HypermediaFileUploadActionParameter<{ParameterName}> parameters"
-        : string.IsNullOrEmpty(ParameterName)
-            ? ""
-            : $"[FromBody] {ParameterName} {RazorTemplateBase.Uncapitalize(ParameterName)}";
+    var nonUploadFromFormAttribute = Version.CustomParameterFromBodyAttributeShouldBeUsed() ? "HypermediaActionParameterFromBody" : "FromBody";
+    var parameterExpression = (IsUpload, ParameterName) switch
+    {
+        (IsUpload: true, ParameterName: null or "") => "[HypermediaUploadParameterFromForm] HypermediaFileUploadActionParameter parameters",
+        (IsUpload: true, ParameterName: var parameter) => $"[HypermediaUploadParameterFromForm] HypermediaFileUploadActionParameter<{parameter}> parameters",
+        (IsUpload: false, ParameterName: null or "") => "",
+        (IsUpload: false, ParameterName: var parameter) => $"[{nonUploadFromFormAttribute}] {parameter} {RazorTemplateBase.Uncapitalize(parameter)}",
+    };
 }
 
 public Task@("<IActionResult>") @(Name)Async(@(parameterExpression))
@@ -17,4 +18,5 @@ public Task@("<IActionResult>") @(Name)Async(@(parameterExpression))
     [Parameter] public string Name { get; set; } = null!;
     [Parameter] public string? ParameterName { get; set; }
     [Parameter] public bool IsUpload { get; set; }
+    [Parameter] public Version Version { get; set; } = null!;
 }
