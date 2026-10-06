@@ -275,7 +275,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
             var routeKeysFromAction = GetRouteKeysIfActionHasSchemaParameters(hypermediaAction);
             routeResolver.TryGetRouteByType(parameterType, routeKeysFromAction).Match(
-                some: classRoute => 
+                some: classRoute =>
                 {
                     jField.Add("class", new JArray { classRoute.Url });
                 },
@@ -284,7 +284,12 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
                     var generatedRouteUrl = routeResolver.RouteUrl(
                         RouteNames.ActionParameterTypes,
                         new { parameterTypeName = parameterType.BeautifulName() });
-                    jField.Add("class", new JArray { generatedRouteUrl });
+                    generatedRouteUrl.Match(
+                        url => jField.Add("class", new JArray { url }),
+                        error => throw new HypermediaException(
+                            $"No route found for action parameter type '{parameterType.BeautifulName()}'. " +
+                            $"Ensure 'AutoDeliverJsonSchemaForActionParameterTypes' is true in HypermediaExtensionsOptions, " +
+                            $"or register a custom route for this type. Error: {error}"));
                 });
 
             AddPrefilledValue(jField, hypermediaAction);

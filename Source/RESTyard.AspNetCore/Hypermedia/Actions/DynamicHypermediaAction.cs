@@ -6,7 +6,7 @@ namespace RESTyard.AspNetCore.Hypermedia.Actions;
 
 /// <summary>
 /// A HypermediaAction which has optional parameters which are determined at runtime.
-/// This required a custom schema route which delivers the runtime determine schema. See: <see cref="HttpGetHypermediaActionParameterInfo"/>
+/// This required a custom schema route which delivers the runtime determine schema. See: <see cref="HypermediaActionParameterInfoEndpointAttribute{TParameter}"/>
 /// To find the schema route the <see cref="TParameter"/> is used. If no parameters are required configure so in constructor.
 /// <para />
 /// It is possible to pass runtime values to the schema route, so the route can have some runtime values to determine teh right schema.

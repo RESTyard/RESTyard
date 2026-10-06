@@ -27,7 +27,7 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
 
         /// <summary>
         /// Automatically deliver json schema for hypermedia action parameters. Custom schemas can still be delivered by implementing controller methods attributed
-        /// with <see cref="HttpGetHypermediaActionParameterInfo"/> attibute.
+        /// with <see cref="HypermediaActionParameterInfoEndpointAttribute{TParameter}"/> attribute.
         /// </summary>
         public bool AutoDeliverJsonSchemaForActionParameterTypes { get; set; } = true;
 
@@ -38,7 +38,6 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
 
         /// <summary>
         /// Implicitly add custom binder for parameters of hypermedia actions that derive from <see cref="IHypermediaActionParameter"/>. 
-        /// Enables usage of <see cref="KeyFromUriAttribute"/> for properties of those parameter types.
         /// If set custom binder will be used for all parameter types that are not attributed differently. 
         /// If set to false custom binder will be used for parameter types explicitly attributed with <see cref="HypermediaActionParameterFromBodyAttribute"/> only.
         /// </summary>

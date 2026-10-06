@@ -9,7 +9,11 @@
         .GetValueOrDefault(() => DocumentType.isQueryResult
             ? (Version.HypermediaQueryResultParentExists() ? "HypermediaQueryResult" : "IHypermediaQueryResult")
             : (Version.HypermediaObjectParentExists() ? "HypermediaObject" : "IHypermediaObject"));
-    var parentHasSelfLink = !string.IsNullOrEmpty(DocumentType.parentDocument) || (DocumentType.isQueryResult && Version.HypermediaQueryResultParentExists());
+    var isDerived = !string.IsNullOrEmpty(DocumentType.parentDocument);
+    // a derived document without own title inherits the parent's HtoTitle
+    var emitHtoTitle = !isDerived || !string.IsNullOrEmpty(DocumentType.title);
+    var titleModifier = isDerived ? "override" : "virtual";
+    var parentHasSelfLink =!string.IsNullOrEmpty(DocumentType.parentDocument) || (DocumentType.isQueryResult && Version.HypermediaQueryResultParentExists());
     var classes = string.Join(", ", DocumentType.Classifications.Select(c => $"\"{c.@class}\""));
     CheckProperties(DocumentType.name, DocumentType.Properties);
 }
@@ -31,9 +35,9 @@ else
         <Property Schema="Schema" PropertyType="@(new PropertyType() { mandatory = true, name = "Query", type = "IHypermediaQuery" })"/>
     }
     
-    @if (Version.SirenTitlePropertyExists())
+    @if (Version.SirenTitlePropertyExists() && emitHtoTitle)
     {
-        @:public string HtoTitle => $"@DocumentType.title";
+        @:public @titleModifier string HtoTitle =>$"@DocumentType.title";
     }
     
     @foreach (var property in DocumentType.Properties)

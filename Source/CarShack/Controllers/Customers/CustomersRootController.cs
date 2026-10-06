@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using CarShack.Domain.Customer;
 using CarShack.Hypermedia;
 using CarShack.Util;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.Util.Repository;
@@ -77,7 +74,7 @@ namespace CarShack.Controllers.Customers
 #endregion
 
 #region Actions
-        // Provides a link to the result Query.
+        // Executes the query and returns the result inline in the response body.
         [HttpQuery("Queries"), HypermediaActionEndpoint<HypermediaCustomersRootHto>(nameof(HypermediaCustomersRootHto.CreateQuery))]
         public async Task<ActionResult> NewQueryAction(CustomerQuery query)
         {
@@ -122,21 +119,5 @@ namespace CarShack.Controllers.Customers
             return customer.ToHto();
         }
 #endregion
-    }
-
-    // TODO: use built-in attribute when it becomes available.
-    public class HttpQueryAttribute : HttpMethodAttribute
-    {
-        private static readonly IEnumerable<string> _supportedMethods = ["QUERY"];
-
-        public HttpQueryAttribute() : base(_supportedMethods)
-        {
-        }
-
-        public HttpQueryAttribute([StringSyntax("Route")] string template)
-            : base(_supportedMethods, template)
-        {
-            ArgumentNullException.ThrowIfNull(template);
-        }
     }
 }
