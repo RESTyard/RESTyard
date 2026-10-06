@@ -20,6 +20,8 @@ Versions follow `RESTyard.AspNetCore`; changes to other packages are listed unde
 - **RESTyard.Client:** all public async methods accept a `CancellationToken`. (#130)
 - **RESTyard.Client:** analyzer `RYC001` with a code fix suggests `ExecuteAndResolveAsync`, so a `QUERY` result can be
   returned inline instead of needing a second request. (#134)
+- **RESTyard.AspNetCore:** typed Siren object model (`SirenEntity<T>`, `SirenAction`, `SirenLink`, …) that serializes to
+  Siren JSON with System.Text.Json.
 
 ### Changed
 
