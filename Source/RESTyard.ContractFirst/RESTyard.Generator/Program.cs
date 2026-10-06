@@ -29,7 +29,6 @@ public static class Program
                           select the template to render the schema with. Available options:
                           server
                             /csharp
-                              /v4
                               /v5
                               /v6
                               /v7
@@ -45,7 +44,7 @@ public static class Program
                             /typescript
                               /v0
                               
-                          Example: --template server/csharp/v4
+                          Example: --template server/csharp/v7
                           """
         };
         var outputFileOption = new Option<string>("--output-file")

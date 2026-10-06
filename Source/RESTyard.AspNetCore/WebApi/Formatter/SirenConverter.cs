@@ -276,7 +276,7 @@ namespace RESTyard.AspNetCore.WebApi.Formatter
 
             var routeKeysFromAction = GetRouteKeysIfActionHasSchemaParameters(hypermediaAction);
             routeResolver.TryGetRouteByType(parameterType, routeKeysFromAction).Match(
-                some: classRoute => 
+                some: classRoute =>
                 {
                     jField.Add("class", new JsonArray { classRoute.Url });
                 },

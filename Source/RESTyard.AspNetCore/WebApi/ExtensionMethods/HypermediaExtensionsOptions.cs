@@ -27,7 +27,7 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
 
         /// <summary>
         /// Automatically deliver json schema for hypermedia action parameters. Custom schemas can still be delivered by implementing controller methods attributed
-        /// with <see cref="HttpGetHypermediaActionParameterInfo"/> attibute.
+        /// with <see cref="HypermediaActionParameterInfoEndpointAttribute{TParameter}"/> attribute.
         /// </summary>
         public bool AutoDeliverJsonSchemaForActionParameterTypes { get; set; } = true;
 

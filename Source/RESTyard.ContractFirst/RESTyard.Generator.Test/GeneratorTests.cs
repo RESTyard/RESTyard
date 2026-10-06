@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Xml.Linq;
 using AwesomeAssertions;
 
 namespace RESTyard.Generator.Test;
@@ -161,13 +162,17 @@ public class GeneratorTests
     [Fact]
     public async Task ServerCSharpControllerV5Test()
     {
+        // RESTyard 5 has no QUERY verb support
+        var schemaFile = await WriteSchemaWithoutQueryOperationsAsync();
         await RunGeneratorAsync(
             "server/csharp-controller/v5",
             outputFile: "server_controller_v5.cs",
+            schemaFile: schemaFile,
             includeNamespaces: [AdditionalCodeNamespace, TemplateToNamespace("server/csharp/v5")]);
         await RunGeneratorAsync(
             "server/csharp/v5",
             outputFile: "server_v5_for_controller.cs",
+            schemaFile: schemaFile,
             includeNamespaces: [AdditionalCodeNamespace]);
 
         await Verify("server_controller_v5.cs");
@@ -197,7 +202,7 @@ public class GeneratorTests
         await VerifyCompilation(
             "server_controller_v6.cs",
             RestyardVersion.LegacyV6,
-            CurrentAdditionalCode,
+            LegacyV6ControllerAdditionalCode,
             additionalSources:
             [
                 await File.ReadAllTextAsync("server_v6_for_controller.cs", TestContext.Current.CancellationToken),
@@ -316,4 +321,27 @@ public class GeneratorTests
 
         public record External() : IHypermediaActionParameter;
         """;
+
+    // RESTyard 6 ships no [HttpQuery]; apps define it themselves
+    private const string LegacyV6ControllerAdditionalCode = CurrentAdditionalCode + $$"""
+
+        public class HttpQueryAttribute : Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute
+        {
+            public HttpQueryAttribute(string template)
+                : base([Microsoft.AspNetCore.Http.HttpMethods.Query], template)
+            {
+            }
+        }
+        """;
+
+    private static async Task<string> WriteSchemaWithoutQueryOperationsAsync()
+    {
+        const string schemaFile = "TestSchema_WithoutQueryOperations.xml";
+        var schema = XDocument.Load("TestSchema.xml");
+        schema.Descendants()
+            .Where(e => e.Name.LocalName == "Operation" && (string?)e.Attribute("method") == "Query")
+            .Remove();
+        await File.WriteAllTextAsync(schemaFile, schema.ToString());
+        return schemaFile;
+    }
 }

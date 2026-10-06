@@ -132,7 +132,6 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
 
         /// <summary>
         /// Add custom binder for parameters of hypermedia actions that derive from <see cref="IHypermediaActionParameter"/>. 
-        /// Enables usage of <see cref="KeyFromUriAttribute"/> for properties of those parameter types. 
         /// </summary>
         /// <param name="options"></param>
         /// <param name="hypermediaOptions"></param>

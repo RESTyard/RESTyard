@@ -35,7 +35,7 @@ public partial record QueryHtoQuery(int? SomeInt = default) : IHypermediaQuery;
 [HypermediaObject(Classes = new string[] { "Base" })]
 public partial class BaseHto : IHypermediaObject
 {
-    public string HtoTitle => $"A base document";
+    public virtual string HtoTitle => $"A base document";
 
     [Key("id")]
     public double? Id { get; set; }
@@ -77,7 +77,10 @@ public partial class BaseHto : IHypermediaObject
     [HypermediaAction(Name = "UploadWithParameter", Title = "")]
     public UploadWithParameterOp UploadWithParameter { get; set; }
 
-    public BaseHto(double? id, List<int> property, OperationOp operation, WithParameterOp withParameter, WithResultOp withResult, WithParameterAndResultOp withParameterAndResult, UploadOp upload, UploadWithParameterOp uploadWithParameter, IEnumerable<ChildHto> item, Option<Unit> dependency2Key, (QueryHtoQuery Query, QueryHto.Key Key) byQueryReference, HypermediaObjectReferenceBase external)
+    [HypermediaAction(Name = "QueryOperation", Title = "")]
+    public QueryOperationOp QueryOperation { get; set; }
+
+    public BaseHto(double? id, List<int> property, OperationOp operation, WithParameterOp withParameter, WithResultOp withResult, WithParameterAndResultOp withParameterAndResult, UploadOp upload, UploadWithParameterOp uploadWithParameter, QueryOperationOp queryOperation, IEnumerable<ChildHto> item, Option<Unit> dependency2Key, (QueryHtoQuery Query, QueryHto.Key Key) byQueryReference, HypermediaObjectReferenceBase external)
     {
         this.Id = id;
         this.Property = property;
@@ -87,6 +90,7 @@ public partial class BaseHto : IHypermediaObject
         this.WithParameterAndResult = withParameterAndResult;
         this.Upload = upload;
         this.UploadWithParameter = uploadWithParameter;
+        this.QueryOperation = queryOperation;
         this.Item = item.Select(x => EmbeddedEntity.Embed<ChildHto>(x)).ToList();
         this.Dependency = Link.ByKey<ChildHto>(null);
         this.Dependency2 = dependency2Key.Map(some => Link.ByKey<ChildHto>(null)).GetValueOrDefault();
@@ -144,12 +148,19 @@ public partial class BaseHto : IHypermediaObject
         {
         }
     }
+
+    public partial class QueryOperationOp : HypermediaAction<TP4>
+    {
+        public QueryOperationOp(Func<bool> canExecuteQueryOperation, TP4? prefilledValues = default) : base(canExecuteQueryOperation, prefilledValues)
+        {
+        }
+    }
 }
 
 [HypermediaObject(Classes = new string[] { "First", "Second" })]
 public partial class ChildHto : IHypermediaObject
 {
-    public string HtoTitle => $"";
+    public virtual string HtoTitle => $"";
 
     [Relations([DefaultHypermediaRelations.Self])]
     public ILink<ChildHto> Self { get; set; }
@@ -163,7 +174,7 @@ public partial class ChildHto : IHypermediaObject
 [HypermediaObject(Classes = new string[] { "Third" })]
 public partial class DerivedHto : ChildHto
 {
-    public string HtoTitle => $"";
+    public override string HtoTitle => $"A derived document";
     public string InheritedText { get; set; }
 
     [Relations([DefaultHypermediaRelations.Self])]
@@ -179,8 +190,6 @@ public partial class DerivedHto : ChildHto
 [HypermediaObject(Classes = new string[] { "Fourth" })]
 public partial class SecondLevelDerivedHto : DerivedHto
 {
-    public string HtoTitle => $"";
-
     [Relations([DefaultHypermediaRelations.Self])]
     public new ILink<SecondLevelDerivedHto> Self { get; set; }
 
@@ -193,7 +202,7 @@ public partial class SecondLevelDerivedHto : DerivedHto
 [HypermediaObject(Classes = new string[] { })]
 public partial class NoSelfLinkHto : IHypermediaObject
 {
-    public string HtoTitle => $"";
+    public virtual string HtoTitle => $"";
 
     public NoSelfLinkHto()
     {
@@ -205,7 +214,7 @@ public partial class QueryHto : IHypermediaQueryResult
 {
     [FormatterIgnoreHypermediaProperty]
     public IHypermediaQuery Query { get; set; }
-    public string HtoTitle => $"";
+    public virtual string HtoTitle => $"";
 
     [Key("normalKey")]
     public int? NormalKey { get; set; }

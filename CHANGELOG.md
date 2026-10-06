@@ -9,8 +9,9 @@ Versions follow `RESTyard.AspNetCore`; changes to other packages are listed unde
 
 ### Added
 
-- **RESTyard.AspNetCore:** actions and functions can use the HTTP `QUERY` verb. ASP.NET Core has no built-in attribute for it;
-  CarShack defines an `HttpQueryAttribute` as an example. A query result can be returned inline in the response body
+- **RESTyard.AspNetCore:** actions and functions can use the HTTP `QUERY` verb via `[HttpQuery]`
+  (`RESTyard.AspNetCore.WebApi.AttributedRoutes`), until ASP.NET Core ships its own; controllers generated from
+  `method="Query"` use it. A query result can be returned inline in the response body
   (`this.InlineQueryResult(result)`) instead of via a `Location` header. (#131)
 - **RESTyard.AspNetCore:** the Siren `title` is now set per instance through `IHypermediaObject.HtoTitle`, so it can include
   property values. Analyzer `RY0002` with a code fix migrates `[HypermediaObject(Title = ...)]`. (#132)
@@ -19,6 +20,8 @@ Versions follow `RESTyard.AspNetCore`; changes to other packages are listed unde
 - **RESTyard.Client:** all public async methods accept a `CancellationToken`. (#130)
 - **RESTyard.Client:** analyzer `RYC001` with a code fix suggests `ExecuteAndResolveAsync`, so a `QUERY` result can be
   returned inline instead of needing a second request. (#134)
+- **RESTyard.AspNetCore:** typed Siren object model (`SirenEntity<T>`, `SirenAction`, `SirenLink`, …) that serializes to
+  Siren JSON with System.Text.Json.
 
 ### Changed
 
@@ -36,7 +39,9 @@ Versions follow `RESTyard.AspNetCore`; changes to other packages are listed unde
   The package no longer depends on `Newtonsoft.Json`. See `Docs/Migration-to-7.0.md`.
 - **RESTyard.Client.Extensions:** the array-wrapper parameter serializers (`WithSingle…ObjectParameterSerializer`) are obsolete;
   use `WithSystemTextJsonObjectParameterSerializer` / `WithNewtonsoftJsonObjectParameterSerializer`.
-- **RESTyard.Generator:** generated controllers use `[FromBody]` for action parameters.
+- **Breaking — RESTyard.Generator:** server templates are versioned by the RESTyard major they target: `server/csharp/v6` and
+  `v7` (previously `v5.1` / `v5.2`, still accepted) and `server/csharp-controller/v5`, `v6`, `v7`. `server/csharp-controller/v5`
+  now generates code for RESTyard 5; for this release use `server/csharp-controller/v7`, which binds parameters with `[FromBody]`.
 - **Breaking — RESTyard.Client:** `IHypermediaResolver.ResolveFunctionAsync` returns `LinkOrEntity<T>` — either a link or the
   inline result entity with its location. Callers and custom implementations must handle both cases. (#131)
 - **Breaking — RESTyard.Client:** custom resolvers overriding `VerifyIfCacheEntryCanBeUsedAsync` must return
@@ -55,11 +60,17 @@ Versions follow `RESTyard.AspNetCore`; changes to other packages are listed unde
 - **Breaking — RESTyard.Client:** `PatternMatchExtensions` (`TypeMatch`) is removed; use C# pattern matching. (#130)
 - **Breaking — RESTyard.AspNetCore:** `HypermediaObjectAttribute.Title` and the obsolete `HypermediaObject` base class are removed.
   Implement `IHypermediaObject` and provide `HtoTitle`; the `RY0002` code fix rewrites the attribute. (#132)
-- **Breaking — RESTyard.Generator:** the `server/csharp-controller/v4` template is removed; use `server/csharp-controller/v5`. (#131)
+- **Breaking — RESTyard.Generator:** the `server/csharp-controller/v4` template is removed; use `server/csharp-controller/v7`. (#131)
+- **Breaking — RESTyard.Generator:** the `server/csharp/v4` template is removed; use `server/csharp/v7`.
 
 ### Fixed
 
 - **RESTyard.AspNetCore:** a relative URI passed to a key-from-URI parameter now produces an error result instead of throwing. (#126)
+- **RESTyard.AspNetCore:** an action whose parameter type has no schema route (`AutoDeliverJsonSchemaForActionParameterTypes`
+  off and no custom route) now fails with an error naming the type and the fix, instead of an obscure JSON serialization error.
+- **RESTyard.Generator:** a derived document (`parentDocument`) with its own `title` now gets that title in Siren instead of
+  the parent's (`server/csharp/v7`, formerly `v5.2`; compiler warning CS0108). Without its own title it inherits the parent's. (#132)
+- **RESTyard.AspNetCore:** analyzer `RY0002` told users to move the title to a `SirenTitle` property; it now names `HtoTitle`.
 - **RESTyard.Client.Extensions.SystemNetHttp:** a network error while revalidating a cached response is returned as an error
   result instead of being thrown from `ResolveLinkAsync`. (#130)
 - **RESTyard.Generator:** controllers generated for upload operations (`isUploadAction="true"`) now receive the uploaded files

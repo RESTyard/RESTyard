@@ -51,6 +51,12 @@ public class BaseController : ControllerBase
     {
         throw new NotImplementedException();
     }
+
+    [HttpQuery("<stub>"), HypermediaActionEndpoint<BaseHto>(nameof(BaseHto.QueryOperation))]
+    public Task<IActionResult> QueryOperationAsync([HypermediaActionParameterFromBody] TP4 tP4)
+    {
+        throw new NotImplementedException();
+    }
 }
 
 [Route("api/[controller]")]
