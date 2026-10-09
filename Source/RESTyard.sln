@@ -59,7 +59,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTyard.Client.Analyzers.T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegacyV4Packages", "RESTyard.ContractFirst\LegacyV4Packages\LegacyV4Packages.csproj", "{DD274378-8D9E-4BED-8E9F-2A1617360432}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegacyV5_1Packages", "RESTyard.ContractFirst\LegacyV5_1Packages\LegacyV5_1Packages.csproj", "{E6F650F6-C912-4214-9D60-3AEE0DC58B4F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegacyV6Packages", "RESTyard.ContractFirst\LegacyV6Packages\LegacyV6Packages.csproj", "{E6F650F6-C912-4214-9D60-3AEE0DC58B4F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegacyV5Packages", "RESTyard.ContractFirst\LegacyV5Packages\LegacyV5Packages.csproj", "{C2AB150E-3ED0-430A-8524-064EF0F259C7}"
 EndProject

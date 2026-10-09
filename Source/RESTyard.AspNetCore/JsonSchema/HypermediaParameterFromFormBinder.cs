@@ -1,17 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using RESTyard.AspNetCore.Hypermedia.Actions;
-using System.Collections.Immutable;
 using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using FunicularSwitch;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using RESTyard.AspNetCore.Util;
 
@@ -133,12 +132,14 @@ public class HypermediaParameterFromFormBinder : IModelBinder
 
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
+        var serializerOptions = ResolveSerializerOptions(bindingContext.HttpContext);
+
         this.CheckModelType(bindingContext)
             .Bind(this.CheckRequestMethod)
             .Map(bc => bc.HttpContext.Request)
             .Bind(this.CheckFormDataAndBoundary)
-            .Bind(request => ExtractParameterObject(request).Map(jObject => (request, jObject)))
-            .Bind(tuple => CreateResultObject(tuple.request, tuple.jObject))
+            .Bind(request => ExtractParameterObject(request).Map(node => (request, node)))
+            .Bind(tuple => CreateResultObject(tuple.request, tuple.node, serializerOptions))
             .Match(
                 ok =>
                 {
@@ -150,7 +151,7 @@ public class HypermediaParameterFromFormBinder : IModelBinder
                 });
         return Task.CompletedTask;
 
-        Result<JObject?> ExtractParameterObject(HttpRequest request)
+        Result<JsonNode?> ExtractParameterObject(HttpRequest request)
         {
             return this.parameterModelInfo.Match(
                 some =>
@@ -158,33 +159,25 @@ public class HypermediaParameterFromFormBinder : IModelBinder
                     var typeName = some.ParameterModelType.BeautifulName();
                     if (request.Form.TryGetValue(typeName, out var parameters))
                     {
-                        var rawDeserialized = JsonConvert.DeserializeObject(parameters);
-
-                        if (rawDeserialized is JArray wrapperArray)
+                        try
                         {
-                            if (!TryUnwrapArray(wrapperArray, typeName, out var jObject))
-                            {
-                                return Result.Error<JObject?>(
-                                    $"Invalid Json. Expected an object or and array containing one element with one object property '{typeName}'");
-                            }
-
-                            return Result.Ok<JObject?>(jObject);
+                            return Result.Ok(JsonNode.Parse(parameters.ToString()));
                         }
-                        else
+                        catch (Exception e)
                         {
-                            return Result.Ok((JObject?)rawDeserialized);
+                            return Result.Error<JsonNode?>($"Invalid Json: {e.Message}");
                         }
                     }
                     else
                     {
-                        return Result.Error<JObject?>(
+                        return Result.Error<JsonNode?>(
                             $"Method indicates additional parameters, but no {nameof(StringContent)} with key {nameof(HypermediaFileUploadActionParameter<Unit>.ParameterObject)} found in the form");
                     }
                 },
-                none: () => Result.Ok<JObject?>(null));
+                none: () => Result.Ok<JsonNode?>(null));
         }
-        
-        Result<HypermediaFileUploadActionParameter> CreateResultObject(HttpRequest request, JObject? jObject)
+
+        Result<HypermediaFileUploadActionParameter> CreateResultObject(HttpRequest request, JsonNode? node, JsonSerializerOptions options)
         {
             return Result.Try(
                 () =>
@@ -192,7 +185,7 @@ public class HypermediaParameterFromFormBinder : IModelBinder
                     var resultObject = this.parameterModelInfo.Match(
                         some =>
                         {
-                            var deserialized = some.ModelDeserializer.Deserialize(jObject);
+                            var deserialized = some.ModelDeserializer.Deserialize(node, options);
                             var resultType =
                                 typeof(HypermediaFileUploadActionParameter<>).MakeGenericType(some.ParameterModelType);
                             var result = (HypermediaFileUploadActionParameter)Activator.CreateInstance(resultType)!;
@@ -210,21 +203,12 @@ public class HypermediaParameterFromFormBinder : IModelBinder
         }
     }
 
-    private static bool TryUnwrapArray(JArray wrapperArray, string modelTypeName, [NotNullWhen(true)] out JObject? jObject)
+    private static JsonSerializerOptions ResolveSerializerOptions(HttpContext httpContext)
     {
-        if (wrapperArray.Count != 1)
-        {
-            jObject = null;
-            return false;
-        }
-
-        jObject = wrapperArray[0][modelTypeName] as JObject;
-        if (jObject == null)
-        {
-            jObject = null;
-            return false;
-        }
-
-        return true;
+        // Same options as controller [FromBody], configured via AddJsonOptions.
+        var options = httpContext.RequestServices
+            .GetService<IOptions<Microsoft.AspNetCore.Mvc.JsonOptions>>()
+            ?.Value.JsonSerializerOptions;
+        return options ?? new JsonSerializerOptions(JsonSerializerDefaults.Web);
     }
 }

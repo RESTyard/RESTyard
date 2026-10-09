@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Xml.Linq;
 using AwesomeAssertions;
 
 namespace RESTyard.Generator.Test;
@@ -114,18 +115,6 @@ public class GeneratorTests
         => GeneratedCodeCompiler.VerifyAsync(version, File.ReadAllText(file), additionalCode, additionalSources);
 
     [Fact]
-    public async Task ServerCSharpV4Test()
-    {
-        await RunGeneratorAsync(
-            "server/csharp/v4",
-            outputFile: "server_v4.cs",
-            includeNamespaces: [AdditionalCodeNamespace]);
-
-        await Verify("server_v4.cs");
-        await VerifyCompilation("server_v4.cs", RestyardVersion.LegacyV4, LegacyV4AdditionalCode);
-    }
-
-    [Fact]
     public async Task ServerCSharpV5Test()
     {
         await RunGeneratorAsync(
@@ -141,31 +130,31 @@ public class GeneratorTests
     }
 
     [Fact]
-    public async Task ServerCSharpV5_1Test()
+    public async Task ServerCSharpV6Test()
     {
         await RunGeneratorAsync(
-            "server/csharp/v5.1",
-            outputFile: "server_v5_1.cs",
+            "server/csharp/v6",
+            outputFile: "server_v6.cs",
             includeNamespaces: [AdditionalCodeNamespace]);
 
-        await Verify("server_v5_1.cs");
+        await Verify("server_v6.cs");
         await VerifyCompilation(
-            "server_v5_1.cs",
-            RestyardVersion.LegacyV5_1,
+            "server_v6.cs",
+            RestyardVersion.LegacyV6,
             CurrentAdditionalCode);
     }
 
     [Fact]
-    public async Task ServerCSharpV5_2Test()
+    public async Task ServerCSharpV7Test()
     {
         await RunGeneratorAsync(
-            "server/csharp/v5.2",
-            outputFile: "server_v5_2.cs",
+            "server/csharp/v7",
+            outputFile: "server_v7.cs",
             includeNamespaces: [AdditionalCodeNamespace]);
 
-        await Verify("server_v5_2.cs");
+        await Verify("server_v7.cs");
         await VerifyCompilation(
-            "server_v5_2.cs",
+            "server_v7.cs",
             RestyardVersion.Current,
             CurrentAdditionalCode);
     }
@@ -173,23 +162,73 @@ public class GeneratorTests
     [Fact]
     public async Task ServerCSharpControllerV5Test()
     {
+        // RESTyard 5 has no QUERY verb support
+        var schemaFile = await WriteSchemaWithoutQueryOperationsAsync();
         await RunGeneratorAsync(
             "server/csharp-controller/v5",
             outputFile: "server_controller_v5.cs",
-            includeNamespaces: [AdditionalCodeNamespace, TemplateToNamespace("server/csharp/v5.2")]);
+            schemaFile: schemaFile,
+            includeNamespaces: [AdditionalCodeNamespace, TemplateToNamespace("server/csharp/v5")]);
         await RunGeneratorAsync(
-            "server/csharp/v5.2",
-            outputFile: "server_v5_2_for_controller.cs",
+            "server/csharp/v5",
+            outputFile: "server_v5_for_controller.cs",
+            schemaFile: schemaFile,
             includeNamespaces: [AdditionalCodeNamespace]);
 
         await Verify("server_controller_v5.cs");
         await VerifyCompilation(
             "server_controller_v5.cs",
+            RestyardVersion.LegacyV5,
+            CurrentAdditionalCode,
+            additionalSources:
+            [
+                await File.ReadAllTextAsync("server_v5_for_controller.cs", TestContext.Current.CancellationToken),
+            ]);
+    }
+
+    [Fact]
+    public async Task ServerCSharpControllerV6Test()
+    {
+        await RunGeneratorAsync(
+            "server/csharp-controller/v6",
+            outputFile: "server_controller_v6.cs",
+            includeNamespaces: [AdditionalCodeNamespace, TemplateToNamespace("server/csharp/v6")]);
+        await RunGeneratorAsync(
+            "server/csharp/v6",
+            outputFile: "server_v6_for_controller.cs",
+            includeNamespaces: [AdditionalCodeNamespace]);
+
+        await Verify("server_controller_v6.cs");
+        await VerifyCompilation(
+            "server_controller_v6.cs",
+            RestyardVersion.LegacyV6,
+            LegacyV6ControllerAdditionalCode,
+            additionalSources:
+            [
+                await File.ReadAllTextAsync("server_v6_for_controller.cs", TestContext.Current.CancellationToken),
+            ]);
+    }
+
+    [Fact]
+    public async Task ServerCSharpControllerV7Test()
+    {
+        await RunGeneratorAsync(
+            "server/csharp-controller/v7",
+            outputFile: "server_controller_v7.cs",
+            includeNamespaces: [AdditionalCodeNamespace, TemplateToNamespace("server/csharp/v7")]);
+        await RunGeneratorAsync(
+            "server/csharp/v7",
+            outputFile: "server_v7_for_controller.cs",
+            includeNamespaces: [AdditionalCodeNamespace]);
+
+        await Verify("server_controller_v7.cs");
+        await VerifyCompilation(
+            "server_controller_v7.cs",
             RestyardVersion.Current,
             CurrentAdditionalCode,
             additionalSources:
             [
-                File.ReadAllText("server_v5_2_for_controller.cs"),
+                await File.ReadAllTextAsync("server_v7_for_controller.cs", TestContext.Current.CancellationToken),
             ]);
     }
 
@@ -283,21 +322,26 @@ public class GeneratorTests
         public record External() : IHypermediaActionParameter;
         """;
 
-    private const string CurrentControllerAdditionalCode = $$"""
-        using RESTyard.AspNetCore.Hypermedia;
-        using RESTyard.AspNetCore.Hypermedia.Actions;
-        using RESTyard.AspNetCore.Query;
+    // RESTyard 6 ships no [HttpQuery]; apps define it themselves
+    private const string LegacyV6ControllerAdditionalCode = CurrentAdditionalCode + $$"""
 
-        namespace {{AdditionalCodeNamespace}};
-
-        public record External : IHypermediaActionParameter;
-
-        public class HypermediaQueryResult_V5_0 : IHypermediaQueryResult
+        public class HttpQueryAttribute : Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute
         {
-            public IHypermediaQuery Query { get; }
-            public string? SirenTitle { get; set; }
-
-            public HypermediaQueryResult_V5_0(IHypermediaQuery query) => Query = query;
+            public HttpQueryAttribute(string template)
+                : base([Microsoft.AspNetCore.Http.HttpMethods.Query], template)
+            {
+            }
         }
         """;
+
+    private static async Task<string> WriteSchemaWithoutQueryOperationsAsync()
+    {
+        const string schemaFile = "TestSchema_WithoutQueryOperations.xml";
+        var schema = XDocument.Load("TestSchema.xml");
+        schema.Descendants()
+            .Where(e => e.Name.LocalName == "Operation" && (string?)e.Attribute("method") == "Query")
+            .Remove();
+        await File.WriteAllTextAsync(schemaFile, schema.ToString());
+        return schemaFile;
+    }
 }

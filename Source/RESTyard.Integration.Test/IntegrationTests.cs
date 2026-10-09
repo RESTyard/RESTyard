@@ -23,14 +23,14 @@ public class IntegrationTests : IAsyncLifetime
 
     public IntegrationTests(ITestOutputHelper outputHelper)
     {
-        this.carShackFactory = new(outputHelper);
+        this.carShackFactory = new CarShackWaf(outputHelper);
 
         this.apiResolverFactory = DefaultHypermediaClientBuilder
             .CreateBuilder()
             .WithSirenHypermediaReader()
             .WithSystemTextJsonStringParser()
             .WithSystemTextJsonProblemReader()
-            .WithSingleSystemTextJsonObjectParameterSerializer()
+            .WithSystemTextJsonObjectParameterSerializer()
             .CreateHttpHypermediaResolverFactory();
     }
 

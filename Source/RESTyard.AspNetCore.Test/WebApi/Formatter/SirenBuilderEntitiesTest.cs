@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using System.Text.Json.Nodes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.Hypermedia.Links;
@@ -53,17 +53,17 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertEmptyActions(siren);
             AssertHasNoLinks(siren);
 
-            Assert.IsTrue(siren["entities"].Type == JTokenType.Array);
-            var entitiesArray = (JArray)siren["entities"];
+            Assert.IsTrue(siren["entities"] is JsonArray);
+            var entitiesArray = siren["entities"]!.AsArray();
             Assert.AreEqual(entitiesArray.Count, 2);
 
-            var embeddedEntityObject = (JObject)siren["entities"][0];
+            var embeddedEntityObject = entitiesArray[0]!.AsObject();
             AssertClassName(embeddedEntityObject, nameof(EmbeddedSubEntity));
             AssertRelations(embeddedEntityObject, new List<string> { relation1 });
             AssertHasOnlySelfLink(embeddedEntityObject, routeNameEmbedded);
             AssertEmbeddedEntity(embeddedEntityObject, embeddedHo1);
 
-            embeddedEntityObject = (JObject)siren["entities"][1];
+            embeddedEntityObject = entitiesArray[1]!.AsObject();
             AssertClassName(embeddedEntityObject, nameof(EmbeddedSubEntity));
             AssertRelations(embeddedEntityObject, relationsList2);
             AssertHasOnlySelfLink(embeddedEntityObject, routeNameEmbedded);
@@ -96,36 +96,73 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertEmptyActions(siren);
             AssertHasNoLinks(siren);
 
-            Assert.IsTrue(siren["entities"].Type == JTokenType.Array);
-            var entitiesArray = (JArray)siren["entities"];
+            Assert.IsTrue(siren["entities"] is JsonArray);
+            var entitiesArray = siren["entities"]!.AsArray();
             Assert.AreEqual(entitiesArray.Count, 2);
 
-            var embeddedEntityObject = (JObject)siren["entities"][0];
+            var embeddedEntityObject = entitiesArray[0]!.AsObject();
             AssertRelations(embeddedEntityObject, new List<string> { relation1 });
-            AssertRoute(((JValue)embeddedEntityObject["href"]).Value<string>(), routeNameEmbedded, "{ key = 6 }");
+            AssertRoute(embeddedEntityObject["href"]!.GetValue<string>(), routeNameEmbedded, "{ key = 6 }");
 
-            embeddedEntityObject = (JObject)siren["entities"][1];
+            embeddedEntityObject = entitiesArray[1]!.AsObject();
             AssertRelations(embeddedEntityObject, relationsList2);
-            AssertRoute(((JValue)embeddedEntityObject["href"]).Value<string>(), routeNameEmbedded, "{ key = 3 }", QueryStringBuilder.CreateQueryString(query));
+            AssertRoute(embeddedEntityObject["href"]!.GetValue<string>(), routeNameEmbedded, "{ key = 3 }", QueryStringBuilder.CreateQueryString(query));
         }
 
-        private static void AssertEmbeddedEntity(JObject embeddedEntityObject, EmbeddedSubEntity embeddedSubHo)
+        /// <summary>
+        /// Embedded entities with duplicate relations must ALL be preserved.
+        /// Unlike links (silently dedup), embedded entities iterate
+        /// directly — both entities should appear in the output.
+        /// </summary>
+        [TestMethod]
+        public void EmbeddedEntitiesDuplicateRelation_BothEntitiesPreserved()
         {
-            var embeddedEntityProperties = (JObject)embeddedEntityObject["properties"];
+            RouteRegister.AddHypermediaObjectRoute(typeof(DuplicateRelEmbeddingHypermediaObject),
+                nameof(DuplicateRelEmbeddingHypermediaObject) + "_Route", HttpMethods.Get);
+            RouteRegister.AddHypermediaObjectRoute(typeof(EmbeddedSubEntity),
+                nameof(EmbeddedSubEntity) + "_Route", HttpMethods.Get);
+            RouteRegister.AddHypermediaObjectRoute(typeof(EmbeddedSubEntity2),
+                nameof(EmbeddedSubEntity2) + "_Route", HttpMethods.Get);
+
+            var ho = new DuplicateRelEmbeddingHypermediaObject
+            {
+                Embedded1 = EmbeddedEntity.Embed(new EmbeddedSubEntity { ABool = true, AInt = 42 }),
+                Embedded2 = EmbeddedEntity.Embed(new EmbeddedSubEntity2 { AString = "hello" }),
+            };
+
+            var siren = SirenConverter.ConvertToJson(ho);
+
+            Assert.IsTrue(siren["entities"] is JsonArray);
+            var entitiesArray = siren["entities"]!.AsArray();
+            Assert.AreEqual(2, entitiesArray.Count,
+                "Both embedded entities with the same relation should be present");
+
+            var entity1 = entitiesArray[0]!.AsObject();
+            AssertClassName(entity1, nameof(EmbeddedSubEntity));
+            AssertRelations(entity1, new List<string> { "Duplicate" });
+
+            var entity2 = entitiesArray[1]!.AsObject();
+            AssertClassName(entity2, nameof(EmbeddedSubEntity2));
+            AssertRelations(entity2, new List<string> { "Duplicate" });
+        }
+
+        private static void AssertEmbeddedEntity(JsonObject embeddedEntityObject, EmbeddedSubEntity embeddedSubHo)
+        {
+            var embeddedEntityProperties = embeddedEntityObject["properties"]!.AsObject();
             Assert.AreEqual(embeddedEntityProperties.Count, 2);
-            Assert.AreEqual(embeddedEntityObject["properties"]["ABool"].ToString(), embeddedSubHo.ABool.ToString());
-            Assert.AreEqual(embeddedEntityObject["properties"]["AInt"].ToString(), embeddedSubHo.AInt.ToString());
+            Assert.AreEqual(embeddedSubHo.ABool, embeddedEntityProperties["ABool"]!.GetValue<bool>());
+            Assert.AreEqual(embeddedSubHo.AInt, embeddedEntityProperties["AInt"]!.GetValue<int>());
         }
 
-        public static void AssertRelations(JObject obj, List<string> relations)
+        public static void AssertRelations(JsonObject obj, List<string> relations)
         {
-            Assert.IsTrue(obj["rel"].Type == JTokenType.Array);
-            var relArray = (JArray)obj["rel"];
+            Assert.IsTrue(obj["rel"] is JsonArray);
+            var relArray = obj["rel"]!.AsArray();
             Assert.AreEqual(relArray.Count, relations.Count);
 
             foreach (var relation in relations)
             {
-                var hasDesiredRelation = relArray.FirstOrDefault(i => i.Value<string>().Equals(relation)) != null;
+                var hasDesiredRelation = relArray.FirstOrDefault(i => i!.GetValue<string>().Equals(relation)) != null;
                 Assert.IsTrue(hasDesiredRelation);
             }
         }
@@ -144,6 +181,28 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         public class EmbeddedQueryObject : IHypermediaQuery
         {
             public int AInt { get; set; }
+        }
+
+        [HypermediaObject(Classes = [nameof(EmbeddedSubEntity2)])]
+        public class EmbeddedSubEntity2 : IHypermediaObject
+        {
+            public string? HtoTitle => null;
+            public string AString { get; set; } = string.Empty;
+
+            [Relations([DefaultHypermediaRelations.Self])]
+            public ILink<EmbeddedSubEntity2> Self => Link.To(this);
+        }
+
+        [HypermediaObject(Classes = [nameof(DuplicateRelEmbeddingHypermediaObject)])]
+        public class DuplicateRelEmbeddingHypermediaObject : IHypermediaObject
+        {
+            public string? HtoTitle => null;
+
+            [Relations(["Duplicate"])]
+            public IEmbeddedEntity<EmbeddedSubEntity>? Embedded1 { get; set; }
+
+            [Relations(["Duplicate"])]
+            public IEmbeddedEntity<EmbeddedSubEntity2>? Embedded2 { get; set; }
         }
 
         public class EmbeddedEntityRouteKeyProducer : IKeyProducer

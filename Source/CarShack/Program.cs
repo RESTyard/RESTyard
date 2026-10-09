@@ -14,7 +14,12 @@ namespace CarShack
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers();
+            // Action parameter bodies are deserialized with System.Text.Json using the MVC JsonOptions.
+            // JsonStringEnumConverter lets enum-valued parameters be sent as their string names.
+            builder.Services.AddControllers().AddJsonOptions(o =>
+            {
+                o.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+            });
 
             builder.Services.AddHypermediaExtensions(o =>
             {

@@ -29,12 +29,13 @@ public static class Program
                           select the template to render the schema with. Available options:
                           server
                             /csharp
-                              /v4
                               /v5
-                              /v5.1
-                              /v5.2
+                              /v6
+                              /v7
                             /csharp-controller
                               /v5
+                              /v6
+                              /v7
                             /csharp-policies
                               /v4
                           client
@@ -43,7 +44,7 @@ public static class Program
                             /typescript
                               /v0
                               
-                          Example: --template server/csharp/v4
+                          Example: --template server/csharp/v7
                           """
         };
         var outputFileOption = new Option<string>("--output-file")
@@ -164,10 +165,32 @@ public static class Program
 
         return template.Split('/', '\\') switch
         {
-            ["server", "csharp", var version] when version is "v5" or "v5.1" or "v5.2" => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp.V5), ParseVersion(version)),
-            ["server", "csharp-controller", "v5"] => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp_controller.V5), new Version(5,0)),
+            ["server", "csharp", var version] => GetServerCsharpTemplate(version),
+            ["server", "csharp-controller", var version] => GetServerCsharpControllerTemplate(version),
             _ => null,
         };
+
+        static TemplateInfo? GetServerCsharpTemplate(string version)
+        {
+            return version switch
+            {
+                "v5" => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp.V5), new Version(5, 0)),
+                "v5.1" or "v6" => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp.V6), new Version(6, 0)),
+                "v5.2" or "v7" => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp.V7), new Version(7, 0)),
+                _ => null,
+            };
+        }
+
+        static TemplateInfo? GetServerCsharpControllerTemplate(string version)
+        {
+            return version switch
+            {
+                "v5" => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp_controller.V5), new Version(5, 0)),
+                "v6" => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp_controller.V6), new Version(6, 0)),
+                "v7" => TemplateInfo.RazorTemplate(typeof(Templates.server.csharp_controller.V7), new Version(7, 0)),
+                _ => null,
+            };
+        }
 
         static Version ParseVersion(string version)
         {

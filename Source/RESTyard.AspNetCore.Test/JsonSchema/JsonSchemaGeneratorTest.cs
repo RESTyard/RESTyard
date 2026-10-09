@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using Json.Schema;
@@ -114,7 +115,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
         {
             clientParameter = new MyClientParameter(FormattableString.Invariant($"http://mydomain.com/customers/{GrandParentId}/{WeirdUncleId}/{ParentId}/{Id}"), 3, "http://www.anothersite.com");
             var json = JsonConvert.SerializeObject(clientParameter);
-            deserialized = (MyParameter)new JsonDeserializer(typeof(MyParameter)).Deserialize(json.ToStream());
+            deserialized = (MyParameter)new JsonDeserializer(typeof(MyParameter)).Deserialize(json.ToStream(), new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
         }
 
         [TestMethod]
@@ -220,5 +221,32 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
         }
 
         public record MyParameterTimes(DateTimeOffset DateTimeOffset, DateTime DateTime, TimeSpan TimeSpan, DateTimeOffset? DateTimeOffsetNullable);
+    }
+
+    /// <summary>
+    /// The action-parameter schema advertises enum values by name, so the server must bind names
+    /// (JsonStringEnumConverter registered via AddJsonOptions).
+    /// </summary>
+    [TestClass]
+    public class When_generating_action_schema_with_enum : TestSpecification
+    {
+        private Json.Schema.JsonSchema schema;
+
+        public override void When()
+        {
+            schema = new JsonSchemaFactory().GenerateSchema(typeof(MyParameter));
+        }
+
+        [TestMethod]
+        public void Then_enum_values_are_described_by_name()
+        {
+            var enumProperty = schema.GetProperties().Should().ContainKey(nameof(MyParameter.Value)).WhoseValue;
+            var resolvedSchema = enumProperty.ResolveSchema(schema);
+            resolvedSchema.Should().NotBeNull("Schema must be found either inline or as ref");
+            resolvedSchema!.GetEnum()!.Select(v => v!.GetValue<string>())
+                .Should().Equal(nameof(TestEnum.None), nameof(TestEnum.Value1), nameof(TestEnum.Value2));
+        }
+
+        public record MyParameter(TestEnum Value);
     }
 }

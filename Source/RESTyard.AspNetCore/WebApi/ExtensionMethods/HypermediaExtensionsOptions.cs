@@ -37,9 +37,11 @@ namespace RESTyard.AspNetCore.WebApi.ExtensionMethods
         public bool CaseSensitiveParameterMatching { get; set; }
 
         /// <summary>
-        /// Implicitly add custom binder for parameters of hypermedia actions that derive from <see cref="IHypermediaActionParameter"/>. 
-        /// If set custom binder will be used for all parameter types that are not attributed differently. 
-        /// If set to false custom binder will be used for parameter types explicitly attributed with <see cref="HypermediaActionParameterFromBodyAttribute"/> only.
+        /// Implicitly use the hypermedia form binder for file-upload action parameters
+        /// (<see cref="HypermediaFileUploadActionParameter"/>) that are bound from a form.
+        /// If set to false, the form binder is used only for parameters attributed with
+        /// <see cref="HypermediaUploadParameterFromFormAttribute"/>.
+        /// Action parameter bodies always bind through the standard <c>[FromBody]</c> path.
         /// </summary>
         public bool ImplicitHypermediaActionParameterBinders { get; set; } = true;
 

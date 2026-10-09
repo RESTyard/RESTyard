@@ -32,6 +32,16 @@ Versions follow `RESTyard.AspNetCore`; changes to other packages are listed unde
   so existing lambdas need an extra parameter. (#130)
 - **RESTyard.AspNetCore:** the hypermedia form binder only binds parameters that are explicitly bound from a form or form file.
   All other action parameters use standard ASP.NET Core binding. (#131)
+- **Breaking — RESTyard.AspNetCore:** action parameter bodies are bound with System.Text.Json through standard `[FromBody]`.
+  The Siren array wrapper `[{ "TypeName": { … } }]` is no longer accepted, neither in bodies nor in the parameter part of
+  file uploads; send the plain object. Enum names need `JsonStringEnumConverter`. Register converters with `AddJsonOptions`;
+  file uploads use the same options. `[HypermediaActionParameterFromBody]` is obsolete; use `[FromBody]`.
+  The package no longer depends on `Newtonsoft.Json`. See `Docs/Migration-to-7.0.md`.
+- **RESTyard.Client.Extensions:** the array-wrapper parameter serializers (`WithSingle…ObjectParameterSerializer`) are obsolete;
+  use `WithSystemTextJsonObjectParameterSerializer` / `WithNewtonsoftJsonObjectParameterSerializer`.
+- **Breaking — RESTyard.Generator:** server templates are versioned by the RESTyard major they target: `server/csharp/v6` and
+  `v7` (previously `v5.1` / `v5.2`, still accepted) and `server/csharp-controller/v5`, `v6`, `v7`. `server/csharp-controller/v5`
+  now generates code for RESTyard 5; for this release use `server/csharp-controller/v7`, which binds parameters with `[FromBody]`.
 - **Breaking — RESTyard.Client:** `IHypermediaResolver.ResolveFunctionAsync` returns `LinkOrEntity<T>` — either a link or the
   inline result entity with its location. Callers and custom implementations must handle both cases. (#131)
 - **Breaking — RESTyard.Client:** custom resolvers overriding `VerifyIfCacheEntryCanBeUsedAsync` must return
@@ -45,10 +55,13 @@ Versions follow `RESTyard.AspNetCore`; changes to other packages are listed unde
 - **Breaking — RESTyard.AspNetCore:** the `HttpMethod` enum and all overloads taking it (e.g. `HypermediaExternalAction`,
   `ExternalFileUploadHypermediaAction` constructors) are removed; pass the method as a string (`"POST"`, `HttpMethods.Post`).
   The obsolete `HypermediaQueryResult` base class is removed; query-result HTOs declare `Query` themselves (the generator emits it). (#131)
+- **Breaking — RESTyard.AspNetCore:** `HypermediaParameterFromBodyBinder(Provider)`, `SingleParameterBinder` and `JObjectExtensions`
+  are removed; `IHypermediaJsonConverter.ConvertToJson` returns `JsonObject` and `JsonDeserializer` takes `JsonSerializerOptions`.
 - **Breaking — RESTyard.Client:** `PatternMatchExtensions` (`TypeMatch`) is removed; use C# pattern matching. (#130)
 - **Breaking — RESTyard.AspNetCore:** `HypermediaObjectAttribute.Title` and the obsolete `HypermediaObject` base class are removed.
   Implement `IHypermediaObject` and provide `HtoTitle`; the `RY0002` code fix rewrites the attribute. (#132)
-- **Breaking — RESTyard.Generator:** the `server/csharp-controller/v4` template is removed; use `server/csharp-controller/v5`. (#131)
+- **Breaking — RESTyard.Generator:** the `server/csharp-controller/v4` template is removed; use `server/csharp-controller/v7`. (#131)
+- **Breaking — RESTyard.Generator:** the `server/csharp/v4` template is removed; use `server/csharp/v7`.
 
 ### Fixed
 
@@ -56,7 +69,9 @@ Versions follow `RESTyard.AspNetCore`; changes to other packages are listed unde
 - **RESTyard.AspNetCore:** an action whose parameter type has no schema route (`AutoDeliverJsonSchemaForActionParameterTypes`
   off and no custom route) now fails with an error naming the type and the fix, instead of an obscure JSON serialization error.
 - **RESTyard.Generator:** a derived document (`parentDocument`) with its own `title` now gets that title in Siren instead of
-  the parent's (`server/csharp/v5.2`, compiler warning CS0108). Without its own title it inherits the parent's. (#132)
+  the parent's (`server/csharp/v7`, formerly `v5.2`; compiler warning CS0108). Without its own title it inherits the parent's. (#132)
 - **RESTyard.AspNetCore:** analyzer `RY0002` told users to move the title to a `SirenTitle` property; it now names `HtoTitle`.
 - **RESTyard.Client.Extensions.SystemNetHttp:** a network error while revalidating a cached response is returned as an error
   result instead of being thrown from `ResolveLinkAsync`. (#130)
+- **RESTyard.Generator:** controllers generated for upload operations (`isUploadAction="true"`) now receive the uploaded files
+  and parameters. They declared a JSON body parameter (or none), so the multipart form was not bound.
