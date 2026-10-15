@@ -65,7 +65,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 
             var ho = new PropertyDuplicateHypermediaObject();
             var action = () => SirenConverter.ConvertToJson(ho);
-            action.Should().Throw<ArgumentException>();
+            action.Should().ThrowExactly<ArgumentException>();
         }
 
         [Fact]
