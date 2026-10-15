@@ -45,9 +45,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertEmptyActions(siren);
             AssertHasNoLinks(siren);
 
-            Assert.IsTrue(siren["entities"] is JsonArray);
-            var entitiesArray = siren["entities"]!.AsArray();
-            Assert.AreEqual(entitiesArray.Count, 2);
+            var entitiesArray = siren["entities"].Should().BeOfType<JsonArray>().Which;
+            entitiesArray.Should().HaveCount(2);
 
             var embeddedEntityObject = entitiesArray[0]!.AsObject();
             AssertClassName(embeddedEntityObject, nameof(EmbeddedSubEntity));
@@ -88,9 +87,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertEmptyActions(siren);
             AssertHasNoLinks(siren);
 
-            Assert.IsTrue(siren["entities"] is JsonArray);
-            var entitiesArray = siren["entities"]!.AsArray();
-            Assert.AreEqual(entitiesArray.Count, 2);
+            var entitiesArray = siren["entities"].Should().BeOfType<JsonArray>().Which;
+            entitiesArray.Should().HaveCount(2);
 
             var embeddedEntityObject = entitiesArray[0]!.AsObject();
             AssertRelations(embeddedEntityObject, new List<string> { relation1 });
@@ -124,9 +122,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
             var siren = SirenConverter.ConvertToJson(ho);
 
-            Assert.IsTrue(siren["entities"] is JsonArray);
-            var entitiesArray = siren["entities"]!.AsArray();
-            Assert.AreEqual(2, entitiesArray.Count,
+            var entitiesArray = siren["entities"].Should().BeOfType<JsonArray>().Which;
+            entitiesArray.Should().HaveCount(2,
                 "Both embedded entities with the same relation should be present");
 
             var entity1 = entitiesArray[0]!.AsObject();
@@ -141,21 +138,20 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         private static void AssertEmbeddedEntity(JsonObject embeddedEntityObject, EmbeddedSubEntity embeddedSubHo)
         {
             var embeddedEntityProperties = embeddedEntityObject["properties"]!.AsObject();
-            Assert.AreEqual(embeddedEntityProperties.Count, 2);
-            Assert.AreEqual(embeddedSubHo.ABool, embeddedEntityProperties["ABool"]!.GetValue<bool>());
-            Assert.AreEqual(embeddedSubHo.AInt, embeddedEntityProperties["AInt"]!.GetValue<int>());
+            embeddedEntityProperties.Should().HaveCount(2);
+            embeddedEntityProperties["ABool"]!.GetValue<bool>().Should().Be(embeddedSubHo.ABool);
+            embeddedEntityProperties["AInt"]!.GetValue<int>().Should().Be(embeddedSubHo.AInt);
         }
 
         public static void AssertRelations(JsonObject obj, List<string> relations)
         {
-            Assert.IsTrue(obj["rel"] is JsonArray);
-            var relArray = obj["rel"]!.AsArray();
-            Assert.AreEqual(relArray.Count, relations.Count);
+            var relArray = obj["rel"].Should().BeOfType<JsonArray>().Which;
+            relArray.Should().HaveCount(relations.Count);
 
             foreach (var relation in relations)
             {
                 var hasDesiredRelation = relArray.FirstOrDefault(i => i!.GetValue<string>().Equals(relation)) != null;
-                Assert.IsTrue(hasDesiredRelation);
+                hasDesiredRelation.Should().BeTrue();
             }
         }
 

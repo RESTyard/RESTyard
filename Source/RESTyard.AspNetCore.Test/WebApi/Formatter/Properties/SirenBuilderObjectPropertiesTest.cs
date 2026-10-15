@@ -36,14 +36,14 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 
             var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
-            Assert.AreEqual(1, propertiesObject.Count);
+            propertiesObject.Should().HaveCount(1);
             var nestedJObject = siren["properties"]![nameof(PropertyNestedClassHypermediaObject.AChild)]!.AsObject();
 
             // one property is ignored
-            Assert.AreEqual(3, nestedJObject.Count);
-            Assert.AreEqual(ho.AChild.Property1, nestedJObject["Property1Renamed"]!.GetValue<bool>());
-            Assert.AreEqual(ho.AChild.Property2, nestedJObject["Property2Renamed"]!.GetValue<bool>());
-            Assert.AreEqual(ho.AChild.NotRenamed, nestedJObject[nameof(AttributedPropertyHypermediaObject.NotRenamed)]!.GetValue<bool>());
+            nestedJObject.Should().HaveCount(3);
+            nestedJObject.Should().ContainKey("Property1Renamed").WhoseValue!.GetValue<bool>().Should().Be(ho.AChild.Property1);
+            nestedJObject.Should().ContainKey("Property2Renamed").WhoseValue!.GetValue<bool>().Should().Be(ho.AChild.Property2);
+            nestedJObject.Should().ContainKey(nameof(AttributedPropertyHypermediaObject.NotRenamed)).WhoseValue!.GetValue<bool>().Should().Be(ho.AChild.NotRenamed);
         }
 
         [Fact]
@@ -66,8 +66,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 
             var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
-            Assert.AreEqual(1, propertiesObject.Count);
-            Assert.IsNull(propertiesObject.First().Value);
+            propertiesObject.Should().ContainSingle().Which.Value.Should().BeNull();
         }
 
         [Fact]
@@ -90,7 +89,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 
             var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
-            Assert.AreEqual(propertiesObject.Count, 0);
+            propertiesObject.Should().BeEmpty();
         }
     }
     

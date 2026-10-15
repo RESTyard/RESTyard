@@ -48,7 +48,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 
             var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
 
-            Assert.AreEqual(propertiesObject.Count, 0);
+            propertiesObject.Should().BeEmpty();
         }
 
         [Fact]
@@ -118,18 +118,18 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         private static void AssertListOfLists(HypermediaObjectWithListProperties ho, JsonObject siren)
         {
             var listOfLists = siren["properties"]!["ListOfLists"]!.AsArray();
-            Assert.AreEqual(ho.ListOfLists.Count(), listOfLists.Count);
+            listOfLists.Should().HaveCount(ho.ListOfLists.Count());
             var index = 0;
             foreach (var nested in ho.ListOfLists)
             {
                 var nestedList = nested.ToList();
                 var innerJArray = listOfLists[index]!.AsArray();
-                Assert.AreEqual(nestedList.Count(), innerJArray.Count);
+                innerJArray.Should().HaveCount(nestedList.Count);
 
                 var innerIndex = 0;
                 foreach (var value in nestedList)
                 {
-                    Assert.AreEqual(value, innerJArray[innerIndex]!.GetValue<int>());
+                    innerJArray[innerIndex]!.GetValue<int>().Should().Be(value);
                     innerIndex++;
                 }
 
@@ -140,11 +140,11 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         private static void AssertObjectList(HypermediaObjectWithListProperties ho, JsonObject siren)
         {
             var objectList = siren["properties"]!["AObjectList"]!.AsArray();
-            Assert.AreEqual(ho.AObjectList.Count(), objectList.Count);
+            objectList.Should().HaveCount(ho.AObjectList.Count());
             var index = 0;
             foreach (var nested in ho.AObjectList)
             {
-                Assert.AreEqual(nested.AInt, objectList[index]![nameof(Nested.AInt)]!.GetValue<int>());
+                objectList[index]![nameof(Nested.AInt)]!.GetValue<int>().Should().Be(nested.AInt);
                 index++;
             }
         }
@@ -152,11 +152,11 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
         private static void AssertListOfDownCastObjects(HypermediaObjectWithListProperties ho, JsonObject siren)
         {
             var downCastList = siren["properties"]!["ListOfDownCastObjects"]!.AsArray();
-            Assert.AreEqual(ho.ListOfDownCastObjects.Count(), downCastList.Count);
+            downCastList.Should().HaveCount(ho.ListOfDownCastObjects.Count());
 
-            Assert.AreEqual("Text", downCastList[0]!.GetValue<string>());
-            Assert.AreEqual(5, downCastList[1]!.GetValue<int>());
-            Assert.AreEqual(3, downCastList[2]![nameof(Nested.AInt)]!.GetValue<int>());
+            downCastList[0]!.GetValue<string>().Should().Be("Text");
+            downCastList[1]!.GetValue<int>().Should().Be(5);
+            downCastList[2]![nameof(Nested.AInt)]!.GetValue<int>().Should().Be(3);
         }
     }
     

@@ -42,15 +42,14 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             var siren = SirenConverter.ConvertToJson(ho);
 
             // class
-            Assert.IsTrue(siren["class"] is JsonArray);
-            var classArray = siren["class"]!.AsArray();
-            Assert.AreEqual(classArray.Count, 2);
-            Assert.IsTrue(classArray[0]!.ToString() == "CustomClass1");
-            Assert.IsTrue(classArray[1]!.ToString() == "CustomClass2");
+            var classArray = siren["class"].Should().BeOfType<JsonArray>().Which;
+            classArray.Should().HaveCount(2);
+            classArray[0]!.ToString().Should().Be("CustomClass1");
+            classArray[1]!.ToString().Should().Be("CustomClass2");
 
             // title
-            Assert.IsTrue(siren["title"]!.GetValueKind() == JsonValueKind.String);
-            Assert.AreEqual("A Title", siren["title"]!.GetValue<string>());
+            siren["title"]!.GetValueKind().Should().Be(JsonValueKind.String);
+            siren["title"]!.GetValue<string>().Should().Be("A Title");
 
             AssertEmptyProperties(siren);
             AssertEmptyEntities(siren);
@@ -65,7 +64,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             RouteRegister.AddHypermediaObjectRoute(typeof(PropertyDuplicateHypermediaObject), routeName, HttpMethods.Get);
 
             var ho = new PropertyDuplicateHypermediaObject();
-            SirenConverter.ConvertToJson(ho);
+            var action = () => SirenConverter.ConvertToJson(ho);
+            action.Should().Throw<ArgumentException>();
         }
 
         [Fact]
@@ -91,7 +91,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
                     && p.Name != "Links"
                     && p.Name != nameof(IHypermediaObject.HtoTitle))
                 .ToList();
-            Assert.AreEqual(propertiesObject.Count, propertyInfos.Count);
+            propertiesObject.Should().HaveCount(propertyInfos.Count);
 
             foreach (var property in propertyInfos)
             {
@@ -108,7 +108,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
                         lookupName = property.Name;
                         break;
                 }
-                Assert.IsTrue(propertiesObject[lookupName] != null);
+                propertiesObject.Should().ContainKey(lookupName).WhoseValue.Should().NotBeNull();
             }
         }
 

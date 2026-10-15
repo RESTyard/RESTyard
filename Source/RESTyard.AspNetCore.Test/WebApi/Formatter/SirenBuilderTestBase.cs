@@ -68,69 +68,61 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
         public static void AssertClassName(JsonObject obj, string name)
         {
-            Assert.IsTrue(obj["class"] is JsonArray);
-            var classArray = obj["class"]!.AsArray();
-            Assert.AreEqual(1, classArray.Count);
-            Assert.IsTrue(classArray[0]!.ToString() == name);
+            var classArray = obj["class"].Should().BeOfType<JsonArray>().Which;
+            classArray.Should().ContainSingle().Which!.ToString().Should().Be(name);
         }
 
         public static void AssertHasOnlySelfLink(JsonObject obj, string routeName)
         {
-            Assert.IsTrue(obj["links"] is JsonArray);
-            var linksArray = obj["links"]!.AsArray();
-            Assert.AreEqual(1, linksArray.Count);
-
-            Assert.AreEqual(DefaultHypermediaRelations.Self, linksArray[0]!["rel"]![0]!.ToString());
+            var linksArray = obj["links"].Should().BeOfType<JsonArray>().Which;
+            linksArray.Should().ContainSingle().Which!["rel"]![0]!.ToString().Should().Be(DefaultHypermediaRelations.Self);
             AssertRoute(linksArray[0]!["href"]!.ToString(), routeName);
         }
 
         public static void AssertHasNoLinks(JsonObject obj)
         {
-            Assert.IsTrue(obj["links"] is JsonArray);
-            var linksArray = obj["links"]!.AsArray();
-            Assert.AreEqual(0, linksArray.Count);
+            var linksArray = obj["links"].Should().BeOfType<JsonArray>().Which;
+            linksArray.Should().BeEmpty();
         }
 
         public static void AssertEmptyActions(JsonObject obj)
         {
-            Assert.IsTrue(obj["actions"] is JsonArray);
-            var actionsArray = obj["actions"]!.AsArray();
-            Assert.AreEqual(0, actionsArray.Count);
+            var actionsArray = obj["actions"].Should().BeOfType<JsonArray>().Which;
+            actionsArray.Should().BeEmpty();
         }
 
         public static void AssertEmptyEntities(JsonObject obj)
         {
-            Assert.IsTrue(obj["entities"] is JsonArray);
-            var entitiesArray = obj["entities"]!.AsArray();
-            Assert.AreEqual(0, entitiesArray.Count);
+            var entitiesArray = obj["entities"].Should().BeOfType<JsonArray>().Which;
+            entitiesArray.Should().BeEmpty();
         }
 
         public static void AssertEmptyProperties(JsonObject siren)
         {
             var propertiesObject = PropertyHelpers.GetPropertiesJObject(siren);
-            Assert.AreEqual(0, propertiesObject.Count);
+            propertiesObject.Should().BeEmpty();
         }
 
         public static void AssertRoute(string route, string expectedRouteName, string? keyObjectString = null, string? queryString = null)
         {
             var segments = route.Split('/', '?');
             var routAsUri = new Uri(route);
-            Assert.AreEqual(TestUrlConfig.Scheme,routAsUri.Scheme);
-            Assert.AreEqual(TestUrlConfig.Host.ToString(), routAsUri.Host + ":" + routAsUri.Port);
-            Assert.AreEqual(expectedRouteName, GetPathWithoutQuery(routAsUri));
+            routAsUri.Scheme.Should().Be(TestUrlConfig.Scheme);
+            TestUrlConfig.Host.ToString().Should().Be(routAsUri.Host + ":" + routAsUri.Port);
+            GetPathWithoutQuery(routAsUri).Should().Be(expectedRouteName);
 
             if (keyObjectString != null && queryString != null)
             {
-                Assert.AreEqual(keyObjectString, segments[4]);
-                Assert.AreEqual(queryString, "?" + segments[5]);
+                segments[4].Should().Be(keyObjectString);
+                ("?" + segments[5]).Should().Be(queryString);
             }
             else if (queryString != null)
             {
-                Assert.AreEqual(queryString, "?" + segments[4]);
+                ("?" + segments[4]).Should().Be(queryString);
             }
             else if (keyObjectString != null)
             {
-                Assert.AreEqual(keyObjectString, segments[4]);
+                segments[4].Should().Be(keyObjectString);
             }
         }
 
@@ -200,7 +192,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
                 }
             }
 
-            Assert.IsTrue(foundLink);
+            foundLink.Should().BeTrue();
         }
     }
 }

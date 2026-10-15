@@ -135,9 +135,9 @@ public class SirenModelSerializationTests
         deserialized.Href.Should().Be("/customers");
         deserialized.Method.Should().Be("POST");
         deserialized.Type.Should().Be("application/json");
-        deserialized.Fields.Should().HaveCount(1);
-        deserialized.Fields![0].Name.Should().Be("customerData");
-        deserialized.Fields[0].Type.Should().Be("application/json");
+        var field = deserialized.Fields.Should().ContainSingle().Which;
+        field.Name.Should().Be("customerData");
+        field.Type.Should().Be("application/json");
     }
 
     [Fact]
@@ -375,7 +375,7 @@ public class SirenModelSerializationTests
         embedded.Class.Should().BeEquivalentTo(["Order"]);
         embedded.Title.Should().Be("Order 100");
         embedded.Properties.GetProperty("orderNumber").GetInt32().Should().Be(100);
-        embedded.Links.Should().HaveCount(1);
+        embedded.Links.Should().ContainSingle();
     }
 
     [Fact]
@@ -396,7 +396,7 @@ public class SirenModelSerializationTests
         result.Should().BeOfType<SirenEmbeddedEntity<JsonElement>>();
         var embedded = (SirenEmbeddedEntity<JsonElement>)result!;
         embedded.Rel.Should().BeEquivalentTo(["parent"]);
-        embedded.Entities.Should().HaveCount(1);
+        embedded.Entities.Should().ContainSingle();
     }
 
     [Fact]

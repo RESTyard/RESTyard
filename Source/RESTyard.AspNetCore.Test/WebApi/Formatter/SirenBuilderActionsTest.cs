@@ -110,7 +110,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         {
             action["type"]!.GetValue<string>().Should().Be(type);
             var fields = action["fields"]!.AsArray();
-            fields.Count.Should().Be(hasParameter ? 2 : 1);
+            fields.Should().HaveCount(hasParameter ? 2 : 1);
             var fileUploadAction = fields[0];
             fileUploadAction.Should().NotBeNull();
             fileUploadAction!["type"]!.GetValue<string>().Should().Be("file");
@@ -125,8 +125,8 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             var value = fields[0]!["value"];
             var aInt = value!["AInt"]!.GetValue<int>();
 
-            Assert.AreEqual(1, fields.Count);
-            Assert.AreEqual(expectedDefaultValues.AInt, aInt);
+            fields.Should().HaveCount(1);
+            aInt.Should().Be(expectedDefaultValues.AInt);
         }
 
         private void AssertDynamicDefaultValues(JsonObject action, string expectedValue)
@@ -135,17 +135,16 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             var value = fields[0]!["value"];
             var property1 = value!["Property1"]!.GetValue<string>();
 
-            Assert.AreEqual(1, fields.Count);
-            Assert.AreEqual(expectedValue, property1);
+            fields.Should().HaveCount(1);
+            property1.Should().Be(expectedValue);
         }
 
         private void AssertActionArgument(JsonObject action, string contentType, string actionParameterName, string actionParameterClass, bool hasDefaultValues = false, string  parameterTypeRouteName = RouteNames.ActionParameterTypes, string objectKeyString = null)
         {
-            Assert.AreEqual(contentType, action["type"]!.GetValue<string>());
+            action["type"]!.GetValue<string>().Should().Be(contentType);
             var fields = action["fields"]!.AsArray();
-            Assert.AreEqual(fields.Count, 1);
-
-            var singleField = fields[0]!.AsObject();
+            
+            var singleField = fields.Should().ContainSingle().Which!.AsObject();
 
             var expectedProperties = 3;
             if (hasDefaultValues)
@@ -153,15 +152,13 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
                 expectedProperties++;
             }
 
-            Assert.AreEqual(expectedProperties, singleField.Count);
+            singleField.Should().HaveCount(expectedProperties);
 
-            Assert.AreEqual(actionParameterName, singleField["name"]!.GetValue<string>());
-            Assert.AreEqual(DefaultMediaTypes.ApplicationJson, singleField["type"]!.GetValue<string>());
+            singleField["name"]!.GetValue<string>().Should().Be(actionParameterName);
+            singleField["type"]!.GetValue<string>().Should().Be(MediaTypeNames.Application.Json);
 
             var actionsArray = singleField["class"]!.AsArray();
-            Assert.AreEqual(1, actionsArray.Count);
-
-            var route = actionsArray[0]!.GetValue<string>();
+            var route = actionsArray.Should().ContainSingle().Which!.GetValue<string>();
 
             if (objectKeyString == null)
             {
@@ -179,7 +176,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             fields.Should().HaveCount(2);
 
             var field = fields[1]!.AsObject();
-            Assert.AreEqual(contentType, field["type"]!.GetValue<string>());
+            field["type"]!.GetValue<string>().Should().Be(contentType);
 
             var expectedProperties = 3;
             if (hasDefaultValues)
@@ -187,15 +184,13 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
                 expectedProperties++;
             }
 
-            Assert.AreEqual(expectedProperties, field.Count);
+            field.Should().HaveCount(expectedProperties);
 
-            Assert.AreEqual(actionParameterName, field["name"]!.GetValue<string>());
-            Assert.AreEqual(DefaultMediaTypes.ApplicationJson, field["type"]!.GetValue<string>());
+            field["name"]!.GetValue<string>().Should().Be(actionParameterName);
+            field["type"]!.GetValue<string>().Should().Be(DefaultMediaTypes.ApplicationJson);
 
             var actionsArray = field["class"]!.AsArray();
-            Assert.AreEqual(1, actionsArray.Count);
-
-            var route = actionsArray[0]!.GetValue<string>();
+            var route = actionsArray.Should().ContainSingle().Which!.GetValue<string>();
 
             if (objectKeyString == null)
             {
@@ -209,13 +204,13 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
         private void AssertActionBasic(JsonObject action, string actionName, string method, string routeName, int propertyCount, string actionClass, string? actionTitle = null, List<string>? expectedAdditionalClasses = null)
         {
-            Assert.AreEqual(propertyCount, action.Count);
-            Assert.AreEqual(actionName, action["name"]!.GetValue<string>());
-            Assert.AreEqual(method, action["method"]!.GetValue<string>());
+            action.Should().HaveCount(propertyCount);
+            action["name"]!.GetValue<string>().Should().Be(actionName);
+            action["method"]!.GetValue<string>().Should().Be(method);
 
             var actionClasses = action["class"] as JsonArray;
             actionClasses.Should().NotBeNull();
-            actionClasses!.Count.Should().Be(1 + (expectedAdditionalClasses?.Count ?? 0), "Classes are added by attribute");
+            actionClasses.Should().HaveCount(1 + (expectedAdditionalClasses?.Count ?? 0), "Classes are added by attribute");
             var existingActionClasses = actionClasses.Select(n => n!.GetValue<string>()).ToList();
             existingActionClasses.Contains(actionClass).Should().BeTrue();
             expectedAdditionalClasses?.All(expectedClass =>
@@ -225,7 +220,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 
             if (!string.IsNullOrEmpty(actionTitle))
             {
-                Assert.AreEqual(actionTitle, action["title"]!.GetValue<string>());
+                action["title"]!.GetValue<string>().Should().Be(actionTitle);
             }
         }
 

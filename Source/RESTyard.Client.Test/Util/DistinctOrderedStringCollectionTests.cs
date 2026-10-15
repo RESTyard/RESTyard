@@ -1,5 +1,4 @@
-﻿using System;
-using AwesomeAssertions;
+﻿using AwesomeAssertions;
 using RESTyard.Client.Hypermedia;
 using RESTyard.Client.Util;
 
@@ -11,25 +10,23 @@ namespace RESTyard.Client.Test.Util
         public void SingleElementTest()
         {
             IDistinctOrderedCollection<string> elephant = new DistinctOrderedStringCollection("elephant");
-            elephant.Count.Should().Be(1);
-            elephant.Should().BeEquivalentTo("elephant");
+            elephant.Should().ContainSingle().Which.Should().Be("elephant");
 
             IDistinctOrderedCollection<string> giraffe = new DistinctOrderedStringCollection("giraffe");
-            giraffe.Count.Should().Be(1);
-            giraffe.Should().BeEquivalentTo("giraffe");
+            giraffe.Should().ContainSingle().Which.Should().Be("giraffe");
         }
 
         [Fact]
         public void MultipleElementTest_NoCollisions()
         {
             IDistinctOrderedCollection<string> animals = new DistinctOrderedStringCollection("elephant", "giraffe", "lion");
-            animals.Count.Should().Be(3);
-            animals.Should().BeEquivalentTo("elephant", "giraffe", "lion");
+            animals.Should().HaveCount(3);
+            animals.Should().Equal("elephant", "giraffe", "lion");
 
             IDistinctOrderedCollection<string> numbers =
                 new DistinctOrderedStringCollection("2", "4", "3", "7", "5");
-            numbers.Count.Should().Be(5);
-            numbers.Should().BeEquivalentTo("2", "3", "4", "5", "7");
+            numbers.Should().HaveCount(5);
+            numbers.Should().Equal("2", "3", "4", "5", "7");
         }
 
         [Fact]
@@ -37,13 +34,13 @@ namespace RESTyard.Client.Test.Util
         {
             IDistinctOrderedCollection<string> animals =
                 new DistinctOrderedStringCollection("giraffe", "elephant", "elephant");
-            animals.Count.Should().Be(2);
-            animals.Should().BeEquivalentTo("elephant", "giraffe");
+            animals.Should().HaveCount(2);
+            animals.Should().Equal("elephant", "giraffe");
 
             IDistinctOrderedCollection<string>
                 numbers = new DistinctOrderedStringCollection("4", "17", "5", "5", "8", "4");
-            numbers.Count.Should().Be(4);
-            numbers.Should().BeEquivalentTo("4", "5", "8", "17");
+            numbers.Should().HaveCount(4);
+            numbers.Should().Equal("17", "4", "5", "8");
 
         }
     }

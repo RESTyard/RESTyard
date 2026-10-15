@@ -9,14 +9,14 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
         public void GetGenericTypeName()
         {
             var typeName = typeof(Nullable<int>).BeautifulName();
-            Assert.AreEqual("Nullable<Int32>", typeName);
+            typeName.Should().Be("Nullable<Int32>");
         }
 
         [Fact]
         public void GetNestedTypeName()
         {
             var typeName = typeof(Outer.Inner).BeautifulName();
-            Assert.AreEqual($"{nameof(TypeExtensionTest)}.{nameof(Outer)}.{nameof(Outer.Inner)}", typeName);
+            typeName.Should().Be($"{nameof(TypeExtensionTest)}.{nameof(Outer)}.{nameof(Outer.Inner)}");
         }
 
         class Outer

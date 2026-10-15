@@ -24,8 +24,8 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             var result = queryStringBuilder.CreateQueryString(listHolder);
             var valueList = QueryStringBuilderTestHelper.CreateValueListFromQueryString(result);
 
-            Assert.IsTrue(string.IsNullOrEmpty(result));
-            Assert.IsTrue(valueList.Count == 0);
+            result.Should().BeNullOrEmpty();
+            valueList.Should().BeEmpty();
         }
 
         [Fact]
@@ -39,8 +39,8 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             var result = queryStringBuilder.CreateQueryString(listHolder);
             var valueList = QueryStringBuilderTestHelper.CreateValueListFromQueryString(result);
 
-            Assert.IsTrue(string.IsNullOrEmpty(result));
-            Assert.IsTrue(valueList.Count == 0);
+            result.Should().BeNullOrEmpty();
+            valueList.Should().BeEmpty();
 
         }
 
@@ -58,14 +58,14 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             var result = queryStringBuilder.CreateQueryString(listHolder);
             var valueList = QueryStringBuilderTestHelper.CreateValueListFromQueryString(result);
 
-            Assert.IsTrue(result[0] == '?');
-            Assert.IsTrue(valueList.Count == 3);
+            result[0].Should().Be('?');
+            valueList.Should().HaveCount(3);
 
             var sourceIndex = 0;
             foreach (var item in valueList)
             {
-                Assert.IsTrue(string.Equals(item[0], "List"));
-                Assert.IsTrue(string.Equals(item[1], Uri.EscapeDataString(listHolder.List[sourceIndex].ToString(CultureInfo.InvariantCulture))));
+                item[0].Should().Be("List");
+                item[1].Should().Be(Uri.EscapeDataString(listHolder.List[sourceIndex].ToString(CultureInfo.InvariantCulture)));
                 sourceIndex++;
             }
         }
@@ -84,14 +84,14 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             var result = queryStringBuilder.CreateQueryString(listHolder);
             var valueList = QueryStringBuilderTestHelper.CreateValueListFromQueryString(result);
 
-            Assert.IsTrue(result[0] == '?');
-            Assert.IsTrue(valueList.Count == 3);
+            result[0].Should().Be('?');
+            valueList.Should().HaveCount(3);
 
             var sourceIndex = 0;
             foreach (var item in valueList)
             {
-                Assert.IsTrue(string.Equals(item[0], "List"));
-                Assert.IsTrue(string.Equals(item[1], Uri.EscapeDataString(listHolder.List[sourceIndex])));
+                item[0].Should().Be("List");
+                item[1].Should().Be(Uri.EscapeDataString(listHolder.List[sourceIndex]));
                 sourceIndex++;
             }
         }
@@ -110,14 +110,14 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             var result = queryStringBuilder.CreateQueryString(nester);
             var valueList = QueryStringBuilderTestHelper.CreateValueListFromQueryString(result);
 
-            Assert.IsTrue(result[0] == '?');
-            Assert.IsTrue(valueList.Count == 3);
+            result[0].Should().Be('?');
+            valueList.Should().HaveCount(3);
 
             var sourceIndex = 0;
             foreach (var item in valueList)
             {
-                Assert.IsTrue(string.Equals(item[0], "Nested.List"));
-                Assert.IsTrue(string.Equals(item[1], Uri.EscapeDataString(nester.Nested.List[sourceIndex].ToInvariantString())));
+                item[0].Should().Be("Nested.List");
+                item[1].Should().Be(Uri.EscapeDataString(nester.Nested.List[sourceIndex].ToInvariantString()));
                 sourceIndex++;
             }
         }
@@ -138,14 +138,14 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             var result = queryStringBuilder.CreateQueryString(listHolder);
             var valueList = QueryStringBuilderTestHelper.CreateValueListFromQueryString(result);
 
-            Assert.IsTrue(result[0] == '?');
-            Assert.IsTrue(valueList.Count == 3);
+            result[0].Should().Be('?');
+            valueList.Should().HaveCount(3);
 
             var sourceIndex = 0;
             foreach (var item in valueList)
             {
-                Assert.IsTrue(string.Equals(item[0], $"List[{sourceIndex}].Value"));
-                Assert.IsTrue(string.Equals(item[1], Uri.EscapeDataString(listHolder.List[sourceIndex].Value.ToInvariantString())));
+                item[0].Should().Be($"List[{sourceIndex}].Value");
+                item[1].Should().Be(Uri.EscapeDataString(listHolder.List[sourceIndex].Value.ToInvariantString()));
                 sourceIndex++;
             }
         }
@@ -167,18 +167,18 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
 
             var valueList = QueryStringBuilderTestHelper.CreateValueListFromQueryString(result);
 
-            Assert.IsTrue(result[0] == '?');
-            Assert.IsTrue(valueList.Count == dictionaryHolder.Dictionary.Count * 2);
+            result[0].Should().Be('?');
+            valueList.Should().HaveCount(dictionaryHolder.Dictionary.Count * 2);
 
             var dictionaryList = dictionaryHolder.Dictionary.ToList();
             var dictionaryListIndex = 0;
             foreach (var item in dictionaryList)
             {
                 // check key
-                Assert.IsTrue(string.Equals(valueList[dictionaryListIndex * 2][0], $"Dictionary[{dictionaryListIndex}].Key"));
+                valueList[dictionaryListIndex * 2][0].Should().Be($"Dictionary[{dictionaryListIndex}].Key");
 
                 // check value
-                Assert.IsTrue(string.Equals(valueList[dictionaryListIndex * 2 + 1][1], Uri.EscapeDataString(item.Value.ToInvariantString())));
+                valueList[dictionaryListIndex * 2 + 1][1].Should().Be(Uri.EscapeDataString(item.Value.ToInvariantString()));
 
                 dictionaryListIndex++;
             }

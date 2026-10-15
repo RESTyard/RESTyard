@@ -57,20 +57,20 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             valueDictionary.Should().ContainKey("AUri").WhoseValue.Should().Be(Uri.EscapeDataString(queryObject.AUri.ToInvariantString()));
         }
 
-        [TestMethod]
+        [Fact]
         public void SerializesTypesOnlyDefaults()
         {
             var queryObject = new QueryWithTypes();
 
             var result = queryStringBuilder.CreateQueryString(queryObject);
-            Assert.IsTrue(string.IsNullOrEmpty(result));
+            result.Should().BeNullOrEmpty();
         }
 
         [Fact]
         public void SerializesNullToStringEmpty()
         {
             var result = queryStringBuilder.CreateQueryString(null);
-            Assert.IsTrue(string.IsNullOrEmpty(result));
+            result.Should().BeNullOrEmpty();
         }
 
         [Fact]
@@ -97,12 +97,12 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             var result = queryStringBuilder.CreateQueryString(queryObject);
             var valueDictionary = QueryStringBuilderTestHelper.CreateValueDictionaryFromQueryString(result);
 
-            Assert.IsTrue(result[0] == '?');
-            Assert.IsTrue(valueDictionary.Count == 4);
-            Assert.IsTrue(valueDictionary["AString"] == queryObject.AString);
-            Assert.IsTrue(valueDictionary["First.AString"] == queryObject.First.AString);
-            Assert.IsTrue(valueDictionary["Second.AString"] == queryObject.Second.AString);
-            Assert.IsTrue(valueDictionary["Second.Second.AString"] == queryObject.Second.Second.AString);
+            result[0].Should().Be('?');
+            valueDictionary.Should().HaveCount(4);
+            valueDictionary.Should().ContainKey("AString").WhoseValue.Should().Be(queryObject.AString);
+            valueDictionary.Should().ContainKey("First.AString").WhoseValue.Should().Be(queryObject.First.AString);
+            valueDictionary.Should().ContainKey("Second.AString").WhoseValue.Should().Be(queryObject.Second.AString);
+            valueDictionary.Should().ContainKey("Second.Second.AString").WhoseValue.Should().Be(queryObject.Second.Second.AString);
         }
         
         private class QueryWithTypes

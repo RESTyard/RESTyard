@@ -193,7 +193,7 @@ public class HypermediaApiExplorerTests : AssemblyBasedTestBase
         var apiExplorer = app.Services.GetRequiredService<IHypermediaApiExplorer>();
 
         var endpoints = apiExplorer.GetHypermediaEndpoints();
-        endpoints.Should().HaveCount(1);
+        endpoints.Should().ContainSingle();
 
         var postEndpoint = endpoints.Should().ContainSingle(a =>
             a.ActionDescriptor.EndpointMetadata.OfType<IHypermediaActionEndpointMetadata>().Any()).Which;

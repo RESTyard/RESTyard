@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 using RESTyard.AspNetCore.Util;
 
@@ -17,7 +16,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
         [Fact]
         public void Compare_Null_ReturnsTrue()
         {
-            Assert.IsTrue(stringReadOnlyListComparer.Equals(null, null));
+            stringReadOnlyListComparer.Equals(null, null).Should().BeTrue();
         }
 
         [Fact]
@@ -25,14 +24,14 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
         {
             var listA = new List<string> { "" };
 
-            Assert.IsTrue(stringReadOnlyListComparer.Equals(listA, listA));
+            stringReadOnlyListComparer.Equals(listA, listA).Should().BeTrue();
         }
 
         [Fact]
         public void Compare_EmptyNull_ReturnsFalse()
         {
             var listA = new List<string> {""};
-            Assert.IsFalse(stringReadOnlyListComparer.Equals(listA, null));
+            stringReadOnlyListComparer.Equals(listA, null).Should().BeFalse();
         }
 
         [Fact]
@@ -41,7 +40,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
             var listA = new List<string> { "" };
             var listB = new List<string> { "" };
 
-            Assert.IsTrue(stringReadOnlyListComparer.Equals(listA, listB));
+            stringReadOnlyListComparer.Equals(listA, listB).Should().BeTrue();
         }
 
         [Fact]
@@ -50,7 +49,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
             var listA = new List<string> { "A" };
             var listB = new List<string> { "A" };
 
-            Assert.IsTrue(stringReadOnlyListComparer.Equals(listA, listB));
+            stringReadOnlyListComparer.Equals(listA, listB).Should().BeTrue();
         }
 
         [Fact]
@@ -59,7 +58,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
             var listA = new List<string> { "A" };
             var listB = new List<string> { "" };
 
-            Assert.IsFalse(stringReadOnlyListComparer.Equals(listA, listB));
+            stringReadOnlyListComparer.Equals(listA, listB).Should().BeFalse();
         }
 
         [Fact]
@@ -68,7 +67,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
             var listA = new List<string> { "A", "B" };
             var listB = new List<string> { "A" };
 
-            Assert.IsFalse(stringReadOnlyListComparer.Equals(listA, listB));
+            stringReadOnlyListComparer.Equals(listA, listB).Should().BeFalse();
         }
 
         [Fact]
@@ -77,7 +76,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
             var listA = new List<string> { "B", "A" };
             var listB = new List<string> { "A", "B"};
 
-            Assert.IsTrue(stringReadOnlyListComparer.Equals(listA, listB));
+            stringReadOnlyListComparer.Equals(listA, listB).Should().BeTrue();
         }
 
         [Fact]
@@ -86,7 +85,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
             var listA = new List<string> { "Abc", "Def" };
             var listB = new List<string> { "Def", "Abc" };
 
-            Assert.IsTrue(stringReadOnlyListComparer.Equals(listA, listB));
+            stringReadOnlyListComparer.Equals(listA, listB).Should().BeTrue();
         }
     }
 }
