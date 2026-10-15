@@ -2,7 +2,6 @@
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using System.Text.Json.Nodes;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.Hypermedia.Links;
@@ -13,22 +12,15 @@ using RESTyard.Relations;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 {
-    [TestClass]
     public class SirenBuilderEntitiesTest : SirenBuilderTestBase
     {
-        [ClassInitialize]
-        public static void ClassInit(TestContext context)
+        public SirenBuilderEntitiesTest()
         {
             ClassInitBase();
-        }
-
-        [TestInitialize]
-        public void TestInit()
-        {
             TestInitBase();
         }
 
-        [TestMethod]
+        [Fact]
         public void RepresentationEntitiesTest()
         {
             var routeName = nameof(EmptyHypermediaObject) + "_Route";
@@ -70,7 +62,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertEmbeddedEntity(embeddedEntityObject, embeddedHo2);
         }
 
-        [TestMethod]
+        [Fact]
         public void LinkEntitiesTest()
         {
             var routeName = nameof(EmptyHypermediaObject) + "_Route";
@@ -114,7 +106,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
         /// Unlike links (silently dedup), embedded entities iterate
         /// directly — both entities should appear in the output.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void EmbeddedEntitiesDuplicateRelation_BothEntitiesPreserved()
         {
             RouteRegister.AddHypermediaObjectRoute(typeof(DuplicateRelEmbeddingHypermediaObject),

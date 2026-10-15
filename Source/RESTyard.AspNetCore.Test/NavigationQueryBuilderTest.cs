@@ -1,16 +1,13 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RESTyard.AspNetCore.Util.Repository;
+﻿using RESTyard.AspNetCore.Util.Repository;
 using RESTyard.Relations;
 
 namespace RESTyard.AspNetCore.Test
 {
-    [TestClass]
     public class NavigationQueryBuilderTest
     {
         private const int DefaultPageSize = 10;
 
-        [TestMethod]
+        [Fact]
         public void EmptyResult()
         {
             var query = new EntityQuery
@@ -28,7 +25,7 @@ namespace RESTyard.AspNetCore.Test
             Assert.IsTrue(navigationQuerys.Queries.Count == 0);
         }
 
-        [TestMethod]
+        [Fact]
         public void LessThanPagesizeResult()
         {
             var query = new EntityQuery
@@ -49,7 +46,7 @@ namespace RESTyard.AspNetCore.Test
             AssertFirstQuery((EntityQuery)navigationQuerys.Queries[DefaultHypermediaRelations.Queries.First]);
         }
 
-        [TestMethod]
+        [Fact]
         public void ResultCountEqualPagesizeResult()
         {
             var query = new EntityQuery
@@ -70,7 +67,7 @@ namespace RESTyard.AspNetCore.Test
             AssertFirstQuery((EntityQuery)navigationQuerys.Queries[DefaultHypermediaRelations.Queries.First]);
         }
 
-        [TestMethod]
+        [Fact]
         public void MoreThanPagesizeResult()
         {
             var pageOffset = 0;
@@ -93,7 +90,7 @@ namespace RESTyard.AspNetCore.Test
             AssertLastQuery((EntityQuery)navigationQuerys.Queries[DefaultHypermediaRelations.Queries.Last], DefaultPageSize * ((queryResult.TotalCountOfEnties / 10) -1));
         }
 
-        [TestMethod]
+        [Fact]
         public void MoreThanPagesizeNotFirstPageResult()
         {
             var pageOffset = 10;
@@ -119,7 +116,7 @@ namespace RESTyard.AspNetCore.Test
             AssertLastQuery((EntityQuery)navigationQuerys.Queries[DefaultHypermediaRelations.Queries.Last], DefaultPageSize * ((queryResult.TotalCountOfEnties / 10) - 1));
         }
 
-        [TestMethod]
+        [Fact]
         public void MoreThanPagesizeNotFirstPageUnevenResult()
         {
             var pageOffset = 15;
@@ -145,7 +142,7 @@ namespace RESTyard.AspNetCore.Test
             AssertLastQuery((EntityQuery)navigationQuerys.Queries[DefaultHypermediaRelations.Queries.Last], DefaultPageSize * ((queryResult.TotalCountOfEnties / 10) - 1));
         }
 
-        [TestMethod]
+        [Fact]
         public void MoreThanPagesizeNotFirstPageUnderflowResult()
         {
             var pageOffset = 5;
@@ -172,7 +169,7 @@ namespace RESTyard.AspNetCore.Test
         }
 
 
-        [TestMethod]
+        [Fact]
         public void LastNotFirstPageResult()
         {
             var query = new EntityQuery

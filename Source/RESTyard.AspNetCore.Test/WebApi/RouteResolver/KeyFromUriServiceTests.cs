@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using AwesomeAssertions;
 using FunicularSwitch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
@@ -12,7 +10,6 @@ using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace RESTyard.AspNetCore.Test.WebApi.RouteResolver;
 
-[TestClass]
 public class KeyFromUriServiceTests
 {
     private IHypermediaApiExplorer CreateExplorer(string[] templates)
@@ -23,7 +20,7 @@ public class KeyFromUriServiceTests
         return mock.Object;
     }
 
-    [TestMethod]
+    [Fact]
     public void TestKeyExtraction()
     {
         // Given
@@ -38,7 +35,7 @@ public class KeyFromUriServiceTests
         values.Should().BeOk().Which.Should().Be(new TestHto.TestHtoKey("some-key", 15, 42));
     }
 
-    [TestMethod]
+    [Fact]
     public void TypeNotRegistered_ReturnsError()
     {
         // Given
@@ -53,7 +50,7 @@ public class KeyFromUriServiceTests
         values.Should().BeError().Which.Should().Contain("route");
     }
 
-    [TestMethod]
+    [Fact]
     public void TypeWithoutGetMethod_ReturnsError()
     {
         // Given
@@ -68,7 +65,7 @@ public class KeyFromUriServiceTests
         values.Should().BeError().Which.Should().Contain("route");
     }
 
-    [TestMethod]
+    [Fact]
     public void UriDoesNotMatch_ReturnsError()
     {
         // Given
@@ -83,7 +80,7 @@ public class KeyFromUriServiceTests
         values.Should().BeError().Which.Should().Contain("match");
     }
     
-    [TestMethod]
+    [Fact]
     public void KeyHasNoPublicConstructor_ReturnsError()
     {
         // Given
@@ -98,7 +95,7 @@ public class KeyFromUriServiceTests
         values.Should().BeError().Which.Should().Contain("constructor");
     }
     
-    [TestMethod]
+    [Fact]
     public void NamesOfRouteAndKeyMismatch_ReturnsError()
     {
         // Given
@@ -113,7 +110,7 @@ public class KeyFromUriServiceTests
         values.Should().BeError().Which.Should().Contain("present");
     }
     
-    [TestMethod]
+    [Fact]
     public void TypeOfRouteAndKeyMismatch_ReturnsError()
     {
         // Given
@@ -128,7 +125,7 @@ public class KeyFromUriServiceTests
         values.Should().BeError().Which.Should().Contain("convert");
     }
     
-    [TestMethod]
+    [Fact]
     public void ExceptionInConstructor_ReturnsError()
     {
         // Given
@@ -143,7 +140,7 @@ public class KeyFromUriServiceTests
         values.Should().BeError().Which.Should().Contain("invoke");
     }
     
-    [TestMethod]
+    [Fact]
     public void KeyHasMultipleConstructors_TheConstructorWithParametersIsChosen()
     {
         // Given
@@ -161,7 +158,7 @@ public class KeyFromUriServiceTests
         result.SomeOther.Should().Be(42);
     }
 
-    [TestMethod]
+    [Fact]
     public void GuidAsKeyType_IsResolvedProperly()
     {
         // Given
@@ -179,7 +176,7 @@ public class KeyFromUriServiceTests
         result.GuidKey.Should().Be(new Guid(guid));
     }
     
-    [TestMethod]
+    [Fact]
     public void IsErrorResult_RelativeUri()
     {
         // Given
@@ -196,7 +193,7 @@ public class KeyFromUriServiceTests
         result.Should().Contain("is not absolute");
     }
     
-    [TestMethod]
+    [Fact]
     public void IsErrorResult_InvalidPathUri()
     {
         // Given

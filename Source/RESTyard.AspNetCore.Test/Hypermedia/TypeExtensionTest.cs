@@ -1,20 +1,18 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Util;
 
 namespace RESTyard.AspNetCore.Test.Hypermedia
 {
-    [TestClass]
     public class TypeExtensionTest
     {
-        [TestMethod]
+        [Fact]
         public void GetGenericTypeName()
         {
             var typeName = typeof(Nullable<int>).BeautifulName();
             Assert.AreEqual("Nullable<Int32>", typeName);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetNestedTypeName()
         {
             var typeName = typeof(Outer.Inner).BeautifulName();

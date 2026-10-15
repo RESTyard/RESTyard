@@ -1,16 +1,11 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RESTyard.Client.Extensions.SystemTextJson;
+﻿using RESTyard.Client.Extensions.SystemTextJson;
 
-namespace Extensions.Test.ProblemStringReaderTests
+namespace Extensions.Test.ProblemStringReaderTests;
+
+public class SystemTextJsonProblemStringReaderTest : JsonProblemStringReaderTestBase
 {
-    [TestClass]
-    public class SystemTextJsonProblemStringReaderTest : JsonProblemStringReaderTestBase
+    public SystemTextJsonProblemStringReaderTest()
     {
-        [TestInitialize]
-        public override void Initializer()
-        {
-            base.Initializer();
-            ProblemReader = new SystemTextJsonProblemStringReader();
-        }
+        ProblemReader = new SystemTextJsonProblemStringReader();
     }
 }

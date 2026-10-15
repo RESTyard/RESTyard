@@ -1,16 +1,12 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿
 using RESTyard.Client.Extensions.NewtonsoftJson;
 
-namespace Extensions.Test.ProblemStringReaderTests
+namespace Extensions.Test.ProblemStringReaderTests;
+
+public class NewtonsoftJsonProblemStringReaderTest : JsonProblemStringReaderTestBase
 {
-    [TestClass]
-    public class NewtonsoftJsonProblemStringReaderTest : JsonProblemStringReaderTestBase
+    public NewtonsoftJsonProblemStringReaderTest()
     {
-        [TestInitialize]
-        public override void Initializer()
-        {
-            base.Initializer();
-            ProblemReader = new NewtonsoftJsonProblemStringReader();
-        }
+        ProblemReader = new NewtonsoftJsonProblemStringReader();
     }
 }

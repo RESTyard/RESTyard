@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using System.Text.Json.Nodes;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
 using RESTyard.AspNetCore.Query;
@@ -13,22 +12,15 @@ using RESTyard.Relations;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 {
-    [TestClass]
     public class SirenBuilderLinksTest : SirenBuilderTestBase
     {
-        [ClassInitialize]
-        public static void ClassInit(TestContext context)
+        public SirenBuilderLinksTest()
         {
             ClassInitBase();
-        }
-
-        [TestInitialize]
-        public void TestInit()
-        {
             TestInitBase();
         }
 
-        [TestMethod]
+        [Fact]
         public void LinksHypermediaObjectNoSelfLinkTest()
         {
             var ho = new NoSelfLinkHypermediaObject();
@@ -44,7 +36,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             Assert.AreEqual(linksArray.Count, 0);
         }
 
-        [TestMethod]
+        [Fact]
         public void LinksHypermediaObjectReferenceTest()
         {
             var routeNameLinking = nameof(LinkingHypermediaObject) + "_Route";
@@ -81,7 +73,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertHasLink(linksArray, link2Rel, routeNameLinked2);
         }
 
-        [TestMethod]
+        [Fact]
         public void LinksHypermediaObjectReferenceWithRouteKeyTest()
         {
             var routeNameLinking = nameof(LinkingHypermediaObject) + "_Route";
@@ -111,7 +103,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertHasLinkWithKey(linksArray, link1Rel, routeNameLinked1, "{ key = 42 }");
         }
 
-        [TestMethod]
+        [Fact]
         public void LinksDuplicateRelationTest()
         {
             var routeNameLinking = nameof(DuplicateLinkingHypermediaObject) + "_Route";
@@ -144,7 +136,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertHasLink(linksArray, duplicateRel, routeNameLinked2);
         }
 
-        [TestMethod]
+        [Fact]
         public void LinksMultipleRelationTest()
         {
             var routeNameLinking = nameof(MultiRelLinkingHypermediaObject) + "_Route";
@@ -172,7 +164,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertHasLink(linksArray, multiRel, routeNameLinked1);
         }
 
-        [TestMethod]
+        [Fact]
         public void LinksHypermediaObjectKeyReferenceTest()
         {
             var routeNameLinking = nameof(LinkingHypermediaObject) + "_Route";
@@ -208,7 +200,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertHasLinkWithKey(linksArray, link2Rel, routeNameLinked2, "{ key = AStringkey }");
         }
 
-        [TestMethod]
+        [Fact]
         public void LinksHypermediaObjectQueryReferenceTest()
         {
             var routeNameLinking = nameof(LinkingHypermediaObject) + "_Route";
@@ -246,7 +238,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             AssertHasLinkWithKeyAndQuery(linksArray, link2Rel, routeNameLinked2, "{ key = 3 }", QueryStringBuilder.CreateQueryString(queryObject2));
         }
 
-        [TestMethod]
+        [Fact]
         public void LinksExternalReferenceTest()
         {
             var externalUri = "http://www.example.com/";
@@ -323,7 +315,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter
             }
         }
         
-         [TestMethod]
+        [Fact]
         public void LinksInternalReferenceTest()
         {
             var routeNameLinking = nameof(InternalUsingHypermediaObject) + "_Route";

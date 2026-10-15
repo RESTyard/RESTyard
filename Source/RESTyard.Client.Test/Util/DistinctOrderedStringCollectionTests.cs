@@ -1,15 +1,13 @@
 ﻿using System;
 using AwesomeAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.Client.Hypermedia;
 using RESTyard.Client.Util;
 
 namespace RESTyard.Client.Test.Util
 {
-    [TestClass]
     public class DistinctOrderedStringCollectionTests
     {
-        [TestMethod]
+        [Fact]
         public void SingleElementTest()
         {
             IDistinctOrderedCollection<string> elephant = new DistinctOrderedStringCollection("elephant");
@@ -21,7 +19,7 @@ namespace RESTyard.Client.Test.Util
             giraffe.Should().BeEquivalentTo("giraffe");
         }
 
-        [TestMethod]
+        [Fact]
         public void MultipleElementTest_NoCollisions()
         {
             IDistinctOrderedCollection<string> animals = new DistinctOrderedStringCollection("elephant", "giraffe", "lion");
@@ -34,7 +32,7 @@ namespace RESTyard.Client.Test.Util
             numbers.Should().BeEquivalentTo("2", "3", "4", "5", "7");
         }
 
-        [TestMethod]
+        [Fact]
         public void MultipleElementTest_WithCollisions()
         {
             IDistinctOrderedCollection<string> animals =

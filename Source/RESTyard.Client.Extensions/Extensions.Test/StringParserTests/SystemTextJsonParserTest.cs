@@ -1,16 +1,11 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RESTyard.Client.Extensions.SystemTextJson;
+﻿using RESTyard.Client.Extensions.SystemTextJson;
 
-namespace Extensions.Test.StringParserTests
+namespace Extensions.Test.StringParserTests;
+
+public class SystemTextJsonParserTest : JsonParserTestBase
 {
-    [TestClass]
-    public class SystemTextJsonParserTest : JsonParserTestBase
+    public SystemTextJsonParserTest()
     {
-        [TestInitialize]
-        public override void Initialize()
-        {
-            base.Initialize();
-            Parser = new SystemTextJsonStringParser();
-        }
+        Parser = new SystemTextJsonStringParser();
     }
 }

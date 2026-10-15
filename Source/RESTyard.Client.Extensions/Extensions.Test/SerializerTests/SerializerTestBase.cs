@@ -1,29 +1,27 @@
 ﻿using Extensions.Test.Hco;
 using AwesomeAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.Client.ParameterSerializer;
 
-namespace Extensions.Test.SerializerTests
+namespace Extensions.Test.SerializerTests;
+
+public abstract class SerializerTestBase
 {
-    public class SerializerTestBase
+    protected string ExpectedResult { get; set; }
+
+    protected IParameterSerializer Serializer { get; set; }
+
+    [Fact]
+    public void SerializationTest()
     {
-        protected string ExpectedResult { get; set; }
-
-        protected IParameterSerializer Serializer { get; set; }
-
-        [TestMethod]
-        public void SerializationTest()
+        var hco = new CustomerHco()
         {
-            var hco = new CustomerHco()
-            {
-                Address = "TestWeg",
-                Age = 4,
-                FullName = "TestCustomer",
-                IsFavorite = true,
-            };
+            Address = "TestWeg",
+            Age = 4,
+            FullName = "TestCustomer",
+            IsFavorite = true,
+        };
 
-            var serialized = Serializer.SerializeParameterObject("customer", hco);
-            serialized.Should().Be(ExpectedResult);
-        }
+        var serialized = Serializer.SerializeParameterObject("customer", hco);
+        serialized.Should().Be(ExpectedResult);
     }
 }

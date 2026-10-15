@@ -1,23 +1,19 @@
-﻿using System;
-using AwesomeAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using AwesomeAssertions;
 using RESTyard.Client.Hypermedia;
 using RESTyard.Client.Util;
 
 namespace RESTyard.Client.Test.Util
 {
-    [TestClass]
     public class DistinctOrderedStringCollectionComparerTests
     {
         private DistinctOrderedStringCollectionComparer Comparer;
 
-        [TestInitialize]
-        public void Setup()
+        public DistinctOrderedStringCollectionComparerTests()
         {
             this.Comparer = new DistinctOrderedStringCollectionComparer();
         }
 
-        [TestMethod]
+        [Fact]
         public void HashCodeTest()
         {
             IDistinctOrderedCollection<string> animals =
@@ -31,7 +27,7 @@ namespace RESTyard.Client.Test.Util
             this.Comparer.GetHashCode(animalsAgain).Should().Be(hashCode);
         }
 
-        [TestMethod]
+        [Fact]
         public void EqualsTest()
         {
             IDistinctOrderedCollection<string> animals = new DistinctOrderedStringCollection("lion", "elephant", "cat");

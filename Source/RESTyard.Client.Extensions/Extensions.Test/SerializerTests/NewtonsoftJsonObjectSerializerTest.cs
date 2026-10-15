@@ -1,17 +1,12 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RESTyard.Client.Extensions.NewtonsoftJson;
 
-namespace Extensions.Test.SerializerTests
+namespace Extensions.Test.SerializerTests;
+
+public class NewtonsoftJsonObjectSerializerTest : JsonObjectSerializerTestBase
 {
-    [TestClass]
-    public class NewtonsoftJsonObjectSerializerTest : JsonObjectSerializerTestBase
+    public NewtonsoftJsonObjectSerializerTest()
     {
-        [TestInitialize]
-        public override void Initialize()
-        {
-            base.Initialize();
-            Serializer = new NewtonsoftJsonObjectParameterSerializer(Formatting.Indented);
-        }
+        Serializer = new NewtonsoftJsonObjectParameterSerializer(Formatting.Indented);
     }
 }

@@ -1,22 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using AwesomeAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace RESTyard.AspNetCore.Test.Hypermedia
 {
-
-
-    [TestClass]
     public class RouteKeyProducerSingleKeyTest
     {
         RouteKeyProducer routeKeyProducer;
 
-        [TestInitialize]
-        public void TestInit()
+        public RouteKeyProducerSingleKeyTest()
         {
             routeKeyProducer = RouteKeyProducer.Create(typeof(MyHypermediaObject), new[] { "id1" });
         }
@@ -42,7 +36,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
 
         }
 
-        [TestMethod]
+        [Fact]
         public void GetKeyForObject()
         {
             dynamic key = routeKeyProducer.CreateFromHypermediaObject(new MyHypermediaObject("valueOfKey1"));
@@ -50,7 +44,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
             ((string)key.id1).Should().Be("valueOfKey1");
         }
 
-        [TestMethod]
+        [Fact]
         public void GetKeyFromKeyObject()
         {
             var key = new MyHypermediaObject.KeyRecord("valueOfKey");
@@ -62,13 +56,11 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
         }
     }
 
-    [TestClass]
     public class RouteKeyProducerMultipleKeysTest
     {
         RouteKeyProducer routeKeyProducer;
 
-        [TestInitialize]
-        public void TestInit()
+        public RouteKeyProducerMultipleKeysTest()
         {
             routeKeyProducer = RouteKeyProducer.Create(typeof(MyHypermediaObject), new[] {"id2", "id1"});
         }
@@ -101,7 +93,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
 
         }
 
-        [TestMethod]
+        [Fact]
         public void GetKeyForObject()
         {
             dynamic key = routeKeyProducer.CreateFromHypermediaObject(new MyHypermediaObject("valueOfKey1", 2));
@@ -110,7 +102,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
             ((int) key.id2).Should().Be(2);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetKeyFromKeyObject()
         {
             var key = new MyHypermediaObject.KeyRecord("valueOfKey1", 2);

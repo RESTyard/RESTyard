@@ -1,26 +1,25 @@
-﻿using System;
+﻿namespace Extensions.Test.SerializerTests;
 
-namespace Extensions.Test.SerializerTests
+public abstract class SingleJsonObjectSerializerTestBase : SerializerTestBase
 {
-    public class SingleJsonObjectSerializerTestBase : SerializerTestBase
+    protected SingleJsonObjectSerializerTestBase()
     {
-        public virtual void Initializer()
-        {
-            ExpectedResult = @"[
-  {
-    ""customer"": {
-      ""FullName"": ""TestCustomer"",
-      ""Age"": 4,
-      ""Address"": ""TestWeg"",
-      ""IsFavorite"": true,
-      ""Self"": null,
-      ""MarkAsFavorite"": null,
-      ""CustomerMove"": null,
-      ""Relations"": [],
-      ""Title"": """"
-    }
-  }
-]";
-        }
+        ExpectedResult = """
+                         [
+                           {
+                             "customer": {
+                               "FullName": "TestCustomer",
+                               "Age": 4,
+                               "Address": "TestWeg",
+                               "IsFavorite": true,
+                               "Self": null,
+                               "MarkAsFavorite": null,
+                               "CustomerMove": null,
+                               "Relations": [],
+                               "Title": ""
+                             }
+                           }
+                         ]
+                         """;
     }
 }

@@ -4,8 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using Json.Schema;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.JsonSchema;
@@ -14,7 +12,6 @@ using RESTyard.AspNetCore.Test.Hypermedia;
 
 namespace RESTyard.AspNetCore.Test.JsonSchema
 {
-    [TestClass]
     public class When_generating_json_schema_from_type_with_key_attribute : AsyncTestSpecification
     {
         Json.Schema.JsonSchema schema;
@@ -25,7 +22,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
             return Task.CompletedTask;
         }
 
-        [TestMethod]
+        [Fact]
         public void Then_key_properties_are_mapped_to_uri_schema_properties()
         {
             schema.RequiredUriPropertyShouldExist("Id");
@@ -50,7 +47,6 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
         }
     }
 
-    [TestClass]
     public class When_generating_json_schema_from_type_with_multiple_key_attributes : AsyncTestSpecification
     {
         Json.Schema.JsonSchema schema;
@@ -61,7 +57,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
             return Task.CompletedTask;
         }
 
-        [TestMethod]
+        [Fact]
         public void Then_key_properties_are_mapped_to_uri_schema_properties()
         {
             schema.RequiredUriPropertyShouldExist("UriToHmo");
@@ -101,7 +97,6 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
         }
     }
 
-    [TestClass]
     public class When_deserializing_a_parameter_composite_keys_of_different_types : TestSpecification
     {
         MyParameter deserialized;
@@ -114,11 +109,11 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
         public override void When()
         {
             clientParameter = new MyClientParameter(FormattableString.Invariant($"http://mydomain.com/customers/{GrandParentId}/{WeirdUncleId}/{ParentId}/{Id}"), 3, "http://www.anothersite.com");
-            var json = JsonConvert.SerializeObject(clientParameter);
+            var json = JsonSerializer.Serialize(clientParameter);
             deserialized = (MyParameter)new JsonDeserializer(typeof(MyParameter)).Deserialize(json.ToStream(), new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
         }
 
-        [TestMethod]
+        [Fact]
         public void Then_all_other_properties_are_deserialized_correctly()
         {
             deserialized.SomeValue.Should().Be(clientParameter.SomeValue);
@@ -167,7 +162,6 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
         }
     }
 
-    [TestClass]
     public class When_generating_action_schema_with_date_only_and_time_only : TestSpecification
     {
         private Json.Schema.JsonSchema schema;
@@ -177,7 +171,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
             schema = new JsonSchemaFactory().GenerateSchema(typeof(MyParameter));
         }
 
-        [TestMethod]
+        [Fact]
         public void Then_TheTypesAreMappedProperly()
         {
             var dateOnlyProperty = schema.GetProperties().Should().ContainKey(nameof(MyParameter.DateOnly)).WhoseValue;
@@ -191,7 +185,6 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
         public record MyParameter(DateOnly DateOnly, TimeOnly TimeOnly);
     }
     
-    [TestClass]
     public class When_generating_action_schema_with_date_time_offset_date_time_timespan : TestSpecification
     {
         private Json.Schema.JsonSchema schema;
@@ -200,7 +193,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
             schema = new JsonSchemaFactory().GenerateSchema(typeof(MyParameterTimes));
         }
 
-        [TestMethod]
+        [Fact]
         public void Then_TheTypesAreMappedProperly()
         {
             var dateTimeOffsetProperty = schema.GetProperties().Should().ContainKey(nameof(MyParameterTimes.DateTimeOffset)).WhoseValue;
@@ -227,7 +220,6 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
     /// The action-parameter schema advertises enum values by name, so the server must bind names
     /// (JsonStringEnumConverter registered via AddJsonOptions).
     /// </summary>
-    [TestClass]
     public class When_generating_action_schema_with_enum : TestSpecification
     {
         private Json.Schema.JsonSchema schema;
@@ -237,7 +229,7 @@ namespace RESTyard.AspNetCore.Test.JsonSchema
             schema = new JsonSchemaFactory().GenerateSchema(typeof(MyParameter));
         }
 
-        [TestMethod]
+        [Fact]
         public void Then_enum_values_are_described_by_name()
         {
             var enumProperty = schema.GetProperties().Should().ContainKey(nameof(MyParameter.Value)).WhoseValue;

@@ -3,7 +3,6 @@ using System.Collections;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Nodes;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Test.Helpers;
 using RESTyard.AspNetCore.Util.Enum;

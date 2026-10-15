@@ -2,26 +2,18 @@
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using System.Text.Json.Nodes;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 {
-    [TestClass]
     public class SirenBuilderListPropertiesTest : SirenBuilderTestBase
     {
-        [ClassInitialize]
-        public static void ClassInit(TestContext context)
+        public SirenBuilderListPropertiesTest()
         {
             ClassInitBase();
-        }
-
-        [TestInitialize]
-        public void TestInit()
-        {
             TestInitBase();
         }
 
-        [TestMethod]
+        [Fact]
         public void SerializeNullListProperty()
         {
             var routeName = nameof(HypermediaObjectWithListProperties) + "_Route";
@@ -40,7 +32,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             PropertyHelpers.CompareHypermediaListPropertiesAndJson(propertiesObject, ho);
         }
 
-        [TestMethod]
+        [Fact]
         public void SerializeNullListPropertyNoNullPropertiesTest()
         {
             var routeName = nameof(HypermediaObjectWithListProperties) + "_Route";
@@ -59,7 +51,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             Assert.AreEqual(propertiesObject.Count, 0);
         }
 
-        [TestMethod]
+        [Fact]
         public void SerializeEmptyListProperties()
         {
             var routeName = nameof(HypermediaObjectWithListProperties) + "_Route";
@@ -83,7 +75,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             PropertyHelpers.CompareHypermediaListPropertiesAndJson(propertiesObject, ho);
         }
 
-        [TestMethod]
+        [Fact]
         public void SerializeListProperties()
         {
             var routeName = nameof(HypermediaObjectWithListProperties) + "_Route";

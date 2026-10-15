@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using Xunit.Abstractions;
 
 namespace RESTyard.Integration.Test.Fixtures;
 
@@ -29,14 +28,9 @@ public class CarShackWaf : WebApplicationFactory<CarShack.Program>, IAsyncLifeti
             });
     }
 
-    public Task InitializeAsync()
+    public ValueTask InitializeAsync()
     {
-        return Task.CompletedTask;
-    }
-
-    async Task IAsyncLifetime.DisposeAsync()
-    {
-        await this.DisposeAsync();
+        return ValueTask.CompletedTask;
     }
 
     private class LoggerFactoryMock(ITestOutputHelper outputHelper) : ILoggerFactory

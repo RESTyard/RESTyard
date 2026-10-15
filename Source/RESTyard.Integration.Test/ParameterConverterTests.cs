@@ -13,7 +13,6 @@ using RESTyard.Client.Reader;
 using RESTyard.Client.Resolver;
 using RESTyard.Integration.Test.Fixtures;
 using RESTyard.Integration.Test.Hco;
-using Xunit.Abstractions;
 
 namespace RESTyard.Integration.Test;
 
@@ -57,7 +56,7 @@ public class ParameterConverterTests : IAsyncLifetime
     protected HttpClient Client { get; private set; } = null!;
     protected IHypermediaResolver Resolver { get; private set; } = null!;
 
-    public Task InitializeAsync()
+    public ValueTask InitializeAsync()
     {
         this.Client = this.factoryWithConverters.CreateClient();
         this.Client.DefaultRequestHeaders.Authorization =
@@ -66,10 +65,10 @@ public class ParameterConverterTests : IAsyncLifetime
         this.Client.DefaultRequestHeaders.AcceptLanguage
             .Add(new StringWithQualityHeaderValue("en", 1.0));
         this.Resolver = this.apiResolverFactory.Create(this.Client);
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
-    public Task DisposeAsync() => Task.CompletedTask;
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
     [Fact]
     public async Task CustomConverter_IsApplied_OnController_FromBody_Path()

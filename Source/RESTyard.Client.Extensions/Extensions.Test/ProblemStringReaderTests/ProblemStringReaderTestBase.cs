@@ -1,24 +1,22 @@
 ﻿using AwesomeAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.Client.Reader;
 
-namespace Extensions.Test.ProblemStringReaderTests
+namespace Extensions.Test.ProblemStringReaderTests;
+
+public abstract class ProblemStringReaderTestBase
 {
-    public class ProblemStringReaderTestBase
+    protected string ProblemString { get; set; }
+
+    protected IProblemStringReader ProblemReader { get; set; }
+
+    [Fact]
+    public void ProblemStringReaderTest()
     {
-        protected string ProblemString { get; set; }
-
-        protected IProblemStringReader ProblemReader { get; set; }
-
-        [TestMethod]
-        public void ProblemStringReaderTest()
-        {
-            var canRead = ProblemReader.TryReadProblemString(ProblemString, out var description);
-            canRead.Should().BeTrue();
-            description!.Title.Should().Be("SomeProblem");
-            description.Type.Should().Be("UnitTestProblem");
-            description.Detail.Should().Be("This Unit Test was unexpectedly green");
-            description.Status.Should().Be(42);
-        }
+        var canRead = ProblemReader.TryReadProblemString(ProblemString, out var description);
+        canRead.Should().BeTrue();
+        description!.Title.Should().Be("SomeProblem");
+        description.Type.Should().Be("UnitTestProblem");
+        description.Detail.Should().Be("This Unit Test was unexpectedly green");
+        description.Status.Should().Be(42);
     }
 }

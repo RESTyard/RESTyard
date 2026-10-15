@@ -1,14 +1,268 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿namespace Extensions.Test.StringParserTests;
 
-namespace Extensions.Test.StringParserTests
+public abstract class JsonParserTestBase : StringParserTestBase
 {
-    public class JsonParserTestBase : StringParserTestBase
+    protected JsonParserTestBase()
     {
-        [TestInitialize]
-        public virtual void Initialize()
-        {
-            TextToBeParsed =
-                "{\r\n  \"class\": [\r\n    \"CustomersQueryResult\"\r\n  ],\r\n  \"title\": \"Query result on Customers\",\r\n  \"properties\": {\r\n    \"TotalEnties\": 20,\r\n    \"CurrentEntitiesCount\": 3\r\n  },\r\n  \"entities\": [\r\n    {\r\n      \"class\": [\r\n        \"Customer\"\r\n      ],\r\n      \"title\": \"A Customer\",\r\n      \"rel\": [\r\n        \"item\"\r\n      ],\r\n      \"properties\": {\r\n        \"FullName\": \"Adam Wong\",\r\n        \"Age\": 31,\r\n        \"Address\": \"Lantern Lane 202 Saint Petersburg\",\r\n        \"IsFavorite\": false\r\n      },\r\n      \"entities\": [],\r\n      \"actions\": [\r\n        {\r\n          \"name\": \"CustomerMove\",\r\n          \"title\": \"A Customer moved to a new location.\",\r\n          \"method\": \"POST\",\r\n          \"href\": \"http://localhost:5000/Customers/10/Moves\",\r\n          \"type\": \"application/json\",\r\n          \"fields\": [\r\n            {\r\n              \"name\": \"NewAddress\",\r\n              \"type\": \"application/json\",\r\n              \"class\": [\r\n                \"http://localhost:5000/Customers/NewAddressType\"\r\n              ]\r\n            }\r\n          ]\r\n        },\r\n        {\r\n          \"name\": \"MarkAsFavoriteAction\",\r\n          \"title\": \"Marks a Customer as a favorite buyer.\",\r\n          \"method\": \"POST\",\r\n          \"href\": \"http://localhost:5000/Customers/MyFavoriteCustomers?key=10\",\r\n          \"type\": \"application/json\",\r\n          \"fields\": [\r\n            {\r\n              \"name\": \"FavoriteCustomer\",\r\n              \"type\": \"application/json\",\r\n              \"class\": [\r\n                \"http://localhost:5000/ActionParameterTypes/FavoriteCustomer\"\r\n              ]\r\n            }\r\n          ]\r\n        },\r\n        {\r\n          \"name\": \"BuyCarAction\",\r\n          \"title\": \"Buy a car.\",\r\n          \"method\": \"POST\",\r\n          \"href\": \"http://localhost:5000/Customers/10/BuysCar\",\r\n          \"type\": \"application/json\",\r\n          \"fields\": [\r\n            {\r\n              \"name\": \"HypermediaActionCustomerBuysCar.Parameter\",\r\n              \"type\": \"application/json\",\r\n              \"class\": [\r\n                \"http://localhost:5000/ActionParameterTypes/HypermediaActionCustomerBuysCar.Parameter\"\r\n              ]\r\n            }\r\n          ]\r\n        }\r\n      ],\r\n      \"links\": [\r\n        {\r\n          \"rel\": [\r\n            \"self\"\r\n          ],\r\n          \"href\": \"http://localhost:5000/Customers/10\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"class\": [\r\n        \"Customer\"\r\n      ],\r\n      \"title\": \"A Customer\",\r\n      \"rel\": [\r\n        \"item\"\r\n      ],\r\n      \"properties\": {\r\n        \"FullName\": \"Duncan Miranda\",\r\n        \"Age\": 40,\r\n        \"Address\": \"Cambridge Road 11 Riyadh\",\r\n        \"IsFavorite\": true\r\n      },\r\n      \"entities\": [],\r\n      \"actions\": [\r\n        {\r\n          \"name\": \"CustomerMove\",\r\n          \"title\": \"A Customer moved to a new location.\",\r\n          \"method\": \"POST\",\r\n          \"href\": \"http://localhost:5000/Customers/13/Moves\",\r\n          \"type\": \"application/json\",\r\n          \"fields\": [\r\n            {\r\n              \"name\": \"NewAddress\",\r\n              \"type\": \"application/json\",\r\n              \"class\": [\r\n                \"http://localhost:5000/Customers/NewAddressType\"\r\n              ]\r\n            }\r\n          ]\r\n        },\r\n        {\r\n          \"name\": \"BuyCarAction\",\r\n          \"title\": \"Buy a car.\",\r\n          \"method\": \"POST\",\r\n          \"href\": \"http://localhost:5000/Customers/13/BuysCar\",\r\n          \"type\": \"application/json\",\r\n          \"fields\": [\r\n            {\r\n              \"name\": \"HypermediaActionCustomerBuysCar.Parameter\",\r\n              \"type\": \"application/json\",\r\n              \"class\": [\r\n                \"http://localhost:5000/ActionParameterTypes/HypermediaActionCustomerBuysCar.Parameter\"\r\n              ]\r\n            }\r\n          ]\r\n        }\r\n      ],\r\n      \"links\": [\r\n        {\r\n          \"rel\": [\r\n            \"self\"\r\n          ],\r\n          \"href\": \"http://localhost:5000/Customers/13\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"class\": [\r\n        \"Customer\"\r\n      ],\r\n      \"title\": \"A Customer\",\r\n      \"rel\": [\r\n        \"item\"\r\n      ],\r\n      \"properties\": {\r\n        \"FullName\": \"Christine Kelly\",\r\n        \"Age\": 41,\r\n        \"Address\": \"Eagle Street 62 Cairo\",\r\n        \"IsFavorite\": false\r\n      },\r\n      \"entities\": [],\r\n      \"actions\": [\r\n        {\r\n          \"name\": \"CustomerMove\",\r\n          \"title\": \"A Customer moved to a new location.\",\r\n          \"method\": \"POST\",\r\n          \"href\": \"http://localhost:5000/Customers/6/Moves\",\r\n          \"type\": \"application/json\",\r\n          \"fields\": [\r\n            {\r\n              \"name\": \"NewAddress\",\r\n              \"type\": \"application/json\",\r\n              \"class\": [\r\n                \"http://localhost:5000/Customers/NewAddressType\"\r\n              ]\r\n            }\r\n          ]\r\n        },\r\n        {\r\n          \"name\": \"MarkAsFavoriteAction\",\r\n          \"title\": \"Marks a Customer as a favorite buyer.\",\r\n          \"method\": \"POST\",\r\n          \"href\": \"http://localhost:5000/Customers/MyFavoriteCustomers?key=6\",\r\n          \"type\": \"application/json\",\r\n          \"fields\": [\r\n            {\r\n              \"name\": \"FavoriteCustomer\",\r\n              \"type\": \"application/json\",\r\n              \"class\": [\r\n                \"http://localhost:5000/ActionParameterTypes/FavoriteCustomer\"\r\n              ]\r\n            }\r\n          ]\r\n        },\r\n        {\r\n          \"name\": \"BuyCarAction\",\r\n          \"title\": \"Buy a car.\",\r\n          \"method\": \"POST\",\r\n          \"href\": \"http://localhost:5000/Customers/6/BuysCar\",\r\n          \"type\": \"application/json\",\r\n          \"fields\": [\r\n            {\r\n              \"name\": \"HypermediaActionCustomerBuysCar.Parameter\",\r\n              \"type\": \"application/json\",\r\n              \"class\": [\r\n                \"http://localhost:5000/ActionParameterTypes/HypermediaActionCustomerBuysCar.Parameter\"\r\n              ]\r\n            }\r\n          ]\r\n        }\r\n      ],\r\n      \"links\": [\r\n        {\r\n          \"rel\": [\r\n            \"self\"\r\n          ],\r\n          \"href\": \"http://localhost:5000/Customers/6\"\r\n        }\r\n      ]\r\n    }\r\n  ],\r\n  \"actions\": [],\r\n  \"links\": [\r\n    {\r\n      \"rel\": [\r\n        \"self\"\r\n      ],\r\n      \"href\": \"http://localhost:5000/Customers/Query?Pagination.PageSize=3&Pagination.PageOffset=2&SortBy.PropertyName=Age&SortBy.SortType=Ascending&Filter.MinAge=22\"\r\n    },\r\n    {\r\n      \"rel\": [\r\n        \"all\"\r\n      ],\r\n      \"href\": \"http://localhost:5000/Customers/Query?SortBy.PropertyName=Age&SortBy.SortType=Ascending&Filter.MinAge=22\"\r\n    },\r\n    {\r\n      \"rel\": [\r\n        \"first\"\r\n      ],\r\n      \"href\": \"http://localhost:5000/Customers/Query?Pagination.PageSize=3&SortBy.PropertyName=Age&SortBy.SortType=Ascending&Filter.MinAge=22\"\r\n    },\r\n    {\r\n      \"rel\": [\r\n        \"next\"\r\n      ],\r\n      \"href\": \"http://localhost:5000/Customers/Query?Pagination.PageSize=3&Pagination.PageOffset=5&SortBy.PropertyName=Age&SortBy.SortType=Ascending&Filter.MinAge=22\"\r\n    },\r\n    {\r\n      \"rel\": [\r\n        \"previous\"\r\n      ],\r\n      \"href\": \"http://localhost:5000/Customers/Query?Pagination.PageSize=3&SortBy.PropertyName=Age&SortBy.SortType=Ascending&Filter.MinAge=22\"\r\n    },\r\n    {\r\n      \"rel\": [\r\n        \"last\"\r\n      ],\r\n      \"href\": \"http://localhost:5000/Customers/Query?Pagination.PageSize=3&Pagination.PageOffset=17&SortBy.PropertyName=Age&SortBy.SortType=Ascending&Filter.MinAge=22\"\r\n    }\r\n  ]\r\n}";
-        }
+        TextToBeParsed =
+            """
+            {
+              "class": [
+                "CustomersQueryResult"
+              ],
+              "title": "Query result on Customers",
+              "properties": {
+                "TotalEnties": 20,
+                "CurrentEntitiesCount": 3
+              },
+              "entities": [
+                {
+                  "class": [
+                    "Customer"
+                  ],
+                  "title": "A Customer",
+                  "rel": [
+                    "item"
+                  ],
+                  "properties": {
+                    "FullName": "Adam Wong",
+                    "Age": 31,
+                    "Address": "Lantern Lane 202 Saint Petersburg",
+                    "IsFavorite": false
+                  },
+                  "entities": [],
+                  "actions": [
+                    {
+                      "name": "CustomerMove",
+                      "title": "A Customer moved to a new location.",
+                      "method": "POST",
+                      "href": "http://localhost:5000/Customers/10/Moves",
+                      "type": "application/json",
+                      "fields": [
+                        {
+                          "name": "NewAddress",
+                          "type": "application/json",
+                          "class": [
+                            "http://localhost:5000/Customers/NewAddressType"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "MarkAsFavoriteAction",
+                      "title": "Marks a Customer as a favorite buyer.",
+                      "method": "POST",
+                      "href": "http://localhost:5000/Customers/MyFavoriteCustomers?key=10",
+                      "type": "application/json",
+                      "fields": [
+                        {
+                          "name": "FavoriteCustomer",
+                          "type": "application/json",
+                          "class": [
+                            "http://localhost:5000/ActionParameterTypes/FavoriteCustomer"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "BuyCarAction",
+                      "title": "Buy a car.",
+                      "method": "POST",
+                      "href": "http://localhost:5000/Customers/10/BuysCar",
+                      "type": "application/json",
+                      "fields": [
+                        {
+                          "name": "HypermediaActionCustomerBuysCar.Parameter",
+                          "type": "application/json",
+                          "class": [
+                            "http://localhost:5000/ActionParameterTypes/HypermediaActionCustomerBuysCar.Parameter"
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "links": [
+                    {
+                      "rel": [
+                        "self"
+                      ],
+                      "href": "http://localhost:5000/Customers/10"
+                    }
+                  ]
+                },
+                {
+                  "class": [
+                    "Customer"
+                  ],
+                  "title": "A Customer",
+                  "rel": [
+                    "item"
+                  ],
+                  "properties": {
+                    "FullName": "Duncan Miranda",
+                    "Age": 40,
+                    "Address": "Cambridge Road 11 Riyadh",
+                    "IsFavorite": true
+                  },
+                  "entities": [],
+                  "actions": [
+                    {
+                      "name": "CustomerMove",
+                      "title": "A Customer moved to a new location.",
+                      "method": "POST",
+                      "href": "http://localhost:5000/Customers/13/Moves",
+                      "type": "application/json",
+                      "fields": [
+                        {
+                          "name": "NewAddress",
+                          "type": "application/json",
+                          "class": [
+                            "http://localhost:5000/Customers/NewAddressType"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "BuyCarAction",
+                      "title": "Buy a car.",
+                      "method": "POST",
+                      "href": "http://localhost:5000/Customers/13/BuysCar",
+                      "type": "application/json",
+                      "fields": [
+                        {
+                          "name": "HypermediaActionCustomerBuysCar.Parameter",
+                          "type": "application/json",
+                          "class": [
+                            "http://localhost:5000/ActionParameterTypes/HypermediaActionCustomerBuysCar.Parameter"
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "links": [
+                    {
+                      "rel": [
+                        "self"
+                      ],
+                      "href": "http://localhost:5000/Customers/13"
+                    }
+                  ]
+                },
+                {
+                  "class": [
+                    "Customer"
+                  ],
+                  "title": "A Customer",
+                  "rel": [
+                    "item"
+                  ],
+                  "properties": {
+                    "FullName": "Christine Kelly",
+                    "Age": 41,
+                    "Address": "Eagle Street 62 Cairo",
+                    "IsFavorite": false
+                  },
+                  "entities": [],
+                  "actions": [
+                    {
+                      "name": "CustomerMove",
+                      "title": "A Customer moved to a new location.",
+                      "method": "POST",
+                      "href": "http://localhost:5000/Customers/6/Moves",
+                      "type": "application/json",
+                      "fields": [
+                        {
+                          "name": "NewAddress",
+                          "type": "application/json",
+                          "class": [
+                            "http://localhost:5000/Customers/NewAddressType"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "MarkAsFavoriteAction",
+                      "title": "Marks a Customer as a favorite buyer.",
+                      "method": "POST",
+                      "href": "http://localhost:5000/Customers/MyFavoriteCustomers?key=6",
+                      "type": "application/json",
+                      "fields": [
+                        {
+                          "name": "FavoriteCustomer",
+                          "type": "application/json",
+                          "class": [
+                            "http://localhost:5000/ActionParameterTypes/FavoriteCustomer"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "BuyCarAction",
+                      "title": "Buy a car.",
+                      "method": "POST",
+                      "href": "http://localhost:5000/Customers/6/BuysCar",
+                      "type": "application/json",
+                      "fields": [
+                        {
+                          "name": "HypermediaActionCustomerBuysCar.Parameter",
+                          "type": "application/json",
+                          "class": [
+                            "http://localhost:5000/ActionParameterTypes/HypermediaActionCustomerBuysCar.Parameter"
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "links": [
+                    {
+                      "rel": [
+                        "self"
+                      ],
+                      "href": "http://localhost:5000/Customers/6"
+                    }
+                  ]
+                }
+              ],
+              "actions": [],
+              "links": [
+                {
+                  "rel": [
+                    "self"
+                  ],
+                  "href": "http://localhost:5000/Customers/Query?Pagination.PageSize=3&Pagination.PageOffset=2&SortBy.PropertyName=Age&SortBy.SortType=Ascending&Filter.MinAge=22"
+                },
+                {
+                  "rel": [
+                    "all"
+                  ],
+                  "href": "http://localhost:5000/Customers/Query?SortBy.PropertyName=Age&SortBy.SortType=Ascending&Filter.MinAge=22"
+                },
+                {
+                  "rel": [
+                    "first"
+                  ],
+                  "href": "http://localhost:5000/Customers/Query?Pagination.PageSize=3&SortBy.PropertyName=Age&SortBy.SortType=Ascending&Filter.MinAge=22"
+                },
+                {
+                  "rel": [
+                    "next"
+                  ],
+                  "href": "http://localhost:5000/Customers/Query?Pagination.PageSize=3&Pagination.PageOffset=5&SortBy.PropertyName=Age&SortBy.SortType=Ascending&Filter.MinAge=22"
+                },
+                {
+                  "rel": [
+                    "previous"
+                  ],
+                  "href": "http://localhost:5000/Customers/Query?Pagination.PageSize=3&SortBy.PropertyName=Age&SortBy.SortType=Ascending&Filter.MinAge=22"
+                },
+                {
+                  "rel": [
+                    "last"
+                  ],
+                  "href": "http://localhost:5000/Customers/Query?Pagination.PageSize=3&Pagination.PageOffset=17&SortBy.PropertyName=Age&SortBy.SortType=Ascending&Filter.MinAge=22"
+                }
+              ]
+            }
+            """;
     }
 }

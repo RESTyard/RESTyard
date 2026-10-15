@@ -1,12 +1,8 @@
-﻿using AwesomeAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿namespace RESTyard.AspNetCore.Test;
 
-namespace RESTyard.AspNetCore.Test;
-
-[TestClass]
 public class ApplicationModelTests : AssemblyBasedTestBase
 {
-    [TestMethod]
+    [Fact]
     public void CreateModel_HypermediaAttributes()
     {
         var assembly = CreateAssembly([

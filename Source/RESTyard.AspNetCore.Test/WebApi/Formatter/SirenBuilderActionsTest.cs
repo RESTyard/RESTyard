@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using AwesomeAssertions;
+using System.Net.Mime;
 using Microsoft.AspNetCore.Http;
 using System.Text.Json.Nodes;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Hypermedia.Attributes;
@@ -13,24 +12,17 @@ using RESTyard.MediaTypes;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter
 {
-    [TestClass]
     public class SirenBuilderActionsTest : SirenBuilderTestBase
     {
         private const string CustomMediaType = "custom/mediatype";
 
-        [ClassInitialize]
-        public static void ClassInit(TestContext context)
+        public SirenBuilderActionsTest()
         {
             ClassInitBase();
-        }
-
-        [TestInitialize]
-        public void TestInit()
-        {
             TestInitBase();
         }
 
-        [TestMethod]
+        [Fact]
         public void ActionsTest()
         {
             var routeName = nameof(ActionsHypermediaObject) + "_Route";

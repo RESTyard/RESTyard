@@ -1,29 +1,19 @@
 ﻿using System;
-using AwesomeAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.Test.Helpers;
 
 namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
 {
-    [TestClass]
     public class QueryStringBuilderTest
     {
         private QueryStringBuilder queryStringBuilder;
 
-        [TestInitialize]
-        public void Init()
+        public QueryStringBuilderTest()
         {
             queryStringBuilder = new QueryStringBuilder();
         }
 
-        [TestMethod]
-        public void CreateQueryStringBuilder()
-        {
-            Assert.IsNotNull(new QueryStringBuilder());
-        }
-
-        [TestMethod]
+        [Fact]
         public void SerializesTypesWithValues()
         {
             var queryObject = new QueryWithTypes
@@ -76,14 +66,14 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             Assert.IsTrue(string.IsNullOrEmpty(result));
         }
 
-        [TestMethod]
+        [Fact]
         public void SerializesNullToStringEmpty()
         {
             var result = queryStringBuilder.CreateQueryString(null);
             Assert.IsTrue(string.IsNullOrEmpty(result));
         }
 
-        [TestMethod]
+        [Fact]
         public void SerializesTypesWithNesting()
         {
             var queryObject = new QueryWithNesting

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.Test.WebApi.Formatter;
@@ -15,10 +13,9 @@ using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace RESTyard.AspNetCore.Test.WebApi;
 
-[TestClass]
 public class HypermediaApiExplorerTests : AssemblyBasedTestBase
 {
-    [TestMethod]
+    [Fact]
     public void CreateModel_HypermediaAttributes()
     {
         var assembly = CreateAssembly([
@@ -70,7 +67,7 @@ public class HypermediaApiExplorerTests : AssemblyBasedTestBase
         parameterInfoMetadata.RouteType.Should().Be(GetType<ExampleHto.BasicParameter>(assembly));
     }
 
-    [TestMethod]
+    [Fact]
     public void CreateModel_WithHmosDerivingFromOtherHmos()
     {
         var derived1name = "DerivedHmo1";
@@ -151,7 +148,7 @@ public class HypermediaApiExplorerTests : AssemblyBasedTestBase
             .RouteType.Should().Be(assembly.GetType($"{TestAssemblyNamespace}.{derived2name}"));
     }
     
-    [TestMethod]
+    [Fact]
     public void RouteToActionWithoutGetEndpointOnHto_IsResolved()
     {
         var assembly = CreateAssembly([

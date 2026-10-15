@@ -1,16 +1,11 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RESTyard.Client.Extensions.NewtonsoftJson;
+﻿using RESTyard.Client.Extensions.NewtonsoftJson;
 
-namespace Extensions.Test.StringParserTests
+namespace Extensions.Test.StringParserTests;
+
+public class NewtonsoftJsonParserTest : JsonParserTestBase
 {
-    [TestClass]
-    public class NewtonsoftJsonParserTest : JsonParserTestBase
+    public NewtonsoftJsonParserTest()
     {
-        [TestInitialize]
-        public override void Initialize()
-        {
-            base.Initialize();
-            Parser = new NewtonsoftJsonStringParser();
-        }
+        Parser = new NewtonsoftJsonStringParser();
     }
 }

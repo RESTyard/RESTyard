@@ -1,18 +1,15 @@
-﻿using AwesomeAssertions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.AspNetCore.Http;
 using RESTyard.AspNetCore.WebApi.RouteResolver;
 
 namespace RESTyard.AspNetCore.Test.WebApi.RouteResolver;
 
-[TestClass]
 public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
 {
     private static AttributedRoutesRegister CreateRegister(IHypermediaApiExplorer apiExplorer) => new AttributedRoutesRegister(
         apiExplorer,
         null!);
     
-    [TestMethod]
+    [Fact]
     public void HypermediaEndpoint_Get()
     {
         var assembly = CreateAssembly([
@@ -38,11 +35,11 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
         info.Name.Should().Contain(nameof(ExampleHto));
     }
 
-    [TestMethod]
-    [DataRow("Post")]
-    [DataRow("Put")]
-    [DataRow("Patch")]
-    [DataRow("Delete")]
+    [Theory]
+    [InlineData("Post")]
+    [InlineData("Put")]
+    [InlineData("Patch")]
+    [InlineData("Delete")]
     public void TestHypermediaAction(string method)
     {
         var assembly = CreateAssembly([
@@ -68,7 +65,7 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
         info.Name.Should().Contain(nameof(ExampleHto.BasicOp));
     }
 
-    [TestMethod]
+    [Fact]
     public void HypermediaParameterInfoEndpoint_Get()
     {
         var assembly = CreateAssembly([
@@ -94,7 +91,7 @@ public class AttributedRoutesRegisterTest : AssemblyBasedTestBase
         info.Name.Should().Contain(nameof(ExampleHto.BasicParameter));
     }
 
-    [TestMethod]
+    [Fact]
     public void QueryResultWithKey_Get()
     {
         var assembly = CreateAssembly([

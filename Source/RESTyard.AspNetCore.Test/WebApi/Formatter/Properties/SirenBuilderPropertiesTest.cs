@@ -3,28 +3,20 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Test.Helpers;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 {
-    [TestClass]
     public class SirenBuilderPropertiesTest : SirenBuilderTestBase
     {
-        [ClassInitialize]
-        public static void ClassInit(TestContext context)
+        public SirenBuilderPropertiesTest()
         {
             ClassInitBase();
-        }
-
-        [TestInitialize]
-        public void TestInit()
-        {
             TestInitBase();
         }
 
-        [TestMethod]
+        [Fact]
         public void EmptyObjectTest()
         {
             var routeName = nameof(EmptyHypermediaObject) + "_Route";
@@ -40,7 +32,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             AssertHasNoLinks(siren);
         }
 
-        [TestMethod]
+        [Fact]
         public void AttributedEmptyObjectTest()
         {
             var routeName = nameof(AttributedEmptyHypermediaObject) + "_Route";
@@ -66,8 +58,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             AssertHasNoLinks(siren);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [Fact]
         public void PropertyDuplicateObjectTest()
         {
             var routeName = nameof(PropertyDuplicateHypermediaObject) + "_Route";
@@ -77,7 +68,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             SirenConverter.ConvertToJson(ho);
         }
 
-        [TestMethod]
+        [Fact]
         public void AttributedPropertyTest()
         {
             var routeName = nameof(AttributedPropertyHypermediaObject) + "_Route";
@@ -121,7 +112,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void PropertyDefaultsObjectTest()
         {
             var routeName = nameof(PropertyHypermediaObject) + "_Route";
@@ -140,7 +131,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             PropertyHelpers.CompareHypermediaPropertiesAndJson(propertiesObject, ho);
         }
 
-        [TestMethod]
+        [Fact]
         public void PropertyDefaultsObjectWriteNoNullPropertiesTest()
         {
             var routeName = nameof(PropertyHypermediaObject) + "_Route";
@@ -159,7 +150,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             PropertyHelpers.CompareHypermediaPropertiesAndJsonNoNullProperties(propertiesObject, ho);
         }
 
-        [TestMethod]
+        [Fact]
         public void PropertyObjectTest()
         {
             var routeName = nameof(PropertyHypermediaObject) + "_Route";

@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using Json.Schema;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json.Linq;
 using RESTyard.AspNetCore.Hypermedia;
 using RESTyard.AspNetCore.Hypermedia.Actions;
 using RESTyard.AspNetCore.JsonSchema;
@@ -17,7 +16,7 @@ public static class SchemaValidator
 {
     public static void Validate(string expectedSchemaJson, Json.Schema.JsonSchema schema)
     {
-        var expectedSchemaJObject = JObject.Parse(expectedSchemaJson);
+        var expectedSchemaJObject = JsonNode.Parse(expectedSchemaJson);
         var expectedSchema = Json.Schema.JsonSchema.FromText(expectedSchemaJObject.ToString());
         foreach (var (propertyName, propertySchema) in expectedSchema.GetProperties())
         {
@@ -32,7 +31,6 @@ public static class SchemaValidator
     }
 }
 
-[TestClass]
 public class When_generating_json_schema_from_type_containing_a_list : AsyncTestSpecification
 {
     Json.Schema.JsonSchema schema;
@@ -43,7 +41,7 @@ public class When_generating_json_schema_from_type_containing_a_list : AsyncTest
        return Task.CompletedTask;
    }
 
-   [TestMethod]
+   [Fact]
    public void Then_match_schema_properties()
    {
        const string expectedSchemaJson =
@@ -74,7 +72,6 @@ public class When_generating_json_schema_from_type_containing_a_list : AsyncTest
    }
 }
 
-[TestClass]
 public class When_generating_json_schema_from_type_containing_a_list_and_not_a_list : AsyncTestSpecification
 {
     Json.Schema.JsonSchema schema;
@@ -85,7 +82,7 @@ public class When_generating_json_schema_from_type_containing_a_list_and_not_a_l
         return Task.CompletedTask;
     }
 
-    [TestMethod]
+    [Fact]
     public void Then_match_schema_properties()
     {
         const string expectedSchemaJson =
@@ -122,7 +119,6 @@ public class When_generating_json_schema_from_type_containing_a_list_and_not_a_l
     }
 }
 
-[TestClass]
 public class When_generating_json_schema_from_type_containing_two_types_and_a_list_and_not_a_list : AsyncTestSpecification
 {
     Json.Schema.JsonSchema schema;
@@ -133,7 +129,7 @@ public class When_generating_json_schema_from_type_containing_two_types_and_a_li
         return Task.CompletedTask;
     }
 
-    [TestMethod]
+    [Fact]
     public void Then_match_schema_properties()
     {
         const string expectedSchemaJson =
@@ -190,12 +186,11 @@ public class When_generating_json_schema_from_type_containing_two_types_and_a_li
     }
 }
 
-[TestClass]
 public class When_generating_json_schema_with_same_name_for_both_a_collection_and_a_non_collection : AsyncTestSpecification
 {
     Json.Schema.JsonSchema schema;
 
-    [TestMethod]
+    [Fact]
     public void GenerateSchemaAsync_Should_Fail()
     {
         try
@@ -231,12 +226,11 @@ public class When_generating_json_schema_with_same_name_for_both_a_collection_an
     }
 }
 
-[TestClass]
 public class When_generating_json_schema_with_same_name_for_multiple_target_types : AsyncTestSpecification
 {
     Json.Schema.JsonSchema schema;
 
-    [TestMethod]
+    [Fact]
     public void GenerateSchemaAsync_Should_Fail()
     {
         try

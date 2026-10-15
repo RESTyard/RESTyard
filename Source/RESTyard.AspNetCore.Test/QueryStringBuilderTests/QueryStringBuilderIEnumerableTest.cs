@@ -2,24 +2,21 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Query;
 using RESTyard.AspNetCore.Test.Helpers;
 
 namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
 {
-    [TestClass]
     public class QueryStringBuilderIEnumerableTest
     {
         private QueryStringBuilder queryStringBuilder;
 
-        [TestInitialize]
-        public void Init()
+        public QueryStringBuilderIEnumerableTest()
         {
             queryStringBuilder = new QueryStringBuilder();
         }
 
-        [TestMethod]
+        [Fact]
         public void TestNullList()
         {
             var listHolder = new IntListHolder();
@@ -31,7 +28,7 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             Assert.IsTrue(valueList.Count == 0);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestEmptyList()
         {
             var listHolder = new IntListHolder
@@ -47,7 +44,7 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
 
         }
 
-        [TestMethod]
+        [Fact]
         public void TestIntList()
         {
             var listHolder = new IntListHolder()
@@ -73,7 +70,7 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestStringList()
         {
             var listHolder = new StringListHolder()
@@ -99,7 +96,7 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestNestedList()
         {
             var nester = new Nester
@@ -125,7 +122,7 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestClassList()
         {
             var listHolder = new ChildListHolder()
@@ -153,7 +150,7 @@ namespace RESTyard.AspNetCore.Test.QueryStringBuilderTests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestIntDictionary()
         {
             var dictionaryHolder = new DictionaryHolder()

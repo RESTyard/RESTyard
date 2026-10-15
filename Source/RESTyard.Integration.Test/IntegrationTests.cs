@@ -10,7 +10,6 @@ using RESTyard.Client.Reader;
 using RESTyard.Client.Resolver;
 using RESTyard.Integration.Test.Fixtures;
 using RESTyard.Integration.Test.Hco;
-using Xunit.Abstractions;
 
 namespace RESTyard.Integration.Test;
 
@@ -38,7 +37,7 @@ public class IntegrationTests : IAsyncLifetime
     protected IHypermediaResolver Resolver { get; private set; } = null!;
     protected HttpClient CreateClient() => this.carShackFactory.CreateClient();
 
-    public Task InitializeAsync()
+    public ValueTask InitializeAsync()
     {
         this.Client = this.CreateClient();
         this.Client.DefaultRequestHeaders.Authorization =
@@ -47,12 +46,12 @@ public class IntegrationTests : IAsyncLifetime
         this.Client.DefaultRequestHeaders.AcceptLanguage
             .Add(new StringWithQualityHeaderValue("en", 1.0));
         this.Resolver = this.apiResolverFactory.Create(this.Client);
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
-    public Task DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     [Fact]

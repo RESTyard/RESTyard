@@ -1,28 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using RESTyard.AspNetCore.Util;
 
 namespace RESTyard.AspNetCore.Test.Hypermedia
 {
-    [TestClass]
     public class StringListComparerTest
     {
         private StringReadOnlyCollectionComparer stringReadOnlyListComparer;
 
-        [TestInitialize]
-        public void TestInit()
+        public StringListComparerTest()
         {
             stringReadOnlyListComparer = new StringReadOnlyCollectionComparer();
         }
 
-        [TestMethod]
+        [Fact]
         public void Compare_Null_ReturnsTrue()
         {
             Assert.IsTrue(stringReadOnlyListComparer.Equals(null, null));
         }
 
-        [TestMethod]
+        [Fact]
         public void Compare_SameList_ReturnsTrue()
         {
             var listA = new List<string> { "" };
@@ -30,14 +28,14 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
             Assert.IsTrue(stringReadOnlyListComparer.Equals(listA, listA));
         }
 
-        [TestMethod]
+        [Fact]
         public void Compare_EmptyNull_ReturnsFalse()
         {
             var listA = new List<string> {""};
             Assert.IsFalse(stringReadOnlyListComparer.Equals(listA, null));
         }
 
-        [TestMethod]
+        [Fact]
         public void Compare_BothEmpty_ReturnsTrue()
         {
             var listA = new List<string> { "" };
@@ -46,7 +44,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
             Assert.IsTrue(stringReadOnlyListComparer.Equals(listA, listB));
         }
 
-        [TestMethod]
+        [Fact]
         public void Compare_Equal_ReturnsTrue()
         {
             var listA = new List<string> { "A" };
@@ -55,7 +53,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
             Assert.IsTrue(stringReadOnlyListComparer.Equals(listA, listB));
         }
 
-        [TestMethod]
+        [Fact]
         public void Compare_OneEmptyOneSet_ReturnsFalse()
         {
             var listA = new List<string> { "A" };
@@ -64,7 +62,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
             Assert.IsFalse(stringReadOnlyListComparer.Equals(listA, listB));
         }
 
-        [TestMethod]
+        [Fact]
         public void Compare_OneListLarger_ReturnsFalse()
         {
             var listA = new List<string> { "A", "B" };
@@ -73,7 +71,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
             Assert.IsFalse(stringReadOnlyListComparer.Equals(listA, listB));
         }
 
-        [TestMethod]
+        [Fact]
         public void Compare_SameContentOrderDifferent_ReturnsTrue()
         {
             var listA = new List<string> { "B", "A" };
@@ -82,7 +80,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
             Assert.IsTrue(stringReadOnlyListComparer.Equals(listA, listB));
         }
 
-        [TestMethod]
+        [Fact]
         public void Compare_SameContentLongOrderDifferent_ReturnsTrue()
         {
             var listA = new List<string> { "Abc", "Def" };
@@ -90,7 +88,5 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
 
             Assert.IsTrue(stringReadOnlyListComparer.Equals(listA, listB));
         }
-
-
     }
 }

@@ -1,26 +1,16 @@
-﻿using System.Linq;
-using Microsoft.AspNetCore.Http;
-using System.Text.Json.Nodes;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.AspNetCore.Http;
 
 namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
 {
-    [TestClass]
     public class SirenBuilderObjectPropertiesTest : SirenBuilderTestBase
     {
-        [ClassInitialize]
-        public static void ClassInit(TestContext context)
+        public SirenBuilderObjectPropertiesTest()
         {
             ClassInitBase();
-        }
-
-        [TestInitialize]
-        public void TestInit()
-        {
             TestInitBase();
         }
 
-        [TestMethod]
+        [Fact]
         public void PropertyNestedClass()
         {
             var routeName = nameof(PropertyNestedClassHypermediaObject) + "_Route";
@@ -56,7 +46,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             Assert.AreEqual(ho.AChild.NotRenamed, nestedJObject[nameof(AttributedPropertyHypermediaObject.NotRenamed)]!.GetValue<bool>());
         }
 
-        [TestMethod]
+        [Fact]
         public void PropertyNestedClassNull()
         {
             var routeName = nameof(PropertyNestedClassHypermediaObject) + "_Route";
@@ -80,7 +70,7 @@ namespace RESTyard.AspNetCore.Test.WebApi.Formatter.Properties
             Assert.IsNull(propertiesObject.First().Value);
         }
 
-        [TestMethod]
+        [Fact]
         public void PropertyNestedClassNullNoNullProperties()
         {
             var routeName = nameof(PropertyNestedClassHypermediaObject) + "_Route";

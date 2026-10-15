@@ -1,17 +1,12 @@
 ﻿using System.Text.Json;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.Client.Extensions.SystemTextJson;
 
-namespace Extensions.Test.SerializerTests
+namespace Extensions.Test.SerializerTests;
+
+public class SystemTextJsonObjectSerializerTest : JsonObjectSerializerTestBase
 {
-    [TestClass]
-    public class SystemTextJsonObjectSerializerTest : JsonObjectSerializerTestBase
+    public SystemTextJsonObjectSerializerTest()
     {
-        [TestInitialize]
-        public override void Initialize()
-        {
-            base.Initialize();
-            Serializer = new SystemTextJsonObjectParameterSerializer(new JsonSerializerOptions() { WriteIndented = true });
-        }
+        Serializer = new SystemTextJsonObjectParameterSerializer(new JsonSerializerOptions() { WriteIndented = true });
     }
 }

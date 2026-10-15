@@ -1,11 +1,8 @@
 using System.Text.Json;
-using AwesomeAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RESTyard.AspNetCore.Hypermedia.Siren.Model;
 
 namespace RESTyard.AspNetCore.Test.Hypermedia.Siren.Model;
 
-[TestClass]
 public class SirenModelSerializationTests
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -15,7 +12,7 @@ public class SirenModelSerializationTests
         WriteIndented = false,
     };
 
-    [TestMethod]
+    [Fact]
     public void SirenEntity_RoundTrip_PreservesAllProperties()
     {
         var entity = new SirenEntity<object>
@@ -63,7 +60,7 @@ public class SirenModelSerializationTests
         root.GetProperty("entities")[0].GetProperty("href").GetString().Should().Be("/orders/100");
     }
 
-    [TestMethod]
+    [Fact]
     public void SirenEntityGeneric_RoundTrip_PreservesTypedProperties()
     {
         var entity = new SirenEntity<TestProperties>
@@ -84,7 +81,7 @@ public class SirenModelSerializationTests
         deserialized.Class.Should().BeEquivalentTo(["Customer"]);
     }
 
-    [TestMethod]
+    [Fact]
     public void SirenLink_RoundTrip_PreservesAllProperties()
     {
         var link = new SirenLink
@@ -107,7 +104,7 @@ public class SirenModelSerializationTests
         deserialized.Class.Should().BeEquivalentTo(["primary"]);
     }
 
-    [TestMethod]
+    [Fact]
     public void SirenAction_RoundTrip_PreservesAllProperties()
     {
         var action = new SirenAction
@@ -143,7 +140,7 @@ public class SirenModelSerializationTests
         deserialized.Fields[0].Type.Should().Be("application/json");
     }
 
-    [TestMethod]
+    [Fact]
     public void SirenField_FileUploadExtensions_RoundTrip()
     {
         var field = new SirenField
@@ -164,7 +161,7 @@ public class SirenModelSerializationTests
         deserialized.AllowMultiple.Should().Be(true);
     }
 
-    [TestMethod]
+    [Fact]
     public void SirenField_FileUploadExtensions_OmittedWhenNull()
     {
         var field = new SirenField { Name = "data", Type = "application/json" };
@@ -176,7 +173,7 @@ public class SirenModelSerializationTests
         json.Should().NotContain("allowMultiple");
     }
 
-    [TestMethod]
+    [Fact]
     public void SirenEmbeddedEntity_Serialization_IncludesDerivedProperties()
     {
         var embedded = new SirenEmbeddedEntity<object>
@@ -202,7 +199,7 @@ public class SirenModelSerializationTests
         deserialized.Title.Should().Be("Order 100");
     }
 
-    [TestMethod]
+    [Fact]
     public void SirenEmbeddedEntityGeneric_TypeSafe_SerializesCorrectly()
     {
         var embedded = new SirenEmbeddedEntity<TestProperties>
@@ -226,7 +223,7 @@ public class SirenModelSerializationTests
         root.GetProperty("class")[0].GetString().Should().Be("Customer");
     }
 
-    [TestMethod]
+    [Fact]
     public void SirenLinkedEntity_Serialization_IncludesDerivedProperties()
     {
         var linked = new SirenLinkedEntity
@@ -256,7 +253,7 @@ public class SirenModelSerializationTests
         deserialized.Type.Should().Be("application/vnd.siren+json");
     }
 
-    [TestMethod]
+    [Fact]
     public void SirenEntity_JsonPropertyNames_UseSirenConventions()
     {
         var entity = new SirenEntity<object>
@@ -273,7 +270,7 @@ public class SirenModelSerializationTests
         json.Should().NotContain("\"Title\"");
     }
 
-    [TestMethod]
+    [Fact]
     public void SirenEntity_NullCollections_OmittedFromJson()
     {
         var entity = new SirenEntity<object>
@@ -289,7 +286,7 @@ public class SirenModelSerializationTests
         json.Should().NotContain("\"title\"");
     }
 
-    [TestMethod]
+    [Fact]
     public void FullSirenDocument_RoundTrip()
     {
         var entity = new SirenEntity<TestProperties>
@@ -357,7 +354,7 @@ public class SirenModelSerializationTests
         root.GetProperty("entities").GetArrayLength().Should().Be(2);
     }
 
-    [TestMethod]
+    [Fact]
     public void SirenSubEntityConverter_DeserializesEmbeddedEntity_WhenPropertiesPresent()
     {
         var json = """
@@ -381,7 +378,7 @@ public class SirenModelSerializationTests
         embedded.Links.Should().HaveCount(1);
     }
 
-    [TestMethod]
+    [Fact]
     public void SirenSubEntityConverter_DeserializesEmbeddedEntity_WhenEntitiesPresent()
     {
         var json = """
@@ -402,7 +399,7 @@ public class SirenModelSerializationTests
         embedded.Entities.Should().HaveCount(1);
     }
 
-    [TestMethod]
+    [Fact]
     public void SirenSubEntityConverter_DeserializesLinkedEntity_WhenHrefPresent()
     {
         var json = """
@@ -426,7 +423,7 @@ public class SirenModelSerializationTests
         linked.Type.Should().Be("application/vnd.siren+json");
     }
 
-    [TestMethod]
+    [Fact]
     public void SirenSubEntityConverter_ThrowsOnAmbiguousSubEntity()
     {
         var json = """{ "rel": ["unknown"] }""";
@@ -436,7 +433,7 @@ public class SirenModelSerializationTests
         act.Should().Throw<JsonException>();
     }
 
-    [TestMethod]
+    [Fact]
     public void SirenSubEntityConverter_FullRoundTrip_WithMixedSubEntities()
     {
         var entity = new SirenEntity<TestProperties>

@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace RESTyard.AspNetCore.Test.Hypermedia
 {
     public abstract class TestSpecification
     {
-        [TestInitialize]
-        public void Init()
+        protected TestSpecification()
         {
             Given();
             When();
@@ -18,11 +16,9 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
         public abstract void When();
     }
 
-    [TestClass]
-    public abstract class AsyncTestSpecification
+    public abstract class AsyncTestSpecification : IAsyncLifetime
     {
-        [TestInitialize]
-        public async Task Initialize()
+        public async ValueTask InitializeAsync()
         {
             Given();
             await GivenAsync().ConfigureAwait(false);
@@ -34,8 +30,7 @@ namespace RESTyard.AspNetCore.Test.Hypermedia
         protected virtual void Given() { }
         protected virtual Task When() { return Task.FromResult(42); }
 
-        [TestCleanup]
-        public virtual void CleanUp() { }
+        public virtual ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
         protected void Log(string message)
         {
