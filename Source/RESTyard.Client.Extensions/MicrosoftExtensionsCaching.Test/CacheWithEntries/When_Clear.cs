@@ -16,7 +16,7 @@ public class When_Clear : Given_ACacheWithEntries
     public async Task Then_TheUserSpecificEntryIsRemoved()
     {
         // The Post eviction callback is called asynchronously, so we have to wait here for a moment
-        await Task.Delay(TimeSpan.FromMilliseconds(10));
+        await Task.Delay(TimeSpan.FromMilliseconds(100), TestContext.Current.CancellationToken);
         this.UserCache.TryGetValue(this.TestUri, out _).Should().BeFalse();
     }
 }
