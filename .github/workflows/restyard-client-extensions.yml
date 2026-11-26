@@ -33,7 +33,7 @@ jobs:
     - name: Run Tests
       run: dotnet test ./Source/RESTyard.Client.Extensions/Extensions.Test/Extensions.Test.csproj --configuration Release
     - name: Pack
-      run: for proj in NewtonsoftJson SystemNetHttp SystemTestJson; do dotnet pack ./Source/RESTyard.Client.Extensions/$proj/$proj.csproj --no-build --configuration Release --output artifacts; done
+      run: for proj in NewtonsoftJson SystemNetHttp SystemTextJson; do dotnet pack ./Source/RESTyard.Client.Extensions/$proj/$proj.csproj --no-build --configuration Release --output artifacts; done
     - uses: actions/upload-artifact@v4
       if: github.event_name != 'pull_request'
       with:
