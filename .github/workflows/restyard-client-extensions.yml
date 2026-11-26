@@ -29,11 +29,11 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore ./Source
     - name: Build Client Extensions
-      run: for proj in NewtonsoftJson SystemNetHttp SystemTextJson; do dotnet build ./Source/RESTyard.Client.Extensions/$proj/$proj.csproj --no-restore --configuration Release
+      run: for proj in NewtonsoftJson SystemNetHttp SystemTextJson; do dotnet build ./Source/RESTyard.Client.Extensions/$proj/$proj.csproj --no-restore --configuration Release; done
     - name: Run Tests
       run: dotnet test ./Source/RESTyard.Client.Extensions/Extensions.Test/Extensions.Test.csproj --configuration Release
     - name: Pack
-      run: for proj in NewtonsoftJson SystemNetHttp SystemTestJson; do dotnet pack ./Source/RESTyard.Client.Extensions/$proj/$proj.csproj --no-build --configuration Release --output artifacts
+      run: for proj in NewtonsoftJson SystemNetHttp SystemTestJson; do dotnet pack ./Source/RESTyard.Client.Extensions/$proj/$proj.csproj --no-build --configuration Release --output artifacts; done
     - uses: actions/upload-artifact@v4
       if: github.event_name != 'pull_request'
       with:
