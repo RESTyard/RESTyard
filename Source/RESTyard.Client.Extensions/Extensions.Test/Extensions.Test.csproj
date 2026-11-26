@@ -1,34 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-
     <IsPackable>false</IsPackable>
     <!-- CS1591: missing documentation on public methods -->
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="AwesomeAssertions" Version="9.3.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.2.1" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.2.1" />
-    <PackageReference Include="coverlet.collector" Version="6.0.4">
+    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="MSTest.TestAdapter" />
+    <PackageReference Include="MSTest.TestFramework" />
+    <PackageReference Include="coverlet.collector">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\NewtonsoftJson\NewtonsoftJson.csproj" />
     <ProjectReference Include="..\SystemTextJson\SystemTextJson.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="ProblemStringReaderTests\" />
   </ItemGroup>
-
-	<ItemGroup>
-		<Compile Include="..\..\Shared\DefaultHypermediaRelations.cs" Link="DefaultHypermediaRelations.cs" />
-	</ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\Shared\DefaultHypermediaRelations.cs" Link="DefaultHypermediaRelations.cs" />
+  </ItemGroup>
 </Project>

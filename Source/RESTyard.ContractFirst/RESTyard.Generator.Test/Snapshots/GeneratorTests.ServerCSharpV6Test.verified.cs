@@ -15,6 +15,7 @@ using RESTyard.Relations;
 using RESTyard.Generator.Test.Output;
 
 namespace server._csharp._v6;
+
 public static class MimeTypes
 {
     public const string APPLICATION_JSON = "application/json";

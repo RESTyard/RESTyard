@@ -213,7 +213,7 @@ namespace RESTyard.Client.Reader
             foreach (var match in matchingEntities)
             {
                 var entityResult = this.ReadHypermediaObject(match, resolver);
-                entityResult.Match(entity => genericAddFunction.Invoke(entityCollection, new object[] { entity }));
+                entityResult.Match(entity => genericAddFunction.Invoke(entityCollection, [entity]));
                 if (entityResult.IsError)
                 {
                     return entityResult.Map(_ => No.Thing);

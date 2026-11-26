@@ -4,9 +4,13 @@ using FunicularSwitch.Generators;
 namespace RESTyard.Client.Reader;
 
 [ResultType(ErrorType = typeof(HypermediaReaderProblem))]
-public abstract partial class HypermediaReaderResult
+public abstract partial class HypermediaReaderResult<T>
 {
-    
+    internal bool IsOk => this.Match(
+        ok: _ => true,
+        error: _ => false);
+
+    internal bool IsError => !this.IsOk;
 }
 
 [UnionType(CaseOrder = CaseOrder.AsDeclared)]

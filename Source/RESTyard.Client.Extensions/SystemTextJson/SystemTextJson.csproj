@@ -1,12 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <!-- General settings -->
-    
     <Version>$(RESTyardClientVersion)</Version>
     <TargetFrameworks>netstandard2.0;net10.0</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    
     <!-- Descriptions and information -->
     <Title>System.Text.Json implementation for RESTyard.Client</Title>
     <PackageDescription>Implementations of IStringParser, IParameterSerializer, IProblemStringReader for RESTyard.Client using System.Text.Json</PackageDescription>
@@ -18,26 +15,22 @@
     <RepositoryUrl>https://github.com/RESTyard/RESTyard</RepositoryUrl>
     <RepositoryBranch>$(BranchName)</RepositoryBranch>
     <PackageIcon>Ry-Icon_128x128.png</PackageIcon>
-    
     <!-- Package specific settings -->
     <PackageId>RESTyard.Client.Extensions.SystemTextJson</PackageId>
     <PackageVersion>$(Version)</PackageVersion>
-    <PackageReleaseNotes></PackageReleaseNotes>
+    <PackageReleaseNotes>
+    </PackageReleaseNotes>
     <IsPackable>true</IsPackable>
     <RootNamespace>RESTyard.Client.Extensions.SystemTextJson</RootNamespace>
   </PropertyGroup>
-
   <!-- package image -->
   <ItemGroup>
     <None Include=".\Images\Ry-Icon_128x128.png" Pack="true" PackagePath="\" />
   </ItemGroup>
-  
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="8.0.6" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\RESTyard.Client\RESTyard.Client.csproj" />
   </ItemGroup>
-
 </Project>
