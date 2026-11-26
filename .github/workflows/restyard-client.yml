@@ -4,15 +4,17 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - './Source/*'
-      - './Source/RESTyard.Client*/**'
-      - './Source/RESTyard.Integration.Test/**'
+      - 'Source/*'
+      - 'Source/RESTyard.Client*/**'
+      - 'Source/RESTyard.Integration.Test/**'
+      - '.github/workflows/restyard-client.yml'
   pull_request:
     branches: [ "develop" ]
     paths:
-      - './Source/*'
-      - './Source/RESTyard.Client*/**'
-      - './Source/RESTyard.Integration.Test/**'
+      - 'Source/*'
+      - 'Source/RESTyard.Client*/**'
+      - 'Source/RESTyard.Integration.Test/**'
+      - '.github/workflows/restyard-client.yml'
 
 jobs:
   build:

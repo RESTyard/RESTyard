@@ -4,13 +4,15 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - './Source/*'
-      - './Source/RESTyard.ContractFirst/**'
+      - 'Source/*'
+      - 'Source/RESTyard.ContractFirst/**'
+      - '.github/workflows/restyard-generator.yml'
   pull_request:
     branches: [ "develop" ]
     paths:
-      - './Source/*'
-      - './Source/RESTyard.ContractFirst/**'
+      - 'Source/*'
+      - 'Source/RESTyard.ContractFirst/**'
+      - '.github/workflows/restyard-generator.yml'
 
 jobs:
   build:
