@@ -12,9 +12,9 @@
       $(VersionSuffix)
     </VersionSuffixLocal>
     <!-- Bump a component's base version deliberately when preparing its next release. -->
-    <RESTyardAspNetCoreVersion>7.0.0$(VersionSuffixLocal)</RESTyardAspNetCoreVersion>
-    <RESTyardClientVersion>4.0.0$(VersionSuffixLocal)</RESTyardClientVersion>
-    <RESTyardGeneratorVersion>0.13.0$(VersionSuffixLocal)</RESTyardGeneratorVersion>
+    <RESTyardAspNetCoreVersion>8.0.0$(VersionSuffixLocal)</RESTyardAspNetCoreVersion>
+    <RESTyardClientVersion>5.0.0$(VersionSuffixLocal)</RESTyardClientVersion>
+    <RESTyardGeneratorVersion>0.14.0$(VersionSuffixLocal)</RESTyardGeneratorVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="AwesomeAssertions" Version="9.3.0" />
