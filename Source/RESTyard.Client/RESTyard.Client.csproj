@@ -33,6 +33,12 @@
     <Compile Include="..\Shared\DefaultMediaTypes.cs" Link="DefaultMediaTypes.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference
+        Include="..\RESTyard.Client.Analyzers\RESTyard.Client.Analyzers.csproj"
+        ReferenceOutputAssembly="false"
+        PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\RESTyard.Client.Analyzers\bin\$(Configuration)\netstandard2.0\RESTyard.Client.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
   <ItemGroup>

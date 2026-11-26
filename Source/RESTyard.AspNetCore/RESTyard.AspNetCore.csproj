@@ -40,6 +40,12 @@
     </AssemblyAttribute>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference
+        Include="..\RESTyard.AspNetCore.Analyzers\RESTyard.AspNetCore.Analyzers.csproj"
+        ReferenceOutputAssembly="false"
+        PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="..\Shared\DefaultHypermediaRelations.cs" Link="DefaultHypermediaRelations.cs" />
     <Compile Include="..\Shared\DefaultMediaTypes.cs" Link="DefaultMediaTypes.cs" />
   </ItemGroup>

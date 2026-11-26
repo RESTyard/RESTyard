@@ -1,0 +1,39 @@
+name: RESTyard.Client Build
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - './Source/*'
+      - './Source/RESTyard.Client*/**'
+      - './Source/RESTyard.Integration.Test/**'
+  pull_request:
+    branches: [ "develop" ]
+    paths:
+      - './Source/*'
+      - './Source/RESTyard.Client*/**'
+      - './Source/RESTyard.Integration.Test/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 11.0.x
+    - name: Restore dependencies
+      run: dotnet restore ./Source
+    - name: Build Client
+      run: dotnet build ./Source/RESTyard.Client/RESTyard.Client.csproj --no-restore --configuration Release
+    - name: Run Tests
+      run: for proj in RESTyard.Client.Test RESTyard.Client.Analyzers.Test RESTyard.Integration.Test; do dotnet test ./Source/$proj/$proj.csproj --configuration Release; done
+    - name: Pack
+      run: dotnet pack ./Source/RESTyard.Client/RESTyard.Client.csproj --no-build --configuration Release --output artifacts
+    - uses: actions/upload-artifact@v4
+      if: github.event_name != 'pull_request'
+      with:
+        name: packages
+        path: artifacts/*.nupkg
