@@ -81,7 +81,7 @@ public class CustomerController : Controller
             var keyFromUri =
                 this.keyFromUriService.GetKeyFromUri<HypermediaCustomerHto, HypermediaCustomerHto.CustomKey>(
                     favoriteCustomer.Customer);
-            if (keyFromUri.IsError)
+            if (keyFromUri.Match(ok: _ => false, error: _ => true))
             {
                 return this.BadRequest();
             }

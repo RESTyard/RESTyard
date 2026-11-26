@@ -2,6 +2,7 @@
 using RESTyard.Generator.Test.Output;
 
 namespace server._csharp._v4;
+
 public static class PermissionScopes
 {
     public const string BASIC = "Basic";

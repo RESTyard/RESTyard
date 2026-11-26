@@ -1,38 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    
     <!-- CS1591: missing documentation on public methods -->
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="AwesomeAssertions" Version="9.3.0" />
-    <PackageReference Include="FunicularSwitch.Generators.AwesomeAssertions" Version="1.0.2">
+    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="FunicularSwitch.Generators.AwesomeAssertions">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.2.1" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.2.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="MSTest.TestAdapter" />
+    <PackageReference Include="MSTest.TestFramework" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\RESTyard.Client.Extensions\SystemNetHttp\SystemNetHttp.csproj" PrivateAssets="All" />
     <ProjectReference Include="..\RESTyard.Client.Extensions\SystemTextJson\SystemTextJson.csproj" PrivateAssets="All" />
     <ProjectReference Include="..\RESTyard.Client\RESTyard.Client.csproj" PrivateAssets="All" />
   </ItemGroup>
-
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
-
-	<ItemGroup>
-		<Compile Include="..\Shared\DefaultHypermediaRelations.cs" Link="DefaultHypermediaRelations.cs" />
-	</ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Shared\DefaultHypermediaRelations.cs" Link="DefaultHypermediaRelations.cs" />
+  </ItemGroup>
 </Project>

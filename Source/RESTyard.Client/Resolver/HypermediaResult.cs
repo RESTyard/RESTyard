@@ -5,9 +5,13 @@ using RESTyard.Client.Exceptions;
 namespace RESTyard.Client.Resolver;
 
 [ResultType(ErrorType = typeof(HypermediaProblem))]
-public abstract partial class HypermediaResult
+public abstract partial class HypermediaResult<T>
 {
-    
+    internal bool IsOk => this.Match(
+        ok: _ => true,
+        error: _ => false);
+
+    internal bool IsError => !this.IsOk;
 }
 
 [UnionType(CaseOrder = CaseOrder.AsDeclared)]

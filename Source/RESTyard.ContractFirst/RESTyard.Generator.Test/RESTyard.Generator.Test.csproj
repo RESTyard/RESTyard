@@ -1,52 +1,45 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <IsPackable>false</IsPackable>
-        <NoWarn>CS1591</NoWarn>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="AwesomeAssertions" Version="9.3.0" />
-        <PackageReference Include="coverlet.collector" Version="6.0.4">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.13.0" />
-        <PackageReference Include="Verify.XunitV3" Version="30.0.0" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="xunit.v3" Version="2.0.2" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="Xunit" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\RESTyard.Generator\RESTyard.Generator.csproj" />
-      <ProjectReference Include="..\..\RESTyard.AspNetCore\RESTyard.AspNetCore.csproj" />
-      <ProjectReference Include="..\..\RESTyard.Client\RESTyard.Client.csproj" />
-      <ProjectReference Include="..\LegacyV4Packages\LegacyV4Packages.csproj" ReferenceOutputAssembly="false" />
-      <ProjectReference Include="..\LegacyV5Packages\LegacyV5Packages.csproj" ReferenceOutputAssembly="false" />
-      <ProjectReference Include="..\LegacyV6Packages\LegacyV6Packages.csproj" ReferenceOutputAssembly="false" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Update="TestSchema.xml">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <Compile Remove="Snapshots/**" />
-      <None Include="Snapshots/**" />
-    </ItemGroup>
-
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+    <PackageReference Include="Verify.XunitV3" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RESTyard.Generator\RESTyard.Generator.csproj" />
+    <ProjectReference Include="..\..\RESTyard.AspNetCore\RESTyard.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\RESTyard.Client\RESTyard.Client.csproj" />
+    <ProjectReference Include="..\LegacyV4Packages\LegacyV4Packages.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\LegacyV5Packages\LegacyV5Packages.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\LegacyV6Packages\LegacyV6Packages.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="TestSchema.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <Compile Remove="Snapshots/**" />
+    <None Include="Snapshots/**" />
+  </ItemGroup>
 </Project>

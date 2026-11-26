@@ -10,6 +10,7 @@ using RESTyard.Client.Hypermedia.Commands;
 using RESTyard.Generator.Test.Output;
 
 namespace client._csharp._v3;
+
 public class DefaultHypermediaClientBuilder
 {
     public static IHypermediaResolverBuilder CreateBuilder() => HypermediaResolverBuilder.CreateBuilder().ConfigureObjectRegister(register =>

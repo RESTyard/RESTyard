@@ -7,6 +7,7 @@ using RESTyard.Generator.Test.Output;
 using server._csharp._v5;
 
 namespace server._csharp_controller._v5;
+
 [Route("api/[controller]")]
 public class BaseController : ControllerBase
 {

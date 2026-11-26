@@ -1,0 +1,39 @@
+name: RESTyard.Generator Build
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'Source/*'
+      - 'Source/RESTyard.ContractFirst/**'
+      - '.github/workflows/restyard-generator.yml'
+  pull_request:
+    branches: [ "develop" ]
+    paths:
+      - 'Source/*'
+      - 'Source/RESTyard.ContractFirst/**'
+      - '.github/workflows/restyard-generator.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 11.0.x
+    - name: Restore dependencies
+      run: dotnet restore ./Source
+    - name: Build Generator
+      run: dotnet build ./Source/RESTyard.ContractFirst/RESTyard.Generator/RESTyard.Generator.csproj --no-restore --configuration Release
+    - name: Run Tests
+      run: dotnet test ./Source/RESTyard.ContractFirst/RESTyard.Generator.Test/RESTyard.Generator.Test.csproj --configuration Release
+    - name: Pack
+      run: dotnet pack ./Source/RESTyard.ContractFirst/RESTyard.Generator/RESTyard.Generator.csproj --no-build --configuration Release --output artifacts
+    - uses: actions/upload-artifact@v4
+      if: github.event_name != 'pull_request'
+      with:
+        name: packages
+        path: artifacts/*.nupkg

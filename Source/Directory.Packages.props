@@ -1,14 +1,66 @@
 <Project>
   <PropertyGroup>
-    <VersionSuffixLocal></VersionSuffixLocal>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    <NoWarn>$(NoWarn);NU1507</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VersionSuffixLocal>
+    </VersionSuffixLocal>
     <!--When variable is set we are building a prerelease package-->
     <VersionSuffixLocal Condition="'$(IsPreRelease)'!='' AND  '$(IsPreRelease)'">
       $(VersionSuffix)
     </VersionSuffixLocal>
-    
     <!-- Bump a component's base version deliberately when preparing its next release. -->
-    <RESTyardAspNetCoreVersion>7.0.0$(VersionSuffixLocal)</RESTyardAspNetCoreVersion>
-    <RESTyardClientVersion>4.0.0$(VersionSuffixLocal)</RESTyardClientVersion>
-    <RESTyardGeneratorVersion>0.13.0$(VersionSuffixLocal)</RESTyardGeneratorVersion>
+    <RESTyardAspNetCoreVersion>8.0.0$(VersionSuffixLocal)</RESTyardAspNetCoreVersion>
+    <RESTyardClientVersion>5.0.0$(VersionSuffixLocal)</RESTyardClientVersion>
+    <RESTyardGeneratorVersion>0.14.0$(VersionSuffixLocal)</RESTyardGeneratorVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="AwesomeAssertions" Version="9.3.0" />
+    <PackageVersion Include="BenchmarkDotNet" Version="0.13.2" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="FunicularSwitch" Version="8.0.0" />
+    <PackageVersion Include="FunicularSwitch.Generators" Version="5.0.0" />
+    <PackageVersion Include="FunicularSwitch.Generators.AwesomeAssertions" Version="2.0.0" />
+    <PackageVersion Include="JsonSchema.Net.Generation" Version="5.1.1" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="8.0.13" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc" Version="2.3.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.2" />
+    <PackageVersion Include="Microsoft.AspNetCore.Razor" Version="2.3.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.2.1" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="5.12.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.12.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="1.1.4" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="1.1.4" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.12.0" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <PackageVersion Include="Moq" Version="4.18.2" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="3.2.1" />
+    <PackageVersion Include="MSTest.TestFramework" Version="3.2.1" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageVersion Include="RESTyard.AspNetCore" Version="6.0.2-develop-20260922.5" />
+    <PackageVersion Include="Scriban" Version="5.9.0" />
+    <PackageVersion Include="System.Collections.Immutable" Version="10.0.10" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageVersion Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.22272.1" />
+    <PackageVersion Include="System.Linq" Version="4.3.0" />
+    <PackageVersion Include="System.Net.Http" Version="4.3.4" />
+    <PackageVersion Include="System.Text.Json" Version="8.0.6" />
+    <PackageVersion Include="Verify.Xunit" Version="30.0.0" />
+    <PackageVersion Include="Verify.XunitV3" Version="30.0.0" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="xunit.v3" Version="2.0.2" />
+  </ItemGroup>
 </Project>

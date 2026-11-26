@@ -16,6 +16,7 @@ using RESTyard.Generator.Test.Output;
 using HypermediaQueryResult = RESTyard.Generator.Test.Output.HypermediaQueryResult_V5_0;
 
 namespace server._csharp._v5;
+
 public static class MimeTypes
 {
     public const string APPLICATION_JSON = "application/json";
