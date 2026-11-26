@@ -31,7 +31,7 @@ jobs:
     - name: Build RESTyard
       run: dotnet build ./Source --no-restore --configuration Release
     - name: Run Tests
-      run: for proj in RESTyard.AspNetCore.Test RESTyard.AspNetCore.Analyzers.Test RESTyard.Integration.Test; do dotnet test ./Source/$proj/$proj.csproj --configuration Release; done
+      run: for proj in RESTyard.AspNetCore.Test RESTyard.AspNetCore.Analyzers.Tests RESTyard.Integration.Test; do dotnet test ./Source/$proj/$proj.csproj --configuration Release; done
     - name: Pack
       run: dotnet pack ./Source/RESTyard.AspNetCore/RESTyard.AspNetCore.csproj --no-build --configuration Release --output artifacts
     - uses: actions/upload-artifact@v4
